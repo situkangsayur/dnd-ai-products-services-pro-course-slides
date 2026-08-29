@@ -1,0 +1,7 @@
+
+flowchart TB
+  C["<b>Character level</b><br/>tiny vocabulary<br/>encodes anything<br/><small>but very long sequences</small>"]
+  W["<b>Word level</b><br/>short sequences<br/><small>but a huge vocabulary,<br/>and unknown words break it</small>"]
+  S["<b>Subword (BPE)</b><br/>short sequences AND<br/>a small vocabulary<br/><small>used by ChatGPT and most<br/>models today</small>"]
+  C --> S
+  W --> S

@@ -1,0 +1,9 @@
+
+flowchart TB
+  Q["How should word order<br/>be represented?"]
+  A["<b>Discard it</b><br/>text as an unordered set<br/><small>bag-of-words models</small>"]
+  B["<b>Strictly sequential</b><br/>one word at a time<br/><small>recurrent models</small>"]
+  C["<b>Hybrid</b><br/>order-agnostic, but with<br/>position injected<br/><small>the Transformer</small>"]
+  Q --> A
+  Q --> B
+  Q --> C

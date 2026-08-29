@@ -85,5 +85,12 @@
  "ch13-splitsplit": "47702855647c09f5",
  "ch13-stack": "768c27925bc67993",
  "ch13-tasks": "d7d7cf728e5e6427",
- "ch13-windows": "addd99686c9f31ab"
+ "ch13-windows": "addd99686c9f31ab",
+ "ch14-bow": "7c9b537510093057",
+ "ch14-cbow": "c15693eeb9e83429",
+ "ch14-embed": "26ab2cec694cf3aa",
+ "ch14-history": "55dbb9abc0206a39",
+ "ch14-ladder": "27659dee625db8b6",
+ "ch14-setseq": "99f64643608fd0d3",
+ "ch14-tokenizers": "553d37e32fb049ef"
 }

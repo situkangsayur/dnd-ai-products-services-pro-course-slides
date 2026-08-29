@@ -1,0 +1,7 @@
+
+flowchart LR
+  B["Bag of words<br/><small>order discarded</small>"]
+  G["Bigrams<br/><small>a little local order,<br/>engineered by hand</small>"]
+  S["Sequence model<br/><small>order learned<br/>from raw tokens</small>"]
+  P["Pretrained embedding<br/><small>+ knowledge from<br/>unlabelled text</small>"]
+  B --> G --> S --> P

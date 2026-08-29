@@ -1,0 +1,7 @@
+
+flowchart LR
+  T["&quot;this movie made me cry&quot;"]
+  I["Tokenize<br/><code>[0, 1, 3, 0, 5]</code>"]
+  S["Discard order<br/><code>{0, 1, 3, 5}</code>"]
+  M["Multi-hot<br/><code>[1, 1, 0, 1, 0, 1]</code>"]
+  T --> I --> S --> M

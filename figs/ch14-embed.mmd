@@ -1,0 +1,13 @@
+
+flowchart TB
+  subgraph O["One-hot vectors"]
+    direction TB
+    O1["Sparse"] --> O2["High-dimensional<br/><small>20,000 dims</small>"] --> O3["Hardcoded"]
+    O3 --> O4["<b>All words orthogonal:<br/>&quot;movie&quot; unrelated to &quot;film&quot;</b>"]
+  end
+  subgraph E["Word embeddings"]
+    direction TB
+    E1["Dense"] --> E2["Lower-dimensional<br/><small>256 to 1,024 dims</small>"] --> E3["Learned from data"]
+    E3 --> E4["<b>Geometry reflects meaning</b>"]
+  end
+  O ~~~ E
