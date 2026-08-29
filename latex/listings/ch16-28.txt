@@ -1,0 +1,4 @@
+>>> compiled_generate(prompt, partial(top_k, k=5, temperature=0.5))
+A piece of advice that you can use to get rid of the problem.
+The first thing you need to do is to get the job done. It is important that you
+have a plan that will help you get rid of it.

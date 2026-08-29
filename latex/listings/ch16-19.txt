@@ -1,0 +1,4 @@
+>>> import timeit
+>>> tries = 10
+>>> timeit.timeit(lambda: compiled_generate(prompt), number=tries) / tries
+0.4866470648999893

@@ -1,0 +1,5 @@
+SECOND ATTEMPT
+* Letters per week:  3 friends * 2 letters/week = 6 letters/week
+* Letters per month: 6 letters/week * 4 weeks/month = 24 letters/month
+* Total letters: 24 letters/month * 3 months = 72 letters
+ANSWER: 72

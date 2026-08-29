@@ -1,0 +1,7 @@
+>>> prompt = "Why can't you assign values in Jax tensors? Be brief!"
+>>> gemma_lm.generate(PROMPT_TEMPLATE.format(prompt), max_length=512)
+<start_of_turn>model
+Jax tensors are designed for efficient automatic differentiation. Directly
+assigning values disrupts this process, making it difficult to track gradients
+correctly. Instead, Jax uses operations to modify tensor values, preserving the
+differentiation pipeline.<end_of_turn>

@@ -1,0 +1,10 @@
+
+flowchart LR
+  T["Token IDs"]
+  E["<b>Embedding matrix</b><br/><small>(vocab_size, hidden_dim)</small>"]
+  B["Decoder blocks"]
+  H["Hidden states"]
+  R["<b>Same matrix, transposed</b><br/><small>(hidden_dim, vocab_size)</small>"]
+  L["Logits"]
+  T --> E --> B --> H --> R --> L
+  E -. "weights shared" .-> R

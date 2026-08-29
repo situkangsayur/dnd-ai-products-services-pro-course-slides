@@ -1,0 +1,12 @@
+
+flowchart TB
+  T["Text tokens<br/><small>&quot;What is&quot;</small>"]
+  TE["<b>Text embedding</b><br/><small>hard tokens</small>"]
+  IM["Image"]
+  IE["<b>Image encoder</b><br/><small>420 M parameters,<br/>256 patches</small>"]
+  ST["<b>Soft tokens</b><br/><small>(256, 2560)</small>"]
+  SEQ["One spliced sequence"]
+  D["Decoder blocks"]
+  T --> TE --> SEQ
+  IM --> IE --> ST --> SEQ
+  SEQ --> D

@@ -1,0 +1,9 @@
+>>> gemma_lm.generate(
+>>>     "The following brownie recipe is easy to make in just a few "
+>>>     "steps.\n\nYou can start by",
+>>>     max_length=40,
+>>> )
+The following brownie recipe is easy to make in just a few steps.
+
+You can start by melting the butter and sugar in a saucepan over medium heat.
+Then add the eggs and vanilla extract

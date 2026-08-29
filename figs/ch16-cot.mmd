@@ -1,0 +1,8 @@
+
+flowchart TB
+  A["<b>1. Supervised examples</b><br/><small>problems with the<br/>working shown</small>"]
+  B["<b>2. Generate</b><br/><small>with randomness, many<br/>responses per problem</small>"]
+  C["<b>3. Check the answer</b><br/><small>string-parse the marker</small>"]
+  D["<b>4. Fine-tune on the<br/>correct responses</b><br/><small>including the intermediate steps</small>"]
+  A --> B --> C --> D
+  D -. "repeat" .-> B

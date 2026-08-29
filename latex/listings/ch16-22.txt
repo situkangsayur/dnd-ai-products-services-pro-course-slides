@@ -1,0 +1,4 @@
+>>> compiled_generate(prompt, random_sample)
+A piece of advice, just read my knees and stick with getables and a hello to me.
+However, the bar napkin doesn't last as long. I happen to be waking up close and
+pull it up as I wanted too and I still get it, really, shouldn't be a reaction

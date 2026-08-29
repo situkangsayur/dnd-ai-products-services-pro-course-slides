@@ -1,0 +1,6 @@
+>>> compiled_generate(prompt, partial(random_sample, temperature=0.2))
+A piece of advice, and a lot of people are saying that they have to be careful
+about the way they think about it.
+I think it's a good idea to have a good understanding of the way you think about
+it.
+I think it's a good idea to have a good understanding of the

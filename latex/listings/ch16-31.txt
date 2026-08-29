@@ -1,0 +1,11 @@
+>>> gemma_lm.compile(sampler="greedy")
+>>> gemma_lm.generate("A piece of advice", max_length=40)
+A piece of advice from a former student of mine:
+<blockquote>"I'm not sure if you've heard of it, but I've been told that the
+best way to learn
+
+>>> gemma_lm.generate("How can I make brownies?", max_length=40)
+How can I make brownies?
+[User 0001]
+I'm trying to make brownies for my son's birthday party. I've never made
+brownies before.

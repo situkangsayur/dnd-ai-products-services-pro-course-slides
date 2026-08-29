@@ -1,0 +1,4 @@
+>>> tokenizer.tokenize("The quick brown fox.")
+array([ 450, 4996, 17354, 1701, 29916, 29889], dtype=int32)
+>>> tokenizer.detokenize([450, 4996, 17354, 1701, 29916, 29889])
+"The quick brown fox." 

@@ -1,0 +1,9 @@
+
+flowchart TB
+  SFT["<b>1. Supervised fine-tuning</b><br/><small>handwritten prompts<br/>and responses</small>"]
+  RANK["<b>2. Rank responses</b><br/><small>human evaluators order them<br/>most to least helpful</small>"]
+  RM["<b>3. Reward model</b><br/><small>a smaller Transformer:<br/>sequence in, one float out</small>"]
+  RL["<b>4. Reinforcement learning</b><br/><small>generate, score, update</small>"]
+  IT["<b>5. Iterate</b>"]
+  SFT --> RANK --> RM --> RL --> IT
+  IT -. "new responses, new rankings" .-> RANK

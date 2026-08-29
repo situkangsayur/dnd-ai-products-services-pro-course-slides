@@ -1,0 +1,9 @@
+>>> gemma_lm.generate(
+...     "[instruction]\nWho is the 542nd president of the United States?[end]\n"
+...     "[response]\n",
+...     max_length=512,
+... )
+[instruction]
+Who is the 542nd president of the United States?[end]
+[response]
+The 542nd president of the United States was James A. Garfield.[end]

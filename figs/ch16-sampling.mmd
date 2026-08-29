@@ -1,0 +1,9 @@
+
+flowchart TB
+  P["Model output:<br/>32,000 logits"]
+  G["<b>Greedy</b><br/><small>argmax</small><br/>repeats itself"]
+  R["<b>Random</b><br/><small>sample the whole<br/>distribution</small><br/>wanders off"]
+  K["<b>Top-K</b><br/><small>sample the K best</small><br/>a middle ground"]
+  P --> G
+  P --> R
+  P --> K

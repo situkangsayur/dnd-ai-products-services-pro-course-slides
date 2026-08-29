@@ -1,0 +1,9 @@
+
+flowchart LR
+  L["Logits"]
+  D["Divide by<br/><b>temperature</b>"]
+  S["Softmax"]
+  O["Sample"]
+  L --> D --> S --> O
+  D -. "low T: peaks sharpen<br/>toward greedy" .-> S
+  D -. "high T: distribution flattens<br/>toward noise" .-> S

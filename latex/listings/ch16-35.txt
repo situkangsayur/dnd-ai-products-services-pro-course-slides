@@ -1,0 +1,7 @@
+>>> data["prompts"][0]
+[instruction]
+Which is a species of fish? Tope or Rope[end]
+[response]
+
+>>> data["responses"][0]
+Tope[end]

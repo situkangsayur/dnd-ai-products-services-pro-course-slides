@@ -1,0 +1,11 @@
+
+flowchart TB
+  I["Inputs"]
+  W["<b>Pretrained kernel</b><br/><small>(hidden, hidden)</small><br/><b>FROZEN</b>"]
+  AL["<b>Alpha</b><br/><small>(hidden, rank)</small>"]
+  BE["<b>Beta</b><br/><small>(rank, hidden)</small>"]
+  S["Add"]
+  O["Outputs"]
+  I --> W --> S
+  I --> AL --> BE --> S
+  S --> O

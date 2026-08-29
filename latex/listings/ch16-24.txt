@@ -1,0 +1,4 @@
+>>> compiled_generate(prompt, partial(random_sample, temperature=0.8))
+A piece of advice I wrote about the same thing today. I have been a writer for
+two years now. I am writing this blog and I just wrote about it. I am writing
+this blog and it was really interesting.

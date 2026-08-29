@@ -1,0 +1,8 @@
+>>> compiled_generate(prompt, partial(top_k, k=5))
+A piece of advice that I can't help it. I'm not going to be able to do anything
+for a few months, but I'm trying to get a little better. It's a little too much.
+
+>>> compiled_generate(prompt, partial(top_k, k=20))
+A piece of advice and guidance from the Audi Bank in 2015. With all the above,
+it's not just a bad idea, but it's very good to see that is going to be a great
+year for you in 2017.

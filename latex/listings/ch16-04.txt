@@ -1,0 +1,4 @@
+>>> with open(extract_dir / "shard0.txt", "r") as f:
+>>>     print(f.readline().replace("\\n", "\n")[:100])
+Beginners BBQ Class Taking Place in Missoula!
+Do you want to get better at making delicious BBQ? You

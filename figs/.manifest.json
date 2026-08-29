@@ -108,5 +108,19 @@
  "ch15-rnn-bottleneck": "238c919bc24eaeac",
  "ch15-search": "2c185f0e8f2ef275",
  "ch15-seq2seq": "fc9843dc13eebabd",
- "ch15-why-effective": "58cea57cc0300dbe"
+ "ch15-why-effective": "58cea57cc0300dbe",
+ "ch16-cot": "1a6773959b6940d9",
+ "ch16-decoder-only": "796b47775384c889",
+ "ch16-foundation": "4dd3d696679c412b",
+ "ch16-gpt-ingredients": "e2608db8e1769d08",
+ "ch16-history": "1ae98d8d2d744418",
+ "ch16-kvcache": "a81cb80763c8ef56",
+ "ch16-lora": "88af8ba3ab9cbcdf",
+ "ch16-multimodal": "c82b1e3216542d31",
+ "ch16-rag": "d4b917b7e85de6f1",
+ "ch16-rlhf": "e66c6b3603fc6b6a",
+ "ch16-sampling": "4e97f0272d10b8ef",
+ "ch16-scaling": "118aa16208d2c90b",
+ "ch16-temperature": "1ef0a1fd964eaf6a",
+ "ch16-tied": "05800096fbd9d50e"
 }

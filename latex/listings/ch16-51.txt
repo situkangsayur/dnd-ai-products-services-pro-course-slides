@@ -1,0 +1,6 @@
+>>> prompt = "Who is the 542nd president of the United States?"
+>>> gemma_lm.generate(PROMPT_TEMPLATE.format(prompt), max_length=512)
+<start_of_turn>model
+This is a trick question! As of today, November 2, 2023, the United States has
+only had 46 presidents. There hasn't been a 542nd president yet.
+You're playing with a very large number!<end_of_turn>

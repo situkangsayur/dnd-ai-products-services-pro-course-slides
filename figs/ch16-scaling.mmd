@@ -1,0 +1,10 @@
+
+flowchart TB
+  BUD["A fixed pretraining budget<br/><small>a million dollars of flops</small>"]
+  M["Spend it on a<br/><b>bigger model</b>"]
+  D["Spend it on<br/><b>more data</b>"]
+  F["GPT-3 at 175 B was<br/><b>too big for its budget</b>"]
+  T["Since then: parameter counts<br/>flatten, token counts climb"]
+  BUD --> M --> F
+  BUD --> D --> F
+  F --> T

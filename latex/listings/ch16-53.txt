@@ -1,0 +1,4 @@
+<start_of_turn>model
+A snake wearing glasses is sitting in a leather armchair, surrounded by a large
+bookshelf, and reading a book. It's a whimsical, slightly surreal image.
+<end_of_turn>

@@ -1,0 +1,12 @@
+>>> gemma_lm.generate(
+...     "[instruction]\nWhat is a proper noun?[end]\n[response]\n",
+...     max_length=512,
+... )
+[instruction]
+What is a proper noun?[end]
+[response]
+A proper noun is a word that refers to a specific person, place, or thing.
+Proper nouns are usually capitalized and are used to identify specific
+individuals, places, or things. Proper nouns are often used in formal writing
+and are often used in titles, such as "The White House" or "The Eiffel
+Tower."[end]

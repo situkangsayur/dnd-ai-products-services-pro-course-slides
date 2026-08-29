@@ -1,0 +1,11 @@
+>>> gemma_lm.summary()
+Preprocessor: "gemma3_causal_lm_preprocessor"
+│ gemma3_tokenizer (Gemma3Tokenizer)  │  Vocab size: 262,144 │
+
+Model: "gemma3_causal_lm"
+│ padding_mask (InputLayer)  │ (None, None)          │           0 │
+│ token_ids (InputLayer)     │ (None, None)          │           0 │
+│ gemma3_backbone            │ (None, None, 1152)    │ 999,885,952 │
+│ token_embedding            │ (None, None, 262144)  │ 301,989,888 │
+│  (ReversibleEmbedding)     │                       │             │
+ Total params: 999,885,952 (3.72 GB)

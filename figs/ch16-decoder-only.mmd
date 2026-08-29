@@ -1,0 +1,15 @@
+
+flowchart TB
+  subgraph S["Chapter 15 - encoder/decoder"]
+    direction TB
+    E1["Encoder<br/><small>source sequence</small>"]
+    D1["Decoder<br/><small>target sequence</small>"]
+    E1 --> D1
+  end
+  subgraph G["Chapter 16 - decoder only"]
+    direction TB
+    X["<b>One sequence</b><br/><small>question and answer<br/>concatenated</small>"]
+    D2["Decoder stack<br/><small>causal mask throughout</small>"]
+    X --> D2
+  end
+  S --> G

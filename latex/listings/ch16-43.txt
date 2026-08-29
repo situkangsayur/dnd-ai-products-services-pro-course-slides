@@ -1,0 +1,4 @@
+>>> gemma_lm.summary()
+ Total params:         1,001,190,528 (3.73 GB)
+ Trainable params:         1,304,576 (4.98 MB)
+ Non-trainable params:   999,885,952 (3.72 GB)

@@ -1,0 +1,11 @@
+
+flowchart LR
+  Q["User question"]
+  EMB["<b>Embed the query</b><br/><small>with an LLM</small>"]
+  VDB["<b>Vector database</b><br/><small>documents keyed by<br/>their embeddings</small>"]
+  CTX["Retrieved context"]
+  PR["<b>Prompt</b><br/><small>question + context</small>"]
+  LLM["LLM"]
+  A["Grounded answer"]
+  Q --> EMB --> VDB --> CTX --> PR --> LLM --> A
+  Q --> PR

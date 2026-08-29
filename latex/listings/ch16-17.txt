@@ -1,0 +1,6 @@
+>>> prompt = "A piece of advice"
+>>> generate(prompt)
+A piece of advice, and the best way to get a feel for yourself is to get a sense
+of what you are doing.
+If you are a business owner, you can get a sense of what you are doing. You can
+get a sense of what you are doing, and you can get a sense of what

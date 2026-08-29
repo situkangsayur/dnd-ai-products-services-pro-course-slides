@@ -1,0 +1,9 @@
+
+flowchart TB
+  A["Feedforward blocks<br/><small>each position in isolation</small>"]
+  B["<b>Attention</b><br/><small>the only place information<br/>crosses positions</small>"]
+  C["Past keys and values<br/><b>never change</b><br/><small>the causal mask<br/>forbids looking ahead</small>"]
+  D["<b>Cache them</b><br/><small>the Transformer equivalent<br/>of an RNN state</small>"]
+  E["Input shrinks from<br/>the whole sequence<br/>to <b>one token</b>"]
+  A --> B
+  B --> C --> D --> E

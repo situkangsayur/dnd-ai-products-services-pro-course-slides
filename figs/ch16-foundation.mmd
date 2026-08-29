@@ -1,0 +1,15 @@
+
+flowchart TB
+  DATA["Broad data at internet scale"]
+  OBJ["<b>Self-supervised objective</b><br/><small>a reconstruction loss</small>"]
+  FM["<b>Foundation model</b><br/><small>not specialised to<br/>any single task</small>"]
+  T1["Classification"]
+  T2["Chat"]
+  T3["Retrieval"]
+  T4["Image generation<br/><small>chapter 17</small>"]
+  DATA --> FM
+  OBJ --> FM
+  FM --> T1
+  FM --> T2
+  FM --> T3
+  FM --> T4
