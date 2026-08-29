@@ -748,6 +748,32 @@ outputs = model.predict({
 
         {
             "type": "slide",
+            "kicker": "Practice",
+            "title": "Where segmentation quietly goes wrong",
+            "blocks": [
+                {"t": "cards", "cols": 2, "items": [
+                    {"ico": "🔀", "h": "Images and masks drift apart",
+                     "p": "Two lists sorted or shuffled differently. Nothing errors — the "
+                          "model simply learns nothing, and the loss curve looks like a "
+                          "capacity problem.", "style": "bad"},
+                    {"ico": "🏷", "h": "Off-by-one labels",
+                     "p": "Masks numbered 1..N fed to a loss expecting 0..N-1. The last class "
+                          "is never predicted and the first is never learned.", "style": "bad"},
+                    {"ico": "⚖", "h": "Accuracy instead of IoU",
+                     "p": "If 90% of pixels are background, a model predicting *background* "
+                          "everywhere scores 90% accuracy and **zero** foreground IoU.",
+                     "style": "warn"},
+                    {"ico": "📐", "h": "Padding mismatch",
+                     "p": "One layer without `padding=\"same\"` and the output no longer "
+                          "matches the mask's size.", "style": "warn"},
+                ]},
+            ],
+            "notes": "All four show up in the lab. The first two are the ones that look like "
+                     "modelling problems and are not.",
+        },
+
+        {
+            "type": "slide",
             "kicker": "Summary",
             "title": "What has to survive this chapter",
             "blocks": [

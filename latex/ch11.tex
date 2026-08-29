@@ -360,6 +360,41 @@ This is the practical loop with SAM: \textbf{prompt, look, add a point, prompt a
 \end{iband}
 \end{frame}
 
+\framekicker{Practice}
+\begin{frame}[shrink=25]{Where segmentation quietly goes wrong}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardbad}
+\cardh{Images and masks drift apart}
+Two lists sorted or shuffled differently. Nothing errors --- the model simply learns nothing, and the loss curve looks like a capacity problem.
+\end{icardbad}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardbad}
+\cardh{Off-by-one labels}
+Masks numbered 1..N fed to a loss expecting 0..N-1. The last class is never predicted and the first is never learned.
+\end{icardbad}
+\end{minipage}%
+
+
+\vskip 4pt
+
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardwarn}
+\cardh{Accuracy instead of IoU}
+If 90\% of pixels are background, a model predicting \textit{background} everywhere scores 90\% accuracy and \textbf{zero} foreground IoU.
+\end{icardwarn}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardwarn}
+\cardh{Padding mismatch}
+One layer without \inlinecode{padding="same"} and the output no longer matches the mask's size.
+\end{icardwarn}
+\end{minipage}%
+\end{frame}
+\note{All four show up in the lab. The first two are the ones that look like modelling problems and are not.}
+
 \framekicker{Summary}
 \begin{frame}[shrink=25]{What has to survive this chapter}
 \begin{isteps}
