@@ -1,8 +1,12 @@
-y_train = train_labels     # biarkan bulat
-y_test = test_labels
-# bentuknya (8982,)
+import keras
+from keras import layers
 
-model.compile(
-    optimizer="adam",
-    loss="sparse_categorical_crossentropy",
-    metrics=["accuracy"])
+model = keras.Sequential([
+    layers.Dense(16, activation="relu"),
+    layers.Dense(16, activation="relu"),
+    layers.Dense(1, activation="sigmoid"),      # one probability, 0 to 1
+])
+
+model.compile(optimizer="adam",
+              loss="binary_crossentropy",
+              metrics=["accuracy"])

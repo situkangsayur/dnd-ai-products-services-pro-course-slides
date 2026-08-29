@@ -1,0 +1,9 @@
+
+flowchart LR
+  A["Layer created<br/><code>SimpleDense(32)</code>"]
+  B["First call with data<br/><code>layer(x)</code>"]
+  C["build(input_shape)<br/><small>weights created now</small>"]
+  D["call(inputs)<br/><small>the forward pass</small>"]
+  E["Later calls<br/><small>build is skipped</small>"]
+  A --> B --> C --> D
+  D --> E --> D

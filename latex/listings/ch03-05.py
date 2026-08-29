@@ -1,19 +1,14 @@
-class LinearModel(torch.nn.Module):
-    def __init__(self, input_dim, output_dim):
-        super().__init__()
-        self.W = torch.nn.Parameter(torch.rand(input_dim, output_dim))
-        self.b = torch.nn.Parameter(torch.zeros(output_dim))
+learning_rate = 0.1
 
-    def forward(self, inputs):
-        return torch.matmul(inputs, self.W) + self.b
-
-model = LinearModel(2, 1)
-optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
-
-def training_step(inputs, targets):
-    predictions = model(inputs)
-    loss = mean_squared_error(targets, predictions)
-    loss.backward()        # 1. hitung gradien
-    optimizer.step()       # 2. perbarui bobot
-    model.zero_grad()      # 3. nolkan, siap batch berikutnya
+@tf.function(jit_compile=True)
+def training_step(inputs, targets, W, b):
+    with tf.GradientTape() as tape:
+        predictions = model(inputs, W, b)
+        loss = mean_squared_error(predictions, targets)
+    grad_wrt_W, grad_wrt_b = tape.gradient(loss, [W, b])
+    W.assign_sub(grad_wrt_W * learning_rate)      # in-place: W is a Variable
+    b.assign_sub(grad_wrt_b * learning_rate)
     return loss
+
+for step in range(40):
+    loss = training_step(inputs, targets, W, b)

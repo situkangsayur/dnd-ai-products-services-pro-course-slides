@@ -1,0 +1,15 @@
+
+flowchart TB
+  Q1{"Must it run<br/>on-premise or on<br/>mobile / browser?"}
+  Q2{"Does your team live<br/>on Hugging Face?"}
+  Q3{"TPUs, or very<br/>large-scale training?"}
+  TF["TensorFlow backend"]
+  PT["PyTorch backend"]
+  JX["JAX backend"]
+  ANY["Any of them —<br/>write Keras and decide later"]
+  Q1 -- yes --> TF
+  Q1 -- no --> Q2
+  Q2 -- yes --> PT
+  Q2 -- no --> Q3
+  Q3 -- yes --> JX
+  Q3 -- no --> ANY

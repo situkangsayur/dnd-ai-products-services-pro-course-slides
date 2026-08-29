@@ -1,15 +1,8 @@
-k, num_epochs, all_scores = 4, 50, []
-num_val_samples = len(x_train) // k
+from keras.datasets import reuters
 
-for i in range(k):
-    fold_x_val = x_train[i * num_val_samples : (i + 1) * num_val_samples]
-    fold_y_val = y_train[i * num_val_samples : (i + 1) * num_val_samples]
-    fold_x_train = np.concatenate(
-        [x_train[: i * num_val_samples], x_train[(i + 1) * num_val_samples :]], axis=0)
-    fold_y_train = np.concatenate(
-        [y_train[: i * num_val_samples], y_train[(i + 1) * num_val_samples :]], axis=0)
+(train_data, train_labels), (test_data, test_labels) = reuters.load_data(num_words=10000)
 
-    model = get_model()
-    model.fit(fold_x_train, fold_y_train, epochs=num_epochs, batch_size=16, verbose=0)
-    val_loss, val_mae = model.evaluate(fold_x_val, fold_y_val, verbose=0)
-    all_scores.append(val_mae)
+x_train = multi_hot_encode(train_data, num_classes=10000)
+x_test = multi_hot_encode(test_data, num_classes=10000)
+
+print(len(train_data), len(test_data), max(train_labels) + 1)

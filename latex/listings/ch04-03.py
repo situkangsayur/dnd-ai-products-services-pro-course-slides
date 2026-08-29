@@ -1,16 +1,14 @@
-model = keras.Sequential([
-    layers.Dense(16, activation="relu"),
-    layers.Dense(16, activation="relu"),
-    layers.Dense(1, activation="sigmoid"),
-])
-model.compile(optimizer="adam",
-              loss="binary_crossentropy",
-              metrics=["accuracy"])
+import numpy as np
 
-x_val, partial_x = x_train[:10000], x_train[10000:]
-y_val, partial_y = y_train[:10000], y_train[10000:]
+def multi_hot_encode(sequences, num_classes):
+    results = np.zeros((len(sequences), num_classes))
+    for i, sequence in enumerate(sequences):
+        results[i][sequence] = 1.0        # mark every word index that appears
+    return results
 
-history = model.fit(
-    partial_x, partial_y,
-    epochs=20, batch_size=512,
-    validation_data=(x_val, y_val))
+x_train = multi_hot_encode(train_data, num_classes=10000)
+x_test = multi_hot_encode(test_data, num_classes=10000)
+y_train = train_labels.astype("float32")
+y_test = test_labels.astype("float32")
+
+print(x_train.shape, x_train[0][:12])

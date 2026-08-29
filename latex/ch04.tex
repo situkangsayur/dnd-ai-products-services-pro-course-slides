@@ -3,15 +3,15 @@
 \documentclass[aspectratio=169,11pt,t]{beamer}
 \usepackage{itbpro}
 
-\coursetitle{Klasifikasi dan Regresi}
-\coursesubtitle{Tiga alur kerja lengkap -- biner, multikelas, dan regresi skalar -- beserta aturan pilih loss dan aktivasi yang dipakai sisa buku ini.}
+\coursetitle{Classification and Regression}
+\coursesubtitle{Three complete workflows --- binary, multiclass, and scalar regression --- and the rules for choosing a loss and an output activation that the rest of the book relies on.}
 \coursekicker{Chapter 4}
-\coursesource{Chollet \& Watson, Deep Learning with Python 3e -- bab 4}
-\courseduration{3 jam (2 sesi)}
-\coursepresenter{Rahman Indra Kesuma, S.Kom., M.Cs.}{Asisten Pengajar}
+\coursesource{Chollet \& Watson, Deep Learning with Python 3e --- chapter 4}
+\courseduration{3 hours (2 sessions)}
+\coursepresenter{Rahman Indra Kesuma, S.Kom., M.Cs.}{Teaching Assistant}
 \coursebrand{AI for Professional \textperiodcentered\ ITB \textperiodcentered\ Ch 4}
 
-\title{Klasifikasi dan Regresi}
+\title{Classification and Regression}
 \author{Rahman Indra Kesuma, S.Kom., M.Cs.}
 \date{}
 
@@ -19,331 +19,437 @@
 \covertitle
 
 \framekicker{Learning outcomes}
-\begin{frame}[shrink=25]{Tujuan Sesi}
-\leadpar{Setelah sesi ini, peserta dapat:}
+\begin{frame}[shrink=25]{Session Objectives}
+\leadpar{By the end of this session, participants can:}
 \begin{isteps}
-\item Memilih \textbf{aktivasi keluaran dan fungsi rugi} yang benar untuk klasifikasi biner, multikelas, dan regresi -- tanpa menebak.
-\item Menyiapkan data teks dengan \textbf{multi-hot encoding}, dan label dengan \textbf{one-hot} atau \textbf{sparse}.
-\item Membaca \textbf{kurva rugi validasi} untuk menemukan titik berhenti terbaik, lalu melatih ulang sampai epoch itu saja.
-\item Mengenali \textbf{leher botol informasi} dan menaksir ukuran lapis antara dari banyaknya kelas.
-\item Menormalkan fitur dengan \textbf{statistik data latih}, dan menilai model berdata sedikit dengan \textbf{validasi silang K-lipat}.
+\item Choose the correct \textbf{output activation and loss function} for binary, multiclass, and regression tasks --- without guessing.
+\item Prepare text with \textbf{multi-hot encoding}, and labels as either \textbf{one-hot} or \textbf{sparse integers}.
+\item Read a \textbf{validation loss curve} to find the best stopping point, then retrain to exactly that point.
+\item Recognise an \textbf{information bottleneck} and size intermediate layers from the number of classes.
+\item Normalise features using \textbf{training-set statistics only}, and evaluate a small-data model with \textbf{K-fold cross-validation}.
 \end{isteps}
 
 \vskip 6pt
 \vskip 4pt
-\reslink{Buku}{Bab 4 --- teks penuh}{https://deeplearningwithpython.io/chapters/chapter04\_classification-and-regression}
-\reslink{Notebook}{01\_imdb\_klasifikasi\_biner.ipynb}{../../notebooks/ch04/01\_imdb\_klasifikasi\_biner.ipynb}
-\reslink{Notebook}{02\_reuters\_multikelas.ipynb}{../../notebooks/ch04/02\_reuters\_multikelas.ipynb}
-\reslink{Notebook}{03\_regresi\_harga\_rumah.ipynb}{../../notebooks/ch04/03\_regresi\_harga\_rumah.ipynb}
-\reslink{Repo}{Notebook resmi penulis}{https://github.com/fchollet/deep-learning-with-python-notebooks/blob/master/chapter04\_classification-and-regression.ipynb}
+\reslink{Book}{Chapter 4 --- full text}{https://deeplearningwithpython.io/chapters/chapter04\_classification-and-regression}
+\reslink{Notebook}{01\_imdb\_binary\_classification.ipynb}{../../notebooks/ch04/01\_imdb\_binary\_classification.ipynb}
+\reslink{Notebook}{02\_reuters\_multiclass.ipynb}{../../notebooks/ch04/02\_reuters\_multiclass.ipynb}
+\reslink{Notebook}{03\_housing\_regression.ipynb}{../../notebooks/ch04/03\_housing\_regression.ipynb}
+\reslink{Repo}{Author's official notebook}{https://github.com/fchollet/deep-learning-with-python-notebooks/blob/master/chapter04\_classification-and-regression.ipynb}
 \vskip 2pt
 \end{frame}
 
-\framekicker{Kosakata}
-\begin{frame}[shrink=25]{Dua belas istilah yang dipakai sampai bab 20}
+\framekicker{Roadmap}
+\begin{frame}[shrink=25]{The same six steps, three times over}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch04-workflow.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Every example in this chapter follows this path. By the third one it should feel routine.\par}
+\end{frame}
+
+\framekicker{Vocabulary}
+\begin{frame}[shrink=25]{Terms used precisely from here to chapter 20}
 \begin{minipage}[t]{0.485\textwidth}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.282\textwidth}>{\raggedright\arraybackslash}p{0.658\textwidth}}
-\thead{Istilah} & \thead{Artinya} \\ \midrule
-\textbf{Sample / input} & Satu titik data yang masuk ke model. \\
-\textbf{Prediction / output} & Yang keluar dari model. \\
-\textbf{Target} & Jawaban benar, dari sumber di luar model. \\
-\textbf{Loss value} & Ukuran jarak prediksi ke target. \\
-\textbf{Classes} & Himpunan label yang mungkin. \\
-\textbf{Mini-batch} & Lazimnya 8-128 sampel sekaligus. \\
+\begin{itable}{>{\raggedright\arraybackslash}p{0.3008\textwidth}>{\raggedright\arraybackslash}p{0.6392\textwidth}}
+\thead{Term} & \thead{Meaning} \\ \midrule
+\textbf{Sample / input} & One data point entering the model. \\
+\textbf{Prediction / output} & What comes out. \\
+\textbf{Target} & The ground truth, from outside the model. \\
+\textbf{Loss value} & A measure of distance between the two. \\
+\textbf{Mini-batch} & Typically 8--128 samples at a time. \\
 \end{itable}
 
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.485\textwidth}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.3572\textwidth}>{\raggedright\arraybackslash}p{0.5828\textwidth}}
-\thead{Jenis tugas} & \thead{Cirinya} \\ \midrule
-\textbf{Binary classification} & Dua kategori, saling meniadakan. \\
-\textbf{Multiclass} & Lebih dari dua kategori, satu label per sampel. \\
-\textbf{Multilabel} & Satu sampel boleh punya beberapa label. \\
-\textbf{Scalar regression} & Satu nilai kontinu. \\
-\textbf{Vector regression} & Beberapa nilai kontinu sekaligus. \\
+\begin{itable}{>{\raggedright\arraybackslash}p{0.376\textwidth}>{\raggedright\arraybackslash}p{0.564\textwidth}}
+\thead{Task type} & \thead{Defining feature} \\ \midrule
+\textbf{Binary classification} & Two mutually exclusive categories. \\
+\textbf{Multiclass} & More than two, one label per sample. \\
+\textbf{Multilabel} & A sample may carry several labels at once. \\
+\textbf{Scalar regression} & One continuous value. \\
+\textbf{Vector regression} & Several continuous values. \\
 \end{itable}
 
 \end{minipage}%
+\end{frame}
+
+\framekicker{Vocabulary}
+\begin{frame}[shrink=25]{The distinction that decides your output layer}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch04-heads.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Multiclass and multilabel look similar and need different heads.\par}
 \begin{iband}[signal]
-Membedakan \textbf{multiclass} dari \textbf{multilabel} menentukan pilihan aktivasi keluaran: \hilite{softmax} untuk yang pertama (jumlahnya 1), \hilite{sigmoid per kelas} untuk yang kedua.
+\textbf{Softmax} forces the outputs to sum to 1 --- right when exactly one class is true. \textbf{Sigmoid per class} lets several be true at once. Choosing the wrong one \hilite{trains a model that cannot express the answer}
 \end{iband}
 \end{frame}
 
-\coursesection{01}{Klasifikasi biner: ulasan IMDB}{50.000 ulasan film, positif atau negatif.}
+\coursesection{01}{Binary classification: IMDB reviews}{50,000 movie reviews, positive or negative.}
 
-\framekicker{Bagian 4.1}
-\begin{frame}[shrink=25]{Data, dan cara mengubah deret kata jadi tensor}
-\icode{python}{listing 4.1-4.3 --- muat dan vektorkan}{listings/ch04-01.py}
+\framekicker{Section 4.1}
+\begin{frame}[shrink=25]{The dataset, and what has already been done to it}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}IMDB ships with Keras, already split and already converted from words into integer indices. \inlinecode{num\_words=10000} keeps only the ten thousand most frequent words.\par}\vskip 4pt
+\icode{python}{listing 4.1 --- loading IMDB}{listings/ch04-01.py}
 \ioutput{listings/ch04-02.txt}
-\begin{ibullets}
-\item 25.000 latih + 25.000 uji, seimbang 50:50 positif-negatif.
-\item \inlinecode{num\_words=10000} hanya menyimpan \textbf{10.000 kata tersering}; sisanya dibuang.
-\item Multi-hot \hilite{membuang urutan kata}. Cukup untuk sentimen; bab 14-15 menggantinya saat urutan mulai penting.
-\end{ibullets}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The split is balanced 50:50, which matters for the baseline we set in a moment.\par}\vskip 4pt
 \end{frame}
 
-\framekicker{Bagian 4.1}
-\begin{frame}[shrink=25]{Model, validasi, dan titik balik di epoch 4}
-\begin{minipage}[t]{0.485\textwidth}
-\icode{python}{listing 4.4-4.6}{listings/ch04-03.py}
-
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.485\textwidth}
-\begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.52\textheight}{%
-
-\begin{tikzpicture}[font=\sffamily\tiny]
-  \draw[rule, line width=0.8pt] (0,0) -- (8.6,0);
-  \draw[rule, line width=0.8pt] (0,0) -- (0,3.0);
-  \node[text=ink3, anchor=north] at (4.3,-0.15) {epoch};
-  \node[text=ink3, rotate=90, anchor=south] at (-0.35,1.5) {rugi};
-  \draw[signal, line width=1.2pt]
-    (0,2.6) .. controls (1.2,1.7) and (2.4,1.05) .. (4.0,0.62)
-            .. controls (5.6,0.35) and (7.0,0.22) .. (8.6,0.15);
-  \draw[rose, line width=1.2pt]
-    (0,2.4) .. controls (0.8,1.6) and (1.5,1.15) .. (2.1,1.02);
-  \draw[rose, line width=1.2pt]
-    (2.1,1.02) .. controls (3.6,1.25) and (5.8,1.95) .. (8.6,2.75);
-  \draw[amberbr, line width=0.9pt, dashed] (2.1,0) -- (2.1,3.0);
-  \fill[amberbr] (2.1,1.02) circle (2.2pt);
-  \node[text=amber, anchor=west] at (2.25,2.85) {epoch 4 --- titik terbaik};
-  \node[text=rose, anchor=west] at (4.2,1.95) {mulai overfitting};
-  \draw[signal, line width=1.2pt] (4.6,-0.55) -- (4.95,-0.55);
-  \node[text=ink3, anchor=west] at (5.0,-0.55) {rugi latih};
-  \draw[rose, line width=1.2pt] (6.5,-0.55) -- (6.85,-0.55);
-  \node[text=ink3, anchor=west] at (6.9,-0.55) {rugi validasi};
-\end{tikzpicture}
-
-}
-\end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Rugi latih turun terus; rugi validasi berbalik naik setelah epoch 4.\par}
-
-\end{minipage}%
-\begin{iquote}
-\quotetext{Setelah epoch keempat, Anda mengoptimalkan berlebihan pada data latih, dan berakhir mempelajari representasi yang khas untuk data latih itu saja -- yang tidak berlaku di luarnya.}\quotecite{Chollet \& Watson, bab 4}
-\end{iquote}
-\end{frame}
-\note{Ini pola yang akan muncul di setiap bab sesudahnya. Latih 20 epoch untuk MELIHAT titik baliknya, lalu latih ulang sampai titik itu.}
-
-\framekicker{Bagian 4.1}
-\begin{frame}[shrink=25]{Hasilnya, dan tolok banding yang harus dikalahkan}
-\begin{minipage}[t]{0.3253\textwidth}
-\istat{88\%}{akurasi uji setelah dilatih ulang 4 epoch}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.3253\textwidth}
-\istat{50\%}{tolok banding acak (kelasnya seimbang)}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.3253\textwidth}
-\istat{16}{unit per lapis antara -- model sengaja kecil}
-\end{minipage}%
-\begin{iquote}
-\quotetext{Tanpa fungsi aktivasi seperti \inlinecode{relu} (disebut juga nonlinearitas), lapis \inlinecode{Dense} hanya terdiri dari dua operasi linear -- hasil kali titik dan penjumlahan. Ruang hipotesis seperti itu terlalu sempit.}\quotecite{Chollet \& Watson, bab 4}
-\end{iquote}
-\begin{iband}[signal]
-\textbf{Crossentropy} datang dari teori informasi: ia mengukur \hilite{jarak antara dua sebaran peluang}. Itulah sebabnya ia pasangan alami bagi keluaran sigmoid dan softmax, dan bukan MSE.
-\end{iband}
+\framekicker{Section 4.1}
+\begin{frame}[shrink=25]{Turning a list of words into a tensor}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}A \inlinecode{Dense} layer needs a fixed-length numeric vector, but reviews have different lengths. Multi-hot encoding solves that by turning each review into a 10,000-long vector of 0s and 1s.\par}\vskip 4pt
+\icode{python}{listing 4.2 --- multi-hot encoding}{listings/ch04-03.py}
+\ioutput{listings/ch04-04.txt}
 \end{frame}
 
-\coursesection{02}{Multikelas: kawat berita Reuters}{46 topik, saling meniadakan.}
-
-\framekicker{Bagian 4.2}
-\begin{frame}[shrink=25]{One-hot atau sparse -- antarmuka beda, hitungannya sama}
-\begin{minipage}[t]{0.485\textwidth}
-\icode{python}{label one-hot}{listings/ch04-04.py}
-
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.485\textwidth}
-\icode{python}{label sparse (bilangan bulat)}{listings/ch04-05.py}
-
-\end{minipage}%
-\icode{python}{listing 4.11 --- model dan metrik top-K}{listings/ch04-06.py}
-\begin{iband}[signal]
-\textbf{Top-K accuracy} menanyakan hal yang berbeda: apakah kelas yang benar ada di antara k tebakan teratas? Untuk 46 kelas, itu ukuran yang \hilite{jauh lebih berguna} bagi sistem yang hanya menyarankan.
-\end{iband}
-\end{frame}
-
-\framekicker{Bagian 4.2}
-\begin{frame}[shrink=25]{Leher botol informasi: percobaan yang sengaja digagalkan}
-\begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.52\textheight}{%
-
-\begin{tikzpicture}[font=\sffamily\tiny,
-  u/.style={draw=signal!60, fill=signal!9, rounded corners=3pt, minimum width=1.1cm,
-            minimum height=0.75cm, text=ink},
-  ar/.style={-{Stealth[length=4pt]}, signal, line width=0.7pt}]
-  \node[text=lime, anchor=west] at (0,1.15) {yang benar};
-  \node[u] (a1) at (0.7,0.55) {\ttfamily 64};
-  \node[u] (a2) at (2.3,0.55) {\ttfamily 64};
-  \node[draw=lime!60, fill=limebr!14, rounded corners=3pt, minimum width=1.2cm,
-        minimum height=0.75cm, text=ink] (a3) at (3.9,0.55) {\ttfamily 46};
-  \draw[ar] (a1) -- (a2); \draw[ar] (a2) -- (a3);
-  \node[text=lime, anchor=west] at (4.7,0.55) {akurasi ${\sim}80\%$};
-
-  \draw[rule] (0,0.0) -- (9.0,0.0);
-
-  \node[text=rose, anchor=west] at (0,-0.4) {leher botol informasi};
-  \node[u] (b1) at (0.7,-1.05) {\ttfamily 64};
-  \node[draw=rose!75, fill=rosebr!18, rounded corners=3pt, minimum width=1.1cm,
-        minimum height=0.32cm, text=ink] (b2) at (2.3,-1.05) {\ttfamily 4};
-  \node[u] (b3) at (3.9,-1.05) {\ttfamily 46};
-  \draw[ar] (b1) -- (b2); \draw[ar] (b2) -- (b3);
-  \node[text=rose, anchor=west] at (4.7,-1.05) {akurasi ${\sim}71\%$ --- turun 8 poin};
-  \node[text=ink3, anchor=west] at (4.7,-1.4) {46 kelas tidak muat diperas ke 4 dimensi};
-\end{tikzpicture}
-
-}
-\end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Lapis 4 unit di tengah memaksa 46 kelas diperas ke 4 dimensi. Turun 8 poin akurasi.\par}
-\begin{iquote}
-\quotetext{Model itu sanggup menjejalkan sebagian besar informasi yang diperlukan ke dalam representasi 4 dimensi -- tetapi tidak semuanya.}\quotecite{Chollet \& Watson, bab 4}
-\end{iquote}
+\framekicker{Section 4.1}
+\begin{frame}[shrink=25]{What that encoding throws away}
 \begin{iband}[amber]
-Aturan praktisnya: \textbf{lapis antara tidak boleh lebih sempit dari jumlah kelas keluaran}. Itulah sebabnya contoh IMDB cukup 16 unit (2 kelas), sementara Reuters butuh 64.
+Multi-hot records \textbf{which words appear}, not \textbf{in what order}. \textit{"good, not bad"} and \textit{"bad, not good"} become \hilite{the identical vector}
+\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}For sentiment on long reviews that turns out to be good enough. Chapters 14 and 15 replace it as soon as word order starts to carry the meaning.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 4.1}
+\begin{frame}[shrink=25]{A deliberately small model}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Two 16-unit hidden layers and a single sigmoid output. The model is kept small on purpose --- the dataset is not large, and chapter 5 explains what happens when it is not.\par}\vskip 4pt
+\icode{python}{listing 4.3 --- the model}{listings/ch04-05.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\inlinecode{relu} zeroes out negatives; \inlinecode{sigmoid} squashes the final score into the interval [0, 1] so it can be read as a probability.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 4.1}
+\begin{frame}[shrink=25]{Why crossentropy and not mean squared error}
+\begin{iquote}
+\quotetext{Crossentropy is a quantity from the field of information theory that measures the distance between probability distributions.}\quotecite{Chollet \& Watson, section 4.1}
+\end{iquote}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The model outputs a \textbf{distribution}; the target is a distribution too. Crossentropy is the natural way to compare them, which is why it pairs with sigmoid and softmax rather than MSE.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 4.1}
+\begin{frame}[shrink=25]{Holding out a validation set, and training long}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Ten thousand samples are set aside. The model is then trained for \textbf{20 epochs --- deliberately too many} --- so the turning point becomes visible.\par}\vskip 4pt
+\icode{python}{listing 4.4--4.5 --- validate and fit}{listings/ch04-06.py}
+\begin{iband}[signal]
+Training past the optimum is not waste here --- it is \hilite{how you find the optimum}. The next slide shows what the curves say.
 \end{iband}
 \end{frame}
-\note{Percobaan gagal ini justru bagian terbaik dari bab 4 --- tunjukkan utuh, jangan lewati. Peserta belajar lebih banyak dari yang gagal.}
 
-\framekicker{Bagian 4.2}
-\begin{frame}[shrink=25]{Melatih ulang di epoch terbaik}
-\icode{python}{listing 4.14 --- model produksi}{listings/ch04-07.py}
+\framekicker{Section 4.1}
+\begin{frame}[shrink=25]{What the two curves do}
+\begin{minipage}[t]{0.485\textwidth}
+\begin{ibullets}
+\item \textbf{Training loss} falls monotonically, epoch after epoch.
+\item \textbf{Validation loss} falls, bottoms out around \textbf{epoch 4}, then \hilite{turns and climbs}.
+\end{ibullets}
+
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.485\textwidth}
+\begin{iband}[amber]
+Everything after epoch 4 makes the model \textbf{better on data it has seen and worse on data it has not}.
+\end{iband}
+
+\end{minipage}%
+\begin{iquote}
+\quotetext{After the fourth epoch, you're overoptimizing on the training data, and you end up learning representations that are specific to the training data and don't generalize to data outside of the training set.}\quotecite{Chollet \& Watson, section 4.1}
+\end{iquote}
+\end{frame}
+\note{This pattern reappears in every later chapter. Train to see the turning point, then retrain to it.}
+
+\framekicker{Section 4.1}
+\begin{frame}[shrink=25]{The procedure, stated once and reused everywhere}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch04-curve.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Overtraining is used as a measuring instrument, then discarded.\par}
+\end{frame}
+
+\framekicker{Section 4.1}
+\begin{frame}[shrink=25]{Retrain to four epochs, and score it once}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}With the turning point known, build a fresh model and stop at exactly that epoch. Only now does the test set get touched.\par}\vskip 4pt
+\icode{python}{the production run}{listings/ch04-07.py}
 \ioutput{listings/ch04-08.txt}
 \begin{minipage}[t]{0.494\textwidth}
-\istat{\textasciitilde{}80\%}{akurasi uji}
+\istat{88\%}{test accuracy after retraining to 4 epochs}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.494\textwidth}
-\istat{\textasciitilde{}19\%}{tolok banding acak -- 46 kelas, sebaran tak rata}
+\istat{50\%}{the random baseline --- the classes are balanced}
+\end{minipage}%
+\end{frame}
+
+\framekicker{Section 4.1}
+\begin{frame}[shrink=25]{Reading a prediction back}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}A binary model returns one number per sample. Turning it into a decision means choosing a threshold --- and that choice belongs to the business, not to the model.\par}\vskip 4pt
+\icode{python}{predicting on new reviews}{listings/ch04-09.py}
+\ioutput{listings/ch04-10.txt}
+\begin{iband}[signal]
+Note the third review at \textbf{0.67} --- confident enough to call positive at a 0.5 threshold, and negative at 0.7. Chapter 6 shows how to set that number \hilite{against a cost, not a habit}
+\end{iband}
+\end{frame}
+
+\coursesection{02}{Multiclass: Reuters newswires}{46 topics, mutually exclusive.}
+
+\framekicker{Section 4.2}
+\begin{frame}[shrink=25]{Same shape of problem, more classes}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}8,982 training and 2,246 test newswires, each belonging to exactly one of 46 topics. The inputs are encoded exactly as before; only the labels and the output layer change.\par}\vskip 4pt
+\icode{python}{listing 4.9 --- loading Reuters}{listings/ch04-11.py}
+\ioutput{listings/ch04-12.txt}
+\end{frame}
+
+\framekicker{Section 4.2}
+\begin{frame}[shrink=25]{Two ways to write the labels}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The same information can be given to Keras in two shapes. The maths is identical; only the interface differs.\par}\vskip 4pt
+\begin{minipage}[t]{0.485\textwidth}
+\icode{python}{one-hot labels}{listings/ch04-13.py}
+
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.485\textwidth}
+\icode{python}{sparse integer labels}{listings/ch04-14.py}
+
 \end{minipage}%
 \begin{iband}[signal]
-Selalu hitung \textbf{tolok banding akal sehat} dulu. Angka 80\% terdengar biasa saja sampai Anda tahu bahwa menebak asal hanya memberi 19\%.
+Pick whichever avoids a conversion. Mixing them up gives a shape error that names the loss function, \hilite{which is the clue to what went wrong}
 \end{iband}
 \end{frame}
 
-\coursesection{03}{Regresi skalar: harga rumah}{Data sedikit. Aturan mainnya berubah.}
+\framekicker{Section 4.2}
+\begin{frame}[shrink=25]{The model, and a metric that asks a better question}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The hidden layers are wider than in the IMDB example --- the next slide explains why --- and a second metric is added.\par}\vskip 4pt
+\icode{python}{listing 4.11 --- model and top-K}{listings/ch04-15.py}
+\begin{iband}[signal]
+\textbf{Top-K accuracy} asks whether the true class is among the top k guesses. For a system that \hilite{suggests rather than decides}, that is often the honest measure.
+\end{iband}
+\end{frame}
 
-\framekicker{Bagian 4.3}
-\begin{frame}[shrink=25]{Normalisasi fitur -- dan jebakan kebocoran data}
-\icode{python}{listing 4.16-4.17 --- muat dan normalkan}{listings/ch04-09.py}
+\framekicker{Section 4.2}
+\begin{frame}[shrink=25]{An experiment designed to fail}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch04-bottleneck.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The same network, except one intermediate layer is squeezed to four units.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The book deliberately builds the broken version to show what an \textbf{information bottleneck} does. Squeezing 46 classes through 4 dimensions loses information \hilite{that no later layer can recover}\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 4.2}
+\begin{frame}[shrink=25]{What the bottleneck costs}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}One line changes: the second hidden layer drops from 64 units to 4. Everything else about the network and the training run is identical.\par}\vskip 4pt
+\icode{python}{listing 4.13 --- the broken model}{listings/ch04-16.py}
+\begin{minipage}[t]{0.494\textwidth}
+\istat{$\approx$ 80\%}{validation accuracy without the bottleneck}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\istat{$\approx$ 71\%}{with it --- nine points gone}
+\end{minipage}%
+\begin{iquote}
+\quotetext{The model is able to cram most of the necessary information into these 4-dimensional representations, but not all of it.}\quotecite{Chollet \& Watson, section 4.2}
+\end{iquote}
+\end{frame}
+
+\framekicker{Section 4.2}
+\begin{frame}[shrink=25]{The sizing rule that follows}
+\begin{iband}[signal]
+\textbf{An intermediate layer should not be narrower than the number of output classes.} That is why IMDB was fine on 16 units (2 classes) and Reuters needs 64.
+\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}It is a floor, not a target. Chapter 5 covers how to find the right size above that floor.\par}\vskip 4pt
+\end{frame}
+\note{The failed experiment is the best part of chapter 4. Show it in full --- people learn more from it than from the working version.}
+
+\framekicker{Section 4.2}
+\begin{frame}[shrink=25]{Retrain, evaluate, and check against the right baseline}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Same procedure as IMDB: the curve turns at epoch 9, so a fresh model is trained to exactly nine epochs.\par}\vskip 4pt
+\icode{python}{listing 4.14 --- production model}{listings/ch04-17.py}
+\ioutput{listings/ch04-18.txt}
+\begin{iband}[signal]
+80\% sounds unremarkable until you know the baseline: guessing according to the class frequencies gets about \textbf{19\%}, because the 46 classes are \hilite{far from evenly distributed}
+\end{iband}
+\end{frame}
+
+\framekicker{Section 4.2}
+\begin{frame}[shrink=25]{Where the remaining 20\% goes}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Roughly one newswire in five is misfiled. Looking at the confusion between classes tells you whether that matters.\par}\vskip 4pt
+\icode{python}{inspecting the errors}{listings/ch04-19.py}
+\ioutput{listings/ch04-20.txt}
+\begin{iband}[amber]
+Class 3 alone accounts for \textbf{813 of 2,246} test samples. That imbalance is why the honest baseline is 19\% rather than 1/46 --- and why \hilite{accuracy alone is a thin way to describe this model}
+\end{iband}
+\end{frame}
+
+\coursesection{03}{Scalar regression: house prices}{Very little data. The rules change.}
+
+\framekicker{Section 4.3}
+\begin{frame}[shrink=25]{480 training samples, eight features}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}A small extract of the 1990 California census: 480 training and 120 test districts, each described by eight numeric features, with median house price as the target.\par}\vskip 4pt
+\icode{python}{listing 4.16 --- loading the data}{listings/ch04-21.py}
+\ioutput{listings/ch04-22.txt}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Features: longitude, latitude, median house age, population, households, median income, total rooms, total bedrooms.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 4.3}
+\begin{frame}[shrink=25]{Normalisation --- and the leak hiding in it}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The features live on wildly different scales, which destabilises optimisation. Each is centred and scaled --- but look carefully at which statistics are used.\par}\vskip 4pt
+\icode{python}{listing 4.17 --- normalising}{listings/ch04-23.py}
 \begin{iband}[rose]
-Baris \inlinecode{x\_test = (test\_data - mean) / std} memakai \inlinecode{mean} dan \inlinecode{std} dari data \textbf{latih}. Menghitung ulang dari data uji adalah \hilite{kebocoran informasi}: model jadi tahu sesuatu tentang data yang seharusnya belum pernah dilihatnya. Bab 5 menamainya secara resmi.
+Recomputing \inlinecode{mean} and \inlinecode{std} from the test data would be an \hilite{information leak}: the model would know something about data it is supposed never to have seen. Chapter 5 gives this its formal name.
 \end{iband}
-\begin{ibullets}
-\item 8 fitur: bujur, lintang, umur rumah, populasi, jumlah rumah tangga, penghasilan median, total kamar, total kamar tidur.
-\item Target: harga rumah median, kontinu, kira-kira \$60 ribu sampai \$500 ribu.
-\item Rentang tiap fitur berbeda jauh; tanpa normalisasi \hilite{optimalisasi jadi kacau}.
-\end{ibullets}
 \end{frame}
 
-\framekicker{Bagian 4.3}
-\begin{frame}[shrink=25]{Model regresi: keluaran tanpa aktivasi}
-\icode{python}{listing 4.18}{listings/ch04-10.py}
+\framekicker{Section 4.3}
+\begin{frame}[shrink=25]{Which statistics may touch which data}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch04-leak.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The rule in one picture: statistics flow outward from the training set only.\par}
+\end{frame}
+
+\framekicker{Section 4.3}
+\begin{frame}[shrink=25]{A regression head has no activation}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Three design choices here differ from the classifiers, and each follows from the task or the data size.\par}\vskip 4pt
+\icode{python}{listing 4.18 --- the model}{listings/ch04-24.py}
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardaccent}
-\cardh{Tanpa aktivasi keluaran}
-Sigmoid akan mengurung tebakan ke [0,1]. Regresi harus bebas.
+\cardh{No output activation}
+A sigmoid would trap predictions in [0, 1]. Regression must be free.
 \end{icardaccent}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardwarn}
-\cardh{Model sengaja kecil}
-480 sampel saja. Model besar akan langsung menghafalnya.
+\cardh{A small model}
+480 samples. A large model would simply memorise them.
 \end{icardwarn}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardaccent}
-\cardh{MSE untuk rugi, MAE untuk metrik}
-MAE bisa dibaca manusia: MAE 0,5 $\approx$ meleset \$50 ribu.
+\cardh{MSE to train, MAE to read}
+MAE is human-readable: 0.5 means being off by about \$50,000.
 \end{icardaccent}
 \end{minipage}%
 \end{frame}
 
-\framekicker{Bagian 4.3}
-\begin{frame}[shrink=25]{Validasi silang K-lipat, karena datanya sedikit}
+\framekicker{Section 4.3}
+\begin{frame}[shrink=25]{With this little data, one validation split is not enough}
 \begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.52\textheight}{%
-
-\begin{tikzpicture}[font=\sffamily\tiny,
-  tr/.style={draw=rule, fill=papertint, rounded corners=2pt,
-             minimum width=1.55cm, minimum height=0.34cm},
-  va/.style={draw=signal!70, fill=signal!22, rounded corners=2pt,
-             minimum width=1.55cm, minimum height=0.34cm}]
-  \node[text=ink3, anchor=west] at (0,1.65) {data latih dibagi 4; tiap lipatan sekali jadi validasi};
-  \foreach \r/\v in {0/1, 1/2, 2/3, 3/4} {
-    \node[text=ink3, anchor=west, font=\ttfamily\tiny] at (0,{1.15-\r*0.46}) {lipat \v};
-    \foreach \c in {1,2,3,4} {
-      \pgfmathparse{int(\c==\v)}
-      \ifnum\pgfmathresult=1
-        \node[va] at ({0.9+\c*1.62},{1.15-\r*0.46}) {};
-      \else
-        \node[tr] at ({0.9+\c*1.62},{1.15-\r*0.46}) {};
-      \fi
-    }
-    \node[text=ink3, anchor=west] at (8.0,{1.15-\r*0.46}) {skor \v};
-  }
-  \node[draw=lime!50, fill=limebr!8, rounded corners=3pt, minimum width=6.5cm,
-        minimum height=0.36cm, text=lime] at (4.75,-0.85) {skor akhir = rerata keempatnya};
-\end{tikzpicture}
-
-}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch04-kfold.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Dengan 480 sampel, satu belahan validasi tunggal terlalu berisik -- skornya bergantung pada belahan mana yang kebetulan terpilih.\par}
-\icode{python}{listing 4.19 --- inti gelung K-lipat}{listings/ch04-11.py}
-\ioutput{listings/ch04-12.txt}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Each quarter takes a turn as the validation set; the four scores are averaged.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}With 480 samples, a single split of, say, 120 is small enough that the score depends heavily on \hilite{which 120 you happen to draw}\par}\vskip 4pt
 \end{frame}
 
-\framekicker{Bagian 4.3}
-\begin{frame}[shrink=25]{Berapa lama melatihnya? Tanya kurvanya}
-\icode{python}{listing 4.20 --- rerata kurva MAE}{listings/ch04-13.py}
-\begin{minipage}[t]{0.485\textwidth}
-\begin{iband}[signal]
-MAE validasi \hilite{mendatar di sekitar epoch 120-140}, lalu mulai memburuk. Itulah titik berhentinya.
-\end{iband}
-\icode{python}{model akhir}{listings/ch04-14.py}
+\framekicker{Section 4.3}
+\begin{frame}[shrink=25]{K-fold, written out}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The loop below carves out fold \textit{i}, trains a \textbf{brand-new} model on the rest, and records its validation MAE.\par}\vskip 4pt
+\icode{python}{listing 4.19 --- the K-fold loop}{listings/ch04-25.py}
+\ioutput{listings/ch04-26.txt}
+\end{frame}
 
+\framekicker{Section 4.3}
+\begin{frame}[shrink=25]{The spread is the point}
+\begin{iband}[amber]
+The four folds scored \textbf{0.232 to 0.349} --- a spread of nearly 50\% of the smallest value. Any single split would have reported one of those numbers and \hilite{told you nothing about the other three}
+\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}That variance is exactly why K-fold exists, and why it is worth four times the compute on a dataset this size.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 4.3}
+\begin{frame}[shrink=25]{How long to train? Average the curves}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Run the folds again for 200 epochs, keep the per-epoch validation MAE from each, and average them into one curve.\par}\vskip 4pt
+\icode{python}{listing 4.20 --- averaging MAE curves}{listings/ch04-27.py}
+\begin{iband}[signal]
+The averaged curve flattens around \textbf{epoch 120--140} and worsens after. \hilite{That is the stopping point}, and it is far more trustworthy than any single fold's curve.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 4.3}
+\begin{frame}[shrink=25]{The final model, and what its error means}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Train once more on all the training data, to the epoch the averaged curve identified, then evaluate on the test set.\par}\vskip 4pt
+\icode{python}{the production model}{listings/ch04-28.py}
+\ioutput{listings/ch04-29.txt}
+\begin{minipage}[t]{0.494\textwidth}
+\istat{$\approx$ \$31,000}{average error, at the 100k scaling}
 \end{minipage}%
 \hfill
-\begin{minipage}[t]{0.485\textwidth}
-\begin{minipage}[t]{1.0\textwidth}
-\istat{\textasciitilde{}0,31}{MAE uji akhir -- meleset sekitar \$31.000}
-\end{minipage}%
-
-
-\vskip 4pt
-
-\begin{minipage}[t]{1.0\textwidth}
-\istat{2,83}{contoh tebakan pertama $\rightarrow$ sekitar \$283.000}
-\end{minipage}%
-
+\begin{minipage}[t]{0.494\textwidth}
+\istat{$\approx$ \$283,000}{what a prediction of 2.83 means}
 \end{minipage}%
 \end{frame}
 
-\framekicker{Ringkasan}
-\begin{frame}[shrink=25]{Tabel yang akan Anda pakai terus}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.2632\textwidth}>{\raggedright\arraybackslash}p{0.2256\textwidth}>{\raggedright\arraybackslash}p{0.282\textwidth}>{\raggedright\arraybackslash}p{0.1692\textwidth}}
-\thead{Jenis tugas} & \thead{Aktivasi lapis akhir} & \thead{Fungsi rugi} & \thead{Metrik lazim} \\ \midrule
-Klasifikasi \textbf{biner} & \inlinecode{sigmoid} (1 unit) & \inlinecode{binary\_crossentropy} & accuracy \\
-\textbf{Multikelas}, label one-hot & \inlinecode{softmax} (N unit) & \inlinecode{categorical\_crossentropy} & accuracy, top-K \\
-\textbf{Multikelas}, label bulat & \inlinecode{softmax} (N unit) & \inlinecode{sparse\_categorical\_crossentropy} & accuracy \\
-\textbf{Multilabel} & \inlinecode{sigmoid} (N unit) & \inlinecode{binary\_crossentropy} & accuracy, AUC \\
-\textbf{Regresi} skalar & tanpa aktivasi (1 unit) & \inlinecode{mean\_squared\_error} & MAE \\
+\framekicker{Across all three examples}
+\begin{frame}[shrink=25]{Why every model here was kept small}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.188\textwidth}>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.3384\textwidth}}
+\thead{Example} & \thead{Training samples} & \thead{Hidden layers} & \thead{Reasoning} \\ \midrule
+IMDB & 15,000 & 2 $\times$ 16 units & Two classes, so 16 units is comfortably above the floor. \\
+Reuters & 8,982 & 2 $\times$ 64 units & 46 classes: anything much narrower becomes a bottleneck. \\
+Housing & 480 & 2 $\times$ 64 units & Tiny dataset --- a larger model would memorise it outright. \\
 \end{itable}
+\begin{iband}[signal]
+The rule pulls in two directions at once: \textbf{wide enough not to bottleneck the classes, small enough not to memorise the samples}. Chapter 5 turns that tension into a method.
+\end{iband}
+\end{frame}
+
+\framekicker{Across all three examples}
+\begin{frame}[shrink=25]{Four ways these workflows go wrong}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardbad}
+\cardh{Training to a fixed epoch count}
+Picking 20 epochs because a tutorial did. The turning point is a property of \textbf{your} data and has to be measured.
+\end{icardbad}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardbad}
+\cardh{Reusing a trained model across folds}
+\inlinecode{get\_model()} must be called \textbf{inside} the K-fold loop. Reusing one carries knowledge between folds and voids the score.
+\end{icardbad}
+\end{minipage}%
+
+
+\vskip 4pt
+
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardbad}
+\cardh{Normalising with test statistics}
+An information leak, and it inflates your score in a way you will not discover until production.
+\end{icardbad}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardbad}
+\cardh{Reporting accuracy with no baseline}
+80\% is excellent against 19\% and poor against 90\%. The number alone says nothing.
+\end{icardbad}
+\end{minipage}%
+\end{frame}
+\note{Every one of these shows up in the group assignments. Naming them now saves a lot of rework later.}
+
+\framekicker{Summary}
+\begin{frame}[shrink=25]{The table you will keep coming back to}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2632\textwidth}>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.3008\textwidth}>{\raggedright\arraybackslash}p{0.1692\textwidth}}
+\thead{Task} & \thead{Last-layer activation} & \thead{Loss function} & \thead{Typical metrics} \\ \midrule
+\textbf{Binary} classification & \inlinecode{sigmoid} (1 unit) & \inlinecode{binary\_crossentropy} & accuracy, ROC AUC \\
+\textbf{Multiclass}, one-hot labels & \inlinecode{softmax} (N units) & \inlinecode{categorical\_crossentropy} & accuracy, top-K \\
+\textbf{Multiclass}, integer labels & \inlinecode{softmax} (N units) & \inlinecode{sparse\_categorical\_crossentropy} & accuracy \\
+\textbf{Multilabel} & \inlinecode{sigmoid} (N units) & \inlinecode{binary\_crossentropy} & accuracy, ROC AUC \\
+\textbf{Scalar regression} & none (1 unit) & \inlinecode{mean\_squared\_error} & MAE \\
+\end{itable}
+\end{frame}
+
+\framekicker{Summary}
+\begin{frame}[shrink=25]{What has to survive this chapter}
 \begin{isteps}
-\item Vektorkan data diskret; \textbf{normalkan fitur dengan statistik data latih}.
-\item Lapis antara \hilite{tidak boleh lebih sempit dari jumlah kelas} -- leher botol.
-\item Data sedikit $\rightarrow$ model kecil, satu atau dua lapis antara.
-\item Latih sampai overfit untuk \textbf{melihat} titik baliknya, lalu latih ulang sampai titik itu.
-\item Data sedikit $\rightarrow$ \textbf{K-lipat}, bukan satu belahan validasi.
+\item \textbf{Vectorise} discrete data; \textbf{normalise features using training-set statistics only}.
+\item \textbf{Intermediate layers must not be narrower than the class count} --- otherwise you build an information bottleneck.
+\item \textbf{Little data $\rightarrow$ a small model}, one or two hidden layers.
+\item \textbf{Train until it overfits to find the turning point}, then retrain to exactly that epoch.
+\item \textbf{Little data $\rightarrow$ K-fold}, not a single validation split --- and read the spread, not just the mean.
+\item Always compare against a \textbf{common-sense baseline} before deciding a score is good.
 \end{isteps}
 \vskip 4pt
-\reslink{NOTEBOOK}{01\_imdb\_klasifikasi\_biner.ipynb}{../../course-slides/notebooks/ch04/01\_imdb\_klasifikasi\_biner.ipynb}
-\reslink{BAB BERIKUT}{Bab 5 --- Dasar machine learning}{../ch05/index.html}
+\reslink{NOTEBOOK}{01\_imdb\_binary\_classification.ipynb}{../../course-slides/notebooks/ch04/01\_imdb\_binary\_classification.ipynb}
+\reslink{NEXT}{Chapter 5 --- Fundamentals of machine learning}{../ch05/index.html}
 \vskip 2pt
 \end{frame}
 

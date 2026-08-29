@@ -11,5 +11,17 @@
  "ch02-loop4": "74ca82c1c8c62ca6",
  "ch02-pipeline": "4610b50c9ed16317",
  "ch02-ranks": "03caa8bff982ea04",
- "ch02-scratch": "cf73b924c67f7992"
+ "ch02-scratch": "cf73b924c67f7992",
+ "ch03-choose": "63ea1ee6486cdd5e",
+ "ch03-gradstyle": "ce56f54970a53a2e",
+ "ch03-layerlife": "53115ba4ffcf59dd",
+ "ch03-stack": "2940f46cf528b037",
+ "ch03-timeline": "ba52414d6f1fa8a7",
+ "ch03-valsplit": "27526cb0b2ab95e3",
+ "ch04-bottleneck": "ac3999a4b7267bae",
+ "ch04-curve": "c992745bae2898f1",
+ "ch04-heads": "d7077c4f713be757",
+ "ch04-kfold": "b37e354516b4ca5a",
+ "ch04-leak": "fdee4877c7395378",
+ "ch04-workflow": "cb5e02e98af44083"
 }

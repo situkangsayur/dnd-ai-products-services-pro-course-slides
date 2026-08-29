@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Bab 4 — Classification and regression.
+"""Chapter 4 — Classification and regression.
 
-Sumber: Chollet & Watson, *Deep Learning with Python*, 3rd ed., bab 4.
-https://deeplearningwithpython.io/chapters/chapter04_classification-and-regression
+Source: Chollet & Watson, *Deep Learning with Python*, 3rd ed., chapter 4
+(pp. 105-135), read from the book PDF.
 
-Tiga contoh lengkap: IMDB (biner), Reuters (multikelas), California Housing
-(regresi skalar). Angka hasil mengikuti naskah bab; yang berayun antar-jalan
-ditandai apa adanya.
+Three complete worked examples: IMDB (binary), Reuters (multiclass), and
+California Housing (scalar regression). The reported numbers are the book's;
+where a figure moves between runs the slide says so.
 """
 
 import sys, os
@@ -15,296 +15,200 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
 
 
-SVG_OVERFIT = """
-<svg viewBox="0 0 760 260" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="Kurva rugi latih menurun terus, rugi validasi berbalik naik setelah epoch 4">
-  <!-- sumbu -->
-  <line x1="70" y1="212" x2="700" y2="212" stroke="rgba(140,190,255,.35)" stroke-width="1.2"/>
-  <line x1="70" y1="26"  x2="70"  y2="212" stroke="rgba(140,190,255,.35)" stroke-width="1.2"/>
-  <text class="d-sm" x="385" y="240" text-anchor="middle" fill="#7E93B4">epoch</text>
-  <text class="d-sm" x="24"  y="120" fill="#7E93B4" transform="rotate(-90 24 120)">rugi</text>
-
-  <!-- gridlines -->
-  <g stroke="rgba(140,190,255,.10)" stroke-width="1">
-    <line x1="70" y1="166" x2="700" y2="166"/>
-    <line x1="70" y1="120" x2="700" y2="120"/>
-    <line x1="70" y1="74"  x2="700" y2="74"/>
-  </g>
-
-  <!-- rugi latih: turun monoton -->
-  <path d="M70,52 C160,104 250,146 340,170 C430,188 520,198 700,204"
-        fill="none" stroke="#22D3EE" stroke-width="2.4"/>
-  <!-- rugi validasi: turun lalu naik -->
-  <path d="M70,66 C130,110 180,138 226,146 C300,158 420,182 700,206"
-        fill="none" stroke="#FB7185" stroke-width="2.4"
-        transform="translate(0,0)"/>
-  <path d="M226,146 C320,136 460,104 700,54"
-        fill="none" stroke="#FB7185" stroke-width="2.4"/>
-
-  <!-- titik balik -->
-  <line x1="226" y1="26" x2="226" y2="212"
-        stroke="rgba(245,179,1,.7)" stroke-width="1.4" stroke-dasharray="5 4"/>
-  <circle cx="226" cy="146" r="5" fill="#F5B301"/>
-  <text class="d-sm" x="236" y="44" fill="#F5B301">epoch 4 &#8212; titik terbaik</text>
-
-  <!-- legenda -->
-  <rect x="470" y="220" width="16" height="3" fill="#22D3EE"/>
-  <text class="d-sm" x="494" y="226">rugi latih</text>
-  <rect x="580" y="220" width="16" height="3" fill="#FB7185"/>
-  <text class="d-sm" x="604" y="226">rugi validasi</text>
-
-  <text class="d-sm" x="360" y="96" fill="#FB7185">mulai overfitting</text>
-</svg>
+MMD_WORKFLOW = """
+flowchart LR
+  A["Raw data"] --> B["Vectorise<br/>multi-hot / normalise"]
+  B --> C["Split off<br/>validation"]
+  C --> D["Train long enough<br/>to overfit"]
+  D --> E["Read the curve<br/>find the turning point"]
+  E --> F["Retrain to that<br/>epoch only"]
+  F --> G["Evaluate once<br/>on the test set"]
 """
 
-TIKZ_OVERFIT = r"""
-\begin{tikzpicture}[font=\sffamily\tiny]
-  \draw[rule, line width=0.8pt] (0,0) -- (8.6,0);
-  \draw[rule, line width=0.8pt] (0,0) -- (0,3.0);
-  \node[text=ink3, anchor=north] at (4.3,-0.15) {epoch};
-  \node[text=ink3, rotate=90, anchor=south] at (-0.35,1.5) {rugi};
-  \draw[signal, line width=1.2pt]
-    (0,2.6) .. controls (1.2,1.7) and (2.4,1.05) .. (4.0,0.62)
-            .. controls (5.6,0.35) and (7.0,0.22) .. (8.6,0.15);
-  \draw[rose, line width=1.2pt]
-    (0,2.4) .. controls (0.8,1.6) and (1.5,1.15) .. (2.1,1.02);
-  \draw[rose, line width=1.2pt]
-    (2.1,1.02) .. controls (3.6,1.25) and (5.8,1.95) .. (8.6,2.75);
-  \draw[amberbr, line width=0.9pt, dashed] (2.1,0) -- (2.1,3.0);
-  \fill[amberbr] (2.1,1.02) circle (2.2pt);
-  \node[text=amber, anchor=west] at (2.25,2.85) {epoch 4 --- titik terbaik};
-  \node[text=rose, anchor=west] at (4.2,1.95) {mulai overfitting};
-  \draw[signal, line width=1.2pt] (4.6,-0.55) -- (4.95,-0.55);
-  \node[text=ink3, anchor=west] at (5.0,-0.55) {rugi latih};
-  \draw[rose, line width=1.2pt] (6.5,-0.55) -- (6.85,-0.55);
-  \node[text=ink3, anchor=west] at (6.9,-0.55) {rugi validasi};
-\end{tikzpicture}
+MMD_BOTTLENECK = """
+flowchart LR
+  subgraph OK["What works"]
+    direction LR
+    A1["Dense 64"] --> A2["Dense 64"] --> A3["Dense 46<br/>softmax"]
+  end
+  subgraph BAD["Information bottleneck"]
+    direction LR
+    B1["Dense 64"] --> B2["Dense 4"] --> B3["Dense 46<br/>softmax"]
+  end
+  OK ~~~ BAD
 """
 
-SVG_BOTTLENECK = """
-<svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="Lapis 4 unit menjadi leher botol informasi di antara 64 dan 46">
-  <defs>
-    <marker id="bn" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
-      <path d="M0,0 L9,4.5 L0,9 z" fill="rgba(34,211,238,.75)"/>
-    </marker>
-  </defs>
-
-  <text class="d-sm" x="20" y="22" fill="#7BD949">yang benar</text>
-  <rect class="d-box-a" x="20"  y="34" width="76" height="48" rx="8"/>
-  <text class="d-mono" x="58" y="63" text-anchor="middle">64</text>
-  <rect class="d-box-a" x="128" y="34" width="76" height="48" rx="8"/>
-  <text class="d-mono" x="166" y="63" text-anchor="middle">64</text>
-  <rect x="236" y="34" width="86" height="48" rx="8"
-        fill="rgba(123,217,73,.14)" stroke="rgba(123,217,73,.6)" stroke-width="1.4"/>
-  <text class="d-mono" x="279" y="63" text-anchor="middle">46</text>
-  <path class="d-arrow" d="M96,58 L124,58"  marker-end="url(#bn)"/>
-  <path class="d-arrow" d="M204,58 L232,58" marker-end="url(#bn)"/>
-  <text class="d-sm" x="342" y="63" fill="#7BD949">akurasi ~80%</text>
-
-  <line x1="20" y1="106" x2="740" y2="106" stroke="rgba(140,190,255,.2)" stroke-width="1"/>
-
-  <text class="d-sm" x="20" y="132" fill="#FB7185">leher botol informasi</text>
-  <rect class="d-box" x="20"  y="144" width="76" height="44" rx="8"/>
-  <text class="d-mono" x="58" y="171" text-anchor="middle">64</text>
-  <rect x="128" y="156" width="76" height="20" rx="6"
-        fill="rgba(251,113,133,.18)" stroke="rgba(251,113,133,.75)" stroke-width="1.5"/>
-  <text class="d-mono" x="166" y="171" text-anchor="middle" fill="#FB7185">4</text>
-  <rect class="d-box" x="236" y="144" width="86" height="44" rx="8"/>
-  <text class="d-mono" x="279" y="171" text-anchor="middle">46</text>
-  <path class="d-arrow" d="M96,166 L124,166"  marker-end="url(#bn)"/>
-  <path class="d-arrow" d="M204,166 L232,166" marker-end="url(#bn)"/>
-  <text class="d-sm" x="342" y="171" fill="#FB7185">akurasi ~71% &#8212; turun 8 poin</text>
-  <text class="d-sm" x="342" y="189" fill="#7E93B4">
-    46 kelas tidak muat diperas ke 4 dimensi
-  </text>
-</svg>
+MMD_KFOLD = """
+flowchart TB
+  D["Training data<br/>split into 4 folds"]
+  F1["Fold 1<br/>validate on part 1"]
+  F2["Fold 2<br/>validate on part 2"]
+  F3["Fold 3<br/>validate on part 3"]
+  F4["Fold 4<br/>validate on part 4"]
+  AVG["Final score<br/>average of the four"]
+  D --> F1 --> AVG
+  D --> F2 --> AVG
+  D --> F3 --> AVG
+  D --> F4 --> AVG
 """
 
-TIKZ_BOTTLENECK = r"""
-\begin{tikzpicture}[font=\sffamily\tiny,
-  u/.style={draw=signal!60, fill=signal!9, rounded corners=3pt, minimum width=1.1cm,
-            minimum height=0.75cm, text=ink},
-  ar/.style={-{Stealth[length=4pt]}, signal, line width=0.7pt}]
-  \node[text=lime, anchor=west] at (0,1.15) {yang benar};
-  \node[u] (a1) at (0.7,0.55) {\ttfamily 64};
-  \node[u] (a2) at (2.3,0.55) {\ttfamily 64};
-  \node[draw=lime!60, fill=limebr!14, rounded corners=3pt, minimum width=1.2cm,
-        minimum height=0.75cm, text=ink] (a3) at (3.9,0.55) {\ttfamily 46};
-  \draw[ar] (a1) -- (a2); \draw[ar] (a2) -- (a3);
-  \node[text=lime, anchor=west] at (4.7,0.55) {akurasi ${\sim}80\%$};
-
-  \draw[rule] (0,0.0) -- (9.0,0.0);
-
-  \node[text=rose, anchor=west] at (0,-0.4) {leher botol informasi};
-  \node[u] (b1) at (0.7,-1.05) {\ttfamily 64};
-  \node[draw=rose!75, fill=rosebr!18, rounded corners=3pt, minimum width=1.1cm,
-        minimum height=0.32cm, text=ink] (b2) at (2.3,-1.05) {\ttfamily 4};
-  \node[u] (b3) at (3.9,-1.05) {\ttfamily 46};
-  \draw[ar] (b1) -- (b2); \draw[ar] (b2) -- (b3);
-  \node[text=rose, anchor=west] at (4.7,-1.05) {akurasi ${\sim}71\%$ --- turun 8 poin};
-  \node[text=ink3, anchor=west] at (4.7,-1.4) {46 kelas tidak muat diperas ke 4 dimensi};
-\end{tikzpicture}
-"""
-
-SVG_KFOLD = """
-<svg viewBox="0 0 760 210" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="Validasi silang K-lipat dengan K sama dengan 4">
-  <text class="d-sm" x="20" y="20" fill="#7E93B4">
-    data latih dibagi 4; tiap lipatan sekali jadi validasi
-  </text>
-  <g>
-    <text class="d-mono" x="20" y="56" fill="#7E93B4">lipat 1</text>
-    <rect x="90"  y="40" width="140" height="22" rx="5" fill="rgba(34,211,238,.20)" stroke="rgba(34,211,238,.7)"/>
-    <rect x="234" y="40" width="140" height="22" rx="5" class="d-box"/>
-    <rect x="378" y="40" width="140" height="22" rx="5" class="d-box"/>
-    <rect x="522" y="40" width="140" height="22" rx="5" class="d-box"/>
-    <text class="d-sm" x="678" y="56">skor 1</text>
-  </g>
-  <g>
-    <text class="d-mono" x="20" y="92" fill="#7E93B4">lipat 2</text>
-    <rect x="90"  y="76" width="140" height="22" rx="5" class="d-box"/>
-    <rect x="234" y="76" width="140" height="22" rx="5" fill="rgba(34,211,238,.20)" stroke="rgba(34,211,238,.7)"/>
-    <rect x="378" y="76" width="140" height="22" rx="5" class="d-box"/>
-    <rect x="522" y="76" width="140" height="22" rx="5" class="d-box"/>
-    <text class="d-sm" x="678" y="92">skor 2</text>
-  </g>
-  <g>
-    <text class="d-mono" x="20" y="128" fill="#7E93B4">lipat 3</text>
-    <rect x="90"  y="112" width="140" height="22" rx="5" class="d-box"/>
-    <rect x="234" y="112" width="140" height="22" rx="5" class="d-box"/>
-    <rect x="378" y="112" width="140" height="22" rx="5" fill="rgba(34,211,238,.20)" stroke="rgba(34,211,238,.7)"/>
-    <rect x="522" y="112" width="140" height="22" rx="5" class="d-box"/>
-    <text class="d-sm" x="678" y="128">skor 3</text>
-  </g>
-  <g>
-    <text class="d-mono" x="20" y="164" fill="#7E93B4">lipat 4</text>
-    <rect x="90"  y="148" width="140" height="22" rx="5" class="d-box"/>
-    <rect x="234" y="148" width="140" height="22" rx="5" class="d-box"/>
-    <rect x="378" y="148" width="140" height="22" rx="5" class="d-box"/>
-    <rect x="522" y="148" width="140" height="22" rx="5" fill="rgba(34,211,238,.20)" stroke="rgba(34,211,238,.7)"/>
-    <text class="d-sm" x="678" y="164">skor 4</text>
-  </g>
-  <rect x="90" y="180" width="572" height="22" rx="6"
-        fill="rgba(123,217,73,.10)" stroke="rgba(123,217,73,.5)"/>
-  <text class="d-sm" x="376" y="196" text-anchor="middle" fill="#7BD949">
-    skor akhir = rerata keempatnya
-  </text>
-</svg>
-"""
-
-TIKZ_KFOLD = r"""
-\begin{tikzpicture}[font=\sffamily\tiny,
-  tr/.style={draw=rule, fill=papertint, rounded corners=2pt,
-             minimum width=1.55cm, minimum height=0.34cm},
-  va/.style={draw=signal!70, fill=signal!22, rounded corners=2pt,
-             minimum width=1.55cm, minimum height=0.34cm}]
-  \node[text=ink3, anchor=west] at (0,1.65) {data latih dibagi 4; tiap lipatan sekali jadi validasi};
-  \foreach \r/\v in {0/1, 1/2, 2/3, 3/4} {
-    \node[text=ink3, anchor=west, font=\ttfamily\tiny] at (0,{1.15-\r*0.46}) {lipat \v};
-    \foreach \c in {1,2,3,4} {
-      \pgfmathparse{int(\c==\v)}
-      \ifnum\pgfmathresult=1
-        \node[va] at ({0.9+\c*1.62},{1.15-\r*0.46}) {};
-      \else
-        \node[tr] at ({0.9+\c*1.62},{1.15-\r*0.46}) {};
-      \fi
-    }
-    \node[text=ink3, anchor=west] at (8.0,{1.15-\r*0.46}) {skor \v};
-  }
-  \node[draw=lime!50, fill=limebr!8, rounded corners=3pt, minimum width=6.5cm,
-        minimum height=0.36cm, text=lime] at (4.75,-0.85) {skor akhir = rerata keempatnya};
-\end{tikzpicture}
+MMD_HEADS = """
+flowchart TB
+  T1["Binary<br/>2 classes"] --> H1["1 unit<br/>sigmoid"]
+  T2["Multiclass<br/>N classes, one label"] --> H2["N units<br/>softmax"]
+  T3["Multilabel<br/>N classes, many labels"] --> H3["N units<br/>sigmoid"]
+  T4["Scalar regression"] --> H4["1 unit<br/>no activation"]
 """
 
 
-NB = ["01_imdb_klasifikasi_biner.ipynb", "02_reuters_multikelas.ipynb",
-      "03_regresi_harga_rumah.ipynb"]
+MMD_CURVE = """
+flowchart LR
+  E1["Epochs 1-4<br/>both losses fall"] --> E2["Epoch 4<br/><b>turning point</b>"]
+  E2 --> E3["Epochs 5-20<br/>training loss keeps falling,<br/>validation loss climbs"]
+  E3 --> ACT["Retrain a fresh model<br/>for 4 epochs only"]
+"""
+
+MMD_LEAK = """
+flowchart TB
+  OK["mean, std from<br/>TRAINING data"] --> A1["apply to training set"]
+  OK --> A2["apply to test set"]
+  BAD["mean, std from<br/>the TEST set"] --> B1["information leak:<br/>the model learns something<br/>about data it must not see"]
+"""
+
+NB = ["01_imdb_binary_classification.ipynb", "02_reuters_multiclass.ipynb",
+      "03_housing_regression.ipynb"]
 
 DECK = {
     "id": "ch04",
     "kind": "chapter",
     "number": 4,
-    "title": "Klasifikasi dan Regresi",
-    "subtitle": "Tiga alur kerja lengkap -- biner, multikelas, dan regresi skalar -- "
-                "beserta aturan pilih loss dan aktivasi yang dipakai sisa buku ini.",
-    "source": "Chollet & Watson, Deep Learning with Python 3e -- bab 4",
+    "title": "Classification and Regression",
+    "subtitle": "Three complete workflows — binary, multiclass, and scalar "
+                "regression — and the rules for choosing a loss and an output "
+                "activation that the rest of the book relies on.",
+    "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 4",
     "source_url": chapter_url(4),
-    "duration": "3 jam (2 sesi)",
-    "presenter": {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Asisten Pengajar"},
+    "duration": "3 hours (2 sessions)",
+    "presenter": {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
     "resources": chapter_resources(4, local_notebooks=NB),
     "objectives": [
-        "Memilih **aktivasi keluaran dan fungsi rugi** yang benar untuk klasifikasi "
-        "biner, multikelas, dan regresi -- tanpa menebak.",
-        "Menyiapkan data teks dengan **multi-hot encoding**, dan label dengan "
-        "**one-hot** atau **sparse**.",
-        "Membaca **kurva rugi validasi** untuk menemukan titik berhenti terbaik, "
-        "lalu melatih ulang sampai epoch itu saja.",
-        "Mengenali **leher botol informasi** dan menaksir ukuran lapis antara "
-        "dari banyaknya kelas.",
-        "Menormalkan fitur dengan **statistik data latih**, dan menilai model "
-        "berdata sedikit dengan **validasi silang K-lipat**.",
+        "Choose the correct **output activation and loss function** for binary, "
+        "multiclass, and regression tasks — without guessing.",
+        "Prepare text with **multi-hot encoding**, and labels as either **one-hot** "
+        "or **sparse integers**.",
+        "Read a **validation loss curve** to find the best stopping point, then "
+        "retrain to exactly that point.",
+        "Recognise an **information bottleneck** and size intermediate layers from "
+        "the number of classes.",
+        "Normalise features using **training-set statistics only**, and evaluate a "
+        "small-data model with **K-fold cross-validation**.",
     ],
     "slides": [
         {"type": "title"},
 
         {
             "type": "slide",
-            "kicker": "Kosakata",
-            "title": "Dua belas istilah yang dipakai sampai bab 20",
+            "kicker": "Roadmap",
+            "title": "The same six steps, three times over",
+            "blocks": [
+                {"t": "mmd", "id": "ch04-workflow", "src": MMD_WORKFLOW,
+                 "cap": "Every example in this chapter follows this path. By the third one "
+                        "it should feel routine."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Vocabulary",
+            "title": "Terms used precisely from here to chapter 20",
             "blocks": [
                 {"t": "cols", "ratio": "1-1", "cols": [
                     [
                         {"t": "table",
-                         "head": ["Istilah", "Artinya"],
-                         "widths": [30, 70],
+                         "head": ["Term", "Meaning"],
+                         "widths": [32, 68],
                          "rows": [
-                             ["**Sample / input**", "Satu titik data yang masuk ke model."],
-                             ["**Prediction / output**", "Yang keluar dari model."],
-                             ["**Target**", "Jawaban benar, dari sumber di luar model."],
-                             ["**Loss value**", "Ukuran jarak prediksi ke target."],
-                             ["**Classes**", "Himpunan label yang mungkin."],
-                             ["**Mini-batch**", "Lazimnya 8-128 sampel sekaligus."],
+                             ["**Sample / input**", "One data point entering the model."],
+                             ["**Prediction / output**", "What comes out."],
+                             ["**Target**", "The ground truth, from outside the model."],
+                             ["**Loss value**", "A measure of distance between the two."],
+                             ["**Mini-batch**", "Typically 8–128 samples at a time."],
                          ]},
                     ],
                     [
                         {"t": "table",
-                         "head": ["Jenis tugas", "Cirinya"],
-                         "widths": [38, 62],
+                         "head": ["Task type", "Defining feature"],
+                         "widths": [40, 60],
                          "rows": [
-                             ["**Binary classification**", "Dua kategori, saling meniadakan."],
-                             ["**Multiclass**", "Lebih dari dua kategori, satu label per sampel."],
-                             ["**Multilabel**", "Satu sampel boleh punya beberapa label."],
-                             ["**Scalar regression**", "Satu nilai kontinu."],
-                             ["**Vector regression**", "Beberapa nilai kontinu sekaligus."],
+                             ["**Binary classification**", "Two mutually exclusive categories."],
+                             ["**Multiclass**", "More than two, one label per sample."],
+                             ["**Multilabel**", "A sample may carry several labels at once."],
+                             ["**Scalar regression**", "One continuous value."],
+                             ["**Vector regression**", "Several continuous values."],
                          ]},
                     ],
                 ]},
-                {"t": "band",
-                 "md": "Membedakan **multiclass** dari **multilabel** menentukan pilihan "
-                       "aktivasi keluaran: ==softmax== untuk yang pertama (jumlahnya 1), "
-                       "==sigmoid per kelas== untuk yang kedua."},
             ],
         },
 
-        {"type": "section", "num": "01", "title": "Klasifikasi biner: ulasan IMDB",
-         "lead": "50.000 ulasan film, positif atau negatif."},
+        {
+            "type": "slide",
+            "kicker": "Vocabulary",
+            "title": "The distinction that decides your output layer",
+            "blocks": [
+                {"t": "mmd", "id": "ch04-heads", "src": MMD_HEADS,
+                 "cap": "Multiclass and multilabel look similar and need different heads."},
+                {"t": "band",
+                 "md": "**Softmax** forces the outputs to sum to 1 — right when exactly one "
+                       "class is true. **Sigmoid per class** lets several be true at once. "
+                       "Choosing the wrong one ==trains a model that cannot express the "
+                       "answer=="},
+            ],
+        },
+
+        {"type": "section", "num": "01", "title": "Binary classification: IMDB reviews",
+         "lead": "50,000 movie reviews, positive or negative."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 4.1",
-            "title": "Data, dan cara mengubah deret kata jadi tensor",
+            "kicker": "Section 4.1",
+            "title": "The dataset, and what has already been done to it",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "listing 4.1-4.3 — muat dan vektorkan",
-                 "src": """import numpy as np
-from keras.datasets import imdb
+                {"t": "p", "md": "IMDB ships with Keras, already split and already converted "
+                                 "from words into integer indices. `num_words=10000` keeps "
+                                 "only the ten thousand most frequent words."},
+                {"t": "code", "lang": "python", "file": "listing 4.1 — loading IMDB",
+                 "src": """from keras.datasets import imdb
 
 (train_data, train_labels), (test_data, test_labels) = imdb.load_data(num_words=10000)
+
+print(len(train_data), len(test_data))
+print(train_data[0][:12])          # a review, as word indices
+print(train_labels[0])             # 1 = positive, 0 = negative"""},
+                {"t": "out", "src": """25000 25000
+[1, 14, 22, 16, 43, 530, 973, 1622, 1385, 65, 458, 4468]
+1"""},
+                {"t": "p", "md": "The split is balanced 50:50, which matters for the baseline "
+                                 "we set in a moment."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.1",
+            "title": "Turning a list of words into a tensor",
+            "blocks": [
+                {"t": "p", "md": "A `Dense` layer needs a fixed-length numeric vector, but "
+                                 "reviews have different lengths. Multi-hot encoding solves "
+                                 "that by turning each review into a 10,000-long vector of "
+                                 "0s and 1s."},
+                {"t": "code", "lang": "python", "file": "listing 4.2 — multi-hot encoding",
+                 "src": """import numpy as np
 
 def multi_hot_encode(sequences, num_classes):
     results = np.zeros((len(sequences), num_classes))
     for i, sequence in enumerate(sequences):
-        results[i][sequence] = 1.0        # indeks kata yang muncul -> 1
+        results[i][sequence] = 1.0        # mark every word index that appears
     return results
 
 x_train = multi_hot_encode(train_data, num_classes=10000)
@@ -314,94 +218,219 @@ y_test = test_labels.astype("float32")
 
 print(x_train.shape, x_train[0][:12])"""},
                 {"t": "out", "src": "(25000, 10000) [0. 1. 1. 0. 1. 1. 1. 1. 1. 1. 0. 0.]"},
-                {"t": "bullets", "items": [
-                    "25.000 latih + 25.000 uji, seimbang 50:50 positif-negatif.",
-                    "`num_words=10000` hanya menyimpan **10.000 kata tersering**; sisanya dibuang.",
-                    "Multi-hot ==membuang urutan kata==. Cukup untuk sentimen; bab 14-15 "
-                    "menggantinya saat urutan mulai penting.",
-                ]},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 4.1",
-            "title": "Model, validasi, dan titik balik di epoch 4",
+            "kicker": "Section 4.1",
+            "title": "What that encoding throws away",
+            "blocks": [
+                {"t": "band", "style": "amber",
+                 "md": "Multi-hot records **which words appear**, not **in what order**. "
+                       "*\"good, not bad\"* and *\"bad, not good\"* become ==the identical "
+                       "vector=="},
+                {"t": "p", "md": "For sentiment on long reviews that turns out to be good "
+                                 "enough. Chapters 14 and 15 replace it as soon as word order "
+                                 "starts to carry the meaning."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.1",
+            "title": "A deliberately small model",
+            "blocks": [
+                {"t": "p", "md": "Two 16-unit hidden layers and a single sigmoid output. The "
+                                 "model is kept small on purpose — the dataset is not large, "
+                                 "and chapter 5 explains what happens when it is not."},
+                {"t": "code", "lang": "python", "file": "listing 4.3 — the model",
+                 "src": """import keras
+from keras import layers
+
+model = keras.Sequential([
+    layers.Dense(16, activation="relu"),
+    layers.Dense(16, activation="relu"),
+    layers.Dense(1, activation="sigmoid"),      # one probability, 0 to 1
+])
+
+model.compile(optimizer="adam",
+              loss="binary_crossentropy",
+              metrics=["accuracy"])"""},
+                {"t": "p", "md": "`relu` zeroes out negatives; `sigmoid` squashes the final "
+                                 "score into the interval [0, 1] so it can be read as a "
+                                 "probability."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.1",
+            "title": "Why crossentropy and not mean squared error",
+            "blocks": [
+                {"t": "quote",
+                 "md": "Crossentropy is a quantity from the field of information theory that "
+                       "measures the distance between probability distributions.",
+                 "cite": "Chollet & Watson, section 4.1"},
+                {"t": "p", "md": "The model outputs a **distribution**; the target is a "
+                                 "distribution too. Crossentropy is the natural way to "
+                                 "compare them, which is why it pairs with sigmoid and "
+                                 "softmax rather than MSE."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.1",
+            "title": "Holding out a validation set, and training long",
+            "blocks": [
+                {"t": "p", "md": "Ten thousand samples are set aside. The model is then "
+                                 "trained for **20 epochs — deliberately too many** — so the "
+                                 "turning point becomes visible."},
+                {"t": "code", "lang": "python", "file": "listing 4.4–4.5 — validate and fit",
+                 "src": """x_val, partial_x_train = x_train[:10000], x_train[10000:]
+y_val, partial_y_train = y_train[:10000], y_train[10000:]
+
+history = model.fit(
+    partial_x_train, partial_y_train,
+    epochs=20,
+    batch_size=512,
+    validation_data=(x_val, y_val),
+)"""},
+                {"t": "band",
+                 "md": "Training past the optimum is not waste here — it is ==how you find "
+                       "the optimum==. The next slide shows what the curves say."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.1",
+            "title": "What the two curves do",
             "blocks": [
                 {"t": "cols", "ratio": "1-1", "cols": [
                     [
-                        {"t": "code", "lang": "python", "file": "listing 4.4-4.6",
-                         "src": """model = keras.Sequential([
+                        {"t": "bullets", "items": [
+                            "**Training loss** falls monotonically, epoch after epoch.",
+                            "**Validation loss** falls, bottoms out around **epoch 4**, then "
+                            "==turns and climbs==.",
+                        ]},
+                    ],
+                    [
+                        {"t": "band", "style": "amber",
+                         "md": "Everything after epoch 4 makes the model **better on data it "
+                               "has seen and worse on data it has not**."},
+                    ],
+                ]},
+                {"t": "quote",
+                 "md": "After the fourth epoch, you're overoptimizing on the training data, "
+                       "and you end up learning representations that are specific to the "
+                       "training data and don't generalize to data outside of the training set.",
+                 "cite": "Chollet & Watson, section 4.1"},
+            ],
+            "notes": "This pattern reappears in every later chapter. Train to see the turning "
+                     "point, then retrain to it.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.1",
+            "title": "The procedure, stated once and reused everywhere",
+            "blocks": [
+                {"t": "mmd", "id": "ch04-curve", "src": MMD_CURVE,
+                 "cap": "Overtraining is used as a measuring instrument, then discarded."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.1",
+            "title": "Retrain to four epochs, and score it once",
+            "blocks": [
+                {"t": "p", "md": "With the turning point known, build a fresh model and stop "
+                                 "at exactly that epoch. Only now does the test set get "
+                                 "touched."},
+                {"t": "code", "lang": "python", "file": "the production run",
+                 "src": """model = keras.Sequential([
     layers.Dense(16, activation="relu"),
     layers.Dense(16, activation="relu"),
     layers.Dense(1, activation="sigmoid"),
 ])
-model.compile(optimizer="adam",
-              loss="binary_crossentropy",
-              metrics=["accuracy"])
+model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+model.fit(x_train, y_train, epochs=4, batch_size=512)
 
-x_val, partial_x = x_train[:10000], x_train[10000:]
-y_val, partial_y = y_train[:10000], y_train[10000:]
-
-history = model.fit(
-    partial_x, partial_y,
-    epochs=20, batch_size=512,
-    validation_data=(x_val, y_val))"""},
-                    ],
-                    [
-                        {"t": "fig", "svg": SVG_OVERFIT, "tikz": TIKZ_OVERFIT,
-                         "cap": "Rugi latih turun terus; rugi validasi berbalik naik "
-                                "setelah epoch 4."},
-                    ],
+results = model.evaluate(x_test, y_test)
+print(results)"""},
+                {"t": "out", "src": "[0.2929, 0.8834]"},
+                {"t": "stats", "cols": 2, "items": [
+                    {"v": "88%", "l": "test accuracy after retraining to 4 epochs"},
+                    {"v": "50%", "l": "the random baseline — the classes are balanced"},
                 ]},
-                {"t": "quote",
-                 "md": "Setelah epoch keempat, Anda mengoptimalkan berlebihan pada data "
-                       "latih, dan berakhir mempelajari representasi yang khas untuk data "
-                       "latih itu saja -- yang tidak berlaku di luarnya.",
-                 "cite": "Chollet & Watson, bab 4"},
             ],
-            "notes": "Ini pola yang akan muncul di setiap bab sesudahnya. Latih 20 epoch "
-                     "untuk MELIHAT titik baliknya, lalu latih ulang sampai titik itu.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 4.1",
-            "title": "Hasilnya, dan tolok banding yang harus dikalahkan",
+            "kicker": "Section 4.1",
+            "title": "Reading a prediction back",
             "blocks": [
-                {"t": "stats", "cols": 3, "items": [
-                    {"v": "88%", "l": "akurasi uji setelah dilatih ulang 4 epoch"},
-                    {"v": "50%", "l": "tolok banding acak (kelasnya seimbang)"},
-                    {"v": "16", "l": "unit per lapis antara -- model sengaja kecil"},
-                ]},
-                {"t": "quote",
-                 "md": "Tanpa fungsi aktivasi seperti `relu` (disebut juga nonlinearitas), "
-                       "lapis `Dense` hanya terdiri dari dua operasi linear -- hasil kali "
-                       "titik dan penjumlahan. Ruang hipotesis seperti itu terlalu sempit.",
-                 "cite": "Chollet & Watson, bab 4"},
+                {"t": "p", "md": "A binary model returns one number per sample. Turning it "
+                                 "into a decision means choosing a threshold — and that "
+                                 "choice belongs to the business, not to the model."},
+                {"t": "code", "lang": "python", "file": "predicting on new reviews",
+                 "src": """predictions = model.predict(x_test)
+print(predictions[:5].ravel())
+
+positive = predictions > 0.5        # the threshold is a CHOICE, not a given
+print(positive[:5].ravel())"""},
+                {"t": "out", "src": """[0.982 0.031 0.671 0.118 0.945]
+[ True False  True False  True]"""},
                 {"t": "band",
-                 "md": "**Crossentropy** datang dari teori informasi: ia mengukur ==jarak "
-                       "antara dua sebaran peluang==. Itulah sebabnya ia pasangan alami "
-                       "bagi keluaran sigmoid dan softmax, dan bukan MSE."},
+                 "md": "Note the third review at **0.67** — confident enough to call "
+                       "positive at a 0.5 threshold, and negative at 0.7. Chapter 6 shows "
+                       "how to set that number ==against a cost, not a habit=="},
             ],
         },
 
-        {"type": "section", "num": "02", "title": "Multikelas: kawat berita Reuters",
-         "lead": "46 topik, saling meniadakan."},
+        {"type": "section", "num": "02", "title": "Multiclass: Reuters newswires",
+         "lead": "46 topics, mutually exclusive."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 4.2",
-            "title": "One-hot atau sparse -- antarmuka beda, hitungannya sama",
+            "kicker": "Section 4.2",
+            "title": "Same shape of problem, more classes",
             "blocks": [
+                {"t": "p", "md": "8,982 training and 2,246 test newswires, each belonging to "
+                                 "exactly one of 46 topics. The inputs are encoded exactly as "
+                                 "before; only the labels and the output layer change."},
+                {"t": "code", "lang": "python", "file": "listing 4.9 — loading Reuters",
+                 "src": """from keras.datasets import reuters
+
+(train_data, train_labels), (test_data, test_labels) = reuters.load_data(num_words=10000)
+
+x_train = multi_hot_encode(train_data, num_classes=10000)
+x_test = multi_hot_encode(test_data, num_classes=10000)
+
+print(len(train_data), len(test_data), max(train_labels) + 1)"""},
+                {"t": "out", "src": "8982 2246 46"},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.2",
+            "title": "Two ways to write the labels",
+            "blocks": [
+                {"t": "p", "md": "The same information can be given to Keras in two shapes. "
+                                 "The maths is identical; only the interface differs."},
                 {"t": "cols", "ratio": "1-1", "cols": [
                     [
-                        {"t": "code", "lang": "python", "file": "label one-hot",
+                        {"t": "code", "lang": "python", "file": "one-hot labels",
                          "src": """from keras.utils import to_categorical
 
 y_train = to_categorical(train_labels)
 y_test = to_categorical(test_labels)
-# bentuknya (8982, 46)
+# shape (8982, 46)
 
 model.compile(
     optimizer="adam",
@@ -409,10 +438,10 @@ model.compile(
     metrics=["accuracy"])"""},
                     ],
                     [
-                        {"t": "code", "lang": "python", "file": "label sparse (bilangan bulat)",
-                         "src": """y_train = train_labels     # biarkan bulat
+                        {"t": "code", "lang": "python", "file": "sparse integer labels",
+                         "src": """y_train = train_labels      # leave as integers
 y_test = test_labels
-# bentuknya (8982,)
+# shape (8982,)
 
 model.compile(
     optimizer="adam",
@@ -420,133 +449,232 @@ model.compile(
     metrics=["accuracy"])"""},
                     ],
                 ]},
-                {"t": "code", "lang": "python", "file": "listing 4.11 — model dan metrik top-K",
+                {"t": "band",
+                 "md": "Pick whichever avoids a conversion. Mixing them up gives a shape "
+                       "error that names the loss function, ==which is the clue to what "
+                       "went wrong=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.2",
+            "title": "The model, and a metric that asks a better question",
+            "blocks": [
+                {"t": "p", "md": "The hidden layers are wider than in the IMDB example — the "
+                                 "next slide explains why — and a second metric is added."},
+                {"t": "code", "lang": "python", "file": "listing 4.11 — model and top-K",
                  "src": """model = keras.Sequential([
     layers.Dense(64, activation="relu"),
     layers.Dense(64, activation="relu"),
-    layers.Dense(46, activation="softmax"),      # satu unit per kelas
+    layers.Dense(46, activation="softmax"),      # one unit per class
 ])
+
 top_3 = keras.metrics.TopKCategoricalAccuracy(k=3, name="top_3_accuracy")
-model.compile(optimizer="adam", loss="categorical_crossentropy",
+model.compile(optimizer="adam",
+              loss="categorical_crossentropy",
               metrics=["accuracy", top_3])"""},
                 {"t": "band",
-                 "md": "**Top-K accuracy** menanyakan hal yang berbeda: apakah kelas yang "
-                       "benar ada di antara k tebakan teratas? Untuk 46 kelas, itu ukuran "
-                       "yang ==jauh lebih berguna== bagi sistem yang hanya menyarankan."},
+                 "md": "**Top-K accuracy** asks whether the true class is among the top k "
+                       "guesses. For a system that ==suggests rather than decides==, that is "
+                       "often the honest measure."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 4.2",
-            "title": "Leher botol informasi: percobaan yang sengaja digagalkan",
+            "kicker": "Section 4.2",
+            "title": "An experiment designed to fail",
             "blocks": [
-                {"t": "fig", "svg": SVG_BOTTLENECK, "tikz": TIKZ_BOTTLENECK,
-                 "cap": "Lapis 4 unit di tengah memaksa 46 kelas diperas ke 4 dimensi. "
-                        "Turun 8 poin akurasi."},
+                {"t": "mmd", "id": "ch04-bottleneck", "src": MMD_BOTTLENECK,
+                 "cap": "The same network, except one intermediate layer is squeezed to four "
+                        "units."},
+                {"t": "p", "md": "The book deliberately builds the broken version to show what "
+                                 "an **information bottleneck** does. Squeezing 46 classes "
+                                 "through 4 dimensions loses information ==that no later "
+                                 "layer can recover=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.2",
+            "title": "What the bottleneck costs",
+            "blocks": [
+                {"t": "p", "md": "One line changes: the second hidden layer drops from 64 units to 4. Everything else about the network and the training run is identical."},
+                {"t": "code", "lang": "python", "file": "listing 4.13 — the broken model",
+                 "src": """model = keras.Sequential([
+    layers.Dense(64, activation="relu"),
+    layers.Dense(4, activation="relu"),          # the bottleneck
+    layers.Dense(46, activation="softmax"),
+])"""},
+                {"t": "stats", "cols": 2, "items": [
+                    {"v": "≈ 80%", "l": "validation accuracy without the bottleneck"},
+                    {"v": "≈ 71%", "l": "with it — nine points gone"},
+                ]},
                 {"t": "quote",
-                 "md": "Model itu sanggup menjejalkan sebagian besar informasi yang "
-                       "diperlukan ke dalam representasi 4 dimensi -- tetapi tidak semuanya.",
-                 "cite": "Chollet & Watson, bab 4"},
-                {"t": "band", "style": "amber",
-                 "md": "Aturan praktisnya: **lapis antara tidak boleh lebih sempit dari "
-                       "jumlah kelas keluaran**. Itulah sebabnya contoh IMDB cukup 16 unit "
-                       "(2 kelas), sementara Reuters butuh 64."},
+                 "md": "The model is able to cram most of the necessary information into these "
+                       "4-dimensional representations, but not all of it.",
+                 "cite": "Chollet & Watson, section 4.2"},
             ],
-            "notes": "Percobaan gagal ini justru bagian terbaik dari bab 4 — tunjukkan "
-                     "utuh, jangan lewati. Peserta belajar lebih banyak dari yang gagal.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 4.2",
-            "title": "Melatih ulang di epoch terbaik",
+            "kicker": "Section 4.2",
+            "title": "The sizing rule that follows",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "listing 4.14 — model produksi",
+                {"t": "band",
+                 "md": "**An intermediate layer should not be narrower than the number of "
+                       "output classes.** That is why IMDB was fine on 16 units (2 classes) "
+                       "and Reuters needs 64."},
+                {"t": "p", "md": "It is a floor, not a target. Chapter 5 covers how to find "
+                                 "the right size above that floor."},
+            ],
+            "notes": "The failed experiment is the best part of chapter 4. Show it in full — "
+                     "people learn more from it than from the working version.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.2",
+            "title": "Retrain, evaluate, and check against the right baseline",
+            "blocks": [
+                {"t": "p", "md": "Same procedure as IMDB: the curve turns at epoch 9, so a "
+                                 "fresh model is trained to exactly nine epochs."},
+                {"t": "code", "lang": "python", "file": "listing 4.14 — production model",
                  "src": """model = keras.Sequential([
     layers.Dense(64, activation="relu"),
     layers.Dense(64, activation="relu"),
     layers.Dense(46, activation="softmax"),
 ])
 model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
-model.fit(x_train, y_train, epochs=9, batch_size=512)     # 9 = titik terbaik tadi
+model.fit(x_train, y_train, epochs=9, batch_size=512)
 
-results = model.evaluate(x_test, y_test)
-print(results)"""},
+print(model.evaluate(x_test, y_test))"""},
                 {"t": "out", "src": """71/71 ---- 0s 3ms/step - accuracy: 0.7969 - loss: 0.9127
 [0.9127, 0.7969]"""},
-                {"t": "stats", "cols": 2, "items": [
-                    {"v": "~80%", "l": "akurasi uji"},
-                    {"v": "~19%", "l": "tolok banding acak -- 46 kelas, sebaran tak rata"},
-                ]},
                 {"t": "band",
-                 "md": "Selalu hitung **tolok banding akal sehat** dulu. Angka 80% terdengar "
-                       "biasa saja sampai Anda tahu bahwa menebak asal hanya memberi 19%."},
+                 "md": "80% sounds unremarkable until you know the baseline: guessing "
+                       "according to the class frequencies gets about **19%**, because the "
+                       "46 classes are ==far from evenly distributed=="},
             ],
         },
 
-        {"type": "section", "num": "03", "title": "Regresi skalar: harga rumah",
-         "lead": "Data sedikit. Aturan mainnya berubah."},
+        {
+            "type": "slide",
+            "kicker": "Section 4.2",
+            "title": "Where the remaining 20% goes",
+            "blocks": [
+                {"t": "p", "md": "Roughly one newswire in five is misfiled. Looking at the "
+                                 "confusion between classes tells you whether that matters."},
+                {"t": "code", "lang": "python", "file": "inspecting the errors",
+                 "src": """predictions = model.predict(x_test)
+predicted = predictions.argmax(axis=1)
+
+print((predicted == test_labels).mean())          # overall accuracy
+print(predictions[0].max())                       # confidence on the first one
+
+import collections
+print(collections.Counter(test_labels).most_common(3))   # class imbalance"""},
+                {"t": "out", "src": """0.7969
+0.94
+[(3, 813), (4, 474), (19, 133)]"""},
+                {"t": "band", "style": "amber",
+                 "md": "Class 3 alone accounts for **813 of 2,246** test samples. That "
+                       "imbalance is why the honest baseline is 19% rather than 1/46 — and "
+                       "why ==accuracy alone is a thin way to describe this model=="},
+            ],
+        },
+
+        {"type": "section", "num": "03", "title": "Scalar regression: house prices",
+         "lead": "Very little data. The rules change."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 4.3",
-            "title": "Normalisasi fitur -- dan jebakan kebocoran data",
+            "kicker": "Section 4.3",
+            "title": "480 training samples, eight features",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "listing 4.16-4.17 — muat dan normalkan",
+                {"t": "p", "md": "A small extract of the 1990 California census: 480 training "
+                                 "and 120 test districts, each described by eight numeric "
+                                 "features, with median house price as the target."},
+                {"t": "code", "lang": "python", "file": "listing 4.16 — loading the data",
                  "src": """from keras.datasets import california_housing
 
 (train_data, train_targets), (test_data, test_targets) = (
     california_housing.load_data(version="small"))
-# 480 latih, 120 uji, 8 fitur numerik per distrik
 
-mean = train_data.mean(axis=0)
-std = train_data.std(axis=0)
-x_train = (train_data - mean) / std
-x_test = (test_data - mean) / std      # PAKAI statistik data LATIH, bukan uji
-
-y_train = train_targets / 100000       # skalakan target ke rentang yang wajar
-y_test = test_targets / 100000"""},
-                {"t": "band", "style": "rose",
-                 "md": "Baris `x_test = (test_data - mean) / std` memakai `mean` dan `std` "
-                       "dari data **latih**. Menghitung ulang dari data uji adalah "
-                       "==kebocoran informasi==: model jadi tahu sesuatu tentang data yang "
-                       "seharusnya belum pernah dilihatnya. Bab 5 menamainya secara resmi."},
-                {"t": "bullets", "items": [
-                    "8 fitur: bujur, lintang, umur rumah, populasi, jumlah rumah tangga, "
-                    "penghasilan median, total kamar, total kamar tidur.",
-                    "Target: harga rumah median, kontinu, kira-kira $60 ribu sampai $500 ribu.",
-                    "Rentang tiap fitur berbeda jauh; tanpa normalisasi ==optimalisasi jadi "
-                    "kacau==.",
-                ]},
+print(train_data.shape, test_data.shape)
+print(train_targets[:4])"""},
+                {"t": "out", "src": """(480, 8) (120, 8)
+[452600. 358500. 352100. 341300.]"""},
+                {"t": "p", "md": "Features: longitude, latitude, median house age, population, "
+                                 "households, median income, total rooms, total bedrooms."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 4.3",
-            "title": "Model regresi: keluaran tanpa aktivasi",
+            "kicker": "Section 4.3",
+            "title": "Normalisation — and the leak hiding in it",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "listing 4.18",
+                {"t": "p", "md": "The features live on wildly different scales, which "
+                                 "destabilises optimisation. Each is centred and scaled — "
+                                 "but look carefully at which statistics are used."},
+                {"t": "code", "lang": "python", "file": "listing 4.17 — normalising",
+                 "src": """mean = train_data.mean(axis=0)
+std = train_data.std(axis=0)
+
+x_train = (train_data - mean) / std
+x_test = (test_data - mean) / std      # TRAINING statistics, not the test set's
+
+y_train = train_targets / 100000       # scale the target to a sane range
+y_test = test_targets / 100000"""},
+                {"t": "band", "style": "rose",
+                 "md": "Recomputing `mean` and `std` from the test data would be an "
+                       "==information leak==: the model would know something about data it "
+                       "is supposed never to have seen. Chapter 5 gives this its formal name."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.3",
+            "title": "Which statistics may touch which data",
+            "blocks": [
+                {"t": "mmd", "id": "ch04-leak", "src": MMD_LEAK,
+                 "cap": "The rule in one picture: statistics flow outward from the training "
+                        "set only."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.3",
+            "title": "A regression head has no activation",
+            "blocks": [
+                {"t": "p", "md": "Three design choices here differ from the classifiers, and "
+                                 "each follows from the task or the data size."},
+                {"t": "code", "lang": "python", "file": "listing 4.18 — the model",
                  "src": """def get_model():
     model = keras.Sequential([
         layers.Dense(64, activation="relu"),
         layers.Dense(64, activation="relu"),
-        layers.Dense(1),                 # TANPA aktivasi - bebas menebak nilai apa pun
+        layers.Dense(1),                    # NO activation — free to predict any value
     ])
     model.compile(optimizer="adam",
                   loss="mean_squared_error",
                   metrics=["mean_absolute_error"])
     return model"""},
                 {"t": "cards", "cols": 3, "items": [
-                    {"ico": "🔓", "h": "Tanpa aktivasi keluaran",
-                     "p": "Sigmoid akan mengurung tebakan ke [0,1]. Regresi harus bebas.",
+                    {"ico": "🔓", "h": "No output activation",
+                     "p": "A sigmoid would trap predictions in [0, 1]. Regression must be free.",
                      "style": "accent"},
-                    {"ico": "🤏", "h": "Model sengaja kecil",
-                     "p": "480 sampel saja. Model besar akan langsung menghafalnya.",
+                    {"ico": "🤏", "h": "A small model",
+                     "p": "480 samples. A large model would simply memorise them.",
                      "style": "warn"},
-                    {"ico": "📏", "h": "MSE untuk rugi, MAE untuk metrik",
-                     "p": "MAE bisa dibaca manusia: MAE 0,5 ≈ meleset $50 ribu.",
+                    {"ico": "📏", "h": "MSE to train, MAE to read",
+                     "p": "MAE is human-readable: 0.5 means being off by about $50,000.",
                      "style": "accent"},
                 ]},
             ],
@@ -554,13 +682,26 @@ y_test = test_targets / 100000"""},
 
         {
             "type": "slide",
-            "kicker": "Bagian 4.3",
-            "title": "Validasi silang K-lipat, karena datanya sedikit",
+            "kicker": "Section 4.3",
+            "title": "With this little data, one validation split is not enough",
             "blocks": [
-                {"t": "fig", "svg": SVG_KFOLD, "tikz": TIKZ_KFOLD,
-                 "cap": "Dengan 480 sampel, satu belahan validasi tunggal terlalu berisik "
-                        "-- skornya bergantung pada belahan mana yang kebetulan terpilih."},
-                {"t": "code", "lang": "python", "file": "listing 4.19 — inti gelung K-lipat",
+                {"t": "mmd", "id": "ch04-kfold", "src": MMD_KFOLD,
+                 "cap": "Each quarter takes a turn as the validation set; the four scores are "
+                        "averaged."},
+                {"t": "p", "md": "With 480 samples, a single split of, say, 120 is small "
+                                 "enough that the score depends heavily on ==which 120 you "
+                                 "happen to draw=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.3",
+            "title": "K-fold, written out",
+            "blocks": [
+                {"t": "p", "md": "The loop below carves out fold *i*, trains a **brand-new** "
+                                 "model on the rest, and records its validation MAE."},
+                {"t": "code", "lang": "python", "file": "listing 4.19 — the K-fold loop",
                  "src": """k, num_epochs, all_scores = 4, 50, []
 num_val_samples = len(x_train) // k
 
@@ -572,24 +713,40 @@ for i in range(k):
     fold_y_train = np.concatenate(
         [y_train[: i * num_val_samples], y_train[(i + 1) * num_val_samples :]], axis=0)
 
-    model = get_model()
+    model = get_model()                 # a FRESH model every fold
     model.fit(fold_x_train, fold_y_train, epochs=num_epochs, batch_size=16, verbose=0)
     val_loss, val_mae = model.evaluate(fold_x_val, fold_y_val, verbose=0)
     all_scores.append(val_mae)"""},
                 {"t": "out", "src": """[0.265, 0.292, 0.232, 0.349]
-rerata MAE: 0.296   ->  meleset sekitar $29.600"""},
+mean MAE: 0.296   ->  off by roughly $29,600"""},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 4.3",
-            "title": "Berapa lama melatihnya? Tanya kurvanya",
+            "kicker": "Section 4.3",
+            "title": "The spread is the point",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "listing 4.20 — rerata kurva MAE",
+                {"t": "band", "style": "amber",
+                 "md": "The four folds scored **0.232 to 0.349** — a spread of nearly 50% of "
+                       "the smallest value. Any single split would have reported one of those "
+                       "numbers and ==told you nothing about the other three=="},
+                {"t": "p", "md": "That variance is exactly why K-fold exists, and why it is "
+                                 "worth four times the compute on a dataset this size."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.3",
+            "title": "How long to train? Average the curves",
+            "blocks": [
+                {"t": "p", "md": "Run the folds again for 200 epochs, keep the per-epoch "
+                                 "validation MAE from each, and average them into one curve."},
+                {"t": "code", "lang": "python", "file": "listing 4.20 — averaging MAE curves",
                  "src": """all_mae_histories = []
 for i in range(k):
-    # ... penyiapan lipatan sama seperti sebelumnya ...
+    # ... same fold setup as before ...
     history = model.fit(fold_x_train, fold_y_train,
                         validation_data=(fold_x_val, fold_y_val),
                         epochs=200, batch_size=16, verbose=0)
@@ -598,59 +755,128 @@ for i in range(k):
 average_mae_history = [
     np.mean([h[i] for h in all_mae_histories]) for i in range(200)
 ]"""},
-                {"t": "cols", "ratio": "1-1", "cols": [
-                    [
-                        {"t": "band",
-                         "md": "MAE validasi ==mendatar di sekitar epoch 120-140==, lalu "
-                               "mulai memburuk. Itulah titik berhentinya."},
-                        {"t": "code", "lang": "python", "file": "model akhir",
-                         "src": """model = get_model()
-model.fit(x_train, y_train, epochs=130,
-          batch_size=16, verbose=0)
-mse, mae = model.evaluate(x_test, y_test)"""},
-                    ],
-                    [
-                        {"t": "stats", "cols": 1, "items": [
-                            {"v": "~0,31", "l": "MAE uji akhir -- meleset sekitar $31.000"},
-                            {"v": "2,83", "l": "contoh tebakan pertama → sekitar $283.000"},
-                        ]},
-                    ],
+                {"t": "band",
+                 "md": "The averaged curve flattens around **epoch 120–140** and worsens "
+                       "after. ==That is the stopping point==, and it is far more trustworthy "
+                       "than any single fold's curve."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 4.3",
+            "title": "The final model, and what its error means",
+            "blocks": [
+                {"t": "p", "md": "Train once more on all the training data, to the epoch the "
+                                 "averaged curve identified, then evaluate on the test set."},
+                {"t": "code", "lang": "python", "file": "the production model",
+                 "src": """model = get_model()
+model.fit(x_train, y_train, epochs=130, batch_size=16, verbose=0)
+
+test_mse, test_mae = model.evaluate(x_test, y_test)
+predictions = model.predict(x_test)
+print(f"test MAE {test_mae:.2f}   first prediction {predictions[0][0]:.2f}")"""},
+                {"t": "out", "src": "test MAE 0.31   first prediction 2.83"},
+                {"t": "stats", "cols": 2, "items": [
+                    {"v": "≈ $31,000", "l": "average error, at the 100k scaling"},
+                    {"v": "≈ $283,000", "l": "what a prediction of 2.83 means"},
                 ]},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Ringkasan",
-            "title": "Tabel yang akan Anda pakai terus",
+            "kicker": "Across all three examples",
+            "title": "Why every model here was kept small",
             "blocks": [
                 {"t": "table",
-                 "head": ["Jenis tugas", "Aktivasi lapis akhir", "Fungsi rugi", "Metrik lazim"],
-                 "widths": [28, 24, 30, 18],
+                 "head": ["Example", "Training samples", "Hidden layers", "Reasoning"],
+                 "widths": [22, 20, 22, 36],
                  "rows": [
-                     ["Klasifikasi **biner**", "`sigmoid` (1 unit)",
-                      "`binary_crossentropy`", "accuracy"],
-                     ["**Multikelas**, label one-hot", "`softmax` (N unit)",
+                     ["IMDB", "15,000", "2 × 16 units",
+                      "Two classes, so 16 units is comfortably above the floor."],
+                     ["Reuters", "8,982", "2 × 64 units",
+                      "46 classes: anything much narrower becomes a bottleneck."],
+                     ["Housing", "480", "2 × 64 units",
+                      "Tiny dataset — a larger model would memorise it outright."],
+                 ]},
+                {"t": "band",
+                 "md": "The rule pulls in two directions at once: **wide enough not to "
+                       "bottleneck the classes, small enough not to memorise the samples**. "
+                       "Chapter 5 turns that tension into a method."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Across all three examples",
+            "title": "Four ways these workflows go wrong",
+            "blocks": [
+                {"t": "cards", "cols": 2, "items": [
+                    {"ico": "📉", "h": "Training to a fixed epoch count",
+                     "p": "Picking 20 epochs because a tutorial did. The turning point is a "
+                          "property of **your** data and has to be measured.", "style": "bad"},
+                    {"ico": "🔁", "h": "Reusing a trained model across folds",
+                     "p": "`get_model()` must be called **inside** the K-fold loop. Reusing "
+                          "one carries knowledge between folds and voids the score.",
+                     "style": "bad"},
+                    {"ico": "🧪", "h": "Normalising with test statistics",
+                     "p": "An information leak, and it inflates your score in a way you will "
+                          "not discover until production.", "style": "bad"},
+                    {"ico": "🎯", "h": "Reporting accuracy with no baseline",
+                     "p": "80% is excellent against 19% and poor against 90%. The number "
+                          "alone says nothing.", "style": "bad"},
+                ]},
+            ],
+            "notes": "Every one of these shows up in the group assignments. Naming them now "
+                     "saves a lot of rework later.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Summary",
+            "title": "The table you will keep coming back to",
+            "blocks": [
+                {"t": "table",
+                 "head": ["Task", "Last-layer activation", "Loss function", "Typical metrics"],
+                 "widths": [28, 22, 32, 18],
+                 "rows": [
+                     ["**Binary** classification", "`sigmoid` (1 unit)",
+                      "`binary_crossentropy`", "accuracy, ROC AUC"],
+                     ["**Multiclass**, one-hot labels", "`softmax` (N units)",
                       "`categorical_crossentropy`", "accuracy, top-K"],
-                     ["**Multikelas**, label bulat", "`softmax` (N unit)",
+                     ["**Multiclass**, integer labels", "`softmax` (N units)",
                       "`sparse_categorical_crossentropy`", "accuracy"],
-                     ["**Multilabel**", "`sigmoid` (N unit)",
-                      "`binary_crossentropy`", "accuracy, AUC"],
-                     ["**Regresi** skalar", "tanpa aktivasi (1 unit)",
+                     ["**Multilabel**", "`sigmoid` (N units)",
+                      "`binary_crossentropy`", "accuracy, ROC AUC"],
+                     ["**Scalar regression**", "none (1 unit)",
                       "`mean_squared_error`", "MAE"],
                  ]},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Summary",
+            "title": "What has to survive this chapter",
+            "blocks": [
                 {"t": "steps", "items": [
-                    "Vektorkan data diskret; **normalkan fitur dengan statistik data latih**.",
-                    "Lapis antara ==tidak boleh lebih sempit dari jumlah kelas== -- leher botol.",
-                    "Data sedikit → model kecil, satu atau dua lapis antara.",
-                    "Latih sampai overfit untuk **melihat** titik baliknya, lalu latih ulang "
-                    "sampai titik itu.",
-                    "Data sedikit → **K-lipat**, bukan satu belahan validasi.",
+                    "**Vectorise** discrete data; **normalise features using training-set "
+                    "statistics only**.",
+                    "**Intermediate layers must not be narrower than the class count** — "
+                    "otherwise you build an information bottleneck.",
+                    "**Little data → a small model**, one or two hidden layers.",
+                    "**Train until it overfits to find the turning point**, then retrain to "
+                    "exactly that epoch.",
+                    "**Little data → K-fold**, not a single validation split — and read the "
+                    "spread, not just the mean.",
+                    "Always compare against a **common-sense baseline** before deciding a "
+                    "score is good.",
                 ]},
                 {"t": "links", "items": [
-                    {"k": "NOTEBOOK", "ic": "📓", "v": "01_imdb_klasifikasi_biner.ipynb",
-                     "href": "../../course-slides/notebooks/ch04/01_imdb_klasifikasi_biner.ipynb"},
-                    {"k": "BAB BERIKUT", "ic": "➡", "v": "Bab 5 — Dasar machine learning",
+                    {"k": "NOTEBOOK", "ic": "📓", "v": "01_imdb_binary_classification.ipynb",
+                     "href": "../../course-slides/notebooks/ch04/01_imdb_binary_classification.ipynb"},
+                    {"k": "NEXT", "ic": "➡", "v": "Chapter 5 — Fundamentals of machine learning",
                      "href": "../ch05/index.html"},
                 ]},
             ],

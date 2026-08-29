@@ -1,8 +1,9 @@
-model = keras.Sequential([
-    layers.Dense(64, activation="relu"),
-    layers.Dense(64, activation="relu"),
-    layers.Dense(46, activation="softmax"),      # satu unit per kelas
-])
-top_3 = keras.metrics.TopKCategoricalAccuracy(k=3, name="top_3_accuracy")
-model.compile(optimizer="adam", loss="categorical_crossentropy",
-              metrics=["accuracy", top_3])
+x_val, partial_x_train = x_train[:10000], x_train[10000:]
+y_val, partial_y_train = y_train[:10000], y_train[10000:]
+
+history = model.fit(
+    partial_x_train, partial_y_train,
+    epochs=20,
+    batch_size=512,
+    validation_data=(x_val, y_val),
+)

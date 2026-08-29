@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Bab 3 — Introduction to TensorFlow, PyTorch, JAX, and Keras.
+"""Chapter 3 — Introduction to TensorFlow, PyTorch, JAX, and Keras.
 
-Sumber: Chollet & Watson, *Deep Learning with Python*, 3rd ed., bab 3.
-https://deeplearningwithpython.io/chapters/chapter03_introduction-to-ml-frameworks
+Source: Chollet & Watson, *Deep Learning with Python*, 3rd ed., chapter 3
+(pp. 57-104), read from the book PDF.
 
-Penilaian kecepatan antar-kerangka di bab ini adalah penilaian penulisnya, dan
-di sini ditandai sebagai penilaian penulis -- bukan hasil tolok ukur kelas ini.
+The speed rankings in this chapter are the authors' assessment. They are
+labelled as such on the slide rather than presented as a benchmark this course
+ran.
 """
 
 import sys, os
@@ -14,312 +15,388 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
 
 
-SVG_STACK = """
-<svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="Keras sebagai lapisan tingkat tinggi di atas TensorFlow, PyTorch, dan JAX">
-  <rect x="60" y="18" width="640" height="52" rx="12"
-        fill="rgba(167,139,250,.16)" stroke="rgba(167,139,250,.65)" stroke-width="1.5"/>
-  <text class="d-lbl" x="380" y="42" text-anchor="middle" font-weight="700">Keras 3</text>
-  <text class="d-sm" x="380" y="60" text-anchor="middle">
-    layer &#183; model &#183; loss &#183; optimizer &#183; metric &#183; lingkar pelatihan
-  </text>
-
-  <line x1="200" y1="70" x2="200" y2="100" stroke="rgba(140,190,255,.35)" stroke-width="1.2"/>
-  <line x1="380" y1="70" x2="380" y2="100" stroke="rgba(140,190,255,.35)" stroke-width="1.2"/>
-  <line x1="560" y1="70" x2="560" y2="100" stroke="rgba(140,190,255,.35)" stroke-width="1.2"/>
-
-  <rect class="d-box-a" x="112" y="100" width="176" height="76" rx="10"/>
-  <text class="d-lbl" x="200" y="126" text-anchor="middle">TensorFlow</text>
-  <text class="d-sm" x="200" y="146" text-anchor="middle">GradientTape</text>
-  <text class="d-sm" x="200" y="164" text-anchor="middle">@tf.function</text>
-
-  <rect class="d-box-a" x="292" y="100" width="176" height="76" rx="10"/>
-  <text class="d-lbl" x="380" y="126" text-anchor="middle">PyTorch</text>
-  <text class="d-sm" x="380" y="146" text-anchor="middle">.backward()</text>
-  <text class="d-sm" x="380" y="164" text-anchor="middle">torch.compile()</text>
-
-  <rect class="d-box-a" x="472" y="100" width="176" height="76" rx="10"/>
-  <text class="d-lbl" x="560" y="126" text-anchor="middle">JAX</text>
-  <text class="d-sm" x="560" y="146" text-anchor="middle">jax.grad()</text>
-  <text class="d-sm" x="560" y="164" text-anchor="middle">@jax.jit</text>
-
-  <rect class="d-box" x="112" y="196" width="536" height="40" rx="10"/>
-  <text class="d-sm" x="380" y="221" text-anchor="middle">
-    autodiff &#183; komputasi tensor di CPU / GPU / TPU &#183; komputasi tersebar
-  </text>
-</svg>
+MMD_STACK = """
+flowchart TB
+  K["<b>Keras 3</b><br/>layers, models, losses,<br/>optimizers, metrics, training loops"]
+  TF["<b>TensorFlow</b><br/>GradientTape<br/>@tf.function"]
+  PT["<b>PyTorch</b><br/>.backward()<br/>torch.compile()"]
+  JX["<b>JAX</b><br/>jax.grad()<br/>@jax.jit"]
+  BASE["autodiff  ·  tensor compute on CPU / GPU / TPU  ·  distributed execution"]
+  K --> TF
+  K --> PT
+  K --> JX
+  TF --> BASE
+  PT --> BASE
+  JX --> BASE
 """
 
-TIKZ_STACK = r"""
-\begin{tikzpicture}[font=\sffamily\tiny,
-  fw/.style={draw=signal!60, fill=signal!9, rounded corners=4pt,
-             minimum width=2.7cm, minimum height=1.25cm, text=ink, align=center}]
-  \node[draw=violet!70, fill=violet!14, rounded corners=5pt, minimum width=9.6cm,
-        minimum height=0.95cm, text=ink, align=center] (k) at (0,2.0)
-    {{\bfseries\small Keras 3}\\layer $\cdot$ model $\cdot$ loss $\cdot$ optimizer $\cdot$ metric $\cdot$ lingkar pelatihan};
-  \node[fw] (tf) at (-3.2,0.55) {{\bfseries TensorFlow}\\GradientTape\\\ttfamily @tf.function};
-  \node[fw] (pt) at (0,0.55)    {{\bfseries PyTorch}\\\ttfamily .backward()\\\ttfamily torch.compile()};
-  \node[fw] (jx) at (3.2,0.55)  {{\bfseries JAX}\\\ttfamily jax.grad()\\\ttfamily @jax.jit};
-  \draw[rule] (tf.north) -- ($(tf.north)+(0,0.35)$);
-  \draw[rule] (pt.north) -- ($(pt.north)+(0,0.35)$);
-  \draw[rule] (jx.north) -- ($(jx.north)+(0,0.35)$);
-  \node[draw=rule, fill=papertint, rounded corners=4pt, minimum width=9.0cm,
-        minimum height=0.6cm, text=ink2] at (0,-0.55)
-    {autodiff $\cdot$ komputasi tensor di CPU / GPU / TPU $\cdot$ komputasi tersebar};
-\end{tikzpicture}
+MMD_TIMELINE = """
+flowchart LR
+  A["1964<br/>first autodiff<br/>paper"]
+  B["2006<br/>NVIDIA<br/>releases CUDA"]
+  C["2009<br/>Theano<br/>autodiff + GPU"]
+  D["2015<br/>Keras, then<br/>TensorFlow"]
+  E["2016<br/>PyTorch"]
+  F["2018<br/>JAX"]
+  G["2023<br/>PyTorch 2.0<br/>Keras 3.0"]
+  A --> B --> C --> D --> E --> F --> G
 """
 
-SVG_TIMELINE = """
-<svg viewBox="0 0 760 170" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="Garis waktu kerangka kerja deep learning 1964 sampai 2023">
-  <line x1="30" y1="96" x2="736" y2="96" stroke="rgba(140,190,255,.32)" stroke-width="1.6"/>
-  <g>
-    <circle cx="46"  cy="96" r="5" fill="#2C7BD4"/>
-    <text class="d-mono" x="46"  y="126" text-anchor="middle" fill="#7E93B4">1964</text>
-    <text class="d-sm"   x="46"  y="74"  text-anchor="middle">autodiff</text>
-  </g>
-  <g>
-    <circle cx="146" cy="96" r="5" fill="#2C7BD4"/>
-    <text class="d-mono" x="146" y="126" text-anchor="middle" fill="#7E93B4">2006</text>
-    <text class="d-sm"   x="146" y="74"  text-anchor="middle">CUDA</text>
-  </g>
-  <g>
-    <circle cx="246" cy="96" r="5" fill="#2C7BD4"/>
-    <text class="d-mono" x="246" y="126" text-anchor="middle" fill="#7E93B4">2009</text>
-    <text class="d-sm"   x="246" y="74"  text-anchor="middle">Theano</text>
-  </g>
-  <g>
-    <circle cx="346" cy="96" r="6" fill="#22D3EE"/>
-    <text class="d-mono" x="346" y="126" text-anchor="middle" fill="#7E93B4">2015</text>
-    <text class="d-sm"   x="346" y="74"  text-anchor="middle" fill="#22D3EE">Keras</text>
-    <text class="d-sm"   x="346" y="56"  text-anchor="middle" fill="#22D3EE">TensorFlow</text>
-  </g>
-  <g>
-    <circle cx="452" cy="96" r="5" fill="#2C7BD4"/>
-    <text class="d-mono" x="452" y="126" text-anchor="middle" fill="#7E93B4">2016</text>
-    <text class="d-sm"   x="452" y="74"  text-anchor="middle">PyTorch</text>
-  </g>
-  <g>
-    <circle cx="558" cy="96" r="5" fill="#2C7BD4"/>
-    <text class="d-mono" x="558" y="126" text-anchor="middle" fill="#7E93B4">2018</text>
-    <text class="d-sm"   x="558" y="74"  text-anchor="middle">JAX</text>
-  </g>
-  <g>
-    <circle cx="690" cy="96" r="6" fill="#A78BFA"/>
-    <text class="d-mono" x="690" y="126" text-anchor="middle" fill="#7E93B4">2023</text>
-    <text class="d-sm"   x="690" y="74"  text-anchor="middle" fill="#A78BFA">PyTorch 2.0</text>
-    <text class="d-sm"   x="690" y="56"  text-anchor="middle" fill="#A78BFA">Keras 3.0</text>
-  </g>
-  <text class="d-sm" x="30" y="158" fill="#F5B301">
-    Pertengahan 2016: lebih dari separuh pengguna TensorFlow mengaksesnya lewat Keras
-  </text>
-</svg>
+MMD_GRADSTYLE = """
+flowchart TB
+  subgraph TF["TensorFlow — record then replay"]
+    T1["open a GradientTape"] --> T2["run the forward pass"] --> T3["tape.gradient(loss, w)"]
+  end
+  subgraph PT["PyTorch — build then walk back"]
+    P1["run the forward pass"] --> P2["loss.backward()"] --> P3["read w.grad"] --> P4["zero_grad()"]
+  end
+  subgraph JX["JAX — transform the function"]
+    J1["write a pure loss function"] --> J2["jax.value_and_grad(fn)"] --> J3["call the new function"]
+  end
 """
 
-TIKZ_TIMELINE = r"""
-\begin{tikzpicture}[font=\sffamily\tiny]
-  \draw[rule, line width=1pt] (0,0) -- (11,0);
-  \foreach \x/\y/\l in {0.3/1964/autodiff, 1.9/2006/CUDA, 3.4/2009/Theano,
-                        5.0/2015/{Keras + TensorFlow}, 6.7/2016/PyTorch,
-                        8.3/2018/JAX, 10.4/2023/{PyTorch 2.0 + Keras 3.0}} {
-    \fill[itbbluelt] (\x,0) circle (2.2pt);
-    \node[text=ink3, font=\ttfamily\tiny, anchor=north] at (\x,-0.12) {\y};
-    \node[text=ink, anchor=south, align=center, text width=1.9cm] at (\x,0.12) {\l};
-  }
-  \node[text=amber, anchor=west] at (0,-0.85)
-    {Pertengahan 2016: lebih dari separuh pengguna TensorFlow mengaksesnya lewat Keras};
-\end{tikzpicture}
+MMD_LAYERLIFE = """
+flowchart LR
+  A["Layer created<br/><code>SimpleDense(32)</code>"]
+  B["First call with data<br/><code>layer(x)</code>"]
+  C["build(input_shape)<br/><small>weights created now</small>"]
+  D["call(inputs)<br/><small>the forward pass</small>"]
+  E["Later calls<br/><small>build is skipped</small>"]
+  A --> B --> C --> D
+  D --> E --> D
 """
 
 
-NB = ["01_tiga_kerangka_berdampingan.ipynb", "02_keras3_ganti_backend.ipynb",
-      "03_layer_kustom_dan_fit.ipynb"]
+MMD_CHOOSE = """
+flowchart TB
+  Q1{"Must it run<br/>on-premise or on<br/>mobile / browser?"}
+  Q2{"Does your team live<br/>on Hugging Face?"}
+  Q3{"TPUs, or very<br/>large-scale training?"}
+  TF["TensorFlow backend"]
+  PT["PyTorch backend"]
+  JX["JAX backend"]
+  ANY["Any of them —<br/>write Keras and decide later"]
+  Q1 -- yes --> TF
+  Q1 -- no --> Q2
+  Q2 -- yes --> PT
+  Q2 -- no --> Q3
+  Q3 -- yes --> JX
+  Q3 -- no --> ANY
+"""
+
+MMD_VALSPLIT = """
+flowchart LR
+  ALL["All labelled data"] --> SH["Shuffle"]
+  SH --> V["Validation<br/>30%"]
+  SH --> T["Training<br/>70%"]
+  T --> FIT["fit(...)"]
+  V --> FIT
+  FIT --> H["History<br/>per-epoch metrics"]
+"""
+
+NB = ["01_three_frameworks_side_by_side.ipynb", "02_keras3_switch_backend.ipynb",
+      "03_custom_layer_and_fit.ipynb"]
 
 DECK = {
     "id": "ch03",
     "kind": "chapter",
     "number": 3,
-    "title": "Pengenalan TensorFlow, PyTorch, JAX, dan Keras",
-    "subtitle": "Satu lapis Dense yang sama, ditulis empat kali -- supaya perbedaan "
-                "rancangan keempat kerangka kerja itu terlihat, bukan sekadar didengar.",
-    "source": "Chollet & Watson, Deep Learning with Python 3e -- bab 3",
+    "title": "Introduction to TensorFlow, PyTorch, JAX, and Keras",
+    "subtitle": "The same Dense layer written four times — so the design differences "
+                "between the frameworks are something you can see rather than "
+                "something you are told.",
+    "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 3",
     "source_url": chapter_url(3),
-    "duration": "2,5 jam",
-    "presenter": {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Asisten Pengajar"},
+    "duration": "2.5 hours",
+    "presenter": {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
     "resources": chapter_resources(3, local_notebooks=NB),
     "objectives": [
-        "Menyebut **tiga kemampuan** yang dimiliki semua kerangka kerja modern, dan "
-        "apa yang membedakan ketiganya di luar itu.",
-        "Menghitung gradien dengan **GradientTape, `.backward()`, dan `jax.grad()`**, "
-        "dan menjelaskan mengapa ketiganya berbeda bentuk.",
-        "Membedakan **stateful imperatif** (TF, PyTorch) dari **stateless fungsional** "
-        "(JAX), dan menyebut akibatnya pada penulisan lingkar pelatihan.",
-        "Mengganti backend Keras 3 tanpa mengubah satu baris pun kode model.",
-        "Menulis **Layer kustom** dengan `build()` dan `call()`, lalu memakainya "
-        "lewat `compile()` dan `fit()`.",
+        "Name the **three capabilities** every modern framework provides, and what "
+        "distinguishes them beyond that.",
+        "Compute gradients with **GradientTape, `.backward()`, and `jax.grad()`**, "
+        "and explain why the three look so different.",
+        "Distinguish **stateful imperative** (TF, PyTorch) from **stateless "
+        "functional** (JAX), and say what that costs when writing a training loop.",
+        "Switch the Keras 3 backend without changing a line of model code.",
+        "Write a custom `Layer` with `build()` and `call()`, then drive it through "
+        "`compile()` and `fit()`.",
     ],
     "slides": [
         {"type": "title"},
 
         {
             "type": "slide",
-            "kicker": "Bagian 3.1",
-            "title": "Bagaimana kita sampai di sini",
+            "kicker": "Section 3.1",
+            "title": "How the field arrived here",
             "blocks": [
-                {"t": "fig", "svg": SVG_TIMELINE, "tikz": TIKZ_TIMELINE,
-                 "cap": "Autodiff sudah ada sejak 1964; yang baru pada 2009 adalah "
-                        "menggabungkannya dengan komputasi GPU."},
-                {"t": "cards", "cols": 3, "items": [
-                    {"ico": "∂", "h": "Automatic differentiation",
-                     "p": "Untuk sebarang fungsi terdiferensialkan yang Anda tulis.",
-                     "style": "accent"},
-                    {"ico": "▦", "h": "Komputasi tensor",
-                     "p": "Di CPU, GPU, dan perangkat keras khusus seperti TPU.",
-                     "style": "accent"},
-                    {"ico": "⇄", "h": "Komputasi tersebar",
-                     "p": "Antar-perangkat dan antar-mesin.", "style": "accent"},
-                ]},
+                {"t": "mmd", "id": "ch03-timeline", "src": MMD_TIMELINE,
+                 "cap": "Automatic differentiation is from 1964. What was new in 2009 was "
+                        "combining it with GPU computation."},
                 {"t": "band",
-                 "md": "Ketiganya dimiliki **semua** kerangka kerja besar. Jadi memilih "
-                       "kerangka kerja ==bukan soal kemampuan==, melainkan soal gaya "
-                       "penulisan, ekosistem, dan kecepatan."},
+                 "md": "One number worth keeping: by **mid-2016, more than half** of "
+                       "TensorFlow's users reached it ==through Keras=="},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 3.2",
-            "title": "Keras di atas, tiga mesin di bawah",
+            "kicker": "Section 3.1",
+            "title": "Three capabilities every one of them has",
             "blocks": [
-                {"t": "fig", "svg": SVG_STACK, "tikz": TIKZ_STACK,
-                 "cap": "Keras memerlukan sebuah backend; NumPy bisa dipasang tetapi "
-                        "tidak bisa melatih, sebab tidak punya API gradien."},
-                {"t": "quote",
-                 "md": "Keras itu seperti perangkat bangunan pracetak, sedangkan "
-                       "TensorFlow, PyTorch, dan JAX adalah bahan mentahnya.",
-                 "cite": "Chollet & Watson, bab 3"},
+                {"t": "cards", "cols": 3, "items": [
+                    {"ico": "∂", "h": "Automatic differentiation",
+                     "p": "For any differentiable function you write, not just for a fixed "
+                          "catalogue of layers.", "style": "accent"},
+                    {"ico": "▦", "h": "Tensor computation",
+                     "p": "On CPUs, GPUs, and specialised hardware such as TPUs.",
+                     "style": "accent"},
+                    {"ico": "⇄", "h": "Distributed execution",
+                     "p": "Across devices and across machines.", "style": "accent"},
+                ]},
+                {"t": "band",
+                 "md": "Because all of them provide all three, choosing a framework is "
+                       "==not a question of capability==. It is a question of writing style, "
+                       "ecosystem, and speed."},
             ],
-            "notes": "Pembagian kerjanya: yang di bawah mengurus tensor, operasi, dan "
-                     "backprop; yang di atas mengurus layer, model, loss, optimizer, "
-                     "metric, dan lingkar pelatihan.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.2",
+            "title": "Keras on top, three engines underneath",
+            "blocks": [
+                {"t": "mmd", "id": "ch03-stack", "src": MMD_STACK,
+                 "cap": "Keras needs a backend. NumPy can be plugged in but cannot train — "
+                        "it has no gradient API."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.2",
+            "title": "Where the line between them falls",
+            "blocks": [
+                {"t": "quote",
+                 "md": "Keras is like a prefabricated building kit, while TensorFlow, "
+                       "PyTorch, and JAX are like raw materials used in construction.",
+                 "cite": "Chollet & Watson, section 3.2"},
+                {"t": "cols", "ratio": "1-1", "cols": [
+                    [
+                        {"t": "p", "md": "**Low level** — tensors, tensor operations, and "
+                                         "backpropagation."},
+                    ],
+                    [
+                        {"t": "p", "md": "**High level** — layers combined into models, "
+                                         "losses, optimizers, metrics, and training loops."},
+                    ],
+                ]},
+            ],
         },
 
         {"type": "section", "num": "01", "title": "TensorFlow",
-         "lead": "Tensor kekal, Variable untuk keadaan, GradientTape untuk gradien."},
+         "lead": "Immutable tensors, Variables for state, a tape for gradients."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 3.3",
-            "title": "Tensor kekal, Variable yang bisa diubah",
+            "kicker": "Section 3.3",
+            "title": "Constants are immutable; state needs a Variable",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "tensor dan variable di TensorFlow",
+                {"t": "p", "md": "This is the first thing that surprises people coming from "
+                                 "NumPy: a TensorFlow tensor cannot be assigned into. "
+                                 "Anything that has to change during training must be a "
+                                 "`tf.Variable`."},
+                {"t": "code", "lang": "python", "file": "tensors and variables",
                  "src": """import tensorflow as tf
 
 tf.ones(shape=(2, 1))
-tf.zeros(shape=(2, 1))
-tf.constant([1.0, 2.0])            # KEKAL - tidak bisa ditugasi ulang
+tf.constant([1.0, 2.0])            # IMMUTABLE — cannot be assigned into
 
 v = tf.Variable(initial_value=tf.random.normal(shape=(3, 1)))
-v.assign(tf.ones((3, 1)))          # ganti seluruh nilainya
-v[0, 0].assign(3.0)                # ganti sebagiannya
-v.assign_add(tf.ones((3, 1)))      # += yang efisien
-
-a = tf.ones((2, 2))
-e = tf.matmul(a, tf.square(a))
-f = tf.concat((a, e), axis=0)      # perhatikan: 'axis'"""},
+v.assign(tf.ones((3, 1)))          # replace the whole value
+v[0, 0].assign(3.0)                # replace part of it
+v.assign_add(tf.ones((3, 1)))      # an efficient +="""},
                 {"t": "band", "style": "amber",
-                 "md": "Bedanya penting: tensor TensorFlow itu **konstanta yang kekal**. "
-                       "Untuk parameter yang harus berubah saat dilatih, Anda ==wajib== "
-                       "memakai `tf.Variable`."},
+                 "md": "Forgetting this produces a confusing error at the worst moment: "
+                       "==your weights simply refuse to update=="},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 3.3",
-            "title": "GradientTape dan kompilasi graf",
+            "kicker": "Section 3.3",
+            "title": "Operations, and one naming detail to notice",
             "blocks": [
-                {"t": "cols", "ratio": "1-1", "cols": [
-                    [
-                        {"t": "code", "lang": "python", "file": "gradien",
-                         "src": """input_var = tf.Variable(3.0)
+                {"t": "p", "md": "The operation names mostly follow NumPy, with occasional "
+                                 "divergences. Watch the keyword in the last line."},
+                {"t": "code", "lang": "python", "file": "tensor operations",
+                 "src": """a = tf.ones((2, 2))
+b = tf.square(a)                   # element-wise
+c = tf.sqrt(a)                     # element-wise
+d = b + c                          # element-wise
+e = tf.matmul(a, b)                # matrix product
+f = tf.concat((a, b), axis=0)      # note: 'axis'
+
+def dense(inputs, W, b):
+    return tf.nn.relu(tf.matmul(inputs, W) + b)"""},
+                {"t": "p", "md": "That `axis` keyword becomes `dim` in PyTorch — a small "
+                                 "difference that costs real time when porting code."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.3",
+            "title": "GradientTape: record, then ask",
+            "blocks": [
+                {"t": "p", "md": "TensorFlow records the operations performed inside a tape's "
+                                 "scope, then replays them backwards when you ask for a "
+                                 "gradient."},
+                {"t": "code", "lang": "python", "file": "gradients",
+                 "src": """input_var = tf.Variable(3.0)
 with tf.GradientTape() as tape:
     result = tf.square(input_var)
 gradient = tape.gradient(result, input_var)
 
-# konstanta harus 'ditonton' dulu
+# A constant is not watched by default — say so explicitly:
 c = tf.constant(3.0)
 with tf.GradientTape() as tape:
     tape.watch(c)
     result = tf.square(c)
 gradient = tape.gradient(result, c)"""},
-                    ],
-                    [
-                        {"t": "code", "lang": "python", "file": "kompilasi",
-                         "src": """@tf.function
+                {"t": "band",
+                 "md": "Variables are watched automatically because they are what you "
+                       "normally differentiate. ==Constants must be opted in=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.3",
+            "title": "Compilation: graph mode and XLA",
+            "blocks": [
+                {"t": "p", "md": "Decorating a function replaces it with a compiled program. "
+                                 "The first call is slower; every call after that is faster."},
+                {"t": "code", "lang": "python", "file": "two levels of compilation",
+                 "src": """@tf.function
 def dense(inputs, W, b):
     return tf.nn.relu(tf.matmul(inputs, W) + b)
 
-# XLA: lebih agresif, kompilasi
-# pertama lebih lama
-@tf.function(jit_compile=True)
+@tf.function(jit_compile=True)     # XLA: more aggressive, slower first compile
 def dense(inputs, W, b):
     return tf.nn.relu(tf.matmul(inputs, W) + b)"""},
-                    ],
-                ]},
-                {"t": "cards", "cols": 2, "items": [
-                    {"ico": "✔", "h": "Kekuatan",
-                     "p": "Cepat lewat mode graf dan XLA · lengkap sekali (tensor string, "
-                          "ragged tensor) · `tf.data` unggul untuk pra-pemrosesan · "
-                          "ekosistem produksi paling matang (TFX, TF-Serving, TFLite).",
-                     "style": "good"},
-                    {"ico": "✖", "h": "Kelemahan",
-                     "p": "API sangat luas dengan ribuan operasi · di beberapa tempat "
-                          "menyimpang dari NumPy · dukungan di Hugging Face kalah dari "
-                          "PyTorch.", "style": "bad"},
-                ]},
+                {"t": "p", "md": "This is the same mechanism that later lets a model be "
+                                 "**exported without Python** — chapter 6 uses it for "
+                                 "deployment."},
             ],
-            "notes": "Untuk organisasi yang harus men-deploy on-premise, ekosistem produksi "
-                     "TF inilah argumen yang paling relevan.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.3",
+            "title": "TensorFlow: where it wins and where it hurts",
+            "blocks": [
+                {"t": "cards", "cols": 2, "items": [
+                    {"ico": "✔", "h": "Strengths",
+                     "p": "Fast via graph mode and XLA · very feature-complete (string "
+                          "tensors, ragged tensors) · outstanding `tf.data` for preprocessing "
+                          "· **the most mature ecosystem for production, mobile, and "
+                          "browser deployment**.", "style": "good"},
+                    {"ico": "✖", "h": "Weaknesses",
+                     "p": "A sprawling API with thousands of operations · inconsistent with "
+                          "NumPy in places · less support on Hugging Face than PyTorch.",
+                     "style": "bad"},
+                ]},
+                {"t": "p", "md": "For teams that must deploy on-premise, that production "
+                                 "ecosystem is usually the argument that decides it."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.3",
+            "title": "A whole training step in TensorFlow",
+            "blocks": [
+                {"t": "p", "md": "Putting the pieces together: a compiled step function that "
+                                 "runs the forward pass under a tape, reads the gradients, "
+                                 "and updates two variables in place."},
+                {"t": "code", "lang": "python", "file": "an end-to-end training step",
+                 "src": """learning_rate = 0.1
+
+@tf.function(jit_compile=True)
+def training_step(inputs, targets, W, b):
+    with tf.GradientTape() as tape:
+        predictions = model(inputs, W, b)
+        loss = mean_squared_error(predictions, targets)
+    grad_wrt_W, grad_wrt_b = tape.gradient(loss, [W, b])
+    W.assign_sub(grad_wrt_W * learning_rate)      # in-place: W is a Variable
+    b.assign_sub(grad_wrt_b * learning_rate)
+    return loss
+
+for step in range(40):
+    loss = training_step(inputs, targets, W, b)"""},
+                {"t": "band",
+                 "md": "`assign_sub` mutates the variable. Hold that image — ==the JAX "
+                       "version of this same loop cannot mutate anything==, and the "
+                       "difference is instructive."},
+            ],
         },
 
         {"type": "section", "num": "02", "title": "PyTorch",
-         "lead": "Tensor bisa diubah, .backward() mengisi .grad, eager sebagai bawaan."},
+         "lead": "Mutable tensors, .backward() fills .grad, eager by default."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 3.4",
-            "title": "Gaya PyTorch: tanpa pita, ada .grad",
+            "kicker": "Section 3.4",
+            "title": "Tensors you can assign into",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "tensor, parameter, gradien",
-                 "src": """import torch                      # paketnya 'torch', bukan 'pytorch'
+                {"t": "p", "md": "PyTorch takes the opposite decision from TensorFlow: its "
+                                 "tensors behave like NumPy arrays and can be written to "
+                                 "directly."},
+                {"t": "code", "lang": "python", "file": "tensors and parameters",
+                 "src": """import torch                      # the package is 'torch', not 'pytorch'
 
 x = torch.zeros(size=(2, 1))
-x[0, 0] = 1.0                       # BISA ditugasi - beda dari TensorFlow
+x[0, 0] = 1.0                       # ASSIGNABLE — unlike TensorFlow
 
-p = torch.nn.parameter.Parameter(data=x)      # penanda: ini keadaan terlatih
+p = torch.nn.parameter.Parameter(data=x)     # marks this as trained state
 
-f = torch.cat((torch.ones((2, 2)), x), dim=0) # perhatikan: 'dim', bukan 'axis'
-
-input_var = torch.tensor(3.0, requires_grad=True)
-result = torch.square(input_var)
-result.backward()                   # mengisi input_var.grad
-print(input_var.grad)
-
-input_var.grad = None               # WAJIB: gradien menumpuk kalau tidak dinolkan"""},
-                {"t": "band", "style": "rose",
-                 "md": "Baris terakhir itu sumber bug klasik. Panggilan `.backward()` "
-                       "berikutnya ==menjumlahkan== gradien baru ke yang lama, bukan "
-                       "menggantinya."},
+f = torch.cat((torch.ones((2, 2)), x), dim=0)   # note: 'dim', not 'axis'"""},
+                {"t": "p", "md": "`Parameter` does not change the maths; it marks a tensor as "
+                                 "something an optimizer should own."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 3.4",
-            "title": "Module, optimizer, dan mantra tiga baris",
+            "kicker": "Section 3.4",
+            "title": "No tape — the graph is built as you go",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "pola pelatihan PyTorch",
+                {"t": "p", "md": "Each forward pass builds a one-time computation graph. "
+                                 "Calling `.backward()` on a scalar walks it in reverse and "
+                                 "fills in a `.grad` on every tensor involved."},
+                {"t": "code", "lang": "python", "file": "gradients, and the trap",
+                 "src": """input_var = torch.tensor(3.0, requires_grad=True)
+result = torch.square(input_var)
+result.backward()                   # populates input_var.grad
+print(input_var.grad)
+
+input_var.grad = None               # REQUIRED — gradients accumulate otherwise"""},
+                {"t": "band", "style": "rose",
+                 "md": "That last line is the classic PyTorch bug. The next `.backward()` "
+                       "**adds** to the existing gradient rather than replacing it, so "
+                       "==training silently stops working=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.4",
+            "title": "The three-line incantation",
+            "blocks": [
+                {"t": "p", "md": "Model, loss, and optimizer are aware of each other, and a "
+                                 "training step is always the same three calls in the same "
+                                 "order."},
+                {"t": "code", "lang": "python", "file": "the PyTorch training pattern",
                  "src": """class LinearModel(torch.nn.Module):
     def __init__(self, input_dim, output_dim):
         super().__init__()
@@ -333,149 +410,232 @@ model = LinearModel(2, 1)
 optimizer = torch.optim.SGD(model.parameters(), lr=0.1)
 
 def training_step(inputs, targets):
-    predictions = model(inputs)
-    loss = mean_squared_error(targets, predictions)
-    loss.backward()        # 1. hitung gradien
-    optimizer.step()       # 2. perbarui bobot
-    model.zero_grad()      # 3. nolkan, siap batch berikutnya
+    loss = mean_squared_error(targets, model(inputs))
+    loss.backward()        # 1. compute gradients
+    optimizer.step()       # 2. update the weights
+    model.zero_grad()      # 3. clear, ready for the next batch
     return loss"""},
-                {"t": "cards", "cols": 2, "items": [
-                    {"ico": "✔", "h": "Kekuatan",
-                     "p": "Eager sebagai bawaan -- pengawakutuan paling mudah · "
-                          "dukungan kelas satu di Hugging Face, dan itulah pendorong "
-                          "adopsi terbesarnya.", "style": "good"},
-                    {"ico": "✖", "h": "Kelemahan",
-                     "p": "API tidak konsisten (`axis` kadang jadi `dim`) · menurut "
-                          "penulis, **paling lambat** di antara yang besar · "
-                          "`torch.compile()` masih penuh kasus tepi dan jarang dipakai.",
-                     "style": "bad"},
-                ]},
+                {"t": "p", "md": "Learn those three lines in that order and most PyTorch code "
+                                 "becomes readable."},
             ],
-            "notes": "Kalau peserta datang dari Hugging Face, PyTorch akan terasa paling "
-                     "akrab. Katakan itu; jangan paksakan satu kerangka.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.4",
+            "title": "PyTorch: where it wins and where it hurts",
+            "blocks": [
+                {"t": "cards", "cols": 2, "items": [
+                    {"ico": "✔", "h": "Strengths",
+                     "p": "Eager by default, which makes debugging the easiest of the three · "
+                          "**first-class support on Hugging Face**, and that is the single "
+                          "biggest driver of its adoption.", "style": "good"},
+                    {"ico": "✖", "h": "Weaknesses",
+                     "p": "Internally inconsistent API (`axis` sometimes becomes `dim`) · "
+                          "in the authors' assessment **the slowest of the major "
+                          "frameworks** · `torch.compile()` is still full of edge cases and "
+                          "little used.", "style": "bad"},
+                ]},
+                {"t": "p", "md": "If your team already lives on Hugging Face, PyTorch will "
+                                 "feel like home. That is a legitimate reason to choose it."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.4",
+            "title": "Compilation in PyTorch, and why it is rarely used",
+            "blocks": [
+                {"t": "p", "md": "PyTorch gained a compiler comparatively late. It can be "
+                                 "applied to a model or used as a decorator."},
+                {"t": "code", "lang": "python", "file": "torch.compile",
+                 "src": """compiled_model = torch.compile(model)
+
+@torch.compile
+def dense(inputs, W, b):
+    return torch.nn.relu(torch.matmul(inputs, W) + b)"""},
+                {"t": "band", "style": "amber",
+                 "md": "Unlike TensorFlow and JAX, **most PyTorch code runs eagerly, "
+                       "uncompiled**. The book is blunt that the Dynamo compiler is still "
+                       "full of edge cases and that ==only a small percentage of users "
+                       "employ it=="},
+            ],
         },
 
         {"type": "section", "num": "03", "title": "JAX",
-         "lead": "Fungsi tanpa keadaan. Gradien sebagai transformasi fungsi."},
+         "lead": "Stateless functions. Gradients as a transformation of a function."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 3.5",
-            "title": "Tanpa keadaan -- termasuk bilangan acaknya",
+            "kicker": "Section 3.5",
+            "title": "Stateless — including the random numbers",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "array, kunci acak, pembaruan",
+                {"t": "p", "md": "JAX functions keep no state between calls. State is passed "
+                                 "in as arguments and returned as results — and that applies "
+                                 "to the random number generator too."},
+                {"t": "code", "lang": "python", "file": "arrays, keys, updates",
                  "src": """import jax
 from jax import numpy as jnp
 
-jnp.ones(shape=(2, 1))              # API NumPy, tanpa penyimpangan
+jnp.ones(shape=(2, 1))              # the NumPy API, with no divergence
 
-# Tidak ada keadaan acak global: kunci diberikan secara eksplisit
 seed_key = jax.random.key(123)
-jax.random.normal(seed_key, shape=(3,))     # kunci sama -> nilai sama, selalu
-key1, key2 = jax.random.split(seed_key)     # cara membuat kunci baru
+jax.random.normal(seed_key, shape=(3,))     # same key -> same value, always
+key1, key2 = jax.random.split(seed_key)     # how you get a fresh key
 
-# Array kekal: perbarui dengan menghasilkan array baru
 x = jnp.array([1, 2, 3], dtype="float32")
-new_x = x.at[0].set(10)"""},
+new_x = x.at[0].set(10)             # arrays are immutable: you get a new one"""},
                 {"t": "band",
-                 "md": "Kelihatannya merepotkan, dan memang. Imbalannya: perhitungan jadi "
-                       "==bisa diparalelkan otomatis tanpa sinkronisasi==, dan hasilnya "
-                       "deterministik -- dua hal yang menentukan pada skala besar."},
+                 "md": "It reads as extra work, and it is. What you buy is computation that "
+                       "==parallelises automatically without synchronisation==, and results "
+                       "that are exactly reproducible."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 3.5",
-            "title": "jax.grad(): gradien sebagai transformasi fungsi",
+            "kicker": "Section 3.5",
+            "title": "jax.grad(): a function in, a function out",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "lingkar pelatihan JAX yang utuh",
-                 "src": """def model(inputs, W, b):
-    return jnp.matmul(inputs, W) + b
-
-def compute_loss(state, inputs, targets):
+                {"t": "p", "md": "JAX does not record operations. It **transforms your "
+                                 "function** into a different function that computes "
+                                 "gradients."},
+                {"t": "code", "lang": "python", "file": "the transformation",
+                 "src": """def compute_loss(state, inputs, targets):
     W, b = state
-    predictions = model(inputs, W, b)
+    predictions = jnp.matmul(inputs, W) + b
     return jnp.mean(jnp.square(targets - predictions))
 
-grad_fn = jax.value_and_grad(compute_loss)   # fungsi -> fungsi gradien
+grad_fn = jax.value_and_grad(compute_loss)      # function -> gradient function
+loss, grads = grad_fn((W, b), inputs, targets)  # grads mirrors the shape of state"""},
+                {"t": "table",
+                 "head": ["What you need", "What you call"],
+                 "widths": [42, 58],
+                 "rows": [
+                     ["Gradients only", "`jax.grad(f)`"],
+                     ["Loss **and** gradients together", "`jax.value_and_grad(f)` — cheaper"],
+                     ["Plus auxiliary outputs", "`jax.value_and_grad(f, has_aux=True)`"],
+                 ]},
+            ],
+        },
 
-@jax.jit
+        {
+            "type": "slide",
+            "kicker": "Section 3.5",
+            "title": "What a full training step looks like",
+            "blocks": [
+                {"t": "p", "md": "Because nothing mutates, the step function has to **return** "
+                                 "the new weights. That single constraint shapes all JAX code."},
+                {"t": "code", "lang": "python", "file": "a JAX training step",
+                 "src": """@jax.jit
 def training_step(inputs, targets, W, b):
     loss, grads = grad_fn((W, b), inputs, targets)
     grad_W, grad_b = grads
     W = W - grad_W * 0.1
     b = b - grad_b * 0.1
-    return loss, W, b                        # keadaan WAJIB dikembalikan"""},
-                {"t": "table",
-                 "head": ["Kebutuhan", "Pemanggilannya"],
-                 "widths": [40, 60],
-                 "rows": [
-                     ["Gradien saja", "`jax.grad(f)`"],
-                     ["Rugi **dan** gradien sekaligus", "`jax.value_and_grad(f)` -- lebih hemat"],
-                     ["Ada keluaran sampingan", "`jax.value_and_grad(f, has_aux=True)`"],
-                 ]},
+    return loss, W, b                # state comes back out
+
+for step in range(40):
+    loss, W, b = training_step(inputs, targets, W, b)"""},
                 {"t": "band", "style": "amber",
-                 "md": "Perhatikan baris terakhir: `training_step` **mengembalikan** W dan b. "
-                       "Tidak ada yang berubah di tempat. Inilah harga dan sekaligus "
-                       "keuntungan gaya fungsional."},
+                 "md": "Notice the loop: `W` and `b` are ==threaded through by hand==. Nothing "
+                       "is updated in place, anywhere."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 3.3-3.5",
-            "title": "Ketiganya berdampingan",
+            "kicker": "Section 3.5",
+            "title": "JAX: where it wins and where it hurts",
+            "blocks": [
+                {"t": "cards", "cols": 2, "items": [
+                    {"ico": "✔", "h": "Strengths",
+                     "p": "In the authors' assessment **the fastest of the three** · perfect "
+                          "NumPy API consistency, so no surprises · built for XLA and TPUs "
+                          "from the beginning.", "style": "good"},
+                    {"ico": "✖", "h": "Weaknesses",
+                     "p": "Metaprogramming plus compilation makes debugging **markedly "
+                          "harder** than eager execution · low-level training loops are more "
+                          "verbose than TF or PyTorch.", "style": "bad"},
+                ]},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Sections 3.3 – 3.5",
+            "title": "The same job, three ways of asking for it",
+            "blocks": [
+                {"t": "mmd", "id": "ch03-gradstyle", "src": MMD_GRADSTYLE,
+                 "cap": "The gradient is the same quantity in all three; what differs is who "
+                        "holds the state while it is computed."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Sections 3.3 – 3.5",
+            "title": "Side by side",
             "blocks": [
                 {"t": "table",
                  "head": ["", "TensorFlow", "PyTorch", "JAX"],
                  "widths": [17, 28, 28, 27],
                  "rows": [
-                     ["**Paradigma**", "Imperatif berkeadaan", "Imperatif berkeadaan",
-                      "Fungsional tanpa keadaan"],
-                     ["**Tensor**", "Kekal (`Variable` untuk keadaan)", "Bisa diubah",
-                      "Kekal (`.at[].set()`)"],
-                     ["**Gradien**", "`GradientTape`", "`.backward()` → `.grad`",
-                      "`jax.grad()` (transformasi)"],
-                     ["**Kompilasi**", "`@tf.function`, XLA", "`@torch.compile` (Dynamo)",
+                     ["**Paradigm**", "Stateful imperative", "Stateful imperative",
+                      "Stateless functional"],
+                     ["**Tensors**", "Immutable (`Variable` for state)", "Mutable",
+                      "Immutable (`.at[].set()`)"],
+                     ["**Gradients**", "`GradientTape`", "`.backward()` → `.grad`",
+                      "`jax.grad()` transformation"],
+                     ["**Compilation**", "`@tf.function`, XLA", "`@torch.compile` (Dynamo)",
                       "`@jax.jit` (XLA)"],
-                     ["**Eksekusi**", "Eager + graf", "Eager (bawaan)", "Eager + JIT"],
-                     ["**Awak-kutu**", "Lebih sulit di mode graf", "Paling mudah",
-                      "Sulit (fungsional + JIT)"],
-                     ["**Ekosistem**", "Perkakas produksi", "Hugging Face, riset",
-                      "Riset, skala Google"],
+                     ["**Debugging**", "Harder in graph mode", "Easiest",
+                      "Hardest (functional + JIT)"],
+                     ["**Ecosystem**", "Production tooling", "Hugging Face, research",
+                      "Research, Google scale"],
                  ]},
-                {"t": "band", "style": "amber",
-                 "md": "Peringkat kecepatan di bab ini -- JAX tercepat, PyTorch terlambat, "
-                       "selisih 20-30% dan sampai 3-5x pada model besar -- adalah "
-                       "==penilaian penulis buku==, bukan tolok ukur yang dijalankan kelas "
-                       "ini. Perlakukan sebagai petunjuk arah, dan ukur sendiri untuk "
-                       "beban kerja Anda."},
             ],
-            "notes": "Jangan berdebat soal kerangka mana yang menang. Yang penting peserta "
-                     "tahu ada perbedaan rancangan yang nyata, dan Keras menutupinya.",
         },
-
-        {"type": "section", "num": "04", "title": "Keras",
-         "lead": "Satu kode model, tiga mesin di belakangnya."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 3.6",
-            "title": "Mengganti backend tanpa menyentuh model",
+            "kicker": "Sections 3.3 – 3.5",
+            "title": "About those speed claims",
             "blocks": [
+                {"t": "band", "style": "amber",
+                 "md": "The book's ranking — JAX fastest, PyTorch slowest, a 20–30% spread "
+                       "and up to 3–5× on large models — is the **authors' assessment**, "
+                       "==not a benchmark this course ran=="},
+                {"t": "p", "md": "Treat it as a direction to investigate, and measure it "
+                                 "yourself on your own workload before it becomes a "
+                                 "procurement argument."},
+            ],
+            "notes": "Do not let the room turn this into a framework war. The point is that "
+                     "real design differences exist and Keras papers over them.",
+        },
+
+        {"type": "section", "num": "04", "title": "Keras",
+         "lead": "One model definition, three engines behind it."},
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.6",
+            "title": "Switching backend without touching the model",
+            "blocks": [
+                {"t": "p", "md": "The backend is a configuration choice, not a code change. "
+                                 "There are two ways to make it."},
                 {"t": "cols", "ratio": "1-1", "cols": [
                     [
-                        {"t": "code", "lang": "python", "file": "cara 1 — variabel lingkungan",
+                        {"t": "code", "lang": "python", "file": "way 1 — environment variable",
                          "src": """import os
 os.environ["KERAS_BACKEND"] = "jax"
 
-import keras          # HARUS setelah baris di atas
+import keras            # MUST come after
 print(keras.backend.backend())"""},
                         {"t": "out", "src": "jax"},
                     ],
                     [
-                        {"t": "code", "lang": "json", "file": "cara 2 — ~/.keras/keras.json",
+                        {"t": "code", "lang": "json", "file": "way 2 — ~/.keras/keras.json",
                          "src": """{
     "floatx": "float32",
     "epsilon": 1e-07,
@@ -485,21 +645,22 @@ print(keras.backend.backend())"""},
                     ],
                 ]},
                 {"t": "band", "style": "rose",
-                 "md": "Urutannya tidak bisa ditawar: `os.environ[...]` harus dijalankan "
-                       "==sebelum `import keras` yang pertama==. Setelah Keras terimpor, "
-                       "menggantinya tidak berpengaruh, dan ini kebingungan nomor satu "
-                       "di praktikum."},
-                {"t": "p", "md": "Penulis menyarankan **JAX** untuk unjuk kerja terbaik, "
-                                 "tetapi kode Keras yang sama berjalan di ketiganya."},
+                 "md": "The ordering is not negotiable: `os.environ[...]` must run "
+                       "==before the first `import keras`==. After Keras is imported, "
+                       "changing it has no effect — and this is the number one confusion "
+                       "in the lab sessions."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 3.6.1-3.6.2",
-            "title": "Layer: satuan bangunan, dan penyimpulan bentuk otomatis",
+            "kicker": "Section 3.6.1",
+            "title": "Layer: the unit everything is built from",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "listing 3.22 — Layer kustom",
+                {"t": "p", "md": "Every Keras component either is a `Layer` or works closely "
+                                 "with one. A custom layer needs two methods: `build()` "
+                                 "creates the weights, `call()` does the work."},
+                {"t": "code", "lang": "python", "file": "listing 3.22 — a custom Layer",
                  "src": """import keras
 
 class SimpleDense(keras.Layer):
@@ -508,7 +669,7 @@ class SimpleDense(keras.Layer):
         self.units = units
         self.activation = activation
 
-    def build(self, input_shape):          # dipanggil sekali, saat masukan pertama tiba
+    def build(self, input_shape):          # called once, when the first input arrives
         batch_dim, input_dim = input_shape
         self.W = self.add_weight(shape=(input_dim, self.units),
                                  initializer="random_normal")
@@ -516,34 +677,110 @@ class SimpleDense(keras.Layer):
 
     def call(self, inputs):
         y = keras.ops.matmul(inputs, self.W) + self.b
-        return self.activation(y) if self.activation is not None else y
-
-my_dense = SimpleDense(units=32, activation=keras.ops.relu)
-output = my_dense(keras.ops.ones(shape=(2, 784)))
-print(output.shape)"""},
-                {"t": "out", "src": "(2, 32)"},
-                {"t": "band",
-                 "md": "Karena `build()` menerima `input_shape`, Anda ==tidak perlu "
-                       "menyebutkan ukuran masukan== saat menyusun model. Itulah sebabnya "
-                       "`Sequential` di bab 2 hanya menyebut jumlah unit."},
+        return self.activation(y) if self.activation is not None else y"""},
+                {"t": "p", "md": "Note that `build()` receives the input shape. The layer does "
+                                 "not need to be told it in advance."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 3.6.4-3.6.6",
-            "title": "compile(), fit(), dan data validasi",
+            "kicker": "Section 3.6.2",
+            "title": "Automatic shape inference, and what it buys",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "listing 3.26-3.29 — alur lengkap",
-                 "src": """model = keras.Sequential([keras.layers.Dense(1)])
+                {"t": "mmd", "id": "ch03-layerlife", "src": MMD_LAYERLIFE,
+                 "cap": "Weights are created on the first call, not at construction time."},
+                {"t": "p", "md": "This is why `Sequential` in chapter 2 only had to name the "
+                                 "number of units. There was ==no `input_shape` anywhere==, "
+                                 "and now you know why."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.6.2",
+            "title": "Seeing it happen",
+            "blocks": [
+                {"t": "p", "md": "Instantiate the layer, call it on data, and read back the "
+                                 "output shape it inferred."},
+                {"t": "code", "lang": "python", "file": "using the custom layer",
+                 "src": """my_dense = SimpleDense(units=32, activation=keras.ops.relu)
+
+input_tensor = keras.ops.ones(shape=(2, 784))
+output_tensor = my_dense(input_tensor)
+print(output_tensor.shape)"""},
+                {"t": "out", "src": "(2, 32)"},
+                {"t": "p", "md": "The 784 was never written down. It was read off the data at "
+                                 "the moment the layer was first used."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.6",
+            "title": "Which backend, in practice",
+            "blocks": [
+                {"t": "mmd", "id": "ch03-choose", "src": MMD_CHOOSE,
+                 "cap": "A decision aid, not a law. The point of Keras is that this choice "
+                        "stays reversible."},
+                {"t": "p", "md": "The authors suggest **JAX** for best performance — but the "
+                                 "same Keras code runs on all three, so the decision can be "
+                                 "deferred and revisited."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.6.3",
+            "title": "Models are graphs of layers — and a choice of hypothesis space",
+            "blocks": [
+                {"t": "quote",
+                 "md": "The topology of a model defines a hypothesis space. By choosing a "
+                       "network topology, you constrain your space of possibilities to a "
+                       "specific series of tensor operations.",
+                 "cite": "Chollet & Watson, section 3.6.3"},
+                {"t": "p", "md": "That phrase — **hypothesis space** — is the one from chapter "
+                                 "1. Choosing an architecture is choosing what the model is "
+                                 "allowed to learn. Chapter 7 covers the three ways of "
+                                 "expressing that choice."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.6.4",
+            "title": "compile(): three decisions, spelled out",
+            "blocks": [
+                {"t": "p", "md": "The string shorthand is convenient, but the object form is "
+                                 "what you need as soon as a learning rate has to be tuned."},
+                {"t": "code", "lang": "python", "file": "listing 3.26 — two equivalent forms",
+                 "src": """model.compile(
+    optimizer="rmsprop",
+    loss="mean_squared_error",
+    metrics=["accuracy"],
+)
 
 model.compile(
     optimizer=keras.optimizers.RMSprop(learning_rate=1e-4),
     loss=keras.losses.MeanSquaredError(),
     metrics=[keras.metrics.BinaryAccuracy()],
-)
+)"""},
+                {"t": "p", "md": "Built in and ready to use: **SGD, RMSprop, Adam**; losses "
+                                 "including the crossentropies and MSE; metrics including "
+                                 "accuracy, AUC, precision, and recall."},
+            ],
+        },
 
-history = model.fit(
+        {
+            "type": "slide",
+            "kicker": "Section 3.6.5",
+            "title": "fit(), and why validation data is not optional",
+            "blocks": [
+                {"t": "p", "md": "`fit()` runs the loop and returns a `History` object whose "
+                                 "`.history` dictionary holds the per-epoch values of every "
+                                 "metric — which is what you plot."},
+                {"t": "code", "lang": "python", "file": "listing 3.29 — training with validation",
+                 "src": """history = model.fit(
     training_inputs, training_targets,
     epochs=5, batch_size=16,
     validation_data=(val_inputs, val_targets),
@@ -553,43 +790,126 @@ print(history.history.keys())
 loss_and_metrics = model.evaluate(val_inputs, val_targets, batch_size=128)
 predictions = model.predict(new_inputs, batch_size=128)"""},
                 {"t": "quote",
-                 "md": "Tujuan machine learning bukan memperoleh model yang bekerja baik "
-                       "pada data latih -- melainkan model yang bekerja baik secara umum, "
-                       "terutama pada data yang belum pernah ditemuinya.",
-                 "cite": "Chollet & Watson, bab 3"},
-                {"t": "band", "style": "amber",
-                 "md": "Karena itu **metric** dipantau tetapi ==tidak dioptimalkan==; yang "
-                       "dioptimalkan hanya loss. Membingungkan keduanya adalah kesalahan "
-                       "yang mahal, dan bab 5-6 kembali ke sini."},
+                 "md": "The goal of machine learning is not to obtain models that perform "
+                       "well on the training data … it is to obtain models that perform well "
+                       "in general, particularly on data points that the model has never "
+                       "encountered before.",
+                 "cite": "Chollet & Watson, section 3.6.5"},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Ringkasan",
-            "title": "Yang wajib terbawa dari bab 3",
+            "kicker": "Section 3.6.5",
+            "title": "Holding data back, by hand",
+            "blocks": [
+                {"t": "mmd", "id": "ch03-valsplit", "src": MMD_VALSPLIT,
+                 "cap": "Shuffle first, then split. Splitting an ordered array is one of the "
+                        "classic ways to get a meaningless validation score."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.6.5",
+            "title": "…and what that looks like in code",
+            "blocks": [
+                {"t": "p", "md": "`fit()` can do this for you with `validation_split`, but "
+                                 "doing it by hand once makes the shuffle step impossible "
+                                 "to forget later."},
+                {"t": "code", "lang": "python", "file": "listing 3.28 — a manual split",
+                 "src": """indices_permutation = np.random.permutation(len(inputs))
+shuffled_inputs = inputs[indices_permutation]
+shuffled_targets = targets[indices_permutation]
+
+num_validation_samples = int(0.3 * len(inputs))
+val_inputs = shuffled_inputs[:num_validation_samples]
+val_targets = shuffled_targets[:num_validation_samples]
+training_inputs = shuffled_inputs[num_validation_samples:]
+training_targets = shuffled_targets[num_validation_samples:]"""},
+                {"t": "band",
+                 "md": "Chapter 5 shows what goes wrong when the shuffle is skipped: you can "
+                       "end up training on classes 0–7 and testing on 8–9, and ==the code "
+                       "will not complain=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.6.6",
+            "title": "Two ways to run inference, and when each is right",
+            "blocks": [
+                {"t": "p", "md": "Calling the model directly is fine for a small batch you "
+                                 "already hold in memory. `predict()` is what you want for "
+                                 "anything larger."},
+                {"t": "code", "lang": "python", "file": "inference",
+                 "src": """predictions = model(new_inputs)                          # all at once
+predictions = model.predict(new_inputs, batch_size=128)  # batched, returns NumPy"""},
+                {"t": "band",
+                 "md": "`predict()` iterates in batches, so it ==will not exhaust memory== on "
+                       "a large array, and it hands back NumPy rather than backend tensors."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.7",
+            "title": "Why this stack is a safe thing to learn",
+            "blocks": [
+                {"t": "bullets", "items": [
+                    "**Python has won** the ML and data science ecosystem; the authors see no "
+                    "replacement within fifteen years.",
+                    "All four frameworks are **stable**. New ones may appear, but are unlikely "
+                    "to displace existing workflows.",
+                    "New hardware — AMD GPUs and others — must integrate with the existing "
+                    "frameworks, so it ==does not disrupt your code==.",
+                ]},
+                {"t": "band",
+                 "md": "Which is the actual argument for Keras: it has provided **future-proof "
+                       "stability since 2015**, and a pluggable backend is what lets it keep "
+                       "doing so."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 3.6.4",
+            "title": "Metrics are watched; loss is optimised",
+            "blocks": [
+                {"t": "band", "style": "amber",
+                 "md": "A **metric** is monitored but ==never optimised for==. Only the "
+                       "**loss** is minimised. Confusing the two is an expensive mistake, "
+                       "and chapters 5 and 6 return to exactly why."},
+                {"t": "p", "md": "The short version: many of the things you actually care "
+                                 "about — ROC AUC, for instance — cannot be used as a loss "
+                                 "because they are not differentiable."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Summary",
+            "title": "What has to survive this chapter",
             "blocks": [
                 {"t": "steps", "items": [
-                    "Semua kerangka kerja besar memberi **autodiff, komputasi tensor "
-                    "di GPU/TPU, dan komputasi tersebar**. Sisanya soal gaya.",
-                    "**TensorFlow** -- tensor kekal + `Variable`, `GradientTape`, ekosistem "
-                    "produksi terkuat.",
-                    "**PyTorch** -- tensor bisa diubah, `.backward()`, eager, raja Hugging Face. "
-                    "Jangan lupa `zero_grad()`.",
-                    "**JAX** -- fungsional tanpa keadaan, `jax.grad()` sebagai transformasi, "
-                    "kunci acak eksplisit, tercepat menurut penulis.",
-                    "**Keras 3** duduk di atas ketiganya. Ganti backend lewat "
-                    "`KERAS_BACKEND` ==sebelum== `import keras`.",
-                    "`Layer` dengan `build()` + `call()` adalah satuan bangunan segalanya; "
-                    "bentuk masukan disimpulkan sendiri.",
+                    "Every major framework gives you **autodiff, GPU/TPU tensor computation, "
+                    "and distributed execution**. The rest is style.",
+                    "**TensorFlow** — immutable tensors plus `Variable`, `GradientTape`, and "
+                    "the strongest production ecosystem.",
+                    "**PyTorch** — mutable tensors, `.backward()`, eager, king of Hugging "
+                    "Face. Never forget `zero_grad()`.",
+                    "**JAX** — stateless functional, `jax.grad()` as a transformation, "
+                    "explicit random keys, fastest by the authors' account.",
+                    "**Keras 3** sits on all three. Set `KERAS_BACKEND` ==before== "
+                    "`import keras`.",
+                    "A `Layer` with `build()` + `call()` is the unit everything is made of, "
+                    "and input shapes are inferred on first use.",
                 ]},
                 {"t": "links", "items": [
-                    {"k": "NOTEBOOK", "ic": "📓", "v": "01_tiga_kerangka_berdampingan.ipynb",
-                     "href": "../../course-slides/notebooks/ch03/01_tiga_kerangka_berdampingan.ipynb"},
-                    {"k": "BAB BERIKUT", "ic": "➡", "v": "Bab 4 — Klasifikasi dan regresi",
+                    {"k": "NOTEBOOK", "ic": "📓", "v": "01_three_frameworks_side_by_side.ipynb",
+                     "href": "../../course-slides/notebooks/ch03/01_three_frameworks_side_by_side.ipynb"},
+                    {"k": "NEXT", "ic": "➡", "v": "Chapter 4 — Classification and regression",
                      "href": "../ch04/index.html"},
-                    {"k": "KODE BUKU", "ic": "⌥", "v": "notebook resmi bab 3",
-                     "href": BOOK["code_repo"] + "/blob/master/chapter03_introduction-to-ml-frameworks.ipynb"},
                 ]},
             ],
         },

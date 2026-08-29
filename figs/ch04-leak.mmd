@@ -1,0 +1,5 @@
+
+flowchart TB
+  OK["mean, std from<br/>TRAINING data"] --> A1["apply to training set"]
+  OK --> A2["apply to test set"]
+  BAD["mean, std from<br/>the TEST set"] --> B1["information leak:<br/>the model learns something<br/>about data it must not see"]

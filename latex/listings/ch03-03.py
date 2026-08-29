@@ -1,9 +1,11 @@
-@tf.function
-def dense(inputs, W, b):
-    return tf.nn.relu(tf.matmul(inputs, W) + b)
+input_var = tf.Variable(3.0)
+with tf.GradientTape() as tape:
+    result = tf.square(input_var)
+gradient = tape.gradient(result, input_var)
 
-# XLA: lebih agresif, kompilasi
-# pertama lebih lama
-@tf.function(jit_compile=True)
-def dense(inputs, W, b):
-    return tf.nn.relu(tf.matmul(inputs, W) + b)
+# A constant is not watched by default — say so explicitly:
+c = tf.constant(3.0)
+with tf.GradientTape() as tape:
+    tape.watch(c)
+    result = tf.square(c)
+gradient = tape.gradient(result, c)

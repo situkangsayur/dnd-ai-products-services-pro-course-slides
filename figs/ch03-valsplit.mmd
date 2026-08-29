@@ -1,0 +1,8 @@
+
+flowchart LR
+  ALL["All labelled data"] --> SH["Shuffle"]
+  SH --> V["Validation<br/>30%"]
+  SH --> T["Training<br/>70%"]
+  T --> FIT["fit(...)"]
+  V --> FIT
+  FIT --> H["History<br/>per-epoch metrics"]

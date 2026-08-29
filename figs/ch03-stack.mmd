@@ -1,0 +1,13 @@
+
+flowchart TB
+  K["<b>Keras 3</b><br/>layers, models, losses,<br/>optimizers, metrics, training loops"]
+  TF["<b>TensorFlow</b><br/>GradientTape<br/>@tf.function"]
+  PT["<b>PyTorch</b><br/>.backward()<br/>torch.compile()"]
+  JX["<b>JAX</b><br/>jax.grad()<br/>@jax.jit"]
+  BASE["autodiff  ·  tensor compute on CPU / GPU / TPU  ·  distributed execution"]
+  K --> TF
+  K --> PT
+  K --> JX
+  TF --> BASE
+  PT --> BASE
+  JX --> BASE

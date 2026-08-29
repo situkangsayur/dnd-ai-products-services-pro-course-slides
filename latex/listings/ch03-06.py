@@ -1,13 +1,8 @@
-import jax
-from jax import numpy as jnp
+import torch                      # the package is 'torch', not 'pytorch'
 
-jnp.ones(shape=(2, 1))              # API NumPy, tanpa penyimpangan
+x = torch.zeros(size=(2, 1))
+x[0, 0] = 1.0                       # ASSIGNABLE — unlike TensorFlow
 
-# Tidak ada keadaan acak global: kunci diberikan secara eksplisit
-seed_key = jax.random.key(123)
-jax.random.normal(seed_key, shape=(3,))     # kunci sama -> nilai sama, selalu
-key1, key2 = jax.random.split(seed_key)     # cara membuat kunci baru
+p = torch.nn.parameter.Parameter(data=x)     # marks this as trained state
 
-# Array kekal: perbarui dengan menghasilkan array baru
-x = jnp.array([1, 2, 3], dtype="float32")
-new_x = x.at[0].set(10)
+f = torch.cat((torch.ones((2, 2)), x), dim=0)   # note: 'dim', not 'axis'

@@ -1,0 +1,8 @@
+
+flowchart LR
+  A["Raw data"] --> B["Vectorise<br/>multi-hot / normalise"]
+  B --> C["Split off<br/>validation"]
+  C --> D["Train long enough<br/>to overfit"]
+  D --> E["Read the curve<br/>find the turning point"]
+  E --> F["Retrain to that<br/>epoch only"]
+  F --> G["Evaluate once<br/>on the test set"]

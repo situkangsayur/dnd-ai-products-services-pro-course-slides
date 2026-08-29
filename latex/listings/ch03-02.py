@@ -1,11 +1,9 @@
-input_var = tf.Variable(3.0)
-with tf.GradientTape() as tape:
-    result = tf.square(input_var)
-gradient = tape.gradient(result, input_var)
+a = tf.ones((2, 2))
+b = tf.square(a)                   # element-wise
+c = tf.sqrt(a)                     # element-wise
+d = b + c                          # element-wise
+e = tf.matmul(a, b)                # matrix product
+f = tf.concat((a, b), axis=0)      # note: 'axis'
 
-# konstanta harus 'ditonton' dulu
-c = tf.constant(3.0)
-with tf.GradientTape() as tape:
-    tape.watch(c)
-    result = tf.square(c)
-gradient = tape.gradient(result, c)
+def dense(inputs, W, b):
+    return tf.nn.relu(tf.matmul(inputs, W) + b)

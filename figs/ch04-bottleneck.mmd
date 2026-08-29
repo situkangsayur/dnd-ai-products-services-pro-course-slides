@@ -1,0 +1,11 @@
+
+flowchart LR
+  subgraph OK["What works"]
+    direction LR
+    A1["Dense 64"] --> A2["Dense 64"] --> A3["Dense 46<br/>softmax"]
+  end
+  subgraph BAD["Information bottleneck"]
+    direction LR
+    B1["Dense 64"] --> B2["Dense 4"] --> B3["Dense 46<br/>softmax"]
+  end
+  OK ~~~ BAD

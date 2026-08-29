@@ -1,0 +1,5 @@
+
+flowchart LR
+  E1["Epochs 1-4<br/>both losses fall"] --> E2["Epoch 4<br/><b>turning point</b>"]
+  E2 --> E3["Epochs 5-20<br/>training loss keeps falling,<br/>validation loss climbs"]
+  E3 --> ACT["Retrain a fresh model<br/>for 4 epochs only"]

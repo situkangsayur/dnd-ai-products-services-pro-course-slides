@@ -3,15 +3,15 @@
 \documentclass[aspectratio=169,11pt,t]{beamer}
 \usepackage{itbpro}
 
-\coursetitle{Pengenalan TensorFlow, PyTorch, JAX, dan Keras}
-\coursesubtitle{Satu lapis Dense yang sama, ditulis empat kali -- supaya perbedaan rancangan keempat kerangka kerja itu terlihat, bukan sekadar didengar.}
+\coursetitle{Introduction to TensorFlow, PyTorch, JAX, and Keras}
+\coursesubtitle{The same Dense layer written four times --- so the design differences between the frameworks are something you can see rather than something you are told.}
 \coursekicker{Chapter 3}
-\coursesource{Chollet \& Watson, Deep Learning with Python 3e -- bab 3}
-\courseduration{2,5 jam}
-\coursepresenter{Rahman Indra Kesuma, S.Kom., M.Cs.}{Asisten Pengajar}
+\coursesource{Chollet \& Watson, Deep Learning with Python 3e --- chapter 3}
+\courseduration{2.5 hours}
+\coursepresenter{Rahman Indra Kesuma, S.Kom., M.Cs.}{Teaching Assistant}
 \coursebrand{AI for Professional \textperiodcentered\ ITB \textperiodcentered\ Ch 3}
 
-\title{Pengenalan TensorFlow, PyTorch, JAX, dan Keras}
+\title{Introduction to TensorFlow, PyTorch, JAX, and Keras}
 \author{Rahman Indra Kesuma, S.Kom., M.Cs.}
 \date{}
 
@@ -19,265 +19,416 @@
 \covertitle
 
 \framekicker{Learning outcomes}
-\begin{frame}[shrink=25]{Tujuan Sesi}
-\leadpar{Setelah sesi ini, peserta dapat:}
+\begin{frame}[shrink=25]{Session Objectives}
+\leadpar{By the end of this session, participants can:}
 \begin{isteps}
-\item Menyebut \textbf{tiga kemampuan} yang dimiliki semua kerangka kerja modern, dan apa yang membedakan ketiganya di luar itu.
-\item Menghitung gradien dengan \textbf{GradientTape, \inlinecode{.backward()}, dan \inlinecode{jax.grad()}}, dan menjelaskan mengapa ketiganya berbeda bentuk.
-\item Membedakan \textbf{stateful imperatif} (TF, PyTorch) dari \textbf{stateless fungsional} (JAX), dan menyebut akibatnya pada penulisan lingkar pelatihan.
-\item Mengganti backend Keras 3 tanpa mengubah satu baris pun kode model.
-\item Menulis \textbf{Layer kustom} dengan \inlinecode{build()} dan \inlinecode{call()}, lalu memakainya lewat \inlinecode{compile()} dan \inlinecode{fit()}.
+\item Name the \textbf{three capabilities} every modern framework provides, and what distinguishes them beyond that.
+\item Compute gradients with \textbf{GradientTape, \inlinecode{.backward()}, and \inlinecode{jax.grad()}}, and explain why the three look so different.
+\item Distinguish \textbf{stateful imperative} (TF, PyTorch) from \textbf{stateless functional} (JAX), and say what that costs when writing a training loop.
+\item Switch the Keras 3 backend without changing a line of model code.
+\item Write a custom \inlinecode{Layer} with \inlinecode{build()} and \inlinecode{call()}, then drive it through \inlinecode{compile()} and \inlinecode{fit()}.
 \end{isteps}
 
 \vskip 6pt
 \vskip 4pt
-\reslink{Buku}{Bab 3 --- teks penuh}{https://deeplearningwithpython.io/chapters/chapter03\_introduction-to-ml-frameworks}
-\reslink{Notebook}{01\_tiga\_kerangka\_berdampingan.ipynb}{../../notebooks/ch03/01\_tiga\_kerangka\_berdampingan.ipynb}
-\reslink{Notebook}{02\_keras3\_ganti\_backend.ipynb}{../../notebooks/ch03/02\_keras3\_ganti\_backend.ipynb}
-\reslink{Notebook}{03\_layer\_kustom\_dan\_fit.ipynb}{../../notebooks/ch03/03\_layer\_kustom\_dan\_fit.ipynb}
-\reslink{Repo}{Notebook resmi penulis}{https://github.com/fchollet/deep-learning-with-python-notebooks/blob/master/chapter03\_introduction-to-ml-frameworks.ipynb}
+\reslink{Book}{Chapter 3 --- full text}{https://deeplearningwithpython.io/chapters/chapter03\_introduction-to-ml-frameworks}
+\reslink{Notebook}{01\_three\_frameworks\_side\_by\_side.ipynb}{../../notebooks/ch03/01\_three\_frameworks\_side\_by\_side.ipynb}
+\reslink{Notebook}{02\_keras3\_switch\_backend.ipynb}{../../notebooks/ch03/02\_keras3\_switch\_backend.ipynb}
+\reslink{Notebook}{03\_custom\_layer\_and\_fit.ipynb}{../../notebooks/ch03/03\_custom\_layer\_and\_fit.ipynb}
+\reslink{Repo}{Author's official notebook}{https://github.com/fchollet/deep-learning-with-python-notebooks/blob/master/chapter03\_introduction-to-ml-frameworks.ipynb}
 \vskip 2pt
 \end{frame}
 
-\framekicker{Bagian 3.1}
-\begin{frame}[shrink=25]{Bagaimana kita sampai di sini}
+\framekicker{Section 3.1}
+\begin{frame}[shrink=25]{How the field arrived here}
 \begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.52\textheight}{%
-
-\begin{tikzpicture}[font=\sffamily\tiny]
-  \draw[rule, line width=1pt] (0,0) -- (11,0);
-  \foreach \x/\y/\l in {0.3/1964/autodiff, 1.9/2006/CUDA, 3.4/2009/Theano,
-                        5.0/2015/{Keras + TensorFlow}, 6.7/2016/PyTorch,
-                        8.3/2018/JAX, 10.4/2023/{PyTorch 2.0 + Keras 3.0}} {
-    \fill[itbbluelt] (\x,0) circle (2.2pt);
-    \node[text=ink3, font=\ttfamily\tiny, anchor=north] at (\x,-0.12) {\y};
-    \node[text=ink, anchor=south, align=center, text width=1.9cm] at (\x,0.12) {\l};
-  }
-  \node[text=amber, anchor=west] at (0,-0.85)
-    {Pertengahan 2016: lebih dari separuh pengguna TensorFlow mengaksesnya lewat Keras};
-\end{tikzpicture}
-
-}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch03-timeline.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Autodiff sudah ada sejak 1964; yang baru pada 2009 adalah menggabungkannya dengan komputasi GPU.\par}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Automatic differentiation is from 1964. What was new in 2009 was combining it with GPU computation.\par}
+\begin{iband}[signal]
+One number worth keeping: by \textbf{mid-2016, more than half} of TensorFlow's users reached it \hilite{through Keras}
+\end{iband}
+\end{frame}
+
+\framekicker{Section 3.1}
+\begin{frame}[shrink=25]{Three capabilities every one of them has}
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardaccent}
 \cardh{Automatic differentiation}
-Untuk sebarang fungsi terdiferensialkan yang Anda tulis.
+For any differentiable function you write, not just for a fixed catalogue of layers.
 \end{icardaccent}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardaccent}
-\cardh{Komputasi tensor}
-Di CPU, GPU, dan perangkat keras khusus seperti TPU.
+\cardh{Tensor computation}
+On CPUs, GPUs, and specialised hardware such as TPUs.
 \end{icardaccent}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardaccent}
-\cardh{Komputasi tersebar}
-Antar-perangkat dan antar-mesin.
+\cardh{Distributed execution}
+Across devices and across machines.
 \end{icardaccent}
 \end{minipage}%
 \begin{iband}[signal]
-Ketiganya dimiliki \textbf{semua} kerangka kerja besar. Jadi memilih kerangka kerja \hilite{bukan soal kemampuan}, melainkan soal gaya penulisan, ekosistem, dan kecepatan.
+Because all of them provide all three, choosing a framework is \hilite{not a question of capability}. It is a question of writing style, ecosystem, and speed.
 \end{iband}
 \end{frame}
 
-\framekicker{Bagian 3.2}
-\begin{frame}[shrink=25]{Keras di atas, tiga mesin di bawah}
+\framekicker{Section 3.2}
+\begin{frame}[shrink=25]{Keras on top, three engines underneath}
 \begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.52\textheight}{%
-
-\begin{tikzpicture}[font=\sffamily\tiny,
-  fw/.style={draw=signal!60, fill=signal!9, rounded corners=4pt,
-             minimum width=2.7cm, minimum height=1.25cm, text=ink, align=center}]
-  \node[draw=violet!70, fill=violet!14, rounded corners=5pt, minimum width=9.6cm,
-        minimum height=0.95cm, text=ink, align=center] (k) at (0,2.0)
-    {{\bfseries\small Keras 3}\\layer $\cdot$ model $\cdot$ loss $\cdot$ optimizer $\cdot$ metric $\cdot$ lingkar pelatihan};
-  \node[fw] (tf) at (-3.2,0.55) {{\bfseries TensorFlow}\\GradientTape\\\ttfamily @tf.function};
-  \node[fw] (pt) at (0,0.55)    {{\bfseries PyTorch}\\\ttfamily .backward()\\\ttfamily torch.compile()};
-  \node[fw] (jx) at (3.2,0.55)  {{\bfseries JAX}\\\ttfamily jax.grad()\\\ttfamily @jax.jit};
-  \draw[rule] (tf.north) -- ($(tf.north)+(0,0.35)$);
-  \draw[rule] (pt.north) -- ($(pt.north)+(0,0.35)$);
-  \draw[rule] (jx.north) -- ($(jx.north)+(0,0.35)$);
-  \node[draw=rule, fill=papertint, rounded corners=4pt, minimum width=9.0cm,
-        minimum height=0.6cm, text=ink2] at (0,-0.55)
-    {autodiff $\cdot$ komputasi tensor di CPU / GPU / TPU $\cdot$ komputasi tersebar};
-\end{tikzpicture}
-
-}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch03-stack.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Keras memerlukan sebuah backend; NumPy bisa dipasang tetapi tidak bisa melatih, sebab tidak punya API gradien.\par}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Keras needs a backend. NumPy can be plugged in but cannot train --- it has no gradient API.\par}
+\end{frame}
+
+\framekicker{Section 3.2}
+\begin{frame}[shrink=25]{Where the line between them falls}
 \begin{iquote}
-\quotetext{Keras itu seperti perangkat bangunan pracetak, sedangkan TensorFlow, PyTorch, dan JAX adalah bahan mentahnya.}\quotecite{Chollet \& Watson, bab 3}
+\quotetext{Keras is like a prefabricated building kit, while TensorFlow, PyTorch, and JAX are like raw materials used in construction.}\quotecite{Chollet \& Watson, section 3.2}
 \end{iquote}
+\begin{minipage}[t]{0.485\textwidth}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Low level} --- tensors, tensor operations, and backpropagation.\par}\vskip 4pt
+
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.485\textwidth}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{High level} --- layers combined into models, losses, optimizers, metrics, and training loops.\par}\vskip 4pt
+
+\end{minipage}%
 \end{frame}
-\note{Pembagian kerjanya: yang di bawah mengurus tensor, operasi, dan backprop; yang di atas mengurus layer, model, loss, optimizer, metric, dan lingkar pelatihan.}
 
-\coursesection{01}{TensorFlow}{Tensor kekal, Variable untuk keadaan, GradientTape untuk gradien.}
+\coursesection{01}{TensorFlow}{Immutable tensors, Variables for state, a tape for gradients.}
 
-\framekicker{Bagian 3.3}
-\begin{frame}[shrink=25]{Tensor kekal, Variable yang bisa diubah}
-\icode{python}{tensor dan variable di TensorFlow}{listings/ch03-01.py}
+\framekicker{Section 3.3}
+\begin{frame}[shrink=25]{Constants are immutable; state needs a Variable}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}This is the first thing that surprises people coming from NumPy: a TensorFlow tensor cannot be assigned into. Anything that has to change during training must be a \inlinecode{tf.Variable}.\par}\vskip 4pt
+\icode{python}{tensors and variables}{listings/ch03-01.py}
 \begin{iband}[amber]
-Bedanya penting: tensor TensorFlow itu \textbf{konstanta yang kekal}. Untuk parameter yang harus berubah saat dilatih, Anda \hilite{wajib} memakai \inlinecode{tf.Variable}.
+Forgetting this produces a confusing error at the worst moment: \hilite{your weights simply refuse to update}
 \end{iband}
 \end{frame}
 
-\framekicker{Bagian 3.3}
-\begin{frame}[shrink=25]{GradientTape dan kompilasi graf}
-\begin{minipage}[t]{0.485\textwidth}
-\icode{python}{gradien}{listings/ch03-02.py}
-
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.485\textwidth}
-\icode{python}{kompilasi}{listings/ch03-03.py}
-
-\end{minipage}%
-\begin{minipage}[t]{0.494\textwidth}
-\begin{icardgood}
-\cardh{Kekuatan}
-Cepat lewat mode graf dan XLA $\cdot$ lengkap sekali (tensor string, ragged tensor) $\cdot$ \inlinecode{tf.data} unggul untuk pra-pemrosesan $\cdot$ ekosistem produksi paling matang (TFX, TF-Serving, TFLite).
-\end{icardgood}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.494\textwidth}
-\begin{icardbad}
-\cardh{Kelemahan}
-API sangat luas dengan ribuan operasi $\cdot$ di beberapa tempat menyimpang dari NumPy $\cdot$ dukungan di Hugging Face kalah dari PyTorch.
-\end{icardbad}
-\end{minipage}%
-\end{frame}
-\note{Untuk organisasi yang harus men-deploy on-premise, ekosistem produksi TF inilah argumen yang paling relevan.}
-
-\coursesection{02}{PyTorch}{Tensor bisa diubah, .backward() mengisi .grad, eager sebagai bawaan.}
-
-\framekicker{Bagian 3.4}
-\begin{frame}[shrink=25]{Gaya PyTorch: tanpa pita, ada .grad}
-\icode{python}{tensor, parameter, gradien}{listings/ch03-04.py}
-\begin{iband}[rose]
-Baris terakhir itu sumber bug klasik. Panggilan \inlinecode{.backward()} berikutnya \hilite{menjumlahkan} gradien baru ke yang lama, bukan menggantinya.
-\end{iband}
+\framekicker{Section 3.3}
+\begin{frame}[shrink=25]{Operations, and one naming detail to notice}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The operation names mostly follow NumPy, with occasional divergences. Watch the keyword in the last line.\par}\vskip 4pt
+\icode{python}{tensor operations}{listings/ch03-02.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}That \inlinecode{axis} keyword becomes \inlinecode{dim} in PyTorch --- a small difference that costs real time when porting code.\par}\vskip 4pt
 \end{frame}
 
-\framekicker{Bagian 3.4}
-\begin{frame}[shrink=25]{Module, optimizer, dan mantra tiga baris}
-\icode{python}{pola pelatihan PyTorch}{listings/ch03-05.py}
-\begin{minipage}[t]{0.494\textwidth}
-\begin{icardgood}
-\cardh{Kekuatan}
-Eager sebagai bawaan -- pengawakutuan paling mudah $\cdot$ dukungan kelas satu di Hugging Face, dan itulah pendorong adopsi terbesarnya.
-\end{icardgood}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.494\textwidth}
-\begin{icardbad}
-\cardh{Kelemahan}
-API tidak konsisten (\inlinecode{axis} kadang jadi \inlinecode{dim}) $\cdot$ menurut penulis, \textbf{paling lambat} di antara yang besar $\cdot$ \inlinecode{torch.compile()} masih penuh kasus tepi dan jarang dipakai.
-\end{icardbad}
-\end{minipage}%
-\end{frame}
-\note{Kalau peserta datang dari Hugging Face, PyTorch akan terasa paling akrab. Katakan itu; jangan paksakan satu kerangka.}
-
-\coursesection{03}{JAX}{Fungsi tanpa keadaan. Gradien sebagai transformasi fungsi.}
-
-\framekicker{Bagian 3.5}
-\begin{frame}[shrink=25]{Tanpa keadaan -- termasuk bilangan acaknya}
-\icode{python}{array, kunci acak, pembaruan}{listings/ch03-06.py}
+\framekicker{Section 3.3}
+\begin{frame}[shrink=25]{GradientTape: record, then ask}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}TensorFlow records the operations performed inside a tape's scope, then replays them backwards when you ask for a gradient.\par}\vskip 4pt
+\icode{python}{gradients}{listings/ch03-03.py}
 \begin{iband}[signal]
-Kelihatannya merepotkan, dan memang. Imbalannya: perhitungan jadi \hilite{bisa diparalelkan otomatis tanpa sinkronisasi}, dan hasilnya deterministik -- dua hal yang menentukan pada skala besar.
+Variables are watched automatically because they are what you normally differentiate. \hilite{Constants must be opted in}
 \end{iband}
 \end{frame}
 
-\framekicker{Bagian 3.5}
-\begin{frame}[shrink=25]{jax.grad(): gradien sebagai transformasi fungsi}
-\icode{python}{lingkar pelatihan JAX yang utuh}{listings/ch03-07.py}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.376\textwidth}>{\raggedright\arraybackslash}p{0.564\textwidth}}
-\thead{Kebutuhan} & \thead{Pemanggilannya} \\ \midrule
-Gradien saja & \inlinecode{jax.grad(f)} \\
-Rugi \textbf{dan} gradien sekaligus & \inlinecode{jax.value\_and\_grad(f)} -- lebih hemat \\
-Ada keluaran sampingan & \inlinecode{jax.value\_and\_grad(f, has\_aux=True)} \\
-\end{itable}
+\framekicker{Section 3.3}
+\begin{frame}[shrink=25]{Compilation: graph mode and XLA}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Decorating a function replaces it with a compiled program. The first call is slower; every call after that is faster.\par}\vskip 4pt
+\icode{python}{two levels of compilation}{listings/ch03-04.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}This is the same mechanism that later lets a model be \textbf{exported without Python} --- chapter 6 uses it for deployment.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 3.3}
+\begin{frame}[shrink=25]{TensorFlow: where it wins and where it hurts}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardgood}
+\cardh{Strengths}
+Fast via graph mode and XLA $\cdot$ very feature-complete (string tensors, ragged tensors) $\cdot$ outstanding \inlinecode{tf.data} for preprocessing $\cdot$ \textbf{the most mature ecosystem for production, mobile, and browser deployment}.
+\end{icardgood}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardbad}
+\cardh{Weaknesses}
+A sprawling API with thousands of operations $\cdot$ inconsistent with NumPy in places $\cdot$ less support on Hugging Face than PyTorch.
+\end{icardbad}
+\end{minipage}%
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}For teams that must deploy on-premise, that production ecosystem is usually the argument that decides it.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 3.3}
+\begin{frame}[shrink=25]{A whole training step in TensorFlow}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Putting the pieces together: a compiled step function that runs the forward pass under a tape, reads the gradients, and updates two variables in place.\par}\vskip 4pt
+\icode{python}{an end-to-end training step}{listings/ch03-05.py}
+\begin{iband}[signal]
+\inlinecode{assign\_sub} mutates the variable. Hold that image --- \hilite{the JAX version of this same loop cannot mutate anything}, and the difference is instructive.
+\end{iband}
+\end{frame}
+
+\coursesection{02}{PyTorch}{Mutable tensors, .backward() fills .grad, eager by default.}
+
+\framekicker{Section 3.4}
+\begin{frame}[shrink=25]{Tensors you can assign into}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}PyTorch takes the opposite decision from TensorFlow: its tensors behave like NumPy arrays and can be written to directly.\par}\vskip 4pt
+\icode{python}{tensors and parameters}{listings/ch03-06.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\inlinecode{Parameter} does not change the maths; it marks a tensor as something an optimizer should own.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 3.4}
+\begin{frame}[shrink=25]{No tape --- the graph is built as you go}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Each forward pass builds a one-time computation graph. Calling \inlinecode{.backward()} on a scalar walks it in reverse and fills in a \inlinecode{.grad} on every tensor involved.\par}\vskip 4pt
+\icode{python}{gradients, and the trap}{listings/ch03-07.py}
+\begin{iband}[rose]
+That last line is the classic PyTorch bug. The next \inlinecode{.backward()} \textbf{adds} to the existing gradient rather than replacing it, so \hilite{training silently stops working}
+\end{iband}
+\end{frame}
+
+\framekicker{Section 3.4}
+\begin{frame}[shrink=25]{The three-line incantation}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Model, loss, and optimizer are aware of each other, and a training step is always the same three calls in the same order.\par}\vskip 4pt
+\icode{python}{the PyTorch training pattern}{listings/ch03-08.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Learn those three lines in that order and most PyTorch code becomes readable.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 3.4}
+\begin{frame}[shrink=25]{PyTorch: where it wins and where it hurts}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardgood}
+\cardh{Strengths}
+Eager by default, which makes debugging the easiest of the three $\cdot$ \textbf{first-class support on Hugging Face}, and that is the single biggest driver of its adoption.
+\end{icardgood}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardbad}
+\cardh{Weaknesses}
+Internally inconsistent API (\inlinecode{axis} sometimes becomes \inlinecode{dim}) $\cdot$ in the authors' assessment \textbf{the slowest of the major frameworks} $\cdot$ \inlinecode{torch.compile()} is still full of edge cases and little used.
+\end{icardbad}
+\end{minipage}%
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}If your team already lives on Hugging Face, PyTorch will feel like home. That is a legitimate reason to choose it.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 3.4}
+\begin{frame}[shrink=25]{Compilation in PyTorch, and why it is rarely used}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}PyTorch gained a compiler comparatively late. It can be applied to a model or used as a decorator.\par}\vskip 4pt
+\icode{python}{torch.compile}{listings/ch03-09.py}
 \begin{iband}[amber]
-Perhatikan baris terakhir: \inlinecode{training\_step} \textbf{mengembalikan} W dan b. Tidak ada yang berubah di tempat. Inilah harga dan sekaligus keuntungan gaya fungsional.
+Unlike TensorFlow and JAX, \textbf{most PyTorch code runs eagerly, uncompiled}. The book is blunt that the Dynamo compiler is still full of edge cases and that \hilite{only a small percentage of users employ it}
 \end{iband}
 \end{frame}
 
-\framekicker{Bagian 3.3-3.5}
-\begin{frame}[shrink=25]{Ketiganya berdampingan}
+\coursesection{03}{JAX}{Stateless functions. Gradients as a transformation of a function.}
+
+\framekicker{Section 3.5}
+\begin{frame}[shrink=25]{Stateless --- including the random numbers}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}JAX functions keep no state between calls. State is passed in as arguments and returned as results --- and that applies to the random number generator too.\par}\vskip 4pt
+\icode{python}{arrays, keys, updates}{listings/ch03-10.py}
+\begin{iband}[signal]
+It reads as extra work, and it is. What you buy is computation that \hilite{parallelises automatically without synchronisation}, and results that are exactly reproducible.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 3.5}
+\begin{frame}[shrink=25]{jax.grad(): a function in, a function out}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}JAX does not record operations. It \textbf{transforms your function} into a different function that computes gradients.\par}\vskip 4pt
+\icode{python}{the transformation}{listings/ch03-11.py}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.3948\textwidth}>{\raggedright\arraybackslash}p{0.5452\textwidth}}
+\thead{What you need} & \thead{What you call} \\ \midrule
+Gradients only & \inlinecode{jax.grad(f)} \\
+Loss \textbf{and} gradients together & \inlinecode{jax.value\_and\_grad(f)} --- cheaper \\
+Plus auxiliary outputs & \inlinecode{jax.value\_and\_grad(f, has\_aux=True)} \\
+\end{itable}
+\end{frame}
+
+\framekicker{Section 3.5}
+\begin{frame}[shrink=25]{What a full training step looks like}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Because nothing mutates, the step function has to \textbf{return} the new weights. That single constraint shapes all JAX code.\par}\vskip 4pt
+\icode{python}{a JAX training step}{listings/ch03-12.py}
+\begin{iband}[amber]
+Notice the loop: \inlinecode{W} and \inlinecode{b} are \hilite{threaded through by hand}. Nothing is updated in place, anywhere.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 3.5}
+\begin{frame}[shrink=25]{JAX: where it wins and where it hurts}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardgood}
+\cardh{Strengths}
+In the authors' assessment \textbf{the fastest of the three} $\cdot$ perfect NumPy API consistency, so no surprises $\cdot$ built for XLA and TPUs from the beginning.
+\end{icardgood}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardbad}
+\cardh{Weaknesses}
+Metaprogramming plus compilation makes debugging \textbf{markedly harder} than eager execution $\cdot$ low-level training loops are more verbose than TF or PyTorch.
+\end{icardbad}
+\end{minipage}%
+\end{frame}
+
+\framekicker{Sections 3.3 -- 3.5}
+\begin{frame}[shrink=25]{The same job, three ways of asking for it}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch03-gradstyle.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The gradient is the same quantity in all three; what differs is who holds the state while it is computed.\par}
+\end{frame}
+
+\framekicker{Sections 3.3 -- 3.5}
+\begin{frame}[shrink=25]{Side by side}
 \begin{itable}{>{\raggedright\arraybackslash}p{0.1598\textwidth}>{\raggedright\arraybackslash}p{0.2632\textwidth}>{\raggedright\arraybackslash}p{0.2632\textwidth}>{\raggedright\arraybackslash}p{0.2538\textwidth}}
 \thead{} & \thead{TensorFlow} & \thead{PyTorch} & \thead{JAX} \\ \midrule
-\textbf{Paradigma} & Imperatif berkeadaan & Imperatif berkeadaan & Fungsional tanpa keadaan \\
-\textbf{Tensor} & Kekal (\inlinecode{Variable} untuk keadaan) & Bisa diubah & Kekal (\inlinecode{.at[].set()}) \\
-\textbf{Gradien} & \inlinecode{GradientTape} & \inlinecode{.backward()} $\rightarrow$ \inlinecode{.grad} & \inlinecode{jax.grad()} (transformasi) \\
-\textbf{Kompilasi} & \inlinecode{@tf.function}, XLA & \inlinecode{@torch.compile} (Dynamo) & \inlinecode{@jax.jit} (XLA) \\
-\textbf{Eksekusi} & Eager + graf & Eager (bawaan) & Eager + JIT \\
-\textbf{Awak-kutu} & Lebih sulit di mode graf & Paling mudah & Sulit (fungsional + JIT) \\
-\textbf{Ekosistem} & Perkakas produksi & Hugging Face, riset & Riset, skala Google \\
+\textbf{Paradigm} & Stateful imperative & Stateful imperative & Stateless functional \\
+\textbf{Tensors} & Immutable (\inlinecode{Variable} for state) & Mutable & Immutable (\inlinecode{.at[].set()}) \\
+\textbf{Gradients} & \inlinecode{GradientTape} & \inlinecode{.backward()} $\rightarrow$ \inlinecode{.grad} & \inlinecode{jax.grad()} transformation \\
+\textbf{Compilation} & \inlinecode{@tf.function}, XLA & \inlinecode{@torch.compile} (Dynamo) & \inlinecode{@jax.jit} (XLA) \\
+\textbf{Debugging} & Harder in graph mode & Easiest & Hardest (functional + JIT) \\
+\textbf{Ecosystem} & Production tooling & Hugging Face, research & Research, Google scale \\
 \end{itable}
-\begin{iband}[amber]
-Peringkat kecepatan di bab ini -- JAX tercepat, PyTorch terlambat, selisih 20-30\% dan sampai 3-5x pada model besar -- adalah \hilite{penilaian penulis buku}, bukan tolok ukur yang dijalankan kelas ini. Perlakukan sebagai petunjuk arah, dan ukur sendiri untuk beban kerja Anda.
-\end{iband}
 \end{frame}
-\note{Jangan berdebat soal kerangka mana yang menang. Yang penting peserta tahu ada perbedaan rancangan yang nyata, dan Keras menutupinya.}
 
-\coursesection{04}{Keras}{Satu kode model, tiga mesin di belakangnya.}
+\framekicker{Sections 3.3 -- 3.5}
+\begin{frame}[shrink=25]{About those speed claims}
+\begin{iband}[amber]
+The book's ranking --- JAX fastest, PyTorch slowest, a 20--30\% spread and up to 3--5$\times$ on large models --- is the \textbf{authors' assessment}, \hilite{not a benchmark this course ran}
+\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Treat it as a direction to investigate, and measure it yourself on your own workload before it becomes a procurement argument.\par}\vskip 4pt
+\end{frame}
+\note{Do not let the room turn this into a framework war. The point is that real design differences exist and Keras papers over them.}
 
-\framekicker{Bagian 3.6}
-\begin{frame}[shrink=25]{Mengganti backend tanpa menyentuh model}
+\coursesection{04}{Keras}{One model definition, three engines behind it.}
+
+\framekicker{Section 3.6}
+\begin{frame}[shrink=25]{Switching backend without touching the model}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The backend is a configuration choice, not a code change. There are two ways to make it.\par}\vskip 4pt
 \begin{minipage}[t]{0.485\textwidth}
-\icode{python}{cara 1 --- variabel lingkungan}{listings/ch03-08.py}
-\ioutput{listings/ch03-09.txt}
+\icode{python}{way 1 --- environment variable}{listings/ch03-13.py}
+\ioutput{listings/ch03-14.txt}
 
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.485\textwidth}
-\icode{json}{cara 2 --- \textasciitilde{}/.keras/keras.json}{listings/ch03-10.json}
+\icode{json}{way 2 --- \textasciitilde{}/.keras/keras.json}{listings/ch03-15.json}
 
 \end{minipage}%
 \begin{iband}[rose]
-Urutannya tidak bisa ditawar: \inlinecode{os.environ[...]} harus dijalankan \hilite{sebelum \inlinecode{import keras} yang pertama}. Setelah Keras terimpor, menggantinya tidak berpengaruh, dan ini kebingungan nomor satu di praktikum.
-\end{iband}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Penulis menyarankan \textbf{JAX} untuk unjuk kerja terbaik, tetapi kode Keras yang sama berjalan di ketiganya.\par}\vskip 4pt
-\end{frame}
-
-\framekicker{Bagian 3.6.1-3.6.2}
-\begin{frame}[shrink=25]{Layer: satuan bangunan, dan penyimpulan bentuk otomatis}
-\icode{python}{listing 3.22 --- Layer kustom}{listings/ch03-11.py}
-\ioutput{listings/ch03-12.txt}
-\begin{iband}[signal]
-Karena \inlinecode{build()} menerima \inlinecode{input\_shape}, Anda \hilite{tidak perlu menyebutkan ukuran masukan} saat menyusun model. Itulah sebabnya \inlinecode{Sequential} di bab 2 hanya menyebut jumlah unit.
+The ordering is not negotiable: \inlinecode{os.environ[...]} must run \hilite{before the first \inlinecode{import keras}}. After Keras is imported, changing it has no effect --- and this is the number one confusion in the lab sessions.
 \end{iband}
 \end{frame}
 
-\framekicker{Bagian 3.6.4-3.6.6}
-\begin{frame}[shrink=25]{compile(), fit(), dan data validasi}
-\icode{python}{listing 3.26-3.29 --- alur lengkap}{listings/ch03-13.py}
+\framekicker{Section 3.6.1}
+\begin{frame}[shrink=25]{Layer: the unit everything is built from}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Every Keras component either is a \inlinecode{Layer} or works closely with one. A custom layer needs two methods: \inlinecode{build()} creates the weights, \inlinecode{call()} does the work.\par}\vskip 4pt
+\icode{python}{listing 3.22 --- a custom Layer}{listings/ch03-16.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Note that \inlinecode{build()} receives the input shape. The layer does not need to be told it in advance.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 3.6.2}
+\begin{frame}[shrink=25]{Automatic shape inference, and what it buys}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch03-layerlife.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Weights are created on the first call, not at construction time.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}This is why \inlinecode{Sequential} in chapter 2 only had to name the number of units. There was \hilite{no \inlinecode{input\_shape} anywhere}, and now you know why.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 3.6.2}
+\begin{frame}[shrink=25]{Seeing it happen}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Instantiate the layer, call it on data, and read back the output shape it inferred.\par}\vskip 4pt
+\icode{python}{using the custom layer}{listings/ch03-17.py}
+\ioutput{listings/ch03-18.txt}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The 784 was never written down. It was read off the data at the moment the layer was first used.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 3.6}
+\begin{frame}[shrink=25]{Which backend, in practice}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch03-choose.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont A decision aid, not a law. The point of Keras is that this choice stays reversible.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The authors suggest \textbf{JAX} for best performance --- but the same Keras code runs on all three, so the decision can be deferred and revisited.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 3.6.3}
+\begin{frame}[shrink=25]{Models are graphs of layers --- and a choice of hypothesis space}
 \begin{iquote}
-\quotetext{Tujuan machine learning bukan memperoleh model yang bekerja baik pada data latih -- melainkan model yang bekerja baik secara umum, terutama pada data yang belum pernah ditemuinya.}\quotecite{Chollet \& Watson, bab 3}
+\quotetext{The topology of a model defines a hypothesis space. By choosing a network topology, you constrain your space of possibilities to a specific series of tensor operations.}\quotecite{Chollet \& Watson, section 3.6.3}
 \end{iquote}
-\begin{iband}[amber]
-Karena itu \textbf{metric} dipantau tetapi \hilite{tidak dioptimalkan}; yang dioptimalkan hanya loss. Membingungkan keduanya adalah kesalahan yang mahal, dan bab 5-6 kembali ke sini.
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}That phrase --- \textbf{hypothesis space} --- is the one from chapter 1. Choosing an architecture is choosing what the model is allowed to learn. Chapter 7 covers the three ways of expressing that choice.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 3.6.4}
+\begin{frame}[shrink=25]{compile(): three decisions, spelled out}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The string shorthand is convenient, but the object form is what you need as soon as a learning rate has to be tuned.\par}\vskip 4pt
+\icode{python}{listing 3.26 --- two equivalent forms}{listings/ch03-19.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Built in and ready to use: \textbf{SGD, RMSprop, Adam}; losses including the crossentropies and MSE; metrics including accuracy, AUC, precision, and recall.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 3.6.5}
+\begin{frame}[shrink=25]{fit(), and why validation data is not optional}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\inlinecode{fit()} runs the loop and returns a \inlinecode{History} object whose \inlinecode{.history} dictionary holds the per-epoch values of every metric --- which is what you plot.\par}\vskip 4pt
+\icode{python}{listing 3.29 --- training with validation}{listings/ch03-20.py}
+\begin{iquote}
+\quotetext{The goal of machine learning is not to obtain models that perform well on the training data \ldots{} it is to obtain models that perform well in general, particularly on data points that the model has never encountered before.}\quotecite{Chollet \& Watson, section 3.6.5}
+\end{iquote}
+\end{frame}
+
+\framekicker{Section 3.6.5}
+\begin{frame}[shrink=25]{Holding data back, by hand}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch03-valsplit.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Shuffle first, then split. Splitting an ordered array is one of the classic ways to get a meaningless validation score.\par}
+\end{frame}
+
+\framekicker{Section 3.6.5}
+\begin{frame}[shrink=25]{\ldots{}and what that looks like in code}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\inlinecode{fit()} can do this for you with \inlinecode{validation\_split}, but doing it by hand once makes the shuffle step impossible to forget later.\par}\vskip 4pt
+\icode{python}{listing 3.28 --- a manual split}{listings/ch03-21.py}
+\begin{iband}[signal]
+Chapter 5 shows what goes wrong when the shuffle is skipped: you can end up training on classes 0--7 and testing on 8--9, and \hilite{the code will not complain}
 \end{iband}
 \end{frame}
 
-\framekicker{Ringkasan}
-\begin{frame}[shrink=25]{Yang wajib terbawa dari bab 3}
+\framekicker{Section 3.6.6}
+\begin{frame}[shrink=25]{Two ways to run inference, and when each is right}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Calling the model directly is fine for a small batch you already hold in memory. \inlinecode{predict()} is what you want for anything larger.\par}\vskip 4pt
+\icode{python}{inference}{listings/ch03-22.py}
+\begin{iband}[signal]
+\inlinecode{predict()} iterates in batches, so it \hilite{will not exhaust memory} on a large array, and it hands back NumPy rather than backend tensors.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 3.7}
+\begin{frame}[shrink=25]{Why this stack is a safe thing to learn}
+\begin{ibullets}
+\item \textbf{Python has won} the ML and data science ecosystem; the authors see no replacement within fifteen years.
+\item All four frameworks are \textbf{stable}. New ones may appear, but are unlikely to displace existing workflows.
+\item New hardware --- AMD GPUs and others --- must integrate with the existing frameworks, so it \hilite{does not disrupt your code}.
+\end{ibullets}
+\begin{iband}[signal]
+Which is the actual argument for Keras: it has provided \textbf{future-proof stability since 2015}, and a pluggable backend is what lets it keep doing so.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 3.6.4}
+\begin{frame}[shrink=25]{Metrics are watched; loss is optimised}
+\begin{iband}[amber]
+A \textbf{metric} is monitored but \hilite{never optimised for}. Only the \textbf{loss} is minimised. Confusing the two is an expensive mistake, and chapters 5 and 6 return to exactly why.
+\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The short version: many of the things you actually care about --- ROC AUC, for instance --- cannot be used as a loss because they are not differentiable.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Summary}
+\begin{frame}[shrink=25]{What has to survive this chapter}
 \begin{isteps}
-\item Semua kerangka kerja besar memberi \textbf{autodiff, komputasi tensor di GPU/TPU, dan komputasi tersebar}. Sisanya soal gaya.
-\item \textbf{TensorFlow} -- tensor kekal + \inlinecode{Variable}, \inlinecode{GradientTape}, ekosistem produksi terkuat.
-\item \textbf{PyTorch} -- tensor bisa diubah, \inlinecode{.backward()}, eager, raja Hugging Face. Jangan lupa \inlinecode{zero\_grad()}.
-\item \textbf{JAX} -- fungsional tanpa keadaan, \inlinecode{jax.grad()} sebagai transformasi, kunci acak eksplisit, tercepat menurut penulis.
-\item \textbf{Keras 3} duduk di atas ketiganya. Ganti backend lewat \inlinecode{KERAS\_BACKEND} \hilite{sebelum} \inlinecode{import keras}.
-\item \inlinecode{Layer} dengan \inlinecode{build()} + \inlinecode{call()} adalah satuan bangunan segalanya; bentuk masukan disimpulkan sendiri.
+\item Every major framework gives you \textbf{autodiff, GPU/TPU tensor computation, and distributed execution}. The rest is style.
+\item \textbf{TensorFlow} --- immutable tensors plus \inlinecode{Variable}, \inlinecode{GradientTape}, and the strongest production ecosystem.
+\item \textbf{PyTorch} --- mutable tensors, \inlinecode{.backward()}, eager, king of Hugging Face. Never forget \inlinecode{zero\_grad()}.
+\item \textbf{JAX} --- stateless functional, \inlinecode{jax.grad()} as a transformation, explicit random keys, fastest by the authors' account.
+\item \textbf{Keras 3} sits on all three. Set \inlinecode{KERAS\_BACKEND} \hilite{before} \inlinecode{import keras}.
+\item A \inlinecode{Layer} with \inlinecode{build()} + \inlinecode{call()} is the unit everything is made of, and input shapes are inferred on first use.
 \end{isteps}
 \vskip 4pt
-\reslink{NOTEBOOK}{01\_tiga\_kerangka\_berdampingan.ipynb}{../../course-slides/notebooks/ch03/01\_tiga\_kerangka\_berdampingan.ipynb}
-\reslink{BAB BERIKUT}{Bab 4 --- Klasifikasi dan regresi}{../ch04/index.html}
-\reslink{KODE BUKU}{notebook resmi bab 3}{https://github.com/fchollet/deep-learning-with-python-notebooks/blob/master/chapter03\_introduction-to-ml-frameworks.ipynb}
+\reslink{NOTEBOOK}{01\_three\_frameworks\_side\_by\_side.ipynb}{../../course-slides/notebooks/ch03/01\_three\_frameworks\_side\_by\_side.ipynb}
+\reslink{NEXT}{Chapter 4 --- Classification and regression}{../ch04/index.html}
 \vskip 2pt
 \end{frame}
 

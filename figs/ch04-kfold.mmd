@@ -1,0 +1,12 @@
+
+flowchart TB
+  D["Training data<br/>split into 4 folds"]
+  F1["Fold 1<br/>validate on part 1"]
+  F2["Fold 2<br/>validate on part 2"]
+  F3["Fold 3<br/>validate on part 3"]
+  F4["Fold 4<br/>validate on part 4"]
+  AVG["Final score<br/>average of the four"]
+  D --> F1 --> AVG
+  D --> F2 --> AVG
+  D --> F3 --> AVG
+  D --> F4 --> AVG

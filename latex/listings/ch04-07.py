@@ -1,10 +1,10 @@
 model = keras.Sequential([
-    layers.Dense(64, activation="relu"),
-    layers.Dense(64, activation="relu"),
-    layers.Dense(46, activation="softmax"),
+    layers.Dense(16, activation="relu"),
+    layers.Dense(16, activation="relu"),
+    layers.Dense(1, activation="sigmoid"),
 ])
-model.compile(optimizer="adam", loss="categorical_crossentropy", metrics=["accuracy"])
-model.fit(x_train, y_train, epochs=9, batch_size=512)     # 9 = titik terbaik tadi
+model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+model.fit(x_train, y_train, epochs=4, batch_size=512)
 
 results = model.evaluate(x_test, y_test)
 print(results)
