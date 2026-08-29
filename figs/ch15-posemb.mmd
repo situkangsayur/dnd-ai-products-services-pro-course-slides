@@ -1,0 +1,9 @@
+
+flowchart TB
+  T["Token IDs<br/><code>[12, 907, 3, 44]</code>"]
+  TE["<b>Token embedding</b><br/><small>what the word means</small>"]
+  P["Positions<br/><code>[0, 1, 2, 3]</code>"]
+  PE["<b>Position embedding</b><br/><small>where the word sits</small>"]
+  S["<b>Add them</b><br/><small>position-aware embedding</small>"]
+  T --> TE --> S
+  P --> PE --> S

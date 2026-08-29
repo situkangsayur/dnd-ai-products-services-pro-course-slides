@@ -1,0 +1,4 @@
+[
+    ["<s>", "the", "quick", "brown", "fox", "jumped", ".", "</s>"],
+    ["<s>", "the", "panda", "slept", ".", "</s>", "<pad>", "<pad>"],
+]

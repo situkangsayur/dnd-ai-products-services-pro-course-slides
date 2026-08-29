@@ -92,5 +92,21 @@
  "ch14-history": "55dbb9abc0206a39",
  "ch14-ladder": "27659dee625db8b6",
  "ch14-setseq": "99f64643608fd0d3",
- "ch14-tokenizers": "553d37e32fb049ef"
+ "ch14-tokenizers": "553d37e32fb049ef",
+ "ch15-attention-idea": "2d347b59560eac53",
+ "ch15-backbone": "1920ff982ca33dcd",
+ "ch15-causal": "872b1355b7930ba6",
+ "ch15-decoder": "57373d4e9a84ca0f",
+ "ch15-encoder": "b991e7ee4060aaa4",
+ "ch15-finetune": "f3df5a343723a654",
+ "ch15-intractable": "10b3178152ea3059",
+ "ch15-lm-kinds": "eea1be6cc45526be",
+ "ch15-lm-loop": "3a377fff252a7981",
+ "ch15-multihead": "e9be0b843beef5eb",
+ "ch15-order-blind": "8eb771caf4d15567",
+ "ch15-posemb": "81196258877ad867",
+ "ch15-rnn-bottleneck": "238c919bc24eaeac",
+ "ch15-search": "2c185f0e8f2ef275",
+ "ch15-seq2seq": "fc9843dc13eebabd",
+ "ch15-why-effective": "58cea57cc0300dbe"
 }

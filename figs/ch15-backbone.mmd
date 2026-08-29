@@ -1,0 +1,11 @@
+
+flowchart LR
+  TK["<b>Tokenizer</b><br/><small>roberta_base_en</small>"]
+  BB["<b>Backbone</b><br/><small>12 encoder blocks,<br/>124 M parameters</small>"]
+  H1["Classification head"]
+  H2["Span-extraction head"]
+  H3["Token-tagging head"]
+  TK --> BB
+  BB --> H1
+  BB --> H2
+  BB --> H3

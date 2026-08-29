@@ -1,0 +1,9 @@
+
+flowchart LR
+  P["Prompt<br/><code>KING RICHARD III:</code>"]
+  M["<b>Language model</b><br/><small>p(token | past tokens)</small>"]
+  D["Distribution<br/>over the vocabulary<br/><small>67 characters</small>"]
+  S["Pick one<br/><small>argmax, or sample</small>"]
+  O["Append to<br/>the sequence"]
+  P --> M --> D --> S --> O
+  O -- "feed back as input" --> M

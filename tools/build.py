@@ -77,7 +77,11 @@ def build_pdf(texfile):
     r = subprocess.run(
         ["latexmk", "-pdf", "-interaction=nonstopmode", "-halt-on-error",
          "-file-line-error", os.path.basename(texfile)],
-        cwd=LATEX, capture_output=True, text=True)
+        cwd=LATEX, capture_output=True, text=True,
+        # pdflatex echoes bytes from the source verbatim in its warnings, and
+        # they are not always valid UTF-8 once TeX has chopped a line. Decode
+        # loosely rather than losing the whole build to a UnicodeDecodeError.
+        encoding="utf-8", errors="replace")
     if r.returncode != 0:
         return False, (r.stdout or "")[-2500:], []
     log = os.path.join(LATEX, os.path.basename(texfile)[:-4] + ".log")
@@ -145,7 +149,7 @@ def main():
                 if not ok:
                     fails.append((deck["id"], err))
             print(line)
-        except Exception as e:                      # noqa: BLE001 - report and continue
+        except Exception as e:
             fails.append((did, str(e)))
             print(f"  {did:20s} FAILED: {e}")
 

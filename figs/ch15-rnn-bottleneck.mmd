@@ -1,0 +1,8 @@
+
+flowchart LR
+  S["Source sequence<br/><small>how is the weather today</small>"]
+  E["<b>Encoder RNN</b><br/><small>Bidirectional GRU</small>"]
+  V["One state vector<br/><small>1,024 numbers</small>"]
+  D["<b>Decoder RNN</b><br/><small>initial_state = V</small>"]
+  O["Target sequence<br/><small>qué tiempo hace hoy</small>"]
+  S --> E --> V --> D --> O

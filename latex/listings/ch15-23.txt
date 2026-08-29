@@ -1,0 +1,8 @@
+>>> seq2seq_rnn.summary()
+│ embedding_1 (Embedding)  │ (None, None, 256)  │   3,840,000 │
+│ embedding_2 (Embedding)  │ (None, None, 256)  │   3,840,000 │
+│ bidirectional            │ (None, 1024)       │   7,876,608 │
+│ gru_2 (GRU)              │ (None, None, 1024) │   3,938,304 │
+│ dropout_1 (Dropout)      │ (None, None, 1024) │           0 │
+│ dense_1 (Dense)          │ (None, None, 15000)│  15,375,000 │
+ Total params: 34,869,912 (133.02 MB)

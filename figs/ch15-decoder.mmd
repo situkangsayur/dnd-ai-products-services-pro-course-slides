@@ -1,0 +1,11 @@
+
+flowchart TB
+  I["Target embeddings"]
+  A["<b>Masked self-attention</b><br/><small>use_causal_mask=True</small>"]
+  N1["Add and norm"]
+  X["<b>Cross-attention</b><br/><small>query = target,<br/>key = value = encoder output</small>"]
+  N2["Add and norm"]
+  F["<b>Feedforward</b><br/><small>two Dense layers</small>"]
+  N3["Add and norm"]
+  O["Next-token predictions"]
+  I --> A --> N1 --> X --> N2 --> F --> N3 --> O

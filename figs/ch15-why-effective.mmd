@@ -1,0 +1,9 @@
+
+flowchart TB
+  E0["Embedding space 0<br/><small>tokens in isolation</small>"]
+  A1["<b>Attention</b><br/><small>recombine, weighted by<br/>how close vectors already are</small>"]
+  E1["Embedding space 1<br/><small>tokens in context</small>"]
+  A2["<b>Attention</b>"]
+  E2["Embedding space 2<br/><small>richer context</small>"]
+  EN["... 12, 32, 80 spaces deep"]
+  E0 --> A1 --> E1 --> A2 --> E2 --> EN

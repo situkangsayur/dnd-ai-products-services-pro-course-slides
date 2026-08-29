@@ -1,0 +1,12 @@
+>>> next(iter(preprocessed_train_ds))
+({"token_ids": <tf.Tensor: shape=(16, 512), dtype=int32, numpy=
+  array([[    0,  713,   56, ...,    1,   1,  1],
+         [    0, 1121,    5, ...,  101,  24,  2],
+         ...,
+         [    0,  734,    8, ...,    1,   1,  1]], dtype=int32)>,
+  "padding_mask": <tf.Tensor: shape=(16, 512), dtype=bool, numpy=
+  array([[ True,  True,  True, ..., False, False, False],
+         [ True,  True,  True, ...,  True,  True,  True],
+         ...,
+         [ True,  True,  True, ..., False, False, False]])>},
+ <tf.Tensor: shape=(16,), dtype=int32, numpy=array([0, 1, ...])>)

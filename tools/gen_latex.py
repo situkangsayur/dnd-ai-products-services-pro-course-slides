@@ -89,7 +89,13 @@ def _table(b):
                        for _ in range(n))
     rows = [" & ".join(r"\thead{%s}" % it(h) for h in head) + r" \\ \midrule"]
     for row in b.get("rows", []):
-        rows.append(" & ".join(it(c) for c in row) + r" \\")
+        cells = [it(c) for c in row]
+        # A first cell beginning with "[" would be swallowed by the preceding
+        # \\ as its optional vertical-space argument -- a cell reading "[end]"
+        # aborts the build with "Missing number, treated as zero".
+        if cells and cells[0].startswith("["):
+            cells[0] = "{}" + cells[0]
+        rows.append(" & ".join(cells) + r" \\")
     return (f"\\begin{{itable}}{{{spec}}}\n" + "\n".join(rows) + "\n\\end{itable}\n")
 
 

@@ -1,0 +1,9 @@
+classifier.compile(
+    optimizer=keras.optimizers.Adam(5e-5),
+    loss="binary_crossentropy",
+    metrics=["accuracy"],
+)
+classifier.fit(
+    preprocessed_train_ds,
+    validation_data=preprocessed_val_ds,
+)

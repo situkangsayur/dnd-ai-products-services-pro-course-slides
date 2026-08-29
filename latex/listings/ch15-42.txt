@@ -1,0 +1,8 @@
+>>> transformer.summary()
+│ embedding_5 (Embedding)  │ (None, None, 256)   │   3,840,000 │
+│ transformer_encoder_1    │ (None, None, 256)   │   1,315,072 │
+│ embedding_6 (Embedding)  │ (None, None, 256)   │   3,840,000 │
+│ transformer_decoder_1    │ (None, None, 256)   │   1,578,752 │
+│ dropout_9 (Dropout)      │ (None, None, 256)   │           0 │
+│ dense_11 (Dense)         │ (None, None, 15000) │   3,855,000 │
+ Total params: 14,428,824 (55.04 MB)

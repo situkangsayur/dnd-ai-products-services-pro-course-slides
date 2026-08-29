@@ -1,0 +1,8 @@
+
+flowchart TB
+  C["<b>Causal LM</b><br/>p(token | past tokens)<br/><small>one direction only<br/>generates text</small>"]
+  M["<b>Masked LM</b><br/>p(token | surrounding tokens)<br/><small>bidirectional<br/>represents text</small>"]
+  CG["GPT, Llama<br/><small>chapter 16</small>"]
+  MG["BERT, RoBERTa<br/><small>this chapter</small>"]
+  C --> CG
+  M --> MG

@@ -1,0 +1,12 @@
+-
+I'll see you at the library tomorrow.
+[start] te veré en la biblioteca mañana [end]
+-
+Do you know how to ride a bicycle?
+[start] sabes montar en bici [end]
+-
+Tom didn't want to do their dirty work.
+[start] tom no quería hacer su trabajo [end]
+-
+Is he back already?
+[start] ya ha vuelto [end]

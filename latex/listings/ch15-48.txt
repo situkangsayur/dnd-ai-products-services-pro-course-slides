@@ -1,0 +1,2 @@
+>>> tokenizer("The quick brown fox")
+Array([ 133, 2119, 6219, 23602], dtype=int32)

@@ -1,0 +1,11 @@
+
+flowchart TB
+  Q["<b>Query</b><br/>the target vector<br/>we are decoding now"]
+  K["<b>Keys</b><br/>every vector in<br/>the source sequence"]
+  V["<b>Values</b><br/>the same source vectors,<br/>separately projected"]
+  SC["<b>Scores</b><br/><small>dot-product, then softmax</small>"]
+  W["<b>Weighted sum</b><br/><small>one output vector</small>"]
+  Q --> SC
+  K --> SC
+  SC --> W
+  V --> W

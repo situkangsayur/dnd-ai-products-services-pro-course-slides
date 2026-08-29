@@ -1,0 +1,2 @@
+>>> classifier.evaluate(preprocessed_test_ds)
+[0.168127179145813, 0.9366399645805359]

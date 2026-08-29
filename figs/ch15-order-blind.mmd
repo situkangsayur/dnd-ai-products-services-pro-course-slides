@@ -1,0 +1,10 @@
+
+flowchart TB
+  A["Dense layers<br/><small>process each token<br/>independently</small>"]
+  B["Attention<br/><small>looks at tokens<br/>as a set</small>"]
+  C["<b>Nothing in the model<br/>knows about order</b>"]
+  D["Shuffle every word in<br/>every English sentence"]
+  E["Identical attention scores.<br/>Identical accuracy."]
+  A --> C
+  B --> C
+  C --> D --> E

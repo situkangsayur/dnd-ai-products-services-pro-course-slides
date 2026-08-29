@@ -1,0 +1,10 @@
+
+flowchart TB
+  P["Predicting target<br/>position <b>i</b>"]
+  A["May attend to<br/>positions 0 ... i"]
+  B["May <b>not</b> attend to<br/>positions i+1 ..."]
+  R["Information flows<br/>forward only<br/><small>as in an RNN</small>"]
+  W["Without the mask:<br/>the model reads<br/>its own label"]
+  P --> A --> R
+  P --> B --> R
+  B -. "omit the mask" .-> W

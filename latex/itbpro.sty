@@ -398,6 +398,32 @@
 \definecolor{codenum}  {HTML}{C2571A}
 \definecolor{codefn}   {HTML}{1B5FB8}
 
+% Characters that reach the listings verbatim, set once for every listing
+% style. inputenc refuses any UTF-8 byte it has not been told about, and the
+% error is fatal, so this list is not cosmetic -- a Keras model.summary() pasted
+% into an output block will not compile without the box-drawing entries below.
+% Because it is set globally, a style that omits `literate` inherits it; do not
+% add a `literate` key to an individual style or these are lost.
+\lstset{
+  extendedchars=true,
+  literate=%
+    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+    {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+    {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {ç}{{\c c}}1
+    {¿}{{\textquestiondown}}1 {¡}{{\textexclamdown}}1
+    {—}{{---}}1 {–}{{--}}1 {“}{{``}}1 {”}{{''}}1 {’}{{'}}1 {…}{{\ldots}}1
+    {×}{{x}}1 {→}{{->}}2 {≈}{{~}}1 {≤}{{<=}}2 {≥}{{>=}}2 {·}{{.}}1
+    {─}{{-}}1 {━}{{-}}1 {═}{{=}}1
+    {│}{{|}}1 {┃}{{|}}1 {║}{{|}}1
+    {┌}{{+}}1 {┐}{{+}}1 {└}{{+}}1 {┘}{{+}}1
+    {├}{{+}}1 {┤}{{+}}1 {┬}{{+}}1 {┴}{{+}}1 {┼}{{+}}1
+    {┏}{{+}}1 {┓}{{+}}1 {┗}{{+}}1 {┛}{{+}}1
+    {┣}{{+}}1 {┫}{{+}}1 {┳}{{+}}1 {┻}{{+}}1 {╋}{{+}}1
+    {┡}{{+}}1 {┩}{{+}}1 {┢}{{+}}1 {┪}{{+}}1
+    {╇}{{+}}1 {╈}{{+}}1 {┰}{{+}}1 {┸}{{+}}1
+    {┝}{{+}}1 {┥}{{+}}1 {╞}{{+}}1 {╡}{{+}}1,
+}
+
 \lstdefinestyle{itbpy}{
   language=Python,
   basicstyle=\ttfamily\fontsize{7.2}{8.9}\selectfont\color{ink},
@@ -417,10 +443,6 @@
   columns=fullflexible,
   keepspaces=true,
   upquote=true,
-  literate=%
-    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
-    {—}{{---}}1 {–}{{--}}1 {“}{{``}}1 {”}{{''}}1 {’}{{'}}1 {…}{{\ldots}}1
-    {×}{{x}}1 {→}{{->}}2 {≈}{{~}}1 {≤}{{<=}}2 {≥}{{>=}}2,
 }
 
 % A code panel with a small header strip naming the listing and the language.

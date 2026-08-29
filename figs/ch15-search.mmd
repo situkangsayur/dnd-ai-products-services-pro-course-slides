@@ -1,0 +1,10 @@
+
+flowchart LR
+  Q["<b>Query</b><br/><small>&quot;dogs on the beach&quot;</small>"]
+  K1["<b>Key</b><br/><small>beach, tree, boat</small><br/>match 0.5"]
+  K2["<b>Key</b><br/><small>beach, dog, tree</small><br/>match 1.0"]
+  K3["<b>Key</b><br/><small>dog</small><br/>match 0.5"]
+  V["<b>Values</b><br/>the images themselves,<br/>ranked by match"]
+  Q --> K1 --> V
+  Q --> K2 --> V
+  Q --> K3 --> V

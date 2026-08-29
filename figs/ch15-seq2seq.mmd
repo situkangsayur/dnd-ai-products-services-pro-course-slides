@@ -1,0 +1,17 @@
+
+flowchart TB
+  subgraph T["Training phase"]
+    direction LR
+    TE["<b>Encoder</b><br/><small>how, is, the, weather, today</small>"]
+    TD["<b>Decoder</b><br/><small>[start], qué, tiempo, hace, hoy</small>"]
+    TO["<small>qué, tiempo, hace, hoy, [end]</small>"]
+    TE --> TD --> TO
+  end
+  subgraph I["Inference phase"]
+    direction LR
+    IE["<b>Encoder</b><br/><small>how, is, the, weather, today</small>"]
+    ID["<b>Decoder</b><br/><small>[start]</small>"]
+    IO["<small>qué</small>"]
+    IE --> ID --> IO
+  end
+  T --> I

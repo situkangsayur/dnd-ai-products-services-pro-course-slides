@@ -1,0 +1,7 @@
+target = keras.Input(shape=(None,), dtype="int32", name="spanish")
+x = layers.Embedding(vocab_size, embed_dim, mask_zero=True)(target)
+rnn_layer = layers.GRU(hidden_dim, return_sequences=True)
+x = rnn_layer(x, initial_state=encoder_output)
+x = layers.Dropout(0.5)(x)
+target_predictions = layers.Dense(vocab_size, activation="softmax")(x)
+seq2seq_rnn = keras.Model([source, target], target_predictions)

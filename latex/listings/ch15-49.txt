@@ -1,0 +1,12 @@
+>>> backbone.summary()
+Model: "roberta_backbone"
+│ token_ids (InputLayer)      │ (None, None)      │          0 │
+│ embeddings                  │ (None, None, 768) │ 38,996,736 │
+│  (TokenAndPositionEmbedding)│                   │            │
+│ embeddings_layer_norm       │ (None, None, 768) │      1,536 │
+│ padding_mask (InputLayer)   │ (None, None)      │          0 │
+│ transformer_layer_0         │ (None, None, 768) │  7,087,872 │
+│ transformer_layer_1         │ (None, None, 768) │  7,087,872 │
+│ ...                         │ ...               │        ... │
+│ transformer_layer_11        │ (None, None, 768) │  7,087,872 │
+ Total params: 124,052,736 (473.22 MB)

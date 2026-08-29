@@ -1,0 +1,12 @@
+
+flowchart TB
+  I["Source embeddings"]
+  A["<b>Multi-head self-attention</b><br/><small>query = key = value = x</small>"]
+  R1["Add residual"]
+  N1["LayerNormalization"]
+  F1["Dense(intermediate_dim, relu)"]
+  F2["Dense(hidden_dim)"]
+  R2["Add residual"]
+  N2["LayerNormalization"]
+  O["Same shape as the input<br/><small>so blocks stack</small>"]
+  I --> A --> R1 --> N1 --> F1 --> F2 --> R2 --> N2 --> O

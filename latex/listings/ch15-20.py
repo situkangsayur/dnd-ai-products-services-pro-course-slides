@@ -1,0 +1,5 @@
+inputs = keras.Input(shape=(sequence_length,), dtype="int32")
+x = layers.Embedding(input_dim=vocab_size, output_dim=128)(inputs)
+x = layers.LSTM(32, return_sequences=True)(x)
+outputs = layers.Dense(vocab_size, activation="softmax")(x)
+model = keras.Model(inputs, outputs)

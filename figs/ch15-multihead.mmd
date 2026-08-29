@@ -1,0 +1,14 @@
+
+flowchart TB
+  X["One target token"]
+  H1["<b>Head 1</b><br/><small>learns to match<br/>the subject</small>"]
+  H2["<b>Head 2</b><br/><small>learns to attend<br/>to punctuation</small>"]
+  H3["<b>Head 3</b><br/><small>...</small>"]
+  H8["<b>Head 8</b><br/><small>...</small>"]
+  C["<b>Concatenate</b><br/><small>separate partitions of<br/>the output vector</small>"]
+  O["Dense projection<br/><small>head_dim x num_heads</small>"]
+  X --> H1 --> C
+  X --> H2 --> C
+  X --> H3 --> C
+  X --> H8 --> C
+  C --> O
