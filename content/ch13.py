@@ -90,6 +90,27 @@ flowchart LR
 """
 
 
+MMD_WINDOWS = """
+flowchart LR
+  D["data = [0 1 2 3 4 5 6]<br/>sequence_length = 3"]
+  W1["[0 1 2]"]
+  W2["[1 2 3]"]
+  W3["[2 3 4]"]
+  W4["[3 4 5]"]
+  W5["[4 5 6]"]
+  D --> W1 --> W2 --> W3 --> W4 --> W5
+"""
+
+MMD_SPLITSPLIT = """
+flowchart LR
+  A["Full series,<br/>in chronological order"]
+  T["Training<br/><small>earliest</small>"]
+  V["Validation<br/><small>middle</small>"]
+  E["Test<br/><small>latest</small>"]
+  A --> T --> V --> E
+  T -. "mean and std<br/>computed HERE only" .-> T
+"""
+
 NB = ["01_jena_data_and_baseline.ipynb", "02_dense_and_conv1d.ipynb",
       "03_lstm_and_gru.ipynb", "04_dropout_stacking_bidirectional.ipynb"]
 
@@ -163,6 +184,114 @@ DECK = {
                                  "meteorological quantities recorded every ten minutes over "
                                  "several years. It is small enough to work with and "
                                  "==genuinely hard enough to be instructive=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 13.2.1",
+            "title": "The split has to respect time",
+            "blocks": [
+                {"t": "mmd", "id": "ch13-splitsplit", "src": MMD_SPLITSPLIT,
+                 "cap": "Chapter 5's arrow-of-time pitfall, made concrete."},
+                {"t": "p", "md": "The data must **not** be shuffled before splitting: all test "
+                                 "data has to be later than all training data. And the "
+                                 "normalisation statistics come from ==the training portion "
+                                 "only=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 13.2.1 · listing 13.6",
+            "title": "Normalising fourteen quantities on different scales",
+            "blocks": [
+                {"t": "p", "md": "No vectorisation is needed — the data is already numeric. "
+                                 "But atmospheric pressure sits around **1,000 mbar** while "
+                                 "H2OC sits around **3**, so each series is normalised "
+                                 "independently."},
+                {"t": "code", "lang": "python", "file": "listing 13.6 — normalising",
+                 "src": """mean = raw_data[:num_train_samples].mean(axis=0)
+raw_data -= mean
+std = raw_data[:num_train_samples].std(axis=0)
+raw_data /= std"""},
+                {"t": "band",
+                 "md": "Note the slice: `[:num_train_samples]`. The statistics are computed "
+                       "on the **first 210,225 timesteps only** — ==the same information-leak "
+                       "rule as chapter 4's housing example=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 13.2.1",
+            "title": "Windows without copying the data",
+            "blocks": [
+                {"t": "mmd", "id": "ch13-windows", "src": MMD_WINDOWS,
+                 "cap": "Consecutive samples share most of their timesteps, so materialising "
+                        "each one would waste enormous memory."},
+                {"t": "p", "md": "Keras has a utility for exactly this — "
+                                 "`timeseries_dataset_from_array()` — which **generates the "
+                                 "windows on the fly**, keeping only the original array in "
+                                 "memory."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 13.2.1",
+            "title": "Understanding it on a toy example first",
+            "blocks": [
+                {"t": "p", "md": "The offset between `data` and `targets` is what turns "
+                                 "windowing into forecasting, and it is easiest to see on ten "
+                                 "integers."},
+                {"t": "code", "lang": "python", "file": "the utility, on integers",
+                 "src": """int_sequence = np.arange(10)
+
+dummy_dataset = keras.utils.timeseries_dataset_from_array(
+    data=int_sequence[:-3],       # windows come from here
+    targets=int_sequence[3:],     # the target is 3 steps ahead
+    sequence_length=3,
+    batch_size=2,
+)
+
+for inputs, targets in dummy_dataset:
+    for i in range(inputs.shape[0]):
+        print([int(x) for x in inputs[i]], int(targets[i]))"""},
+                {"t": "out", "src": """[0, 1, 2] 3
+[1, 2, 3] 4
+[2, 3, 4] 5
+[3, 4, 5] 6
+[4, 5, 6] 7"""},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 13.2.1",
+            "title": "…then the real thing",
+            "blocks": [
+                {"t": "p", "md": "Same call, with the problem's actual parameters: five days of "
+                                 "history sampled hourly, predicting 24 hours ahead."},
+                {"t": "code", "lang": "python", "file": "the training dataset",
+                 "src": """sampling_rate = 6        # one sample per hour (data is every 10 minutes)
+sequence_length = 120    # five days of hourly readings
+delay = sampling_rate * (sequence_length + 24 - 1)
+
+train_dataset = keras.utils.timeseries_dataset_from_array(
+    raw_data[:-delay],
+    targets=temperature[delay:],
+    sampling_rate=sampling_rate,
+    sequence_length=sequence_length,
+    shuffle=True,
+    batch_size=256,
+    start_index=0,
+    end_index=num_train_samples,
+)"""},
+                {"t": "band",
+                 "md": "`start_index` and `end_index` are how the three splits are carved out "
+                       "of one array **without shuffling** — ==the chronological order is "
+                       "preserved by construction=="},
             ],
         },
 

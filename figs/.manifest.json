@@ -82,6 +82,8 @@
  "ch13-ladder": "085a31eb59da7992",
  "ch13-lstm": "7007d56fb245739e",
  "ch13-rnnloop": "02203ef3755760bf",
+ "ch13-splitsplit": "47702855647c09f5",
  "ch13-stack": "768c27925bc67993",
- "ch13-tasks": "d7d7cf728e5e6427"
+ "ch13-tasks": "d7d7cf728e5e6427",
+ "ch13-windows": "addd99686c9f31ab"
 }

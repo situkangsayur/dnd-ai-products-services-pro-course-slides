@@ -1,0 +1,8 @@
+
+flowchart LR
+  A["Full series,<br/>in chronological order"]
+  T["Training<br/><small>earliest</small>"]
+  V["Validation<br/><small>middle</small>"]
+  E["Test<br/><small>latest</small>"]
+  A --> T --> V --> E
+  T -. "mean and std<br/>computed HERE only" .-> T

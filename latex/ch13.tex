@@ -65,13 +65,56 @@ Unlike everything so far, working with timeseries means understanding \textbf{th
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The data is the Jena weather dataset --- fourteen meteorological quantities recorded every ten minutes over several years. It is small enough to work with and \hilite{genuinely hard enough to be instructive}\par}\vskip 4pt
 \end{frame}
 
+\framekicker{Section 13.2.1}
+\begin{frame}[shrink=25]{The split has to respect time}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch13-splitsplit.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Chapter 5's arrow-of-time pitfall, made concrete.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The data must \textbf{not} be shuffled before splitting: all test data has to be later than all training data. And the normalisation statistics come from \hilite{the training portion only}\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 13.2.1 $\cdot$ listing 13.6}
+\begin{frame}[shrink=25]{Normalising fourteen quantities on different scales}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}No vectorisation is needed --- the data is already numeric. But atmospheric pressure sits around \textbf{1,000 mbar} while H2OC sits around \textbf{3}, so each series is normalised independently.\par}\vskip 4pt
+\icode{python}{listing 13.6 --- normalising}{listings/ch13-01.py}
+\begin{iband}[signal]
+Note the slice: \inlinecode{[:num\_train\_samples]}. The statistics are computed on the \textbf{first 210,225 timesteps only} --- \hilite{the same information-leak rule as chapter 4's housing example}
+\end{iband}
+\end{frame}
+
+\framekicker{Section 13.2.1}
+\begin{frame}[shrink=25]{Windows without copying the data}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch13-windows.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Consecutive samples share most of their timesteps, so materialising each one would waste enormous memory.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Keras has a utility for exactly this --- \inlinecode{timeseries\_dataset\_from\_array()} --- which \textbf{generates the windows on the fly}, keeping only the original array in memory.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 13.2.1}
+\begin{frame}[shrink=25]{Understanding it on a toy example first}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The offset between \inlinecode{data} and \inlinecode{targets} is what turns windowing into forecasting, and it is easiest to see on ten integers.\par}\vskip 4pt
+\icode{python}{the utility, on integers}{listings/ch13-02.py}
+\ioutput{listings/ch13-03.txt}
+\end{frame}
+
+\framekicker{Section 13.2.1}
+\begin{frame}[shrink=25]{\ldots{}then the real thing}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Same call, with the problem's actual parameters: five days of history sampled hourly, predicting 24 hours ahead.\par}\vskip 4pt
+\icode{python}{the training dataset}{listings/ch13-04.py}
+\begin{iband}[signal]
+\inlinecode{start\_index} and \inlinecode{end\_index} are how the three splits are carved out of one array \textbf{without shuffling} --- \hilite{the chronological order is preserved by construction}
+\end{iband}
+\end{frame}
+
 \coursesection{01}{The baseline, and two failures}{Common sense contains information a model has no access to.}
 
 \framekicker{Section 13.2.2}
 \begin{frame}[shrink=25]{Before any model: what would common sense do?}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Temperature is continuous and daily-periodic, so a sensible heuristic is: \textbf{the temperature in 24 hours will equal the temperature right now.}\par}\vskip 4pt
-\icode{python}{listing 13.9 --- the common-sense baseline}{listings/ch13-01.py}
-\ioutput{listings/ch13-02.txt}
+\icode{python}{listing 13.9 --- the common-sense baseline}{listings/ch13-05.py}
+\ioutput{listings/ch13-06.txt}
 \end{frame}
 
 \framekicker{Section 13.2.2}
@@ -85,7 +128,7 @@ Assume tomorrow is like today and you are off by \textbf{two and a half degrees 
 \framekicker{Section 13.2.3 $\cdot$ listing 13.10}
 \begin{frame}[shrink=25]{Attempt 1 --- a small dense network}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Before anything expensive, try something cheap. Flatten the sequence and run it through two dense layers.\par}\vskip 4pt
-\icode{python}{listing 13.10 --- a densely connected model}{listings/ch13-03.py}
+\icode{python}{listing 13.10 --- a densely connected model}{listings/ch13-07.py}
 \begin{iband}[signal]
 \textbf{MSE as the loss, MAE as the metric.} MSE is used for training because it is \hilite{smooth around zero}, which gradient descent needs; MAE is reported because it is the number a human can interpret.
 \end{iband}
@@ -112,8 +155,8 @@ Because your \textbf{hypothesis space} is the space of all two-layer networks wi
 \framekicker{Section 13.2.4}
 \begin{frame}[shrink=25]{Attempt 2 --- a 1D ConvNet}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The input has daily cycles, so a convolutional prior looks reasonable: the same pattern recurring at different points in time.\par}\vskip 4pt
-\icode{python}{the 1D convolutional model}{listings/ch13-04.py}
-\ioutput{listings/ch13-05.txt}
+\icode{python}{the 1D convolutional model}{listings/ch13-08.py}
+\ioutput{listings/ch13-09.txt}
 \end{frame}
 
 \framekicker{Section 13.2.4}
@@ -193,7 +236,7 @@ Imagine a \textbf{conveyor belt running parallel to the sequence}. Information c
 \framekicker{Section 13.3.2}
 \begin{frame}[shrink=25]{And it finally beats the baseline}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}One layer, sixteen units. Nothing about it is elaborate --- the architecture prior is what changed.\par}\vskip 4pt
-\icode{python}{a simple LSTM model}{listings/ch13-06.py}
+\icode{python}{a simple LSTM model}{listings/ch13-10.py}
 \begin{minipage}[t]{0.494\textwidth}
 \istat{2.44}{common-sense baseline, validation MAE}
 \end{minipage}%
@@ -236,7 +279,7 @@ It has long been known that applying dropout \textbf{before} a recurrent layer \
 \framekicker{Section 13.3.4}
 \begin{frame}[shrink=25]{The two arguments that implement it}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Every recurrent layer in Keras takes two dropout-related arguments, and they regularise different things.\par}\vskip 4pt
-\icode{python}{recurrent dropout}{listings/ch13-07.py}
+\icode{python}{recurrent dropout}{listings/ch13-11.py}
 \begin{itable}{>{\raggedright\arraybackslash}p{0.282\textwidth}>{\raggedright\arraybackslash}p{0.658\textwidth}}
 \thead{Argument} & \thead{What it drops} \\ \midrule
 \inlinecode{dropout} & The layer's \textbf{input} units. \\
@@ -258,7 +301,7 @@ Recurrent layer stacking is the classic way to do it. Not long ago \textbf{Googl
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch13-stack.tex.pdf}
 \end{center}
 \vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Intermediate layers must emit a full sequence; only the last one emits a single vector.\par}
-\icode{python}{a stack of two GRU layers}{listings/ch13-08.py}
+\icode{python}{a stack of two GRU layers}{listings/ch13-12.py}
 \begin{iband}[signal]
 \inlinecode{return\_sequences=True} makes a layer return a \textbf{rank-3 tensor} --- its output at every timestep --- instead of only the last one. Omit it on an intermediate layer and \hilite{the next layer has no sequence to read}
 \end{iband}
@@ -275,7 +318,7 @@ In practice the choice between them is empirical. GRU is \textbf{cheaper to run}
 \framekicker{Section 13.3.6}
 \begin{frame}[shrink=25]{Bidirectional layers: the same data, read backwards too}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}A bidirectional RNN runs \textbf{two copies} of a recurrent layer --- one over the sequence in order, one in reverse --- and merges their representations.\par}\vskip 4pt
-\icode{python}{wrapping a layer}{listings/ch13-09.py}
+\icode{python}{wrapping a layer}{listings/ch13-13.py}
 \begin{iband}[amber]
 On \textbf{this} problem it does not help: for weather, the recent past is what matters, so reading in reverse gives a \hilite{chronologically backwards view that is simply worse}. It shines on text, where both directions carry meaning --- chapter 14 returns to it.
 \end{iband}
