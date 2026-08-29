@@ -5,6 +5,7 @@ Pairs with latex/itbpro.sty. Run through tools/build.py rather than directly.
 
 import os
 
+import figures
 from inline import tex as it, esc_tex, tex_url
 
 RES_LABEL = {
@@ -169,6 +170,23 @@ def render_block(b, depth=0):
         # No TikZ authored for this figure: keep the caption so the frame still
         # says what the audience is meant to be looking at.
         return "\\begin{iband}[signal]\n%s\n\\end{iband}\n" % it(b.get("cap", ""))
+    if t == "mmd":
+        _, pdf = figures.render(b["id"], b["src"])
+        cap = (r"\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont %s\par}" % it(b["cap"])
+               if b.get("cap") else "")
+        return ("\\begin{center}\n"
+                "\\includegraphics[width=0.92\\linewidth,height=0.60\\textheight,"
+                "keepaspectratio]{%s}\n\\end{center}\n%s\n" % (pdf, cap))
+    if t == "img":
+        cap = it(b.get("cap", ""))
+        if b.get("credit"):
+            cap += (r"~\textcolor{ink3}{\footnotesize---~Chollet \& Watson, "
+                    r"\emph{Deep Learning with Python}, 3rd ed. (Manning)}")
+        cap = (r"\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont %s\par}" % cap
+               if b.get("cap") else "")
+        return ("\\begin{center}\n"
+                "\\includegraphics[width=0.92\\linewidth,height=0.60\\textheight,"
+                "keepaspectratio]{%s}\n\\end{center}\n%s\n" % (b["src"], cap))
     if t == "links":
         return _links(b)
     if t == "cols":

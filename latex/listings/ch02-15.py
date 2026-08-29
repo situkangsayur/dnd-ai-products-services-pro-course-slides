@@ -1,15 +1,6 @@
-import tensorflow as tf
+batch = train_images[:128]        # batch 0
+batch = train_images[128:256]     # batch 1
 
-x = tf.Variable(3.0)
-with tf.GradientTape() as tape:
-    y = 2 * x + 3
-print(tape.gradient(y, x))          # dy/dx = 2
-
-# turunan kedua: pita bersarang
-time = tf.Variable(0.0)
-with tf.GradientTape() as outer_tape:
-    with tf.GradientTape() as inner_tape:
-        position = 4.9 * time ** 2
-    speed = inner_tape.gradient(position, time)
-acceleration = outer_tape.gradient(speed, time)
-print(acceleration)                 # 9.8
+n = 3
+batch = train_images[128 * n : 128 * (n + 1)]     # batch n
+print(batch.shape)

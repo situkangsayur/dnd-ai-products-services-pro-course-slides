@@ -1,4 +1,1 @@
-step   0  loss 4.02891  W +0.126  b +0.000
-step 200  loss 0.00932  W +1.842  b +0.968
-step 400  loss 0.00268  W +1.972  b +0.997
-selesai    loss 0.00251  W +1.994  b +1.000
+before training:  W +0.126   b +0.000

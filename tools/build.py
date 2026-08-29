@@ -113,12 +113,14 @@ def main():
         return 0
 
     fails = []
+    warns = []
     overfull = []
     total_slides = 0
     for did, path in found:
         try:
             deck = load(path)
             schema.validate(deck)
+            warns.extend(schema.lint(deck))
             n = gen_web.write(deck, os.path.join(WEB_DECKS, deck["id"]))
             tex = gen_latex.write(deck, LATEX)
             total_slides += n
@@ -148,6 +150,10 @@ def main():
             print(f"  {did:20s} FAILED: {e}")
 
     print(f"\n{len(found)} deck(s), {total_slides} slides total.")
+    if warns:
+        print(f"\n{len(warns)} quality warning(s):")
+        for w in warns:
+            print("  " + w)
     if overfull:
         print("\nSlide yang melimpah keluar halaman (kurangi isinya):")
         for did, spills in overfull:

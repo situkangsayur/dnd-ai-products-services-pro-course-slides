@@ -1,0 +1,7 @@
+
+flowchart TB
+  A["Vector addition"] --> A1["Translation"]
+  B["Multiply by a rotation matrix"] --> B1["Rotation"]
+  C["Multiply by a diagonal matrix"] --> C1["Scaling"]
+  D["Multiply by any matrix"] --> D1["Linear transform"]
+  E["Linear transform + translation"] --> E1["<b>Affine transform</b><br/>y = W . x + b"]

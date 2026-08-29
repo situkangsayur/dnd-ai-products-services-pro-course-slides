@@ -1,0 +1,9 @@
+
+flowchart LR
+  X["Input X"] --> LAYER["Layer<br/>data transformation"]
+  W["Weights W"] --- LAYER
+  LAYER --> YP["Prediction Y'"]
+  YP --> LOSS["Loss function"]
+  Y["True target Y"] --> LOSS
+  LOSS --> OPT["Optimizer"]
+  OPT -. "update weights" .-> W

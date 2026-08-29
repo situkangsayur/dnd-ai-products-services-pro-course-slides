@@ -6,6 +6,7 @@ Run through tools/build.py rather than directly.
 import json
 import os
 
+import figures
 from inline import html as ih, esc_html
 
 RATIO_CLS = {"1-1": "g2", "2-1": "g21", "1-2": "g12", "3-2": "g32"}
@@ -117,6 +118,20 @@ def render_block(b):
         if not svg:
             return f'<div class="band"><p>{ih(b.get("cap", ""))}</p></div>'
         return f'<figure class="fig">{svg}{cap}</figure>'
+    if t == "mmd":
+        markup, _ = figures.render(b["id"], b["src"])
+        cap = f'<figcaption>{ih(b["cap"])}</figcaption>' if b.get("cap") else ""
+        return f'<figure class="fig fig-mmd">{markup}{cap}</figure>'
+    if t == "img":
+        cap = ih(b.get("cap", ""))
+        if b.get("credit"):
+            cap += ('<span class="credit">Chollet &amp; Watson, '
+                    '<i>Deep Learning with Python</i>, 3rd ed. (Manning)</span>')
+        cap = f"<figcaption>{cap}</figcaption>" if cap else ""
+        style = f' style="max-height:{b["max_h"]}"' if b.get("max_h") else ""
+        return (f'<figure class="fig fig-img">'
+                f'<img src="../{esc_html(b["src"])}" alt="{esc_html(b.get("cap", ""))}"{style}>'
+                f'{cap}</figure>')
     if t == "links":
         return _links(b)
     if t == "cols":

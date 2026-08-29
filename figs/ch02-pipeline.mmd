@@ -1,0 +1,9 @@
+
+flowchart LR
+  A["raw images<br/><code>(60000, 28, 28)</code><br/>uint8 0..255"]
+  B["reshape<br/><code>(60000, 784)</code>"]
+  C["cast + scale<br/>float32 0..1"]
+  D["Dense 512<br/>relu"]
+  E["Dense 10<br/>softmax"]
+  F["10 probabilities<br/>per image"]
+  A --> B --> C --> D --> E --> F

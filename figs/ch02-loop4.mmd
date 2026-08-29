@@ -1,0 +1,8 @@
+
+flowchart LR
+  S1["1. Draw a batch<br/>x and y_true"]
+  S2["2. Forward pass<br/>y_pred = model(x)"]
+  S3["3. Compute loss<br/>how far off?"]
+  S4["4. Update weights<br/>lower the loss"]
+  S1 --> S2 --> S3 --> S4
+  S4 -. "repeat" .-> S1

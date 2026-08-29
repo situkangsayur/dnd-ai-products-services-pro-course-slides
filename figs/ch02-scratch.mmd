@@ -1,0 +1,13 @@
+
+flowchart TB
+  NS["NaiveSequential<br/><small>calls layers in order</small>"]
+  ND1["NaiveDense<br/><small>W, b, activation</small>"]
+  ND2["NaiveDense<br/><small>W, b, activation</small>"]
+  BG["BatchGenerator<br/><small>slices the batch axis</small>"]
+  ST["one_training_step<br/><small>forward, loss, grads, update</small>"]
+  FIT["fit<br/><small>epochs x batches</small>"]
+  NS --> ND1
+  NS --> ND2
+  FIT --> BG
+  FIT --> ST
+  ST --> NS

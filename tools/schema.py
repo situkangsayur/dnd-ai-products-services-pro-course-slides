@@ -74,7 +74,7 @@ INLINE MARKUP  (inside any ``md`` / list item / table cell)
 
 BLOCK_KINDS = {
     "p", "lead", "bullets", "steps", "cards", "stats", "code", "out",
-    "table", "quote", "band", "fig", "links", "cols",
+    "table", "quote", "band", "fig", "mmd", "img", "links", "cols",
 }
 
 SLIDE_TYPES = {"title", "section", "slide"}
@@ -153,7 +153,7 @@ PROSE_KINDS = {"p", "lead", "bullets", "steps", "band", "quote",
 WEIGHT = {
     "p": 3.2, "lead": 3.6, "bullets": 2.0, "steps": 2.4, "cards": 7.0,
     "stats": 5.0, "code": 1.15, "out": 1.15, "table": 2.2, "quote": 5.0,
-    "band": 3.6, "fig": 12.0, "links": 3.0,
+    "band": 3.6, "fig": 12.0, "mmd": 13.0, "img": 13.0, "links": 3.0,
 }
 MAX_WEIGHT = 34.0          # above this a slide is too dense: split it
 HEADROOM_WEIGHT = 6.0      # below this it is too thin: merge or add substance
@@ -249,7 +249,7 @@ def lint(deck, strict=False):
             warns.append(f"{did}: deck-too-short    {len(slides)} content slides "
                          f"(< {MIN_CHAPTER_SLIDES})")
         figs = sum(1 for s in slides for b in _flatten(s.get("blocks", []))
-                   if b.get("t") == "fig")
+                   if b.get("t") in ("fig", "mmd", "img"))
         want = max(6, len(slides) // 6)
         if figs < want:
             warns.append(f"{did}: too-few-figures   {figs} diagrams (want >= {want})")

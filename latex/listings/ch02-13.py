@@ -1,10 +1,3 @@
-z = np.matmul(x, y)
-z = x @ y            # bentuk singkat
-
-# aturan kecocokan:
-#   x.shape[1] == y.shape[0]
-# hasilnya:
-#   (x.shape[0], y.shape[1])
-
-# (a, b, c, d) @ (d,)   -> (a, b, c)
-# (a, b, c, d) @ (d, e) -> (a, b, c, e)
+print(train_images[10:100].shape)          # 90 images
+print(train_images[:, 14:, 14:].shape)     # bottom-right 14x14 corner
+print(train_images[:, 7:-7, 7:-7].shape)   # centre 14x14, via negative indices

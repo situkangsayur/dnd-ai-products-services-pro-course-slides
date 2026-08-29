@@ -1,0 +1,7 @@
+
+flowchart LR
+  IN["Input<br/>28 x 28 pixels"] --> L1["Layer 1<br/>edges"]
+  L1 --> L2["Layer 2<br/>corners"]
+  L2 --> L3["Layer 3<br/>parts"]
+  L3 --> L4["Layer 4<br/>digits"]
+  L4 --> OUT["Output<br/>P(0..9)"]

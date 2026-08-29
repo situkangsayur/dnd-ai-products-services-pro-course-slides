@@ -3,15 +3,15 @@
 \documentclass[aspectratio=169,11pt,t]{beamer}
 \usepackage{itbpro}
 
-\coursetitle{Apa Itu Deep Learning?}
-\coursesubtitle{Meletakkan AI, machine learning, dan deep learning pada tempatnya masing-masing -- lalu memisahkan capaian nyata dari gembar-gembor.}
+\coursetitle{What Is Deep Learning?}
+\coursesubtitle{Putting AI, machine learning, and deep learning in their right places -- then separating what the field has actually achieved from what it has merely promised.}
 \coursekicker{Chapter 1}
-\coursesource{Chollet \& Watson, Deep Learning with Python 3e -- bab 1}
-\courseduration{90 menit}
-\coursepresenter{Prof. Bambang Riyanto Trilaksono}{Pengajar Utama}
+\coursesource{Chollet \& Watson, Deep Learning with Python 3e -- chapter 1}
+\courseduration{90 minutes}
+\coursepresenter{Prof. Bambang Riyanto Trilaksono}{Lead Instructor}
 \coursebrand{AI for Professional \textperiodcentered\ ITB \textperiodcentered\ Ch 1}
 
-\title{Apa Itu Deep Learning?}
+\title{What Is Deep Learning?}
 \author{Prof. Bambang Riyanto Trilaksono}
 \date{}
 
@@ -19,458 +19,474 @@
 \covertitle
 
 \framekicker{Learning outcomes}
-\begin{frame}[shrink=25]{Tujuan Sesi}
-\leadpar{Setelah sesi ini, peserta dapat:}
+\begin{frame}[shrink=25]{Session Objectives}
+\leadpar{By the end of this session, participants can:}
 \begin{isteps}
-\item Menempatkan \textbf{AI, machine learning, dan deep learning} dalam hubungan yang benar -- yang mana memuat yang mana, dan sejak kapan.
-\item Menjelaskan \textbf{pembalikan paradigma}: pemrograman klasik menghasilkan jawaban, machine learning menghasilkan aturan.
-\item Menyebut \textbf{tiga bahan wajib} setiap sistem machine learning dan menunjukkan apa yang rusak bila salah satunya hilang.
-\item Menerangkan cara kerja deep learning lewat \textbf{bobot, fungsi rugi, dan backpropagation} tanpa menurunkan satu pun rumus.
-\item Membedakan \textbf{capaian yang sudah terbukti} dari \textbf{klaim yang belum}, dan menyebut apa yang memicu dua musim dingin AI sebelumnya.
+\item Place \textbf{AI, machine learning, and deep learning} in the correct relationship -- which contains which, and since when.
+\item Explain the \textbf{inversion}: classical programming outputs answers, machine learning outputs rules.
+\item Name the \textbf{three things} every machine learning system needs, and say what breaks when one of them is missing.
+\item Describe how deep learning works through \textbf{weights, a loss function, and backpropagation} -- without deriving a single equation.
+\item Separate \textbf{what deep learning has demonstrably done} from \textbf{what is still a claim}, and name what triggered the two previous AI winters.
 \end{isteps}
 
 \vskip 6pt
 \vskip 4pt
-\reslink{Buku}{Bab 1 --- teks penuh}{https://deeplearningwithpython.io/chapters/chapter01\_what-is-deep-learning}
-\reslink{Notebook}{01\_paradigma\_ml.ipynb}{../../notebooks/ch01/01\_paradigma\_ml.ipynb}
+\reslink{Book}{Chapter 1 --- full text}{https://deeplearningwithpython.io/chapters/chapter01\_what-is-deep-learning}
+\reslink{Notebook}{01\_the\_ml\_paradigm.ipynb}{../../notebooks/ch01/01\_the\_ml\_paradigm.ipynb}
 \vskip 2pt
 \end{frame}
 
-\framekicker{Peta bab}
-\begin{frame}[shrink=25]{Ke mana bab ini membawa kita}
-\leadpar{Bab pembuka tidak mengajarkan satu baris kode pun. Tugasnya lebih mendasar: memastikan kita memakai kata yang sama untuk hal yang sama.}
+\framekicker{Roadmap}
+\begin{frame}[shrink=25]{What this chapter is for}
+\leadpar{Chapter 1 teaches no code at all. Its job is more basic: to make sure everyone in the room uses the same words for the same things.}
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icard}
-\cardh{Definisi dan sejarah}
-Tiga lingkaran bersarang: AI, ML, DL. Ditambah satu cabang yang \textbf{bukan} ML sama sekali -- symbolic AI.
-\cardtag{bag. 1-3}
+\cardh{Definitions and history}
+Three nested circles -- AI, ML, DL -- plus one branch that is \textbf{not} machine learning at all.
+\cardtag{1.1 -- 1.5}
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icard}
-\cardh{Cara kerjanya}
-Representasi, bobot, fungsi rugi, backpropagation. Chollet menerangkannya dengan \textbf{tiga gambar}, bukan rumus.
-\cardtag{bag. 4-6}
+\cardh{How it works}
+Representations, weights, loss, backpropagation. Chollet explains it with \textbf{three figures}, not equations.
+\cardtag{1.6 -- 1.7}
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icard}
-\cardh{Capaian vs gembar-gembor}
-Apa yang \textbf{sudah} dikerjakan deep learning, dan mengapa dua kali sebelumnya musim panas AI berubah jadi musim dingin.
-\cardtag{bag. 7-12}
+\cardh{Achievement vs hype}
+What deep learning has \textbf{already} done, and why the field went cold twice before.
+\cardtag{1.8 -- 1.12}
 \end{icard}
+\end{minipage}%
+\end{frame}
+\note{Open by asking the room to define AI and machine learning in one sentence each. The spread of answers you get is the reason this chapter exists.}
+
+\coursesection{01}{AI, machine learning, deep learning}{Three terms the press uses interchangeably. They are nested.}
+
+\framekicker{Section 1.1}
+\begin{frame}[shrink=25]{Three nested circles, not three synonyms}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/book/figure-1-1.png}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Figure 1.1 --- deep learning is a subfield of machine learning, which is a subfield of AI.~\textcolor{ink3}{\footnotesize---~Chollet \& Watson, \emph{Deep Learning with Python}, 3rd ed. (Manning)}\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The nesting is the whole point: every deep learning system is a machine learning system, and every machine learning system is an AI system -- \hilite{but not the other way round}\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 1.2}
+\begin{frame}[shrink=25]{\ldots{}and one branch that sits outside machine learning}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch01-scope.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Symbolic AI is inside AI but outside machine learning. Shallow learning is inside machine learning but outside deep learning.\par}
+\end{frame}
+\note{This is the slide people photograph. Leave it up while you talk through the next two.}
+
+\framekicker{Section 1.2}
+\begin{frame}[shrink=25]{Symbolic AI: what it was, and where it stopped}
+\begin{minipage}[t]{0.485\textwidth}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Artificial intelligence} was born in the 1950s. The working definition: \textit{the effort to automate intellectual tasks normally performed by humans}.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}For roughly thirty years the dominant approach was \textbf{symbolic AI}: programmers wrote the rules by hand, and the machine executed them.\par}\vskip 4pt
+
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.485\textwidth}
+\begin{minipage}[t]{1.0\textwidth}
+\begin{icardgood}
+\cardh{Where it worked}
+Well-defined, logical problems. Chess is the canonical win.
+\end{icardgood}
+\end{minipage}%
+
+
+\vskip 4pt
+
+\begin{minipage}[t]{1.0\textwidth}
+\begin{icardbad}
+\cardh{Where it collapsed}
+\textbf{Fuzzy} problems -- recognising an image, understanding speech. Nobody can write down those rules, because nobody is aware of using them.
+\end{icardbad}
+\end{minipage}%
+
 \end{minipage}%
 \begin{iband}[signal]
-Untuk kelas ini bab 1 punya beban tambahan: ia yang menetapkan \textbf{kosakata bersama} yang dipakai sampai bab 20 dan sampai topik agentic AI di akhir kursus.
+Machine learning rose from the 1990s onward precisely because \hilite{the fuzzy problems were the ones left over}
 \end{iband}
 \end{frame}
-\note{Buka dengan pertanyaan ke peserta: siapa yang bisa menjelaskan beda AI dan machine learning dalam satu kalimat? Jawaban yang beragam di ruangan justru bahan yang bagus untuk masuk ke slide berikutnya.}
 
-\coursesection{01}{AI, machine learning, deep learning}{Tiga istilah yang di media dipakai bergantian, padahal bersarang.}
-
-\framekicker{Bagian 1.1}
-\begin{frame}[shrink=25]{Tiga lingkaran yang bersarang, bukan tiga sinonim}
-\begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.52\textheight}{%
-
-\begin{tikzpicture}[font=\sffamily]
-  \node[draw=itbbluelt!70, fill=itbbluelt!8, rounded corners=5pt,
-        minimum width=7.4cm, minimum height=3.4cm, anchor=north west] (ai) at (0,0) {};
-  \node[anchor=north west, font=\bfseries\small, text=ink] at ($(ai.north west)+(0.28,-0.22)$)
-    {Artificial Intelligence};
-  \node[anchor=north west, font=\tiny, text=ink3] at ($(ai.north west)+(0.28,-0.62)$)
-    {sejak 1950-an --- ``mengotomasi tugas intelektual''};
-
-  \node[draw=signal!70, fill=signal!8, rounded corners=5pt,
-        minimum width=6.5cm, minimum height=2.2cm, anchor=north west] (ml) at (0.45,-1.05) {};
-  \node[anchor=north west, font=\bfseries\small, text=ink] at ($(ml.north west)+(0.26,-0.2)$)
-    {Machine Learning};
-  \node[anchor=north west, font=\tiny, text=ink3] at ($(ml.north west)+(0.26,-0.58)$)
-    {sejak 1990-an --- aturan dipelajari dari data};
-
-  \node[draw=violet!70, fill=violet!10, rounded corners=5pt,
-        minimum width=5.6cm, minimum height=1.0cm, anchor=north west] (dl) at (0.9,-2.0) {};
-  \node[anchor=north west, font=\bfseries\small, text=ink] at ($(dl.north west)+(0.24,-0.18)$)
-    {Deep Learning};
-  \node[anchor=north west, font=\tiny, text=ink3] at ($(dl.north west)+(0.24,-0.54)$)
-    {lapisan representasi bertingkat};
-
-  \node[draw=rule, fill=papertint, rounded corners=5pt,
-        minimum width=3.4cm, minimum height=2.1cm, anchor=north west] (sym) at (8.0,-0.6) {};
-  \node[anchor=north west, font=\bfseries\small, text=ink] at ($(sym.north west)+(0.24,-0.2)$)
-    {Symbolic AI};
-  \node[anchor=north west, font=\tiny, text=ink3, align=left] at ($(sym.north west)+(0.24,-0.62)$)
-    {1950-an -- 1980-an\\aturan ditulis tangan\\unggul di catur,\\gagal di persoalan kabur};
-  \draw[rule, dashed, line width=0.6pt] (7.45,-1.7) -- (7.95,-1.7);
-\end{tikzpicture}
-
-}
-\end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Gambar 1.1 -- deep learning adalah bagian dari machine learning, yang adalah bagian dari AI. Symbolic AI ada di dalam AI tetapi di luar machine learning.\par}
-\begin{ibullets}
-\item \textbf{AI} lahir 1950-an. Definisi kerjanya: \textit{upaya mengotomasi tugas intelektual yang biasanya dikerjakan manusia}. Cakupannya jauh lebih luas dari ML.
-\item \textbf{Symbolic AI} mendominasi 1950-an sampai 1980-an: aturan ditulis tangan oleh pemrogram. Cukup untuk catur, \hilite{runtuh} di persoalan kabur seperti mengenali gambar atau bahasa.
-\item \textbf{Machine learning} naik sejak 1990-an justru karena persoalan kabur itulah yang tersisa.
-\end{ibullets}
-\end{frame}
-\note{Tekankan: kegagalan symbolic AI bukan kegagalan gagasan AI. Ia gagal pada satu kelas persoalan tertentu -- yang aturannya tidak bisa dituliskan manusia karena manusia sendiri tidak sadar memakainya.}
-
-\framekicker{Bagian 1.1}
-\begin{frame}[shrink=25]{Kutipan yang membingkai seluruh bidang}
+\framekicker{Section 1.2}
+\begin{frame}[shrink=25]{The question that opened the field, in 1843}
 \begin{iquote}
-\quotetext{The Analytical Engine has no pretensions whatever to originate anything. It can do whatever we know how to order it to perform.}\quotecite{Ada Lovelace, 1843 -- catatan atas mesin Charles Babbage}
+\quotetext{The Analytical Engine has no pretensions whatever to originate anything. It can do whatever we know how to order it to perform.}\quotecite{Ada Lovelace, 1843 --- on Charles Babbage's machine}
 \end{iquote}
-\begin{iquote}
-\quotetext{Every aspect of learning or any other feature of intelligence can in principle be so precisely described that a machine can be made to simulate it.}\quotecite{John McCarthy dkk., proposal lokakarya Dartmouth, 1956}
-\end{iquote}
-\begin{iband}[amber]
-Dua kutipan ini berselisih 113 tahun dan berselisih pendapat. Pertanyaan Lovelace -- \textit{bisakah mesin melampaui perintah kita?} -- belum tuntas sampai hari ini; \hilite{machine learning adalah jawaban parsialnya}, sebab mesin memang menghasilkan sesuatu yang tidak kita tuliskan: aturannya.
-\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Lovelace's objection is the oldest question in the field, and it is not rhetorical: \textbf{can a machine ever produce something we did not put into it?}\par}\vskip 4pt
 \end{frame}
-\note{Kutipan Lovelace dipakai Chollet sejak edisi pertama sebagai pembuka. Sambungkan ke pertanyaan yang akan diajukan auditor mana pun: kalau aturannya tidak kita tulis, siapa yang bertanggung jawab atas aturan itu?}
 
-\coursesection{02}{Pembalikan paradigma}{Yang tadinya keluaran, kini menjadi masukan.}
-
-\framekicker{Bagian 1.1.2}
-\begin{frame}[shrink=25]{Machine learning membalik arah pemrograman}
-\begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.52\textheight}{%
-
-\begin{tikzpicture}[font=\sffamily\tiny,
-  bx/.style={draw=rule, fill=papertint, rounded corners=3pt, minimum width=1.9cm,
-             minimum height=0.6cm, text=ink2},
-  ax/.style={draw=signal!60, fill=signal!10, rounded corners=3pt, minimum width=1.8cm,
-             minimum height=0.6cm, text=ink},
-  vx/.style={draw=violet!70, fill=violet!12, rounded corners=3pt, minimum width=1.8cm,
-             minimum height=0.6cm, text=ink},
-  ar/.style={-{Stealth[length=4pt]}, signal, line width=0.7pt}]
-
-  \node[font=\bfseries\scriptsize, text=ink, anchor=west] at (0,1.55) {Pemrograman klasik};
-  \node[bx] (r1) at (1,1.0) {Aturan};
-  \node[bx] (d1) at (1,0.2) {Data};
-  \node[ax] (p1) at (3.6,0.6) {Program};
-  \node[bx] (a1) at (6.1,0.6) {Jawaban};
-  \draw[ar] (r1) -- (p1); \draw[ar] (d1) -- (p1); \draw[ar] (p1) -- (a1);
-
-  \draw[rule, line width=0.5pt] (0,-0.4) -- (8.6,-0.4);
-
-  \node[font=\bfseries\scriptsize, text=ink, anchor=west] at (0,-0.95) {Machine learning};
-  \node[bx] (d2) at (1,-1.4) {Data};
-  \node[bx] (a2) at (1,-2.2) {Jawaban};
-  \node[ax] (p2) at (3.6,-1.8) {Pelatihan};
-  \node[vx] (r2) at (6.1,-1.8) {Aturan};
-  \draw[ar] (d2) -- (p2); \draw[ar] (a2) -- (p2); \draw[ar] (p2) -- (r2);
-  \node[text=ink3, anchor=west, align=left] at (7.2,-1.8)
-    {yang tadinya keluaran\\kini menjadi masukan};
-\end{tikzpicture}
-
-}
-\end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Gambar 1.2 -- pemrograman klasik disuapi aturan dan data lalu mengeluarkan jawaban; machine learning disuapi data dan jawaban lalu mengeluarkan aturan.\par}
+\framekicker{Section 1.2}
+\begin{frame}[shrink=25]{\ldots{}and the claim that answered it, in 1956}
+\begin{iquote}
+\quotetext{Every aspect of learning or any other feature of intelligence can in principle be so precisely described that a machine can be made to simulate it.}\quotecite{John McCarthy et al., the Dartmouth workshop proposal, 1956}
+\end{iquote}
 \begin{iband}[signal]
-Konsekuensinya langsung dan sering diremehkan: sistem ML \hilite{dilatih, bukan diprogram}. Kalau tidak ada contoh yang sudah berjawab, tidak ada yang bisa dilatih -- seberapa pun bagus arsitekturnya.
+These two statements are 113 years apart and they disagree. Machine learning is a \textbf{partial} answer to Lovelace: the machine does produce something we never wrote down -- \hilite{the rules}
 \end{iband}
 \end{frame}
-\note{Di sini biasanya muncul pertanyaan 'kalau begitu datanya dari mana?'. Jawab singkat saja, bab 6 membahasnya penuh sebagai universal workflow.}
+\note{Connect forward to the audit question that always comes up later: if we did not write the rule, who is accountable for it?}
 
-\framekicker{Bagian 1.1.2}
-\begin{frame}[shrink=25]{Tiga bahan wajib -- hilang satu, bukan machine learning}
+\coursesection{02}{The inversion}{What used to be the output becomes the input.}
+
+\framekicker{Section 1.3}
+\begin{frame}[shrink=25]{Machine learning runs programming backwards}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch01-paradigm.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Figure 1.2 --- classical programming is fed rules and data and emits answers; machine learning is fed data and answers and emits rules.\par}
+\end{frame}
+
+\framekicker{Section 1.3}
+\begin{frame}[shrink=25]{The consequence people underestimate}
+\begin{iband}[signal]
+A machine learning system is \textbf{trained, not programmed}. If you have no worked examples, there is \hilite{nothing to train}, no matter how good the architecture is.
+\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}This is why the hardest part of most projects turns out to be the dataset rather than the model. Chapter 6 is devoted to that problem.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 1.4}
+\begin{frame}[shrink=25]{Three things every ML system needs}
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardaccent}
-\cardh{1 $\cdot$ Titik data masukan}
-Berkas suara, gambar, baris transaksi. Inilah yang akan ditransformasi.
+\cardh{1 $\cdot$ Input data points}
+Sound files for speech recognition; photographs for image tagging. This is what gets transformed.
 \end{icardaccent}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardaccent}
-\cardh{2 $\cdot$ Contoh keluaran yang diharapkan}
-Transkrip untuk suara, label untuk gambar, penanda \textit{fraud} untuk transaksi.
+\cardh{2 $\cdot$ Examples of expected output}
+Human transcripts for the sound files; tags such as \textit{dog} or \textit{cat} for the pictures.
 \end{icardaccent}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardaccent}
-\cardh{3 $\cdot$ Cara mengukur mutu}
-Jarak antara tebakan dan jawaban benar. Inilah \textbf{sinyal umpan balik} yang menyetel algoritmanya.
+\cardh{3 $\cdot$ A way to measure quality}
+The distance between what the algorithm currently says and what it should say. This is the \textbf{feedback signal}.
 \end{icardaccent}
 \end{minipage}%
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Ketiganya adalah syarat minimum, bukan daftar keinginan. Chollet menyebut inti persoalannya sebagai \textit{meaningfully transform data} -- mempelajari \textbf{representasi} yang membuat tugas jadi lebih mudah.\par}\vskip 4pt
-\begin{itable}{>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.3196\textwidth}>{\raggedright\arraybackslash}p{0.376\textwidth}}
-\thead{Bahan yang hilang} & \thead{Yang sebenarnya Anda punya} & \thead{Akibatnya} \\ \midrule
-Contoh keluaran & Data mentah tanpa label & Bukan supervised learning. Pilihannya: pelabelan, atau pindah ke unsupervised / self-supervised. \\
-Ukuran mutu & Data dan label, tanpa metrik yang disepakati & Model bisa dilatih tetapi tidak bisa dinilai -- dan ini kegagalan proyek yang paling sering di dunia nyata. \\
-Data masukan yang mewakili & Contoh yang tidak menyerupai kondisi produksi & Model berhasil di laptop, gagal saat dipakai. Bab 5 dan 6 menamainya secara teknis. \\
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}That adjustment step, driven by the feedback signal, is \hilite{exactly what the word \textit{learning} means here}\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 1.4}
+\begin{frame}[shrink=25]{The three, drawn as one pipeline}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch01-ingredients.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont All three feed the same adjustment step. Remove any one of them and the arrow into it disappears.\par}
+\end{frame}
+
+\framekicker{Section 1.4}
+\begin{frame}[shrink=25]{Lose one, and it stops being machine learning}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2256\textwidth}>{\raggedright\arraybackslash}p{0.282\textwidth}>{\raggedright\arraybackslash}p{0.4324\textwidth}}
+\thead{Missing ingredient} & \thead{What you actually have} & \thead{What follows} \\ \midrule
+Expected outputs & Raw data with no labels & Not supervised learning. Either label it, or move to unsupervised or self-supervised methods. \\
+A quality measure & Data and labels, no agreed metric & The model can be trained but \textbf{not judged} --- and this is the most common way real projects fail. \\
+Representative inputs & Examples unlike production conditions & It works on the laptop and fails in the field. Chapters 5 and 6 give this its proper names. \\
 \end{itable}
 \end{frame}
-\note{Minta peserta memikirkan satu kasus pemakaian dari pekerjaannya sendiri, lalu uji ketiga bahan itu. Yang paling sering hilang adalah bahan ketiga -- kesepakatan tentang apa yang disebut 'benar'.}
+\note{Ask the room to test one of their own use cases against all three. The third one is missing far more often than people expect.}
 
-\framekicker{Bagian 1.1.3}
-\begin{frame}[shrink=25]{Representasi: gagasan yang menyatukan seluruh buku}
+\framekicker{Section 1.4}
+\begin{frame}[shrink=25]{Representation: the idea that runs through the whole book}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}A \textbf{representation} is simply a different way of encoding the same data. The same photograph can be encoded as RGB or as HSV -- identical content, different axes.\par}\vskip 4pt
 \begin{minipage}[t]{0.485\textwidth}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Representasi} adalah cara lain menyandikan data yang sama. Foto yang sama bisa disandikan sebagai RGB atau HSV -- isinya identik, tetapi tugas yang mudah pada masing-masing berbeda.\par}\vskip 4pt
 \begin{ibullets}
-\item \textit{Pilih semua piksel merah} -- mudah di \textbf{RGB}.
-\item \textit{Buat gambar kurang jenuh} -- mudah di \textbf{HSV}.
-\item Persoalan yang sama; yang berubah hanya sumbunya.
+\item \textit{Select all red pixels} --- easy in \textbf{RGB}.
+\item \textit{Make the image less saturated} --- easy in \textbf{HSV}.
 \end{ibullets}
-\begin{iband}[signal]
-Karena itu Chollet merumuskan machine learning sebagai \hilite{pencarian representasi yang membuat tugas jadi mudah}.
-\end{iband}
 
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.485\textwidth}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Contoh klasik bab ini: titik hitam dan putih yang bercampur pada sumbu asal (gambar 1.3). Tidak ada aturan sederhana yang memisahkannya.\par}\vskip 4pt
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Ubah sumbunya -- pindahkan titik asal, putar -- dan aturannya menjadi satu kalimat (gambar 1.4): \textit{hitam bila x > 0}.\par}\vskip 4pt
-\begin{iband}[amber]
-Tidak ada model yang jadi lebih pintar. Yang berubah hanya representasinya. Inilah pekerjaan yang dulu disebut \textbf{feature engineering} dan dikerjakan manusia.
+\begin{iband}[signal]
+Same picture, same task difficulty changed entirely. So machine learning is \hilite{the search for a representation that makes the task easy}
 \end{iband}
 
 \end{minipage}%
 \end{frame}
-\note{Kalau ada waktu, gambar manual di papan: sebar titik, lalu putar sumbu. Peraga fisik ini jauh lebih nempel daripada slide.}
 
-\framekicker{Bagian 1.4}
-\begin{frame}[shrink=25]{Ruang hipotesis -- dan mengapa aturan tulis-tangan runtuh}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Perubahan sumbu tadi kita rancang \textbf{dengan tangan}. Itu sanggup untuk persoalan sesederhana itu. Tetapi bisakah Anda menuliskan transformasi citra yang menjelaskan beda 6 dan 8, atau 1 dan 7, \hilite{untuk segala macam tulisan tangan}?\par}\vskip 4pt
+\framekicker{Section 1.4 $\cdot$ figures 1.3--1.4}
+\begin{frame}[shrink=25]{The worked example: change the axes, and the rule appears}
+\begin{isteps}
+\item \textbf{Raw data.} White points and black points scattered in an (x, y) plane. No simple rule separates them.
+\item \textbf{Coordinate change.} Move the origin, rotate the axes. Nothing about the data changed -- only how it is written down.
+\item \textbf{Better representation.} The rule is now one sentence: \textit{black points are those with x > 0}.
+\end{isteps}
+\begin{iband}[signal]
+No model got smarter. Only the representation changed -- and that is the work that used to be called \hilite{feature engineering} and was done by hand.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 1.4}
+\begin{frame}[shrink=25]{Why hand-written rules do not scale}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}We designed that coordinate change ourselves. Fine for a toy. But could you write explicit image transformations that separate a 6 from an 8, or a 1 from a 7, \hilite{across every kind of handwriting}\par}\vskip 4pt
 \begin{minipage}[t]{0.494\textwidth}
 \begin{icardwarn}
-\cardh{Bisa -- sampai batas tertentu}
-Aturan seperti \textit{menghitung banyaknya gelung tertutup}, atau histogram piksel tegak dan mendatar, lumayan membedakan angka tulisan tangan.
+\cardh{Possible --- up to a point}
+Rules such as \textit{count the closed loops}, or vertical and horizontal pixel histograms, do a decent job on handwritten digits.
 \end{icardwarn}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.494\textwidth}
 \begin{icardbad}
-\cardh{Tetapi rapuh dan menyiksa}
-Tiap kali muncul contoh tulisan baru yang mematahkan aturan yang sudah disusun rapi, Anda harus menambah transformasi dan aturan baru -- \textbf{sambil memperhitungkan interaksinya dengan semua aturan sebelumnya}.
+\cardh{But brittle, and miserable to maintain}
+Every new handwriting sample that breaks your carefully reasoned rules forces a new transformation and a new rule --- \textbf{and you must check it against every rule you already wrote}.
 \end{icardbad}
 \end{minipage}%
+\end{frame}
+
+\framekicker{Section 1.4}
+\begin{frame}[shrink=25]{Hypothesis space: what the algorithm is allowed to search}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Machine learning algorithms are \textbf{not creative} about finding these transformations. They search a predefined set of operations -- and that set is called the \textbf{hypothesis space}.\par}\vskip 4pt
 \begin{iband}[signal]
-Algoritma machine learning \textbf{tidak kreatif} dalam menemukan transformasi ini. Ia sekadar menelusuri sehimpunan operasi yang sudah ditetapkan lebih dulu -- himpunan itulah yang disebut \hilite{ruang hipotesis (hypothesis space)}. Pada contoh 2D tadi, ruang hipotesisnya adalah ruang semua perubahan sumbu yang mungkin.
+In the two-dimensional example, the hypothesis space was \hilite{the space of all possible coordinate changes}
 \end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Choosing a model architecture, in later chapters, is exactly the act of choosing a hypothesis space.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 1.4}
+\begin{frame}[shrink=25]{The whole field, in one sentence}
 \begin{iquote}
-\quotetext{Itulah machine learning, secara ringkas: \textbf{mencari representasi dan aturan yang berguna atas suatu data masukan, di dalam ruang kemungkinan yang sudah ditetapkan, dengan tuntunan sebuah sinyal umpan balik.}}\quotecite{Chollet \& Watson, bab 1.4}
+\quotetext{Machine learning is searching for useful representations and rules over some input data, within a predefined space of possibilities, using guidance from a feedback signal.}\quotecite{Chollet \& Watson, section 1.4}
 \end{iquote}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Gagasan sesederhana itu menyelesaikan rentang tugas intelektual yang luar biasa lebar -- dari kemudi otonom sampai penjawaban pertanyaan dalam bahasa alami.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}That one idea covers a startling range of tasks -- from autonomous driving to answering questions in natural language.\par}\vskip 4pt
 \end{frame}
-\note{Istilah 'ruang hipotesis' akan kembali di bab 3 saat topologi model dibahas: memilih arsitektur = mempersempit ruang hipotesis.}
 
-\coursesection{03}{Yang 'dalam' pada deep learning}{Bukan pemahaman yang lebih dalam. Hanya lapisan yang lebih banyak.}
+\coursesection{03}{The "deep" in deep learning}{Not deeper understanding. Just more layers.}
 
-\framekicker{Bagian 1.1.4}
-\begin{frame}[shrink=25]{'Deep' menunjuk pada jumlah lapis, bukan kedalaman makna}
+\framekicker{Section 1.5}
+\begin{frame}[shrink=25]{"Deep" is a statement about architecture, nothing more}
 \begin{iquote}
-\quotetext{The "deep" in "deep learning" isn't a reference to any kind of deeper understanding -- rather, it stands for this idea of successive layers of representations.}\quotecite{Chollet \& Watson, bab 1}
+\quotetext{The "deep" in "deep learning" isn't a reference to any kind of deeper understanding achieved by the approach; rather, it stands for this idea of successive layers of representations.}\quotecite{Chollet \& Watson, section 1.5}
 \end{iquote}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The number of layers is the model's \textbf{depth}. Modern networks run to tens or hundreds of them.\par}\vskip 4pt
+\end{frame}
+\note{Correct the most common misconception in the room right here: 'deep' does not mean the machine understands anything more deeply.}
+
+\framekicker{Section 1.5}
+\begin{frame}[shrink=25]{Each layer moves the data one step closer to the answer}
 \begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.52\textheight}{%
-
-\begin{tikzpicture}[font=\sffamily\tiny,
-  lay/.style={draw=signal!60, fill=signal!9, rounded corners=3pt,
-              minimum width=1.25cm, minimum height=1.5cm, text=ink, align=center},
-  io/.style={draw=rule, fill=papertint, rounded corners=3pt,
-             minimum width=1.25cm, minimum height=1.2cm, text=ink2, align=center},
-  ar/.style={-{Stealth[length=4pt]}, signal, line width=0.7pt}]
-  \node[io]  (in) at (0,0)   {masukan\\$28\times28$};
-  \node[lay] (l1) at (1.9,0) {lapis 1\\\ttfamily tepi};
-  \node[lay] (l2) at (3.5,0) {lapis 2\\\ttfamily sudut};
-  \node[lay] (l3) at (5.1,0) {lapis 3\\\ttfamily bagian};
-  \node[lay] (l4) at (6.7,0) {lapis 4\\\ttfamily angka};
-  \node[draw=lime!60, fill=limebr!12, rounded corners=3pt, minimum width=1.6cm,
-        minimum height=1.2cm, text=ink, align=center] (out) at (8.7,0) {keluaran\\\ttfamily P(0..9)};
-  \draw[ar] (in) -- (l1); \draw[ar] (l1) -- (l2); \draw[ar] (l2) -- (l3);
-  \draw[ar] (l3) -- (l4); \draw[ar] (l4) -- (out);
-  \node[text=ink3, anchor=west] at (-0.7,-1.25)
-    {setiap lapis mengubah representasi menjadi bentuk yang sedikit lebih berguna};
-\end{tikzpicture}
-
-}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch01-layers.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Gambar 1.5-1.6 -- jaringan empat lapis untuk klasifikasi angka. Representasi antara semakin jauh dari piksel dan semakin dekat ke jawaban.\par}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Figures 1.5--1.6 --- a four-layer network for digit classification. Intermediate representations get further from the pixels and closer to the answer.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Chollet calls this \textbf{information distillation}: irrelevant information is filtered out, relevant information is amplified. All the layers are learned \hilite{at once, automatically}, from the training data.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 1.5}
+\begin{frame}[shrink=25]{Two better names the field never adopted}
+\begin{minipage}[t]{0.485\textwidth}
 \begin{ibullets}
-\item Banyaknya lapis = \textbf{kedalaman} model. Jaringan modern punya puluhan sampai ratusan lapis.
-\item Lawannya, \textbf{shallow learning}, hanya satu atau dua lapis representasi.
-\item Semua lapis dipelajari \hilite{sekaligus, otomatis} dari data pelatihan -- bukan dirancang satu per satu oleh manusia.
-\item Chollet menyebut nama yang sebenarnya lebih tepat untuk bidang ini: \textit{layered representations learning} atau \textit{hierarchical representations learning}. Istilah \textbf{deep} menang karena sejarah, bukan karena akurasi.
+\item \textit{layered representations learning}
+\item \textit{hierarchical representations learning}
 \end{ibullets}
-\end{frame}
-\note{Koreksi salah paham yang paling umum di ruangan: 'deep' sering dikira berarti mesin memahami lebih dalam. Bukan. Ia sekadar keterangan arsitektur.}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Either would have been more accurate. \textbf{Deep} won on history, not on precision.\par}\vskip 4pt
 
-\framekicker{Bagian 1.1.5 -- tiga gambar}
-\begin{frame}[shrink=25]{Cara kerja deep learning, tanpa satu pun rumus}
-\begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.52\textheight}{%
-
-\begin{tikzpicture}[font=\sffamily\tiny,
-  bx/.style={draw=rule, fill=papertint, rounded corners=3pt, minimum width=1.7cm,
-             minimum height=0.62cm, text=ink2, align=center},
-  ar/.style={-{Stealth[length=4pt]}, signal, line width=0.7pt},
-  fb/.style={-{Stealth[length=4pt]}, amberbr, line width=0.8pt}]
-  \node[bx] (x) at (0,0) {Masukan $X$};
-  \node[draw=itbbluelt!70, fill=itbbluelt!12, rounded corners=4pt, minimum width=2.1cm,
-        minimum height=1.7cm, text=ink, align=center] (lay) at (2.5,0)
-        {Lapis\\(transformasi data)};
-  \node[draw=amber!70, fill=amberbr!16, rounded corners=3pt, minimum width=1.6cm,
-        minimum height=0.42cm, text=ink, font=\ttfamily\tiny] (w) at (2.5,-0.62) {Bobot $W$};
-  \node[bx] (yp) at (5.2,0) {Prediksi $\hat{Y}$};
-  \node[bx] (y)  at (5.2,-1.5) {Target $Y$};
-  \node[draw=rose!70, fill=rosebr!14, rounded corners=4pt, minimum width=1.9cm,
-        minimum height=0.62cm, text=ink] (loss) at (7.9,-0.75) {Fungsi rugi};
-  \node[draw=lime!70, fill=limebr!16, rounded corners=4pt, minimum width=1.9cm,
-        minimum height=0.62cm, text=ink] (opt) at (7.9,1.15) {Optimalisasi};
-
-  \draw[ar] (x) -- (lay); \draw[ar] (lay) -- (yp);
-  \draw[ar] (yp) -- (loss); \draw[ar] (y) -- (loss);
-  \draw[fb] (loss) -- (opt);
-  \draw[fb, dashed] (opt) -| (2.5,0.9) -- (lay.north);
-  \node[text=amber, anchor=south] at (4.6,1.3) {perbarui bobot};
-\end{tikzpicture}
-
-}
-\end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Gambar 1.7-1.9 digabung: bobot memarametrikan lapis, fungsi rugi mengukur jaraknya ke target, optimalisasi memakai skor itu untuk menggeser bobot.\par}
-\begin{isteps}
-\item \textbf{Bobot memarametrikan transformasi} (gambar 1.7). Apa yang dikerjakan sebuah lapis tersimpan di bobotnya. Belajar = menemukan nilai bobot yang benar. Jaringan besar punya puluhan juta parameter.
-\item \textbf{Fungsi rugi mengukur seberapa jauh melesetnya} (gambar 1.8). Ia menghitung jarak antara prediksi dan target. Disebut juga \textit{objective} atau \textit{cost function}.
-\item \textbf{Backpropagation memakai skor itu sebagai umpan balik} (gambar 1.9): geser bobot ke arah yang menurunkan rugi, ulangi ribuan kali. Inilah \textbf{lingkar pelatihan}.
-\end{isteps}
-\begin{iband}[signal]
-Bobot mula-mula diisi \hilite{acak}, jadi keluaran awal tentu ngawur dan ruginya tinggi. Yang membuatnya bekerja adalah pengulangan lingkar itu, bukan tebakan awal yang bagus.
-\end{iband}
-\end{frame}
-\note{Ini slide paling penting di bab 1. Bab 2 akan membongkar setiap kotak di diagram ini menjadi tensor dan turunan; cukup pastikan bentuk lingkarnya tertanam dulu.}
-
-\framekicker{Peraga 1 dari 2}
-\begin{frame}[shrink=25]{Lingkar pelatihan itu, dalam sepuluh baris}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Bab 1 memang tidak memuat kode. Tetapi seluruh diagram di slide sebelumnya muat dalam potongan sekecil ini.\par}\vskip 4pt
-\icode{python}{peraga kelas --- bukan listing buku}{listings/ch01-01.py}
-\end{frame}
-\note{Jalankan langsung di depan kelas kalau memungkinkan. Tiga komentar bernomor di kode itu menunjuk persis ke tiga gambar pada slide sebelumnya -- tunjuk bolak-balik antara keduanya.}
-
-\framekicker{Peraga 2 dari 2}
-\begin{frame}[shrink=25]{Yang keluar dari lingkar itu: aturannya sendiri}
-\ioutput{listings/ch01-02.txt}
-\begin{iband}[signal]
-Bobot bergerak dari acak ke \hilite{W $\approx$ 2, b $\approx$ 1} -- hukum yang memang membangkitkan datanya, dan yang tidak pernah kita tuliskan. Itulah 'aturan sebagai keluaran' pada gambar 1.2.
-\end{iband}
-\begin{ibullets}
-\item Tidak ada satu baris pun yang memberi tahu program bahwa jawabannya 2 dan 1.
-\item Yang diberikan hanya \textbf{data, jawaban, dan ukuran rugi} -- tiga bahan wajib itu.
-\item Bab 2 mengganti NumPy sebaris ini dengan tensor dan turunan otomatis; bentuk lingkarnya \hilite{tidak berubah}.
-\end{ibullets}
-\vskip 4pt
-\reslink{NOTEBOOK}{01\_paradigma\_ml.ipynb}{../../notebooks/ch01/01\_paradigma\_ml.ipynb}
-\reslink{BAB PENUH}{deeplearningwithpython.io}{https://deeplearningwithpython.io/chapters/chapter01\_what-is-deep-learning}
-\vskip 2pt
-\end{frame}
-\note{Yang mau dilihat peserta bukan angkanya, melainkan bahwa loss turun sendiri tanpa ada yang memberitahu jawabannya.}
-
-\coursesection{04}{Mengapa deep learning menang}{Tiga sifat, dan satu perubahan yang membuat pesaingnya tertinggal.}
-
-\framekicker{Bagian 1.1.6}
-\begin{frame}[shrink=25]{Apa yang membuatnya berbeda dari shallow learning}
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icardgood}
-\cardh{Kesederhanaan}
-Feature engineering dikerjakan sendiri oleh model. Pipeline bertingkat digantikan \textbf{satu model ujung-ke-ujung}.
-\cardtag{simplicity}
-\end{icardgood}
 \end{minipage}%
 \hfill
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icardgood}
-\cardh{Skalabilitas}
-Cocok diparalelkan di GPU dan dilatih per \textit{batch}, jadi ukuran data \hilite{tidak lagi jadi batas atas}.
-\cardtag{scalability}
-\end{icardgood}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icardgood}
-\cardh{Keluwesan \& pakai ulang}
-Model bisa dilatih lanjut dengan data baru tanpa mulai dari nol; \textit{foundation model} dipindah ke tugas lain dengan sedikit pelatihan tambahan.
-\cardtag{reusability}
-\end{icardgood}
-\end{minipage}%
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Perbedaan pokoknya satu: pendekatan dangkal memaksa manusia merancang lapisan representasi dulu, lalu model bekerja di atasnya. Deep learning \hilite{mempelajari semua lapisan itu sekaligus, dalam satu tarikan}.\par}\vskip 4pt
+\begin{minipage}[t]{0.485\textwidth}
 \begin{iband}[amber]
-Ini juga sumber keluhan auditor: yang membuatnya kuat -- representasi yang ditemukan sendiri -- persis yang membuatnya sulit diterangkan. Bab 10 kembali ke soal ini untuk kasus citra.
+Its opposite has a name too: \textbf{shallow learning}, which learns only one or two layers of representation -- for instance a pixel histogram followed by a classification rule.
+\end{iband}
+
+\end{minipage}%
+\end{frame}
+
+\coursesection{04}{How deep learning actually works}{Three figures, and not one equation.}
+
+\framekicker{Section 1.6 $\cdot$ figure 1.7}
+\begin{frame}[shrink=25]{Step 1 --- weights parameterise what a layer does}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}What a layer does to its input is stored in its \textbf{weights}, which are just numbers. They are also called the layer's \textbf{parameters}.\par}\vskip 4pt
+\begin{iband}[signal]
+Learning, then, means \hilite{finding values for every weight} such that the network maps its example inputs to their correct targets. A large network has tens of millions of them.
 \end{iband}
 \end{frame}
-\note{Sambungkan ke topik kepatuhan yang akan dibahas di sesi lain: keterjelasan model bukan sekadar keinginan akademik di sektor diatur ketat, ia persyaratan.}
 
-\framekicker{Bagian 1.2}
-\begin{frame}[shrink=25]{Zaman AI generatif}
-\begin{minipage}[t]{0.575\textwidth}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Mekanismenya: model menyusun ulang teks atau gambar dari masukannya sendiri. Targetnya diambil \textbf{dari masukan itu juga} -- inilah \textit{self-supervised learning}, dan itulah sebabnya ia lepas dari batas ketersediaan label.\par}\vskip 4pt
+\framekicker{Section 1.6 $\cdot$ figure 1.8}
+\begin{frame}[shrink=25]{Step 2 --- the loss function measures how far off you are}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The \textbf{loss function} takes the network's prediction and the true target, and computes a distance score. It is also called the \textit{objective function} or \textit{cost function}.\par}\vskip 4pt
+\begin{iband}[signal]
+That single number is the entire feedback signal. \hilite{Everything the network learns, it learns from that one score.}
+\end{iband}
+\end{frame}
+
+\framekicker{Section 1.6 $\cdot$ figure 1.9}
+\begin{frame}[shrink=25]{Step 3 --- backpropagation turns the score into an adjustment}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The loss score is used as a feedback signal to nudge the weights in the direction that lowers the loss a little. This adjustment is the job of the \textbf{backpropagation algorithm}.\par}\vskip 4pt
+\begin{iband}[amber]
+The weights start out \textbf{random}, so the first outputs are nonsense and the first loss is high. What makes it work is \hilite{repetition of the loop}, not a lucky starting point.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 1.6}
+\begin{frame}[shrink=25]{The three figures, joined into one loop}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch01-loop.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Figures 1.7--1.9 combined: weights parameterise the layer, the loss scores the prediction against the target, and the optimizer uses that score to move the weights.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}This is called the \textbf{training loop}, repeated over thousands of examples. Chapter 2 takes every box in this picture apart.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Teaching prop $\cdot$ 1 of 3}
+\begin{frame}[shrink=25]{The same loop, small enough to read in one sitting}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Chapter 1 carries no code. But the entire diagram above fits in a few lines of NumPy, and seeing it run removes any suspicion that something magical is going on.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}We generate data from a law we choose -- \inlinecode{y = 2x + 1} -- and then \hilite{throw the law away}. The program never sees it. The question is whether it can recover it.\par}\vskip 4pt
+\icode{python}{setup --- data from a law we then hide}{listings/ch01-01.py}
+\ioutput{listings/ch01-02.txt}
+\end{frame}
+\note{Run it live if you can. Point out that nothing in the code contains the numbers 2 and 1.}
+
+\framekicker{Teaching prop $\cdot$ 2 of 3}
+\begin{frame}[shrink=25]{Four lines that are the three figures}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Each numbered comment below points at one of the three figures we just walked through. Nothing else is happening.\par}\vskip 4pt
+\icode{python}{the training loop itself}{listings/ch01-03.py}
+\begin{iband}[signal]
+Forward pass, loss, gradient, update. \hilite{Every training loop in this book is that shape}, however large the model gets.
+\end{iband}
+\end{frame}
+
+\framekicker{Teaching prop $\cdot$ 3 of 3}
+\begin{frame}[shrink=25]{What comes out is the rule itself}
+\ioutput{listings/ch01-04.txt}
+\begin{iband}[signal]
+The weights travel from random to \hilite{W $\approx$ 2, b $\approx$ 1} -- the law that generated the data, which we never wrote down. That is \textit{rules as output} from figure 1.2, made concrete.
+\end{iband}
 \begin{ibullets}
-\item \textit{Foundation model} dengan \textbf{ratusan miliar parameter}, dilatih di atas data lebih dari \textbf{satu petabyte}.
-\item Berperilaku seperti \hilite{basis data kabur atas pengetahuan manusia}.
-\item Persoalan baru diselesaikan lewat \textbf{prompting}, tanpa pemrograman khusus per tugas.
-\item Masuk kesadaran umum pada \textbf{2022}, tetapi percobaan pembangkitan teks sudah ada sejak \textbf{1990-an}.
+\item Not one line told the program the answer was 2 and 1.
+\item It was given only \textbf{data, answers, and a measure of loss} --- the three required ingredients.
+\item Chapter 2 swaps this NumPy for tensors and automatic differentiation. The shape of the loop \hilite{does not change}.
 \end{ibullets}
+\end{frame}
+
+\coursesection{05}{Why deep learning won}{Three properties, and one change that left the alternatives behind.}
+
+\framekicker{Section 1.7}
+\begin{frame}[shrink=25]{Property 1 --- simplicity}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Deep learning automates what used to be the most crucial step in the workflow: \textbf{feature engineering}.\par}\vskip 4pt
+\begin{minipage}[t]{0.485\textwidth}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Shallow learning} transformed the input into one or two representation spaces -- not expressive enough for most problems. So humans went to great lengths to hand-engineer good representations first.\par}\vskip 4pt
 
 \end{minipage}%
 \hfill
-\begin{minipage}[t]{0.395\textwidth}
-\begin{minipage}[t]{1.0\textwidth}
-\istat{10$^{1}$$^{1}$}{orde parameter pada foundation model terkini}
-\end{minipage}%
-
-
-\vskip 4pt
-
-\begin{minipage}[t]{1.0\textwidth}
-\istat{> 1 PB}{orde data pelatihan}
-\end{minipage}%
-
-
-\vskip 4pt
-
-\begin{minipage}[t]{1.0\textwidth}
-\istat{2022}{tahun ia menjadi perbincangan umum}
-\end{minipage}%
-
-\end{minipage}%
+\begin{minipage}[t]{0.485\textwidth}
 \begin{iband}[signal]
-Untuk kursus ini, bab 15-17 membongkar mesinnya (Transformer, pembangkitan teks, pembangkitan gambar), dan topik LLM serta agentic AI memakainya sebagai bahan bangunan.
+Deep learning learns \textbf{all} the features in one pass. Elaborate multistage pipelines get replaced by \hilite{a single, end-to-end model}
+\end{iband}
+
+\end{minipage}%
+\end{frame}
+
+\framekicker{Section 1.7}
+\begin{frame}[shrink=25]{Property 2 --- scalability}
+\begin{ibullets}
+\item Highly amenable to \textbf{parallelisation on GPUs} and specialised hardware, so it rides Moore's law directly.
+\item Trained by iterating over \textbf{small batches}, which means dataset size is \hilite{no longer an upper bound}.
+\item The only real bottleneck is available parallel compute --- and that barrier keeps moving.
+\end{ibullets}
+\end{frame}
+
+\framekicker{Section 1.7}
+\begin{frame}[shrink=25]{Property 3 --- versatility and reusability}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Unlike most earlier approaches, a deep learning model can be trained on \textbf{additional data without restarting from scratch} -- which makes continuous online learning viable for large production models.\par}\vskip 4pt
+\begin{iband}[signal]
+Trained models are also \textbf{repurposable}. That is the idea behind \hilite{foundation models}: very large models trained on enormous data, reusable across many new tasks with little retraining, or none.
 \end{iband}
 \end{frame}
-\note{Tahan dulu pertanyaan tentang RAG dan fine-tuning; itu topik 4. Di sini cukup tegaskan bahwa self-supervised-lah yang membuat skala sebesar itu mungkin.}
 
-\coursesection{05}{Capaian, dan gembar-gembor}{Yang sudah terbukti, dan mengapa dua kali sebelumnya kita salah menaksir.}
+\framekicker{Section 1.7}
+\begin{frame}[shrink=25]{The cost of that power}
+\begin{iband}[amber]
+The property that makes it strong -- \textbf{representations it discovers for itself} -- is exactly the property that makes it hard to explain. Chapter 10 returns to this for image models.
+\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}In regulated settings, explainability is not an academic preference. It is a requirement, and it has to be designed for rather than retrofitted.\par}\vskip 4pt
+\end{frame}
 
-\framekicker{Bagian 1.3}
-\begin{frame}[shrink=25]{Yang sudah benar-benar dikerjakan deep learning}
+\coursesection{06}{The age of generative AI}{What changed in 2022, and what actually made it possible.}
+
+\framekicker{Section 1.8}
+\begin{frame}[shrink=25]{Self-supervised learning removed the labelling bottleneck}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Generative models learn to \textbf{reconstruct} the content fed into them: recover a sharp image from a noisy one, predict the next word in a sentence.\par}\vskip 4pt
+\begin{iband}[signal]
+So the targets are taken \textbf{from the input itself}. That is \hilite{self-supervised learning}, and it is what lets these models use vast amounts of \textit{unlabelled} data.
+\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Doing away with manual annotation -- the bottleneck of every earlier generation of machine learning -- unlocked a scale never seen before.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 1.8}
+\begin{frame}[shrink=25]{The scale that resulted}
+\begin{minipage}[t]{0.241\textwidth}
+\istat{10$^{1}$$^{1}$}{order of parameters in a foundation model}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.241\textwidth}
+\istat{> 1 PB}{order of training data}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.241\textwidth}
+\istat{\$10s M}{order of cost to train one}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.241\textwidth}
+\istat{2022}{the year it entered public awareness}
+\end{minipage}%
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}These models behave like a \textbf{fuzzy database of human knowledge}. Because they have already memorised so much, they solve new problems by \textbf{prompting} -- no special-purpose programming, no retraining.\par}\vskip 4pt
+\begin{iband}[amber]
+It is newer in public attention than in research: the earliest text generation experiments date to the \textbf{1990s}, and the first edition of this book, in 2017, already had a chapter on generative models.
+\end{iband}
+\end{frame}
+
+\coursesection{07}{What has actually been achieved}{The record, before the argument about the forecasts.}
+
+\framekicker{Section 1.9}
+\begin{frame}[shrink=25]{Three waves in a single decade}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch01-waves.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Perception matured first, language second, generation third.\par}
+\begin{iband}[signal]
+Useful for planning: the capabilities that matured \textbf{earliest} are the cheapest and most reliable to deploy today. The newest ones are \hilite{the most expensive and the least settled}
+\end{iband}
+\end{frame}
+\note{This slide often redirects a budget conversation. Ask which wave the participant's actual use case belongs to.}
+
+\framekicker{Section 1.9}
+\begin{frame}[shrink=25]{Breakthroughs on problems that had long resisted machines}
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Percakapan}
+\cardh{Conversation}
 ChatGPT, Gemini, Claude.
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Pembangkitan kode}
-GitHub Copilot dan sejenisnya.
+\cardh{Code assistance}
+GitHub Copilot and its kin.
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Gambar fotorealistik}
-Dari teks ke citra.
+\cardh{Photorealistic images}
+Generated from text.
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Setara manusia}
-Klasifikasi citra, transkripsi suara, pengenalan tulisan tangan.
+\cardh{Human-level perception}
+Image classification, speech transcription, handwriting.
 \end{icard}
 \end{minipage}%
 
@@ -479,211 +495,219 @@ Klasifikasi citra, transkripsi suara, pengenalan tulisan tangan.
 
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Terjemahan \& TTS}
-Naik tajam mutunya.
+\cardh{Translation \& speech}
+Both dramatically improved.
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Kemudi otonom}
-Beroperasi di Phoenix, San Francisco, Los Angeles, Austin (2025).
+\cardh{Autonomous driving}
+Deployed to the public in Phoenix, San Francisco, Los Angeles and Austin as of 2025.
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Melampaui manusia}
-Go, catur, poker.
+\cardh{Superhuman play}
+Go, chess, and poker.
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Struktur protein}
-AlphaFold.
+\cardh{Recommenders}
+YouTube, Netflix, Spotify.
 \end{icard}
 \end{minipage}%
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icard}
-\cardh{Sistem perekomendasi}
-YouTube, Netflix, Spotify -- yang paling banyak dipakai orang setiap hari tanpa menyadarinya.
-\end{icard}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icard}
-\cardh{Naskah kuno}
-Puluhan ribu manuskrip di \textbf{Vatican Secret Archive} ditranskripsi otomatis.
-\end{icard}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icard}
-\cardh{Penyakit tanaman}
-Dideteksi dan digolongkan langsung di lahan, cukup dengan ponsel biasa.
-\end{icard}
-\end{minipage}%
+\end{frame}
 
-
-\vskip 4pt
-
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icard}
-\cardh{Citra medis}
-Mendampingi onkolog dan radiolog menafsirkan hasil pencitraan.
-\end{icard}
+\framekicker{Section 1.9}
+\begin{frame}[shrink=25]{And problems thought impossible a few years ago}
+\begin{minipage}[t]{0.241\textwidth}
+\begin{icardgood}
+\cardh{Ancient manuscripts}
+Tens of thousands in the Vatican Secret Archive, transcribed automatically.
+\end{icardgood}
 \end{minipage}%
 \hfill
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icard}
-\cardh{Bencana alam}
-Meramalkan banjir, badai, bahkan gempa bumi.
-\end{icard}
+\begin{minipage}[t]{0.241\textwidth}
+\begin{icardgood}
+\cardh{Plant disease}
+Detected and classified in the field with an ordinary smartphone.
+\end{icardgood}
 \end{minipage}%
 \hfill
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icard}
-\cardh{Struktur protein}
-AlphaFold, dengan ketepatan yang belum pernah ada sebelumnya.
-\end{icard}
+\begin{minipage}[t]{0.241\textwidth}
+\begin{icardgood}
+\cardh{Medical imaging}
+Assisting oncologists and radiologists with interpretation.
+\end{icardgood}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.241\textwidth}
+\begin{icardgood}
+\cardh{Natural disasters}
+Predicting floods, hurricanes, and even earthquakes.
+\end{icardgood}
 \end{minipage}%
 \begin{iband}[signal]
-Daftar ini \hilite{bukan janji}; semuanya sudah berjalan. Itulah yang membedakannya dari slide berikutnya.
+This list is \hilite{not a forecast}. Every item on it is already running. That is what separates it from the next section.
 \end{iband}
 \end{frame}
-\note{Sengaja ditaruh sebelum slide gembar-gembor. Urutannya penting: akui dulu capaiannya, baru kritik taksirannya. Kalau dibalik, terdengar seperti penyangkalan.}
 
-\framekicker{Bagian 1.9}
-\begin{frame}[shrink=25]{Tiga gelombang dalam satu dasawarsa}
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icardaccent}
-\cardh{2013 -- 2017 $\cdot$ persepsi}
-Hasil yang mencengangkan pada tugas persepsi: klasifikasi citra, transkripsi suara, pengenalan tulisan tangan.
-\end{icardaccent}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icardaccent}
-\cardh{2017 -- 2022 $\cdot$ bahasa}
-Kemajuan cepat pada pemrosesan bahasa alami. Transformer terbit 2017 -- bab 15 membongkarnya.
-\end{icardaccent}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icardaccent}
-\cardh{2022 -- kini $\cdot$ generatif}
-Gelombang aplikasi AI generatif yang mengubah cara orang bekerja sehari-hari.
-\end{icardaccent}
-\end{minipage}%
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Urutan ini penting untuk perencanaan: kemampuan yang matang lebih dulu -- persepsi -- adalah yang \textbf{paling murah dan paling andal} dipakai hari ini. Yang paling baru justru yang paling mahal dan paling belum stabil.\par}\vskip 4pt
-\begin{iband}[amber]
-Di lapangan, banyak kasus pemakaian yang benar-benar mendesak sebetulnya jatuh di gelombang \textbf{pertama dan kedua} -- OCR dokumen, klasifikasi keluhan, deteksi anomali. \hilite{Tidak semuanya menuntut model generatif.}
+\coursesection{08}{Beware the short-term hype}{Twice before, the field promised too much and lost its funding.}
+
+\framekicker{Section 1.10}
+\begin{frame}[shrink=25]{What was promised in 2023, and what happened}
+\begin{ibullets}
+\item Soon after GPT-4, pundits claimed \textbf{nobody would need to work} and that mass unemployment was a year away.
+\item Others promised economic productivity would rise \textbf{10$\times$ to 100$\times$}.
+\item Two years later: US unemployment remains low, and productivity is far from any such explosion.
+\end{ibullets}
+\begin{iband}[signal]
+To be fair to the technology: by mid-2025 generative AI was earning \textbf{tens of billions of dollars a year} -- extremely impressive for an industry that \hilite{did not exist three years earlier}
 \end{iband}
 \end{frame}
-\note{Slide ini sering mengubah arah diskusi anggaran. Tanyakan: kasus Anda sebetulnya butuh gelombang yang mana?}
 
-\framekicker{Bagian 1.4 -- 1.5}
-\begin{frame}[shrink=25]{Waspadai gembar-gembor jangka pendek}
-\begin{minipage}[t]{0.485\textwidth}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Ciri gembar-gembor sekarang}\par}\vskip 4pt
-\begin{ibullets}
-\item Ramalan pengangguran massal dan lonjakan produktivitas \textbf{10x-100x} -- yang belum terjadi.
-\item Narasi AGI dan superintelijensi yang menyeret jadwal jadi tidak masuk akal.
-\item Investasi AI -- terutama pusat data dan GPU -- melampaui \textbf{\$200 miliar per tahun}, sementara pendapatannya jauh tertinggal di kisaran \textbf{\$30 miliar}.
-\end{ibullets}
-
+\framekicker{Section 1.11}
+\begin{frame}[shrink=25]{The gap that has to close somehow}
+\begin{minipage}[t]{0.494\textwidth}
+\istat{> \$200 bn}{annual AI investment, mostly data centres and GPUs}
 \end{minipage}%
 \hfill
-\begin{minipage}[t]{0.485\textwidth}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Dua musim dingin sebelumnya}\par}\vskip 4pt
-\begin{ibullets}
-\item \textbf{Pertama} -- Minsky, 1967: \textit{"Dalam satu generasi... persoalan menciptakan kecerdasan buatan pada dasarnya akan terpecahkan."} Pendanaan runtuh pada 1970-an.
-\item \textbf{Kedua} -- \textit{expert system} pada 1980-an; sekitar 1985 perusahaan membelanjakan \textbf{lebih dari \$1 miliar setahun}. Pada awal 1990-an terbukti mahal dirawat, sulit diskalakan, dan sempit cakupannya.
-\item \textbf{Sekarang} -- masih di fase optimisme. Menurut Chollet, kemunduran sebesar 1990-an \hilite{tidak mungkin terulang} -- AI sudah membuktikan nilainya. Kalau ada musim dingin, mestinya sangat ringan.
-\end{ibullets}
-
+\begin{minipage}[t]{0.494\textwidth}
+\istat{$\approx$ \$30 bn}{annual revenue generated against it}
 \end{minipage}%
 \begin{iquote}
-\quotetext{Today's "artificial intelligence" is more accurately described as "cognitive automation." AI excels at solving problems with narrowly defined requirements.}\quotecite{Chollet \& Watson, bab 1}
+\quotetext{AI is currently being judged by executives and investors not by what it has accomplished, but by what we are told it might soon become able to do --- much of which will durably stay out of reach of existing technologies. Something will have to give.}\quotecite{Chollet \& Watson, section 1.11}
 \end{iquote}
 \end{frame}
-\note{Ini slide yang paling berguna saat peserta duduk di rapat anggaran. Pesannya bukan 'jangan investasi', melainkan 'taksir sesuai apa yang terbukti, bukan sesuai apa yang dijanjikan'.}
+\note{These are the book's figures, and they are the ones to quote in a budget meeting --- not the \$100bn/\$10bn numbers circulating elsewhere.}
 
-\framekicker{Bagian 1.10}
-\begin{frame}[shrink=25]{Urutannya terbalik dari yang dikira orang}
-\leadpar{Mudah mengira bahwa keberhasilan praktis AI generatif-lah yang melahirkan keyakinan akan AGI dalam waktu dekat. Menurut Chollet, \hilite{yang terjadi justru sebaliknya}}
+\framekicker{Section 1.10}
+\begin{frame}[shrink=25]{The order is the opposite of what people assume}
+\leadpar{It is tempting to think the practical success of generative AI produced the belief in near-term AGI. \hilite{It was the other way round}}
 \begin{isteps}
-\item \textbf{2013} -- di kalangan elite teknologi sudah muncul kekhawatiran bahwa AGI akan tiba dalam beberapa tahun. Saat itu yang dianggap di jalur menuju ke sana adalah \textbf{DeepMind}, startup riset AI London yang kemudian diakuisisi Google.
-\item \textbf{2015} -- keyakinan itulah yang mendorong berdirinya \textbf{OpenAI}, yang semula bermaksud menjadi penyeimbang sumber terbuka bagi DeepMind.
-\item \textbf{2016} -- ajakan rekrutmen OpenAI menjanjikan \textbf{AGI tercapai pada 2020}. Adil untuk dicatat: hanya sebagian kecil orang di industri yang percaya jadwal seoptimistis itu waktu itu.
-\item \textbf{Awal 2023} -- sebagian besar insinyur di San Francisco Bay Area tampak yakin AGI akan tiba dalam satu-dua tahun berikutnya.
+\item \textbf{2013} --- fears among tech elites that AGI was a few years out. The candidate was \textbf{DeepMind}, a London startup later acquired by Google.
+\item \textbf{2015} --- that belief drove the founding of \textbf{OpenAI}, intended as an open-source counterweight to DeepMind.
+\item \textbf{2016} --- OpenAI's recruiting pitch was that it would achieve \textbf{AGI by 2020}. Only a minority in the industry believed that timeline.
+\item \textbf{Early 2023} --- a significant fraction of Bay Area engineers were convinced AGI was one or two years away.
 \end{isteps}
 \begin{iband}[amber]
-OpenAI berperan penting menyalakan AI generatif. Jadi dalam pelintiran yang ganjil, \textbf{keyakinan akan AGI-lah yang menaikkan AI generatif}, bukan sebaliknya.
+OpenAI was critical in kick-starting generative AI. So in a peculiar twist, \textbf{the belief in near-term AGI fuelled the rise of generative AI}, not the reverse.
 \end{iband}
 \end{frame}
-\note{Ini konteks yang jarang diketahui peserta dan sangat menolong saat membaca berita AI: banyak klaim yang beredar adalah keturunan dari keyakinan 2013, bukan simpulan dari bukti 2025.}
 
-\framekicker{Bagian 1.5}
-\begin{frame}[shrink=25]{Otomasi kognitif bukan kecerdasan}
+\framekicker{Section 1.11}
+\begin{frame}[shrink=25]{Winter, the first time}
 \begin{iquote}
-\quotetext{Intelligence is the ability to face the unknown, adapt to it, and learn from it. Automation, even at its best, can only handle situations it's been trained on.}\quotecite{Chollet \& Watson, bab 1}
+\quotetext{Within a generation \ldots{} the problem of creating "artificial intelligence" will substantially be solved.}\quotecite{Marvin Minsky, 1967}
 \end{iquote}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.1692\textwidth}>{\raggedright\arraybackslash}p{0.3854\textwidth}>{\raggedright\arraybackslash}p{0.3854\textwidth}}
-\thead{} & \thead{Otomasi kognitif (yang kita punya)} & \thead{Kecerdasan (yang belum)} \\ \midrule
-Cakupan & Persoalan dengan syarat yang sempit dan jelas & Persoalan yang belum pernah dirumuskan siapa pun \\
-Sumber kemampuan & Contoh dalam data pelatihan & Penyesuaian saat berhadapan dengan yang tak dikenal \\
-Saat menemui hal baru & Menurun diam-diam, sering tanpa memberi tanda & Belajar dari situasi itu lalu memperbaiki diri \\
-\end{itable}
+\begin{iquote}
+\quotetext{In from three to eight years we will have a machine with the general intelligence of an average human being.}\quotecite{Marvin Minsky, 1970}
+\end{iquote}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}When those expectations failed to materialise, researchers and government funding turned away, and the \textbf{first AI winter} began.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 1.11}
+\begin{frame}[shrink=25]{Winter, the second time --- and where we are now}
 \begin{minipage}[t]{0.485\textwidth}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Metafora Chollet: \textbf{AI itu seperti tokoh kartun, kecerdasan seperti makhluk hidup.} Kartun, sebagus apa pun gambarnya, hanya bisa memainkan adegan yang untuknya ia digambar. Makhluk hidup bisa menyesuaikan diri dengan yang tak terduga.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{The 1980s: expert systems.} A few early successes triggered a wave of investment; by around 1985 companies were spending \textbf{over \$1 billion a year}.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}By the early 1990s these systems had proven expensive to maintain, difficult to scale, and limited in scope. Interest died.\par}\vskip 4pt
 
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.485\textwidth}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textit{"Kalau kartunnya digambar cukup realistis dan mencakup cukup banyak adegan, apa bedanya?"} Bedanya adalah \textbf{keluwesan menyesuaikan diri} -- dan itulah sebabnya membangun otomasi yang kukuh begitu sulit: ia menuntut Anda memperhitungkan \hilite{setiap skenario yang mungkin}\par}\vskip 4pt
+\begin{iband}[signal]
+\textbf{Now.} Chollet's own view: a full-scale retreat like the 1990s is unlikely -- AI has already demonstrated world-changing value. \hilite{If there is a winter, it should be very mild.} But some air will have to come out.
+\end{iband}
 
 \end{minipage}%
+\end{frame}
+
+\framekicker{Section 1.10}
+\begin{frame}[shrink=25]{Cognitive automation is not intelligence}
+\begin{iquote}
+\quotetext{Despite its name, today's "artificial intelligence" is more accurately described as "cognitive automation" --- the encoding and operationalization of human skills and knowledge.}\quotecite{Chollet \& Watson, section 1.10}
+\end{iquote}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}It excels at problems with narrowly defined requirements, or where ample precise examples exist. It is about \textbf{enhancing the capabilities of computers}, not replicating human minds.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 1.10}
+\begin{frame}[shrink=25]{The cartoon and the living being}
+\begin{minipage}[t]{0.485\textwidth}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{AI is like a cartoon character; intelligence is like a living being.} A cartoon, however realistic, can only act out the scenes it was drawn for.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textit{"If the cartoon is drawn with sufficient realism and covers sufficiently many scenes, what's the difference?"}\par}\vskip 4pt
+
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.485\textwidth}
 \begin{iband}[rose]
-Pembedaan ini punya akibat langsung di produksi: kalau sistem hanya sanggup menangani apa yang pernah dilatihkan, maka \hilite{pemantauan pergeseran data bukan fitur tambahan}, melainkan syarat agar sistem tetap layak dipakai. Bab 18 kembali ke sini.
+The difference is \textbf{adaptability}. Intelligence is the ability to face the unknown, adapt to it, and learn from it. Automation, even at its best, can only handle situations it has been trained on.
 \end{iband}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Karena itu Chollet menutup bagian ini dengan tenang: jangan cemas AI tiba-tiba sadar diri lalu mengambil alih kemanusiaan. Teknologi hari ini tidak menuju ke sana. \textit{"Seperti mengharapkan jam yang lebih baik akan melahirkan perjalanan waktu -- keduanya hal yang sama sekali berbeda."}\par}\vskip 4pt
-\end{frame}
-\note{Ini jembatan ke seluruh sisa kursus. Kalimat kuncinya: model yang bagus di laboratorium bisa jadi berbahaya di produksi, dan bedanya ada pada apa yang tidak pernah ia lihat.}
 
-\framekicker{Bagian 1.6}
-\begin{frame}[shrink=25]{Janji jangka panjang}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Chollet menutup bab ini dengan ramalannya sendiri dari 2017, yang sebagian besar sudah terpenuhi pada 2025 -- dipakai bukan untuk menyombong, melainkan untuk menunjukkan bentuk taksiran yang benar: \textbf{arahnya tepat, jadwalnya yang meleset}.\par}\vskip 4pt
-\begin{itable}{>{\raggedright\arraybackslash}p{0.376\textwidth}>{\raggedright\arraybackslash}p{0.564\textwidth}}
-\thead{Ramalan 2017} & \thead{Keadaannya pada 2025} \\ \midrule
-AI jadi asisten, bahkan teman & \textbf{Puluhan juta orang} memakai ChatGPT, Gemini, Claude sebagai asisten harian. Ratusan ribu berinteraksi dengan "teman" AI di aplikasi seperti Character.ai. \\
-Menjawab pertanyaan, membantu mendidik anak & Ternyata \textbf{penjawaban pertanyaan dan bantuan pekerjaan rumah} justru menjadi pemakaian nomor satu chatbot ini. \\
-Mengantar Anda dari A ke B & Kemudi otonom penuh sudah terpasang dalam skala nyata di Phoenix, San Francisco, Los Angeles, dan Austin. \\
-Membantu ilmuwan menemukan terobosan & \textbf{AlphaFold} membantu biolog meramal struktur protein. Matematikawan \textbf{Terence Tao} memperkirakan AI bisa menjadi ko-penulis yang andal dalam riset matematika sekitar 2026. \\
+\end{minipage}%
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}That is why building robust automation is so hard: it requires accounting for \hilite{every possible scenario}\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 1.10}
+\begin{frame}[shrink=25]{What follows for anything you put into production}
+\begin{iband}[rose]
+If a system can only handle what it was trained on, then \textbf{monitoring for data drift is not an optional feature} -- it is a condition of the system remaining fit to use. Chapter 6 and chapter 18 return to this.
+\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}And the reassuring corollary: do not worry about AI suddenly becoming self-aware. Today's technology is not headed that way. \textit{"It's like expecting a better clock to lead to time travel --- they're just different things altogether."}\par}\vskip 4pt
+\end{frame}
+
+\coursesection{09}{The promise of AI}{The short-term forecasts deflate. The long-term change still arrives.}
+
+\framekicker{Section 1.12}
+\begin{frame}[shrink=25]{A 2017 forecast, scored in 2025}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.3384\textwidth}>{\raggedright\arraybackslash}p{0.6016\textwidth}}
+\thead{Written in 2017} & \thead{Where it stands in 2025} \\ \midrule
+AI as your assistant, even your friend & \textbf{Tens of millions} use chatbots as daily assistants. Hundreds of thousands interact with AI "friends" in apps such as Character.ai. \\
+It will answer your questions and help educate your kids & Question-answering and homework assistance turned out to be the \textbf{top two} applications. \\
+It will drive you from point A to point B & Fully autonomous driving is deployed at scale in Phoenix, San Francisco, Los Angeles, and Austin. \\
+It will help scientists make breakthroughs & \textbf{AlphaFold} predicts protein structures. Terence Tao expects AI to be a reliable co-author in mathematical research around 2026. \\
 \end{itable}
+\end{frame}
+
+\framekicker{Section 1.12}
+\begin{frame}[shrink=25]{Two things that are true at the same time}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardwarn}
+\cardh{The short-term hype will deflate}
+The forecasts of 2023 have not held, and the investment-to-revenue gap has to close.
+\end{icardwarn}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardgood}
+\cardh{The long-term change still comes}
+Across medicine, science, industry, and daily life --- the direction was right even where the timing was wrong.
+\end{icardgood}
+\end{minipage}%
 \begin{iband}[signal]
-Kesimpulan bab: \hilite{gembar-gembor jangka pendek akan kempis, perubahan jangka panjang tetap datang}. Dua-duanya benar sekaligus, dan itulah yang membuat perencanaan jadi sulit.
+Holding both at once is uncomfortable, and it is \hilite{exactly what makes planning in this field difficult}
 \end{iband}
 \end{frame}
-\note{Tutup dengan mengingatkan bahwa sisa buku ini praktis semua. Bab 1 adalah satu-satunya bab yang boleh berdebat; setelah ini semuanya kode.}
 
-\framekicker{Ringkasan}
-\begin{frame}[shrink=25]{Yang wajib terbawa dari bab 1}
+\framekicker{Summary}
+\begin{frame}[shrink=25]{What has to survive this chapter}
 \begin{isteps}
-\item \textbf{AI $\supset$ machine learning $\supset$ deep learning.} Symbolic AI ada di dalam AI, di luar ML.
-\item \textbf{Machine learning membalik arah pemrograman}: data + jawaban masuk, aturan keluar.
-\item \textbf{Tiga bahan wajib}: masukan, contoh keluaran, dan ukuran mutu. Yang paling sering hilang adalah yang ketiga.
-\item \textbf{'Deep' = banyak lapis representasi}, bukan pemahaman yang lebih dalam.
-\item \textbf{Bobot, fungsi rugi, backpropagation} -- lingkar pelatihan yang akan dibongkar bab 2.
-\item \textbf{Capaiannya nyata, taksirannya sering meleset.} Ini otomasi kognitif, belum kecerdasan.
+\item \textbf{AI $\supset$ machine learning $\supset$ deep learning.} Symbolic AI is inside AI and outside machine learning.
+\item \textbf{Machine learning inverts programming}: data and answers in, rules out.
+\item \textbf{Three required ingredients} --- inputs, example outputs, and a measure of quality. The third goes missing most often.
+\item \textbf{"Deep" means many layers of representation}, not deeper understanding.
+\item \textbf{Weights, loss, backpropagation} --- the training loop chapter 2 takes apart.
+\item \textbf{The achievements are real; the forecasts have repeatedly not been.} This is cognitive automation, not yet intelligence.
 \end{isteps}
 \vskip 4pt
-\reslink{BAB BERIKUT}{Bab 2 --- Blok bangunan matematis}{../ch02/index.html}
-\reslink{TEKS PENUH}{deeplearningwithpython.io}{https://deeplearningwithpython.io/chapters/chapter01\_what-is-deep-learning}
-\reslink{KODE BUKU}{fchollet/deep-learning-with-python-notebooks}{https://github.com/fchollet/deep-learning-with-python-notebooks}
+\reslink{NOTEBOOK}{01\_the\_ml\_paradigm.ipynb}{../../course-slides/notebooks/ch01/01\_the\_ml\_paradigm.ipynb}
+\reslink{NEXT}{Chapter 2 --- Mathematical building blocks}{../ch02/index.html}
+\reslink{BOOK CODE}{fchollet/deep-learning-with-python-notebooks}{https://github.com/fchollet/deep-learning-with-python-notebooks}
 \vskip 2pt
 \end{frame}
-\note{Kalau waktu habis, enam butir ini yang harus sempat dibacakan.}
+\note{If time runs out, these six lines are the ones to read aloud.}
 
 \end{document}

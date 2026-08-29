@@ -1,13 +1,6 @@
-# output = relu(matmul(input, W) + b)
-#            ^          ^            ^
-#            |          |            +-- penjumlahan (dengan broadcasting)
-#            |          +--------------- hasil kali tensor
-#            +-------------------------- operasi elemen-demi-elemen
+test_digits = test_images[0:10]
+predictions = model.predict(test_digits)
 
-def naive_relu(x):
-    assert len(x.shape) == 2
-    x = x.copy()
-    for i in range(x.shape[0]):
-        for j in range(x.shape[1]):
-            x[i, j] = max(x[i, j], 0)
-    return x
+print(predictions[0].argmax())      # which class?
+print(predictions[0].max())         # how confident?
+print(test_labels[0])               # what was the truth?

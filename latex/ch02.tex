@@ -3,15 +3,15 @@
 \documentclass[aspectratio=169,11pt,t]{beamer}
 \usepackage{itbpro}
 
-\coursetitle{Blok Bangunan Matematis Jaringan Saraf}
-\coursesubtitle{Tensor, operasi tensor, dan penurunan berbasis gradien -- dijelaskan lewat kode yang bisa dijalankan, bukan notasi.}
+\coursetitle{The Mathematical Building Blocks of Neural Networks}
+\coursesubtitle{Tensors, tensor operations, and gradient-based optimisation --- explained through code you can run rather than notation you have to decode.}
 \coursekicker{Chapter 2}
-\coursesource{Chollet \& Watson, Deep Learning with Python 3e -- bab 2}
-\courseduration{3 jam (2 sesi)}
-\coursepresenter{Rahman Indra Kesuma, S.Kom., M.Cs.}{Asisten Pengajar}
+\coursesource{Chollet \& Watson, Deep Learning with Python 3e --- chapter 2}
+\courseduration{3 hours (2 sessions)}
+\coursepresenter{Rahman Indra Kesuma, S.Kom., M.Cs.}{Teaching Assistant}
 \coursebrand{AI for Professional \textperiodcentered\ ITB \textperiodcentered\ Ch 2}
 
-\title{Blok Bangunan Matematis Jaringan Saraf}
+\title{The Mathematical Building Blocks of Neural Networks}
 \author{Rahman Indra Kesuma, S.Kom., M.Cs.}
 \date{}
 
@@ -19,460 +19,529 @@
 \covertitle
 
 \framekicker{Learning outcomes}
-\begin{frame}[shrink=25]{Tujuan Sesi}
-\leadpar{Setelah sesi ini, peserta dapat:}
+\begin{frame}[shrink=25]{Session Objectives}
+\leadpar{By the end of this session, participants can:}
 \begin{isteps}
-\item Menjalankan contoh MNIST pertama dari ujung ke ujung dan menyebut peran \textbf{layer, loss, optimizer, dan metric} pada tiap barisnya.
-\item Membaca \textbf{rank, shape, dan dtype} sebuah tensor, dan memetakan data nyata (vektor, deret waktu, citra, video) ke bentuk tensornya.
-\item Menjelaskan \textbf{operasi elemen-demi-elemen, broadcasting, hasil kali tensor, dan reshape} beserta arti geometrisnya.
-\item Menerangkan \textbf{turunan, gradien, SGD mini-batch, dan aturan rantai}, lalu menunjuk letaknya di dalam graf komputasi.
-\item Menulis ulang MNIST \textbf{dari nol} -- Dense, Sequential, batch generator, dan lingkar pelatihan -- tanpa memakai \inlinecode{fit()}.
+\item Run the first MNIST example end to end and name the role of \textbf{layers, loss, optimizer, and metrics} in each line of it.
+\item Read a tensor's \textbf{rank, shape, and dtype}, and map real data --- vectors, timeseries, images, video --- onto its tensor shape.
+\item Explain \textbf{element-wise operations, broadcasting, the tensor product, and reshaping}, together with what each one means geometrically.
+\item Describe \textbf{derivatives, gradients, mini-batch SGD, and the chain rule}, and point to where each lives in a computation graph.
+\item Rewrite MNIST \textbf{from scratch} --- layer, model, batch generator, and training loop --- without calling \inlinecode{fit()}.
 \end{isteps}
 
 \vskip 6pt
 \vskip 4pt
-\reslink{Buku}{Bab 2 --- teks penuh}{https://deeplearningwithpython.io/chapters/chapter02\_mathematical-building-blocks}
-\reslink{Notebook}{01\_mnist\_pertama.ipynb}{../../notebooks/ch02/01\_mnist\_pertama.ipynb}
-\reslink{Notebook}{02\_tensor\_dan\_operasi.ipynb}{../../notebooks/ch02/02\_tensor\_dan\_operasi.ipynb}
-\reslink{Notebook}{03\_gradien\_dan\_sgd.ipynb}{../../notebooks/ch02/03\_gradien\_dan\_sgd.ipynb}
-\reslink{Notebook}{04\_mnist\_dari\_nol.ipynb}{../../notebooks/ch02/04\_mnist\_dari\_nol.ipynb}
-\reslink{Repo}{Notebook resmi penulis}{https://github.com/fchollet/deep-learning-with-python-notebooks/blob/master/chapter02\_mathematical-building-blocks.ipynb}
+\reslink{Book}{Chapter 2 --- full text}{https://deeplearningwithpython.io/chapters/chapter02\_mathematical-building-blocks}
+\reslink{Notebook}{01\_first\_mnist.ipynb}{../../notebooks/ch02/01\_first\_mnist.ipynb}
+\reslink{Notebook}{02\_tensors\_and\_operations.ipynb}{../../notebooks/ch02/02\_tensors\_and\_operations.ipynb}
+\reslink{Notebook}{03\_gradients\_and\_sgd.ipynb}{../../notebooks/ch02/03\_gradients\_and\_sgd.ipynb}
+\reslink{Notebook}{04\_mnist\_from\_scratch.ipynb}{../../notebooks/ch02/04\_mnist\_from\_scratch.ipynb}
+\reslink{Repo}{Author's official notebook}{https://github.com/fchollet/deep-learning-with-python-notebooks/blob/master/chapter02\_mathematical-building-blocks.ipynb}
 \vskip 2pt
 \end{frame}
 
-\framekicker{Peta bab}
-\begin{frame}[shrink=25]{Satu contoh, dibongkar sampai ke bawah}
-\leadpar{Bab 2 bergerak dalam satu lingkaran penuh: jalankan MNIST dengan \inlinecode{fit()}, bongkar tiap potongnya, lalu \hilite{tulis ulang seluruhnya dari nol} dan buktikan hasilnya sama.}
+\framekicker{Roadmap}
+\begin{frame}[shrink=25]{One example, taken apart all the way down}
+\leadpar{The chapter travels a full circle: run MNIST with \inlinecode{fit()}, dismantle every piece of it, then \hilite{rewrite the whole thing from scratch} and show the result holds up.}
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{1 $\cdot$ Contoh pertama}
-MNIST dalam 10 baris. Berjalan dulu, dimengerti belakangan.
-\cardtag{bag. 2.1}
+\cardh{1 $\cdot$ First example}
+MNIST in ten lines. Working first, understood second.
+\cardtag{2.1}
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{2 $\cdot$ Tensor}
-Rank, shape, dtype, irisan, sumbu batch, dan data dunia nyata.
-\cardtag{bag. 2.2}
+\cardh{2 $\cdot$ Tensors}
+Rank, shape, dtype, slicing, the batch axis, real-world data.
+\cardtag{2.2}
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{3 $\cdot$ Operasi tensor}
-Elemen-demi-elemen, broadcasting, matmul, reshape, dan geometrinya.
-\cardtag{bag. 2.3}
+\cardh{3 $\cdot$ Tensor operations}
+Element-wise, broadcasting, matmul, reshape --- and their geometry.
+\cardtag{2.3}
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{4 $\cdot$ Mesinnya}
-Turunan, gradien, SGD, aturan rantai, autodiff.
-\cardtag{bag. 2.4-2.6}
+\cardh{4 $\cdot$ The engine}
+Derivatives, gradients, SGD, the chain rule, autodiff.
+\cardtag{2.4 -- 2.6}
 \end{icard}
 \end{minipage}%
+\end{frame}
+\note{Long session. Break between 2.3 and 2.4: the first half is about data, the second half about learning.}
+
+\framekicker{Roadmap}
+\begin{frame}[shrink=25]{Why this chapter shows code instead of notation}
 \begin{iquote}
-\quotetext{Kode yang bisa dijalankan adalah keterangan paling tepat dan paling tidak ambigu untuk sebuah operasi matematis.}\quotecite{Semangat bab 2 -- notasi diganti implementasi}
+\quotetext{Runnable code is the most precise, unambiguous description of a mathematical operation.}\quotecite{The working principle of chapter 2}
 \end{iquote}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Every concept here is introduced twice: once as an idea, and once as a few lines you can execute and inspect. If the two ever disagree, \hilite{the code is right}\par}\vskip 4pt
 \end{frame}
-\note{Sesi ini panjang. Pecah di antara bagian 2.3 dan 2.4; separuh pertama soal data, separuh kedua soal belajar.}
 
-\coursesection{01}{Sekali lihat jaringan saraf}{MNIST -- 'hello world'-nya deep learning.}
+\coursesection{01}{A first look at a neural network}{MNIST --- the "hello world" of deep learning.}
 
-\framekicker{Bagian 2.1}
-\begin{frame}[shrink=25]{Muat data: 60.000 latih, 10.000 uji}
-\icode{python}{listing 2.1 --- memuat MNIST}{listings/ch02-01.py}
+\framekicker{Section 2.1}
+\begin{frame}[shrink=25]{The data: 60,000 to train on, 10,000 to be judged on}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}MNIST is a set of grayscale images of handwritten digits, each 28$\times$28 pixels, already split into a training set and a test set. Keras ships it, so there is nothing to download by hand.\par}\vskip 4pt
+\icode{python}{listing 2.1 --- loading MNIST}{listings/ch02-01.py}
 \ioutput{listings/ch02-02.txt}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.2256\textwidth}>{\raggedright\arraybackslash}p{0.7144\textwidth}}
-\thead{Istilah} & \thead{Artinya di sini} \\ \midrule
-\textbf{Sample} & Satu titik data -- satu citra 28$\times$28. \\
-\textbf{Class} & Satu kategori -- angka 0 sampai 9. \\
-\textbf{Label} & Kelas yang melekat pada satu sample tertentu. \\
+\end{frame}
+
+\framekicker{Section 2.1}
+\begin{frame}[shrink=25]{Three words used precisely from here on}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.7332\textwidth}}
+\thead{Term} & \thead{What it means here} \\ \midrule
+\textbf{Sample} & One data point --- a single 28$\times$28 image. \\
+\textbf{Class} & One category --- a digit from 0 to 9. \\
+\textbf{Label} & The class attached to one particular sample. \\
 \end{itable}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}These are used consistently for the rest of the book, and mixing them up is the fastest way to misread an error message later.\par}\vskip 4pt
 \end{frame}
-\note{Tunjukkan satu citra dengan matplotlib sebelum lanjut; peserta perlu melihat bahwa 'data' di sini benar-benar gambar.}
 
-\framekicker{Bagian 2.1}
-\begin{frame}[shrink=25]{Model, kompilasi, pelatihan -- sepuluh baris}
-\icode{python}{listing 2.2-2.5 --- MNIST ujung ke ujung}{listings/ch02-03.py}
+\framekicker{Section 2.1}
+\begin{frame}[shrink=25]{The model: two layers, and what a layer is for}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}A \textbf{layer} is a filter for data: it takes data in and puts out a more useful representation of it. The model below chains two of them.\par}\vskip 4pt
+\icode{python}{listing 2.2 --- the model}{listings/ch02-03.py}
 \begin{iband}[signal]
-Sebuah \textbf{layer} adalah \textit{penyaring data}: ia menerima data dan mengeluarkan representasi yang lebih berguna. \inlinecode{softmax} di lapis akhir mengeluarkan \hilite{10 skor peluang yang berjumlah 1}.
+The final \inlinecode{softmax} layer emits \hilite{10 probability scores that sum to 1} --- one per digit class. Note there is no \inlinecode{input\_shape} anywhere; Keras infers it on the first call, which chapter 3 explains.
 \end{iband}
 \end{frame}
-\note{Perhatikan: tidak ada input\_shape. Keras menyimpulkan bentuk masukan sendiri pada pemanggilan pertama --- dibahas di bab 3.}
 
-\framekicker{Bagian 2.1}
-\begin{frame}[shrink=25]{Hasilnya -- dan celah pertama yang harus dicurigai}
-\ioutput{listings/ch02-04.txt}
-\begin{minipage}[t]{0.485\textwidth}
-\begin{minipage}[t]{0.494\textwidth}
-\istat{98,9\%}{akurasi pada data latih}
+\framekicker{Section 2.1}
+\begin{frame}[shrink=25]{Compilation: three choices, and only three}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Before a model can be trained it has to be told how to judge itself and how to improve. \inlinecode{compile()} is where those decisions are recorded.\par}\vskip 4pt
+\icode{python}{listing 2.3 --- compile}{listings/ch02-04.py}
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{Loss}
+The feedback signal the network steers by. \textbf{This is what gets minimised.}
+\end{icardaccent}
 \end{minipage}%
 \hfill
-\begin{minipage}[t]{0.494\textwidth}
-\istat{97,8\%}{akurasi pada data uji}
-\end{minipage}%
-
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{Optimizer}
+The mechanism by which the network updates itself from that signal.
+\end{icardaccent}
 \end{minipage}%
 \hfill
-\begin{minipage}[t]{0.485\textwidth}
-\begin{iband}[amber]
-Selisih \textasciitilde{}1,1 poin itu bukan derau. Itu \textbf{overfitting}: model bekerja lebih baik pada yang pernah dilihatnya. Bab 5 membahasnya sebagai persoalan pokok.
-\end{iband}
-
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{Metrics}
+Watched during training, but \hilite{never optimised for}.
+\end{icardaccent}
 \end{minipage}%
-\icode{python}{listing 2.6 --- meramal}{listings/ch02-05.py}
+\end{frame}
+
+\framekicker{Section 2.1}
+\begin{frame}[shrink=25]{Preprocessing: flatten, cast, and scale}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The images arrive as 8-bit integers in a 28$\times$28 grid. The \inlinecode{Dense} layers want a flat vector of floats in a small range, so both shape and dtype have to change.\par}\vskip 4pt
+\icode{python}{listing 2.4 --- preparing the data}{listings/ch02-05.py}
 \ioutput{listings/ch02-06.txt}
+\begin{iband}[signal]
+Two things changed: the shape went from \inlinecode{(60000, 28, 28)} to \inlinecode{(60000, 784)}, and the values went from \inlinecode{0..255} integers to \hilite{\inlinecode{0..1} floats}. Chapter 6 explains why the second matters so much.
+\end{iband}
 \end{frame}
-\note{Angka pastinya berayun tiap kali dilatih ulang --- katakan itu di depan, supaya peserta tidak panik kalau notebooknya memberi 97,6\%.}
 
-\coursesection{02}{Representasi data: tensor}{Wadah untuk data. Tiga sifat, dan satu sumbu istimewa.}
+\framekicker{Section 2.1}
+\begin{frame}[shrink=25]{The whole first example, as a shape pipeline}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch02-pipeline.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Every arrow changes either the shape or the dtype. Nothing else happens in the first example.\par}
+\end{frame}
 
-\framekicker{Bagian 2.2}
+\framekicker{Section 2.1}
+\begin{frame}[shrink=25]{Training, and the first crack to notice}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\inlinecode{fit()} runs the training loop: five passes over the data, 128 samples at a time. Then \inlinecode{evaluate()} asks the only question that matters --- how does it do on images it has never seen?\par}\vskip 4pt
+\icode{python}{listing 2.5 --- fit}{listings/ch02-07.py}
+\ioutput{listings/ch02-08.txt}
+\begin{iband}[amber]
+\textbf{98.9\%} on data it trained on, \textbf{97.8\%} on data it had never seen. That gap is not noise --- it is \hilite{overfitting}, and chapter 5 treats it as the central problem of the field.
+\end{iband}
+\end{frame}
+\note{Say up front that the exact digits move between runs, so nobody panics when their notebook prints 97.6\%.}
+
+\framekicker{Section 2.1}
+\begin{frame}[shrink=25]{Making a prediction, and reading it}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\inlinecode{predict()} returns the ten probabilities per image. The predicted class is simply the index of the largest one.\par}\vskip 4pt
+\icode{python}{listing 2.6 --- predicting}{listings/ch02-09.py}
+\ioutput{listings/ch02-10.txt}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Right answer, and near-total confidence. Chapter 5 will show why \hilite{confidence and correctness are not the same thing}\par}\vskip 4pt
+\end{frame}
+
+\coursesection{02}{Data representations: tensors}{A container for data. Three attributes, and one special axis.}
+
+\framekicker{Section 2.2}
 \begin{frame}[shrink=25]{Rank, shape, dtype}
 \begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.52\textheight}{%
-
-\begin{tikzpicture}[font=\sffamily\tiny,
-  bx/.style={draw=signal!60, fill=signal!9, rounded corners=2.5pt, text=ink},
-  gx/.style={draw=rule, fill=papertint, rounded corners=2.5pt, text=ink2}]
-  \node[text=signal, anchor=west] at (0,1.0) {rank 0 $\cdot$ skalar};
-  \node[bx, minimum width=0.7cm, minimum height=0.55cm] at (0.35,0.5) {\ttfamily 12};
-  \node[text=ink3, anchor=west] at (0,-0.1) {shape ()};
-
-  \node[text=signal, anchor=west] at (1.9,1.0) {rank 1 $\cdot$ vektor};
-  \node[bx, minimum width=2.6cm, minimum height=0.55cm] at (3.2,0.5) {\ttfamily 12~~3~~6~~14~~7};
-  \node[text=ink3, anchor=west] at (1.9,-0.1) {shape (5,)};
-
-  \node[text=signal, anchor=west] at (5.5,1.0) {rank 2 $\cdot$ matriks};
-  \node[bx, minimum width=2.5cm, minimum height=0.9cm, align=center] at (6.75,0.35)
-    {\ttfamily 5~78~~2~34~0\\\ttfamily 6~79~~3~35~1};
-  \node[text=ink3, anchor=west] at (5.5,-0.4) {shape (3, 5)};
-
-  \node[text=signal, anchor=west] at (8.6,1.0) {rank 3};
-  \node[gx, minimum width=1.7cm, minimum height=0.7cm] at (9.75,0.62) {};
-  \node[gx, minimum width=1.7cm, minimum height=0.7cm] at (9.62,0.48) {};
-  \node[bx, minimum width=1.7cm, minimum height=0.7cm] at (9.49,0.34) {\ttfamily matriks $\times$ n};
-  \node[text=ink3, anchor=west] at (8.6,-0.4) {shape (3, 3, 5)};
-
-  \draw[rule] (0,-0.8) -- (11.2,-0.8);
-  \node[anchor=west, font=\bfseries\scriptsize, text=ink] at (0,-1.15) {MNIST sebagai tensor};
-  \node[anchor=west, text=ink2] at (0,-1.5)
-    {\ttfamily train\_images.ndim = 3 $\cdot$ shape (60000, 28, 28) $\cdot$ dtype uint8};
-  \node[anchor=west, text=amber] at (0,-1.85)
-    {sumbu ke-0 selalu sumbu sampel --- dan sumbu itulah yang dipotong jadi batch};
-\end{tikzpicture}
-
-}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch02-ranks.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Tensor menggeneralisasi matriks ke sebarang jumlah sumbu. TensorFlow diberi nama menurut benda ini.\par}
-\begin{iband}[amber]
-Jebakan istilah: \textbf{vektor 5 dimensi $\neq$ tensor 5 dimensi}. Yang pertama punya \hilite{satu sumbu berisi lima angka}; yang kedua punya \hilite{lima sumbu}. Salah baca di sini membuat pesan galat shape jadi tidak terbaca.
-\end{iband}
-\end{frame}
-\note{Tanya ke peserta: shape sebuah batch 128 citra RGB 224x224 itu apa? Jawabannya (128, 224, 224, 3) --- dan itu latihan yang bagus.}
-
-\framekicker{Bagian 2.2}
-\begin{frame}[shrink=25]{Irisan tensor dan sumbu batch}
-\icode{python}{listing 2.7-2.9 --- irisan}{listings/ch02-07.py}
-\ioutput{listings/ch02-08.txt}
-\begin{iband}[signal]
-Sumbu ke-0 selalu \textbf{sumbu sampel}, dan karena model dilatih per potongan kecil, sumbu itu juga disebut \hilite{sumbu batch}. Setiap pesan galat shape yang akan Anda temui dimulai dari membaca sumbu ini.
-\end{iband}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Tensors generalise matrices to any number of axes. TensorFlow is named after this object.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Every tensor has exactly three defining attributes: its \textbf{number of axes} (rank), its \textbf{shape}, and its \textbf{dtype}. Everything else follows from those.\par}\vskip 4pt
 \end{frame}
 
-\framekicker{Bagian 2.2.7-2.2.10}
-\begin{frame}[shrink=25]{Data dunia nyata, dan bentuk tensornya}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.0752\textwidth}>{\raggedright\arraybackslash}p{0.282\textwidth}>{\raggedright\arraybackslash}p{0.376\textwidth}}
-\thead{Jenis data} & \thead{Rank} & \thead{Shape} & \thead{Contoh dari buku} \\ \midrule
-\textbf{Vektor} & 2 & \inlinecode{(samples, features)} & 100.000 orang $\times$ (usia, jenis kelamin, penghasilan) $\rightarrow$ (100000, 3) \\
-\textbf{Deret waktu} & 3 & \inlinecode{(samples, timesteps, features)} & 250 hari $\times$ 390 menit $\times$ 3 nilai $\rightarrow$ (250, 390, 3) \\
-\textbf{Citra} & 4 & \inlinecode{(samples, h, w, channels)} & 128 citra RGB 256$\times$256 $\rightarrow$ (128, 256, 256, 3) \\
-\textbf{Video} & 5 & \inlinecode{(samples, frames, h, w, channels)} & 4 klip $\times$ 240 bingkai $\times$ 144$\times$256 $\times$ RGB $\rightarrow$ (4, 240, 144, 256, 3) \\
-\end{itable}
-\begin{minipage}[t]{0.575\textwidth}
-\begin{ibullets}
-\item \textbf{Channels-last} \inlinecode{(\ldots{}, h, w, c)} -- kebiasaan TensorFlow dan JAX.
-\item \textbf{Channels-first} \inlinecode{(\ldots{}, c, h, w)} -- kebiasaan PyTorch.
-\item Keras 3 memakai \inlinecode{image\_data\_format} untuk memilih; salah setelan di sini \hilite{menghasilkan galat shape yang membingungkan}.
-\end{ibullets}
-
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.395\textwidth}
-\begin{minipage}[t]{1.0\textwidth}
-\istat{106.168.320}{nilai dalam contoh video 60 detik itu}
-\end{minipage}%
-
-
-\vskip 4pt
-
-\begin{minipage}[t]{1.0\textwidth}
-\istat{425 MB}{ukurannya pada float32}
-\end{minipage}%
-
-\end{minipage}%
-\end{frame}
-\note{Data tabular dan data transaksi umumnya masuk baris pertama (vektor) atau kedua (deret waktu). Minta peserta menaksir shape datanya sendiri.}
-
-\coursesection{03}{Gigi-giginya: operasi tensor}{Semuanya bermuara pada segenggam operasi -- dan semuanya punya arti geometris.}
-
-\framekicker{Bagian 2.3}
-\begin{frame}[shrink=25]{Satu lapis Dense = tiga operasi}
-\icode{python}{inti sebuah lapis Dense}{listings/ch02-09.py}
-\begin{minipage}[t]{0.485\textwidth}
-\icode{python}{versi tervektorisasi}{listings/ch02-10.py}
-
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.485\textwidth}
-\begin{minipage}[t]{0.494\textwidth}
-\istat{0,02 s}{NumPy tervektorisasi, 1.000 iterasi}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.494\textwidth}
-\istat{2,45 s}{gelung Python naif, 1.000 iterasi}
-\end{minipage}%
-
-\end{minipage}%
-\begin{iband}[signal]
-Selisih \hilite{sekitar 100 kali} itu bukan soal bahasa. Versi NumPy melimpahkan pekerjaannya ke BLAS yang ditulis dalam C dan Fortran; di GPU, kode CUDA-nya tervektorisasi penuh.
-\end{iband}
-\end{frame}
-
-\framekicker{Bagian 2.3.2}
-\begin{frame}[shrink=25]{Broadcasting: bentuk kecil dipaskan ke bentuk besar}
-\begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.52\textheight}{%
-
-\begin{tikzpicture}[font=\sffamily\tiny,
-  ar/.style={-{Stealth[length=4pt]}, signal, line width=0.7pt}]
-  \node[draw=signal!60, fill=signal!9, rounded corners=3pt, minimum width=1.7cm,
-        minimum height=1.6cm, text=ink, align=center] (x) at (0,0) {X\\\ttfamily (32, 10)};
-  \node[text=ink, font=\small] at (1.25,0) {$+$};
-  \node[draw=rule, fill=papertint, rounded corners=3pt, minimum width=1.7cm,
-        minimum height=0.42cm, text=ink2] (y) at (2.6,0) {\ttfamily y (10,)};
-  \node[draw=rule, fill=papertint, rounded corners=3pt, minimum width=1.5cm,
-        minimum height=0.42cm, text=ink2] (y2) at (5.0,0) {\ttfamily (1, 10)};
-  \node[draw=lime!60, fill=limebr!12, rounded corners=3pt, minimum width=1.7cm,
-        minimum height=1.6cm, text=ink, align=center] (Y) at (7.4,0) {Y\\\ttfamily (32, 10)};
-  \draw[ar] (y) -- node[above, text=ink3, font=\tiny]{langkah 1} (y2);
-  \draw[ar] (y2) -- node[above, text=ink3, font=\tiny]{langkah 2} (Y);
-  \node[text=ink3, anchor=north] at (5.0,-0.35) {tambah sumbu};
-  \node[text=ink3, anchor=north] at (7.4,-0.95) {diulang 32 kali};
-  \node[text=amber, anchor=west] at (-1.0,-1.55)
-    {tidak ada penggandaan memori sungguhan --- pengulangannya hanya algoritmis};
-\end{tikzpicture}
-
-}
-\end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Dua langkah: tambahkan sumbu sampai rank sama, lalu ulangi sepanjang sumbu baru itu.\par}
-\icode{python}{listing 2.11 --- aturannya}{listings/ch02-11.py}
+\framekicker{Section 2.2}
+\begin{frame}[shrink=25]{Reading them off a real tensor}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}MNIST before preprocessing is a rank-3 tensor: 60,000 images, each a 28$\times$28 grid of 8-bit grayscale values.\par}\vskip 4pt
+\icode{python}{the three attributes}{listings/ch02-11.py}
 \ioutput{listings/ch02-12.txt}
 \end{frame}
-\note{Aturan umumnya: shape (a, b, ..., n, n+1, ..., m) berpasangan dengan (n, n+1, ..., m). Broadcasting adalah sumber bug diam yang paling sering --- bentuknya cocok, artinya tidak.}
 
-\framekicker{Bagian 2.3.3-2.3.4}
-\begin{frame}[shrink=25]{Hasil kali tensor dan reshape}
-\begin{minipage}[t]{0.485\textwidth}
-\icode{python}{matmul}{listings/ch02-13.py}
-
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.485\textwidth}
-\icode{python}{reshape \& transpose}{listings/ch02-14.py}
-
-\end{minipage}%
-\begin{iband}[signal]
-Reshape \hilite{tidak mengubah satu pun koefisien}; ia hanya menata ulang. Itulah yang terjadi pada \inlinecode{train\_images.reshape((60000, 784))} di contoh pertama tadi.
-\end{iband}
-\end{frame}
-
-\framekicker{Bagian 2.3.5}
-\begin{frame}[shrink=25]{Tafsir geometris -- dan mengapa aktivasi wajib ada}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.282\textwidth}>{\raggedright\arraybackslash}p{0.658\textwidth}}
-\thead{Operasi} & \thead{Artinya secara geometris} \\ \midrule
-Penjumlahan vektor & \textbf{Translasi} -- geser objek sejauh dan searah vektor itu. \\
-Kali matriks rotasi & \textbf{Rotasi} sebesar sudut $\theta$. \\
-Kali matriks diagonal & \textbf{Penskalaan} mendatar dan menegak. \\
-Kali matriks sebarang & \textbf{Transformasi linear}. \\
-Linear + translasi & \textbf{Transformasi afin} -- persis \inlinecode{y = W @ x + b}. \\
-\end{itable}
+\framekicker{Section 2.2}
+\begin{frame}[shrink=25]{The terminology trap that costs people an afternoon}
 \begin{iband}[rose]
-Merangkai dua transformasi afin menghasilkan \textbf{satu} transformasi afin lagi: \inlinecode{affine2(affine1(x)) = (W2 @ W1) @ x + (W2 @ b1 + b2)}. Jadi tumpukan Dense tanpa aktivasi \hilite{diam-diam hanyalah satu model linear}, sedalam apa pun. Fungsi aktivasi seperti ReLU-lah yang membuat ruang hipotesisnya kaya.
+A \textbf{5-dimensional vector} is not a \textbf{5-dimensional tensor}. The first has \hilite{one axis holding five numbers}; the second has \hilite{five axes}
 \end{iband}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Gambaran yang dipakai Chollet: deep learning seperti \textbf{membuka remasan kertas}. Data yang terlipat rumit diluruskan sedikit demi sedikit oleh tiap lapis, sampai kelas-kelasnya bisa dipisah dengan bersih.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Misreading this makes shape error messages unintelligible, and shape errors are the most common failure you will hit in the exercises.\par}\vskip 4pt
 \end{frame}
-\note{Kalau ada satu hal dari bab 2 yang harus diingat manajer produk, ini: tanpa nonlinearitas, kedalaman tidak membeli apa pun.}
 
-\coursesection{04}{Mesinnya: penurunan berbasis gradien}{Turunan, gradien, SGD, dan aturan rantai.}
+\framekicker{Section 2.2}
+\begin{frame}[shrink=25]{Slicing tensors}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Selecting part of a tensor uses the same bracket syntax as NumPy. A colon means \textit{all of this axis}, and negative indices count from the end.\par}\vskip 4pt
+\icode{python}{listing 2.7--2.8 --- slices}{listings/ch02-13.py}
+\ioutput{listings/ch02-14.txt}
+\end{frame}
 
-\framekicker{Bagian 2.4}
-\begin{frame}[shrink=25]{Lingkar pelatihan, dan langkah yang sulit}
-\begin{isteps}
-\item Ambil satu batch sampel \inlinecode{x} dan target \inlinecode{y\_true}.
-\item Jalankan model pada \inlinecode{x} (\textbf{lintasan maju}) $\rightarrow$ \inlinecode{y\_pred}.
-\item Hitung \textbf{rugi}: selisih antara \inlinecode{y\_pred} dan \inlinecode{y\_true}.
-\item Perbarui bobot supaya ruginya turun sedikit.
-\end{isteps}
-\begin{iband}[amber]
-Langkah 4 itulah yang sulit. Menyetel tiap koefisien satu per satu mustahil -- jaringan modern punya \hilite{jutaan sampai miliaran parameter}. Penurunan gradien menyelesaikannya sekaligus.
+\framekicker{Section 2.2}
+\begin{frame}[shrink=25]{The batch axis is always axis 0}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Models are not trained on whole datasets; they are trained on small \textbf{batches}. Cutting a batch is just a slice along the first axis.\par}\vskip 4pt
+\icode{python}{listing 2.9 --- batches}{listings/ch02-15.py}
+\ioutput{listings/ch02-16.txt}
+\begin{iband}[signal]
+Axis 0 is the \textbf{samples axis} --- and because of batching it is also called the \textbf{batch axis}. \hilite{Every shape error you will read starts with identifying this axis.}
 \end{iband}
+\end{frame}
+
+\framekicker{Section 2.2.7 -- 2.2.10}
+\begin{frame}[shrink=25]{Real-world data, and the shape it takes}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.188\textwidth}>{\raggedright\arraybackslash}p{0.0752\textwidth}>{\raggedright\arraybackslash}p{0.282\textwidth}>{\raggedright\arraybackslash}p{0.3948\textwidth}}
+\thead{Kind of data} & \thead{Rank} & \thead{Shape} & \thead{Example from the book} \\ \midrule
+\textbf{Vector data} & 2 & \inlinecode{(samples, features)} & 100,000 people $\times$ (age, gender, income) $\rightarrow$ (100000, 3) \\
+\textbf{Timeseries} & 3 & \inlinecode{(samples, timesteps, features)} & 250 days $\times$ 390 minutes $\times$ 3 values $\rightarrow$ (250, 390, 3) \\
+\textbf{Images} & 4 & \inlinecode{(samples, h, w, channels)} & 128 RGB images at 256$\times$256 $\rightarrow$ (128, 256, 256, 3) \\
+\textbf{Video} & 5 & \inlinecode{(samples, frames, h, w, channels)} & 4 clips $\times$ 240 frames $\times$ 144$\times$256 $\times$ RGB $\rightarrow$ (4, 240, 144, 256, 3) \\
+\end{itable}
+\end{frame}
+
+\framekicker{Section 2.2.9}
+\begin{frame}[shrink=25]{Channels-last or channels-first --- and why it bites}
 \begin{minipage}[t]{0.485\textwidth}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Turunan} adalah kemiringan hampiran linear setempat: untuk $\varepsilon$\_x cukup kecil, \inlinecode{f(x + $\varepsilon$\_x) $\approx$ y + a$\cdot$$\varepsilon$\_x}.\par}\vskip 4pt
 \begin{ibullets}
-\item \inlinecode{a} negatif $\rightarrow$ menaikkan \inlinecode{x} \textbf{menurunkan} \inlinecode{f(x)}.
-\item \inlinecode{a} positif $\rightarrow$ menaikkan \inlinecode{x} \textbf{menaikkan} \inlinecode{f(x)}.
-\item Untuk mengecilkan \inlinecode{f}, geser \inlinecode{x} \hilite{berlawanan arah turunannya}.
+\item \textbf{Channels-last} \inlinecode{(\ldots{}, h, w, c)} --- the TensorFlow and JAX convention.
+\item \textbf{Channels-first} \inlinecode{(\ldots{}, c, h, w)} --- the PyTorch convention.
 \end{ibullets}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Keras 3 picks between them with \inlinecode{image\_data\_format}.\par}\vskip 4pt
 
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.485\textwidth}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Gradien} adalah turunan untuk operasi tensor. Ia tensor sebentuk \inlinecode{W}, dan tiap koefisiennya menyatakan arah dan besar perubahan rugi bila koefisien \inlinecode{W} itu digeser.\par}\vskip 4pt
-\begin{iband}[signal]
-\inlinecode{W1 = W0 - step * grad(f(W0), W0)}
+\begin{iband}[amber]
+Getting this wrong produces shape errors that look nonsensical, because both orderings are \textit{valid} --- just not for the same layer.
 \end{iband}
 
 \end{minipage}%
+\begin{minipage}[t]{0.494\textwidth}
+\istat{106,168,320}{values in that 60-second video example}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\istat{425 MB}{its size at float32}
+\end{minipage}%
 \end{frame}
 
-\framekicker{Bagian 2.4.3}
-\begin{frame}[shrink=25]{SGD mini-batch, dan mengapa tidak diselesaikan secara analitis}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Minimum ada di tempat turunannya nol. Tetapi menyelesaikan \inlinecode{grad(f(W), W) = 0} secara analitis \hilite{tidak terjangkau} untuk jaringan berparameter jutaan. Maka: iterasi.\par}\vskip 4pt
+\coursesection{03}{The gears: tensor operations}{It all reduces to a handful of operations --- each with a geometric meaning.}
+
+\framekicker{Section 2.3}
+\begin{frame}[shrink=25]{A Dense layer is three operations, and nothing else}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Whatever else a network contains, its \inlinecode{Dense} layer computes exactly this. Every symbol in it is covered in this section.\par}\vskip 4pt
+\icode{python}{the whole of a Dense layer}{listings/ch02-17.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\inlinecode{relu(x)} is simply \inlinecode{max(x, 0)}: it zeroes out anything negative and leaves the rest alone.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 2.3.1}
+\begin{frame}[shrink=25]{Element-wise operations, written the slow way}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}An element-wise operation applies independently to each entry --- which is precisely why it parallelises so well. Written out as loops, \inlinecode{relu} is this:\par}\vskip 4pt
+\icode{python}{listing 2.10 --- naive relu}{listings/ch02-18.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Correct, readable --- and unusably slow, as the next slide shows.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 2.3.1}
+\begin{frame}[shrink=25]{\ldots{}and the fast way, which is the same operation}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}In practice you never write those loops. NumPy expresses the identical computation in two lines --- and the difference is not cosmetic.\par}\vskip 4pt
+\icode{python}{the vectorised version}{listings/ch02-19.py}
+\begin{minipage}[t]{0.494\textwidth}
+\istat{0.02 s}{vectorised NumPy, 1,000 iterations}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\istat{2.45 s}{naive Python loops, 1,000 iterations}
+\end{minipage}%
+\begin{iband}[signal]
+Roughly \textbf{100$\times$}, and it is not a language effect. NumPy hands the work to BLAS routines written in C and Fortran; on a GPU the same operation runs as \hilite{fully vectorised CUDA}
+\end{iband}
+\end{frame}
+
+\framekicker{Section 2.3.2}
+\begin{frame}[shrink=25]{Broadcasting: fitting a small shape to a big one}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch02-broadcast.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Two steps: add axes until the ranks match, then repeat along the new axes.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}No memory is actually duplicated --- the repetition is \hilite{algorithmic, not physical}\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 2.3.2}
+\begin{frame}[shrink=25]{The rule, and where it quietly goes wrong}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Broadcasting applies when one tensor has shape \inlinecode{(a, b, \ldots{}, n, n+1, \ldots{}, m)} and the other has \inlinecode{(n, n+1, \ldots{}, m)}.\par}\vskip 4pt
+\icode{python}{listing 2.11 --- broadcasting in anger}{listings/ch02-20.py}
+\ioutput{listings/ch02-21.txt}
+\begin{iband}[amber]
+This is the most common source of \textbf{silent} bugs: the shapes line up, the code runs, and the \hilite{meaning is wrong}. When a result looks strange, print the shapes first.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 2.3.3}
+\begin{frame}[shrink=25]{The tensor product, and its one compatibility rule}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The tensor product --- \inlinecode{matmul}, or the \inlinecode{@} operator --- is the operation that actually combines features. It has exactly one rule you must remember.\par}\vskip 4pt
+\icode{python}{matmul}{listings/ch02-22.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Visually: line the two up as rectangles --- \hilite{the width of the first must match the height of the second}\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 2.3.4}
+\begin{frame}[shrink=25]{Reshaping rearranges; it never invents or destroys}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}A reshape changes how the same coefficients are laid out. The total count is unchanged, which is why it is cheap.\par}\vskip 4pt
+\icode{python}{listing 2.12 --- reshape and transpose}{listings/ch02-23.py}
+\ioutput{listings/ch02-24.txt}
+\begin{iband}[signal]
+This is exactly what \inlinecode{train\_images.reshape((60000, 784))} did in the first example: \hilite{the pixels never changed, only their arrangement}
+\end{iband}
+\end{frame}
+
+\framekicker{Section 2.3.5}
+\begin{frame}[shrink=25]{Every tensor operation is a geometric one}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch02-geom.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Tensor contents are coordinates; operations on them are movements in space.\par}
+\end{frame}
+
+\framekicker{Section 2.3.5}
+\begin{frame}[shrink=25]{Why an activation function is not optional}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}A \inlinecode{Dense} layer without an activation computes \inlinecode{y = W @ x + b} --- an affine transform. Chain two of them and expand:\par}\vskip 4pt
+\icode{python}{two affine layers collapse into one}{listings/ch02-25.py}
+\begin{iband}[rose]
+So a deep stack of \inlinecode{Dense} layers with no activation is \hilite{secretly a single linear model}, however many layers you give it. Nonlinearities such as \inlinecode{relu} are what make the hypothesis space rich.
+\end{iband}
+\end{frame}
+\note{If a product manager takes one thing from chapter 2, this is it: without nonlinearity, depth buys nothing at all.}
+
+\framekicker{Section 2.3.5}
+\begin{frame}[shrink=25]{Deep learning as uncrumpling a paper ball}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Chollet's image for what a deep network does: complicated, folded data \textbf{manifolds} are gradually pulled apart until the classes separate cleanly.\par}\vskip 4pt
+\begin{iband}[signal]
+It happens through a long series of \textbf{small, elementary geometric moves} --- like uncrumpling a paper ball with successive finger movements. \hilite{Each layer disentangles the data a little.}
+\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Chapter 5 makes this precise, under the name of the \textit{manifold hypothesis}.\par}\vskip 4pt
+\end{frame}
+
+\coursesection{04}{The engine: gradient-based optimisation}{Derivatives, gradients, SGD, and the chain rule.}
+
+\framekicker{Section 2.4}
+\begin{frame}[shrink=25]{The training loop, and which step is hard}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch02-loop4.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Four steps, repeated over batches. Only the fourth is difficult.\par}
+\begin{iband}[amber]
+Tuning each coefficient by hand is impossible --- modern networks have \hilite{millions to billions of parameters}. Gradient descent solves for all of them at once.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 2.4.1}
+\begin{frame}[shrink=25]{A derivative is the slope of a local approximation}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}For a smooth function, a small change in \inlinecode{x} produces a small change in \inlinecode{y}. Near a point, \inlinecode{f(x + $\varepsilon$) $\approx$ y + a$\cdot$$\varepsilon$}, and that \inlinecode{a} is the \textbf{derivative}.\par}\vskip 4pt
+\begin{ibullets}
+\item \inlinecode{a} negative $\rightarrow$ increasing \inlinecode{x} \textbf{decreases} \inlinecode{f(x)}.
+\item \inlinecode{a} positive $\rightarrow$ increasing \inlinecode{x} \textbf{increases} \inlinecode{f(x)}.
+\item Its magnitude says how fast the change happens.
+\end{ibullets}
+\begin{iband}[signal]
+So to make \inlinecode{f} smaller, move \inlinecode{x} \hilite{in the direction opposite its derivative}. That single sentence is the whole of optimisation.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 2.4.2}
+\begin{frame}[shrink=25]{A gradient is a derivative for tensors}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Hold the data fixed, and the loss becomes a function of the weights alone: \inlinecode{loss\_value = f(W)}.\par}\vskip 4pt
+\icode{python}{what the gradient is a gradient of}{listings/ch02-26.py}
+\begin{iband}[signal]
+To lower the loss, step against the gradient: \inlinecode{W1 = W0 - step * grad(f(W0), W0)}
+\end{iband}
+\end{frame}
+
+\framekicker{Section 2.4.3}
+\begin{frame}[shrink=25]{Why this is done by iteration and not by solving}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Minima occur where the derivative is zero. So why not just solve \inlinecode{grad(f(W), W) = 0} directly?\par}\vskip 4pt
+\begin{iband}[rose]
+Because for a network with millions of parameters that is \hilite{analytically intractable}. Iteration is not a shortcut; it is the only available route.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 2.4.3}
+\begin{frame}[shrink=25]{Mini-batch stochastic gradient descent}
 \begin{isteps}
-\item Ambil batch acak \inlinecode{x}, \inlinecode{y\_true}. (Kata \textit{stochastic} datang dari \textbf{acak} ini.)
-\item Lintasan maju $\rightarrow$ \inlinecode{y\_pred}.
-\item Hitung rugi.
-\item \textbf{Lintasan mundur} $\rightarrow$ gradien rugi terhadap parameter.
+\item Draw a \textbf{random} batch of samples and targets. (The word \textit{stochastic} comes from this randomness.)
+\item Forward pass $\rightarrow$ predictions.
+\item Compute the loss.
+\item \textbf{Backward pass} $\rightarrow$ gradient of the loss with respect to the parameters.
 \item \inlinecode{W -= learning\_rate * gradient}.
 \end{isteps}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Repeat. Each step lowers the loss a little; enough steps and the model fits.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 2.4.3}
+\begin{frame}[shrink=25]{Learning rate: the one number that decides whether it works}
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardwarn}
-\cardh{Learning rate terlalu kecil}
-Kekonvergenan lambat; banyak langkah untuk sedikit kemajuan.
+\cardh{Too small}
+Convergence crawls --- many steps for very little progress. It can look as though training has stalled.
 \end{icardwarn}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardbad}
-\cardh{Terlalu besar}
-Pembaruan jadi \hilite{acak}; rugi melompat-lompat dan tidak turun.
+\cardh{Too large}
+Updates overshoot wildly; the loss jumps around and \hilite{never comes down}.
 \end{icardbad}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardgood}
 \cardh{Momentum}
-Perbarui berdasar gradien \textbf{sekarang dan pembaruan sebelumnya} -- seperti bola menggelinding, cukup laju untuk melewati cekungan dangkal.
+Update using the current gradient \textbf{and} previous updates --- like a ball rolling downhill with enough speed to cross a shallow dip.
 \end{icardgood}
 \end{minipage}%
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Varian yang memperbaiki kekonvergenan disebut \textbf{optimizer}: SGD dengan momentum, Adagrad, RMSprop, Adam.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The variants that improve on plain SGD are called \textbf{optimizers}: SGD with momentum, Adagrad, RMSprop, Adam.\par}\vskip 4pt
 \end{frame}
 
-\framekicker{Bagian 2.4.4-2.4.5}
-\begin{frame}[shrink=25]{Aturan rantai di atas graf komputasi = backpropagation}
+\framekicker{Section 2.4.4}
+\begin{frame}[shrink=25]{The chain rule, applied backwards over a graph}
 \begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.52\textheight}{%
-
-\begin{tikzpicture}[font=\sffamily\tiny,
-  bx/.style={draw=rule, fill=papertint, rounded corners=3pt, minimum width=1.5cm,
-             minimum height=0.5cm, text=ink2},
-  ax/.style={draw=signal!60, fill=signal!9, rounded corners=3pt, minimum width=1.7cm,
-             minimum height=0.5cm, text=ink},
-  fw/.style={-{Stealth[length=4pt]}, signal, line width=0.7pt},
-  bw/.style={-{Stealth[length=4pt]}, amberbr, line width=0.8pt}]
-
-  \node[text=signal, anchor=west] at (0,0.7) {lintasan maju --- hitung nilai};
-  \node[bx] (x)  at (0.75,0)  {\ttfamily x};
-  \node[ax] (x1) at (2.9,0)   {\ttfamily x1 = W$\cdot$x};
-  \node[ax] (x2) at (5.1,0)   {\ttfamily x2 = x1+b};
-  \node[ax] (y)  at (7.4,0)   {\ttfamily y = relu(x2)};
-  \node[draw=rose!70, fill=rosebr!14, rounded corners=3pt, minimum width=1.4cm,
-        minimum height=0.5cm, text=ink] (l) at (9.6,0) {\ttfamily loss};
-  \draw[fw] (x) -- (x1); \draw[fw] (x1) -- (x2); \draw[fw] (x2) -- (y); \draw[fw] (y) -- (l);
-
-  \draw[rule] (0,-0.55) -- (10.5,-0.55);
-  \node[text=amber, anchor=west] at (0,-0.9)
-    {lintasan mundur --- balik arah sisi, kalikan turunan sepanjang lintasan};
-  \draw[bw] (9.0,-1.35) -- (8.1,-1.35);
-  \draw[bw] (6.8,-1.35) -- (5.8,-1.35);
-  \draw[bw] (4.5,-1.35) -- (3.6,-1.35);
-  \draw[bw] (2.3,-1.35) -- (1.4,-1.35);
-  \node[text=amber, font=\ttfamily\tiny] at (8.55,-1.1)  {$\partial$loss/$\partial$y};
-  \node[text=amber, font=\ttfamily\tiny] at (6.3,-1.1)   {$\partial$y/$\partial$x2};
-  \node[text=amber, font=\ttfamily\tiny] at (4.05,-1.1)  {$\partial$x2/$\partial$x1};
-  \node[text=amber, font=\ttfamily\tiny] at (1.85,-1.1)  {$\partial$x1/$\partial$W};
-
-  \node[draw=amber!45, fill=amberbr!8, rounded corners=4pt, minimum width=10.2cm,
-        minimum height=0.95cm, anchor=north west, align=left] at (0,-1.75) {};
-  \node[anchor=west, text=ink, font=\ttfamily\tiny] at (0.25,-2.05)
-    {grad(loss, W) = $\partial$loss/$\partial$y $\times$ $\partial$y/$\partial$x2 $\times$ $\partial$x2/$\partial$x1 $\times$ $\partial$x1/$\partial$W};
-  \node[anchor=west, text=ink3] at (0.25,-2.4)
-    {aturan rantai, dijalankan mundur di atas graf --- itulah backpropagation};
-\end{tikzpicture}
-
-}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch02-graph.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Graf komputasi adalah graf berarah tanpa siklus. Ia membuat perhitungan bisa diperlakukan sebagai data -- struktur yang terbaca mesin.\par}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Solid arrows are the forward pass; dashed arrows are the backward pass, each carrying one local derivative.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Multiply the local derivatives along a path and you have the gradient. Applying the chain rule this way over a network \textbf{is} backpropagation.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 2.4.5}
+\begin{frame}[shrink=25]{Two details that make the graph work}
 \begin{ibullets}
-\item Bila ada \textbf{beberapa lintasan} dari simpul \inlinecode{a} ke \inlinecode{b}, sumbangan tiap lintasan \hilite{dijumlahkan}.
-\item Kerangka kerja modern menjalankan ini sendiri: itulah \textbf{automatic differentiation}. Anda tidak pernah menulis backprop dengan tangan.
+\item When there are \textbf{several paths} from node \inlinecode{a} to node \inlinecode{b}, the contributions of the paths are \hilite{summed}.
+\item A \textbf{computation graph} is a directed acyclic graph of operations. It makes computation itself into data --- a structure a machine can read and manipulate.
 \end{ibullets}
-\end{frame}
-\note{Kalau peserta pernah menurunkan backprop manual di kuliah S1, katakan bahwa yang mereka kerjakan dulu itu persis ini --- hanya saja kini dikerjakan oleh graf.}
-
-\framekicker{Bagian 2.4.5}
-\begin{frame}[shrink=25]{GradientTape: gradien dalam tiga baris}
-\icode{python}{listing 2.19-2.20 --- autodiff}{listings/ch02-15.py}
-\ioutput{listings/ch02-16.txt}
 \begin{iband}[signal]
-Contoh kedua bukan sekadar pamer: \inlinecode{position = 4.9$\cdot$t$^{2}$} adalah jatuh bebas, dan turunan keduanya memang \hilite{percepatan gravitasi}. Autodiff mengembalikan 9,8 tanpa pernah diberi tahu rumusnya.
+Modern frameworks walk that graph for you. That is \textbf{automatic differentiation}, and it is why \hilite{you will never write backpropagation by hand}
 \end{iband}
 \end{frame}
 
-\coursesection{05}{Menulis ulang dari nol}{Tanpa fit(), tanpa Dense bawaan. Hasilnya harus sama.}
-
-\framekicker{Bagian 2.6.1}
-\begin{frame}[shrink=25]{NaiveDense dan NaiveSequential}
-\icode{python}{listing 2.21-2.22 --- lapis dan model}{listings/ch02-17.py}
+\framekicker{Section 2.4.5}
+\begin{frame}[shrink=25]{Autodiff in three lines}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}TensorFlow records operations inside a \inlinecode{GradientTape} scope, then replays them backwards on request.\par}\vskip 4pt
+\icode{python}{listing 2.19 --- a first derivative}{listings/ch02-27.py}
+\ioutput{listings/ch02-28.txt}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The answer is 2, which is what you would get by hand --- except nothing here was told the rule for differentiating a line.\par}\vskip 4pt
 \end{frame}
 
-\framekicker{Bagian 2.6.2-2.6.4}
-\begin{frame}[shrink=25]{Satu langkah pelatihan, dan gelungnya}
-\icode{python}{listing 2.24-2.26 --- lingkar pelatihan}{listings/ch02-18.py}
+\framekicker{Section 2.4.5}
+\begin{frame}[shrink=25]{\ldots{}and a second derivative, which is a physics answer}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Tapes can be nested: the inner one differentiates the position, the outer one differentiates that result again.\par}\vskip 4pt
+\icode{python}{listing 2.20 --- nested tapes}{listings/ch02-29.py}
+\ioutput{listings/ch02-30.txt}
 \begin{iband}[signal]
-Empat langkah pada slide lingkar pelatihan tadi kini terlihat sebagai empat baris: \hilite{maju, rugi, gradien, perbarui}.
+\inlinecode{position = 4.9$\cdot$t$^{2}$} is free fall. Its second derivative is the \hilite{acceleration due to gravity}, and autodiff returned 9.8 without ever being given the formula.
 \end{iband}
 \end{frame}
 
-\framekicker{Bagian 2.6.5}
-\begin{frame}[shrink=25]{Buktinya: hasilnya memang sama}
-\icode{python}{listing 2.27 --- menilai model}{listings/ch02-19.py}
-\ioutput{listings/ch02-20.txt}
+\coursesection{05}{Rewriting the first example from scratch}{No fit(), no built-in Dense. The result has to hold up.}
+
+\framekicker{Section 2.6}
+\begin{frame}[shrink=25]{What we are about to rebuild}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch02-scratch.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Four small classes and one function replace Sequential, Dense, and fit() between them.\par}
+\end{frame}
+
+\framekicker{Section 2.6.1}
+\begin{frame}[shrink=25]{A layer, written out}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}A \inlinecode{Dense} layer owns two weights and applies one transformation. That is the entire class.\par}\vskip 4pt
+\icode{python}{listing 2.21 --- NaiveDense}{listings/ch02-31.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\inlinecode{W} starts random and \inlinecode{b} starts at zero --- exactly the starting condition chapter 1 described.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 2.6.1}
+\begin{frame}[shrink=25]{A model is just layers, applied in order}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}With a layer in hand, a model needs to do only two things: call the layers in sequence, and expose all their weights together so the optimizer can reach them.\par}\vskip 4pt
+\icode{python}{listing 2.22 --- NaiveSequential}{listings/ch02-32.py}
+\begin{iband}[signal]
+Note how little there is to it: a model is \hilite{a list of layers and a for loop}. Everything else in Keras is convenience on top.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 2.6.2 -- 2.6.3}
+\begin{frame}[shrink=25]{One training step is the four figures, in code}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Forward pass, loss, gradients, update --- the same four moves as the loop diagram, now with a real optimizer.\par}\vskip 4pt
+\icode{python}{listing 2.24 --- one\_training\_step}{listings/ch02-33.py}
+\begin{iband}[signal]
+Four lines, four ideas: \hilite{forward, loss, gradients, update}. Every training loop in the rest of the book is a variation on this shape.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 2.6.4}
+\begin{frame}[shrink=25]{And the loop around it}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Wrapping that single step in two loops --- over epochs, and over batches within an epoch --- is all that \inlinecode{fit()} does underneath.\par}\vskip 4pt
+\icode{python}{listing 2.26 --- fit, by hand}{listings/ch02-34.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\inlinecode{BatchGenerator} is a dozen lines that hand out consecutive slices --- the batch axis from section 2.2, put to work.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 2.6.5}
+\begin{frame}[shrink=25]{Does it work? Run it and see}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Assemble the same two-layer network out of the hand-written parts, train it for ten epochs, and score it the same way the built-in version was scored.\par}\vskip 4pt
+\icode{python}{listing 2.27 --- evaluating it}{listings/ch02-35.py}
+\ioutput{listings/ch02-36.txt}
+\end{frame}
+
+\framekicker{Section 2.6.5}
+\begin{frame}[shrink=25]{90\% versus 97.8\% --- and why that is the lesson}
 \begin{iband}[amber]
-Sengaja \hilite{lebih rendah dari 97,8\%}. Bedanya bukan sihir Keras: versi ini memakai SGD polos dengan learning rate 1e-3, sedangkan yang pertama memakai \textbf{Adam}. Itu justru pelajarannya -- pilihan optimizer berdampak sebesar itu.
+The hand-written version scores \textbf{lower}, and that is not a bug. It uses plain SGD at \inlinecode{learning\_rate=1e-3}; the first example used \hilite{\textbf{Adam}}
 \end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}So the gap measures \textbf{the choice of optimizer}, not the quality of the implementation. It is one of the clearest demonstrations in the book of how much that choice is worth.\par}\vskip 4pt
 \end{frame}
-\note{Ini slide yang paling sering salah dibaca. Tegaskan: turunnya akurasi bukan bukti bahwa implementasi manualnya salah.}
+\note{This slide is misread more than any other in the chapter. State plainly that the lower number does not mean the manual code is wrong.}
 
-\framekicker{Ringkasan}
-\begin{frame}[shrink=25]{Yang wajib terbawa dari bab 2}
+\framekicker{Summary}
+\begin{frame}[shrink=25]{What has to survive this chapter}
 \begin{isteps}
-\item \textbf{Tensor} = wadah angka dengan \textbf{rank, shape, dtype}. Sumbu ke-0 adalah sumbu sampel alias sumbu batch.
-\item \textbf{Operasi tensor} punya arti geometris. Dense tanpa aktivasi hanya transformasi afin -- dan tumpukannya tetap afin.
-\item \textbf{Belajar} = mencari nilai bobot yang mengecilkan rugi pada data latih.
-\item \textbf{SGD mini-batch} memperbarui bobot dari gradien pada batch acak.
-\item \textbf{Aturan rantai + autodiff} = backpropagation; graf komputasi yang mengerjakannya.
-\item \textbf{Loss} menakar keberhasilan tugas; \textbf{optimizer} menentukan varian penurunan gradiennya.
+\item \textbf{Tensors} are containers with \textbf{rank, shape, dtype}. Axis 0 is the samples axis, and therefore the batch axis.
+\item \textbf{Tensor operations are geometric.} A Dense layer without an activation is an affine transform, and stacking those still gives an affine transform.
+\item \textbf{Learning} means finding weight values that minimise the loss on the training data.
+\item \textbf{Mini-batch SGD} updates weights from gradients computed on random batches.
+\item \textbf{Chain rule + autodiff = backpropagation}, carried out over a computation graph.
+\item \textbf{Loss} measures success at the task; \textbf{optimizer} decides how the descent is performed --- and that choice is worth several points of accuracy.
 \end{isteps}
 \vskip 4pt
-\reslink{NOTEBOOK}{01\_mnist\_pertama.ipynb}{../../course-slides/notebooks/ch02/01\_mnist\_pertama.ipynb}
-\reslink{NOTEBOOK}{04\_mnist\_dari\_nol.ipynb}{../../course-slides/notebooks/ch02/04\_mnist\_dari\_nol.ipynb}
-\reslink{BAB BERIKUT}{Bab 3 --- Kerangka kerja}{../ch03/index.html}
+\reslink{NOTEBOOK}{01\_first\_mnist.ipynb}{../../course-slides/notebooks/ch02/01\_first\_mnist.ipynb}
+\reslink{NOTEBOOK}{04\_mnist\_from\_scratch.ipynb}{../../course-slides/notebooks/ch02/04\_mnist\_from\_scratch.ipynb}
+\reslink{NEXT}{Chapter 3 --- The frameworks}{../ch03/index.html}
 \vskip 2pt
 \end{frame}
 

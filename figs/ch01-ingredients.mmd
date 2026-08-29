@@ -1,0 +1,9 @@
+
+flowchart LR
+  I1["1. Input data<br/>sound, images, rows"]
+  I2["2. Expected outputs<br/>transcripts, labels"]
+  I3["3. A quality measure<br/>distance to the target"]
+  I1 --> T["Learning<br/>adjust until the<br/>measure improves"]
+  I2 --> T
+  I3 --> T
+  T --> R["A rule that<br/>generalises"]

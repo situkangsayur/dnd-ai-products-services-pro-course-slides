@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
-"""Bab 1 — What is deep learning?
+"""Chapter 1 — What is deep learning?
 
-Sumber: Chollet & Watson, *Deep Learning with Python*, 3rd ed., bab 1.
-https://deeplearningwithpython.io/chapters/chapter01_what-is-deep-learning
+Source: Chollet & Watson, *Deep Learning with Python*, 3rd ed., chapter 1
+(pp. 3-16). Written from the book PDF, not from the summary pages on the
+book's website -- those are abridged and, in at least one place, wrong about
+the numbers.
 
-Bab ini tidak memuat kode. Yang dipakai di sini sebagai peraga adalah kode
-sekecil mungkin untuk menunjukkan pembalikan paradigma pemrograman -> ML, dan
-sisanya diagram. Semua kutipan dikembalikan ke bab aslinya.
+The chapter carries no code of its own. The one listing here is a teaching
+prop: the smallest thing that shows a rule being *produced* rather than
+written, which is the chapter's central claim.
 """
 
 import sys, os
@@ -16,298 +18,77 @@ from course import BOOK, chapter_resources, chapter_url  # noqa: E402
 
 
 # =============================================================================
-#  Peraga
+#  Diagrams. Mermaid rather than hand-placed SVG: the layout is computed, so
+#  boxes come out the same size and on a shared baseline.
 # =============================================================================
 
-SVG_HIERARCHY = """
-<svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="AI memuat machine learning, yang memuat deep learning">
-  <rect x="14" y="16" width="480" height="216" rx="16"
-        fill="rgba(44,123,212,.10)" stroke="rgba(44,123,212,.55)" stroke-width="1.4"/>
-  <text class="d-lbl" x="34" y="42" font-weight="700">Artificial Intelligence</text>
-  <text class="d-sm" x="34" y="60">sejak 1950-an &#183; &#8220;mengotomasi tugas intelektual&#8221;</text>
-
-  <rect x="42" y="76" width="424" height="140" rx="14"
-        fill="rgba(34,211,238,.10)" stroke="rgba(34,211,238,.55)" stroke-width="1.4"/>
-  <text class="d-lbl" x="62" y="102" font-weight="700">Machine Learning</text>
-  <text class="d-sm" x="62" y="120">berkembang sejak 1990-an &#183; aturan dipelajari dari data</text>
-
-  <rect x="70" y="136" width="368" height="66" rx="12"
-        fill="rgba(167,139,250,.14)" stroke="rgba(167,139,250,.6)" stroke-width="1.4"/>
-  <text class="d-lbl" x="90" y="162" font-weight="700">Deep Learning</text>
-  <text class="d-sm" x="90" y="180">lapisan representasi bertingkat &#183; puluhan-ratusan lapis</text>
-
-  <!-- kolom kanan: apa yang TIDAK masuk ML -->
-  <rect x="520" y="60" width="226" height="128" rx="14"
-        fill="rgba(255,255,255,.04)" stroke="rgba(140,190,255,.28)" stroke-width="1.2"/>
-  <text class="d-lbl" x="540" y="86" font-weight="700">Symbolic AI</text>
-  <text class="d-sm" x="540" y="106">1950-an &#8211; 1980-an</text>
-  <text class="d-sm" x="540" y="126">aturan ditulis tangan</text>
-  <text class="d-sm" x="540" y="146">unggul di catur,</text>
-  <text class="d-sm" x="540" y="164">gagal di persoalan kabur</text>
-  <line x1="494" y1="124" x2="518" y2="124" stroke="rgba(140,190,255,.4)"
-        stroke-width="1.2" stroke-dasharray="4 3"/>
-</svg>
+MMD_PARADIGM = """
+flowchart LR
+  subgraph CLASSIC["Classical programming"]
+    direction LR
+    R1["Rules"] --> P1["Program"]
+    D1["Data"] --> P1
+    P1 --> A1["Answers"]
+  end
+  subgraph ML["Machine learning"]
+    direction LR
+    D2["Data"] --> T2["Training"]
+    A2["Answers"] --> T2
+    T2 --> R2["Rules"]
+  end
+  CLASSIC ~~~ ML
 """
 
-TIKZ_HIERARCHY = r"""
-\begin{tikzpicture}[font=\sffamily]
-  \node[draw=itbbluelt!70, fill=itbbluelt!8, rounded corners=5pt,
-        minimum width=7.4cm, minimum height=3.4cm, anchor=north west] (ai) at (0,0) {};
-  \node[anchor=north west, font=\bfseries\small, text=ink] at ($(ai.north west)+(0.28,-0.22)$)
-    {Artificial Intelligence};
-  \node[anchor=north west, font=\tiny, text=ink3] at ($(ai.north west)+(0.28,-0.62)$)
-    {sejak 1950-an --- ``mengotomasi tugas intelektual''};
-
-  \node[draw=signal!70, fill=signal!8, rounded corners=5pt,
-        minimum width=6.5cm, minimum height=2.2cm, anchor=north west] (ml) at (0.45,-1.05) {};
-  \node[anchor=north west, font=\bfseries\small, text=ink] at ($(ml.north west)+(0.26,-0.2)$)
-    {Machine Learning};
-  \node[anchor=north west, font=\tiny, text=ink3] at ($(ml.north west)+(0.26,-0.58)$)
-    {sejak 1990-an --- aturan dipelajari dari data};
-
-  \node[draw=violet!70, fill=violet!10, rounded corners=5pt,
-        minimum width=5.6cm, minimum height=1.0cm, anchor=north west] (dl) at (0.9,-2.0) {};
-  \node[anchor=north west, font=\bfseries\small, text=ink] at ($(dl.north west)+(0.24,-0.18)$)
-    {Deep Learning};
-  \node[anchor=north west, font=\tiny, text=ink3] at ($(dl.north west)+(0.24,-0.54)$)
-    {lapisan representasi bertingkat};
-
-  \node[draw=rule, fill=papertint, rounded corners=5pt,
-        minimum width=3.4cm, minimum height=2.1cm, anchor=north west] (sym) at (8.0,-0.6) {};
-  \node[anchor=north west, font=\bfseries\small, text=ink] at ($(sym.north west)+(0.24,-0.2)$)
-    {Symbolic AI};
-  \node[anchor=north west, font=\tiny, text=ink3, align=left] at ($(sym.north west)+(0.24,-0.62)$)
-    {1950-an -- 1980-an\\aturan ditulis tangan\\unggul di catur,\\gagal di persoalan kabur};
-  \draw[rule, dashed, line width=0.6pt] (7.45,-1.7) -- (7.95,-1.7);
-\end{tikzpicture}
+MMD_LAYERS = """
+flowchart LR
+  IN["Input<br/>28 x 28 pixels"] --> L1["Layer 1<br/>edges"]
+  L1 --> L2["Layer 2<br/>corners"]
+  L2 --> L3["Layer 3<br/>parts"]
+  L3 --> L4["Layer 4<br/>digits"]
+  L4 --> OUT["Output<br/>P(0..9)"]
 """
 
-SVG_PARADIGM = """
-<svg viewBox="0 0 760 246" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="Pemrograman klasik menghasilkan jawaban; machine learning menghasilkan aturan">
-  <defs>
-    <marker id="ar1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
-      <path d="M0,0 L9,4.5 L0,9 z" fill="rgba(34,211,238,.75)"/>
-    </marker>
-  </defs>
-
-  <text class="d-lbl" x="16" y="22" font-weight="700">Pemrograman klasik</text>
-  <rect class="d-box" x="16"  y="38" width="112" height="34" rx="8"/>
-  <text class="d-sm" x="72" y="59" text-anchor="middle">Aturan</text>
-  <rect class="d-box" x="16"  y="82" width="112" height="34" rx="8"/>
-  <text class="d-sm" x="72" y="103" text-anchor="middle">Data</text>
-  <rect class="d-box-a" x="176" y="60" width="102" height="34" rx="8"/>
-  <text class="d-sm" x="227" y="81" text-anchor="middle">Program</text>
-  <rect class="d-box" x="322" y="60" width="102" height="34" rx="8"/>
-  <text class="d-sm" x="373" y="81" text-anchor="middle">Jawaban</text>
-  <path class="d-arrow" d="M128,55 L170,70" marker-end="url(#ar1)"/>
-  <path class="d-arrow" d="M128,99 L170,84" marker-end="url(#ar1)"/>
-  <path class="d-arrow" d="M278,77 L316,77" marker-end="url(#ar1)"/>
-
-  <line x1="16" y1="140" x2="744" y2="140" stroke="rgba(140,190,255,.2)" stroke-width="1"/>
-
-  <text class="d-lbl" x="16" y="168" font-weight="700">Machine learning</text>
-  <rect class="d-box" x="16"  y="184" width="112" height="30" rx="8"/>
-  <text class="d-sm" x="72" y="203" text-anchor="middle">Data</text>
-  <rect class="d-box" x="16"  y="220" width="112" height="20" rx="6"/>
-  <text class="d-sm" x="72" y="234" text-anchor="middle">Jawaban</text>
-  <rect class="d-box-a" x="176" y="194" width="102" height="34" rx="8"/>
-  <text class="d-sm" x="227" y="215" text-anchor="middle">Pelatihan</text>
-  <rect x="322" y="194" width="102" height="34" rx="8"
-        fill="rgba(167,139,250,.16)" stroke="rgba(167,139,250,.65)" stroke-width="1.4"/>
-  <text class="d-sm" x="373" y="215" text-anchor="middle">Aturan</text>
-  <path class="d-arrow" d="M128,199 L170,206" marker-end="url(#ar1)"/>
-  <path class="d-arrow" d="M128,230 L170,218" marker-end="url(#ar1)"/>
-  <path class="d-arrow" d="M278,211 L316,211" marker-end="url(#ar1)"/>
-
-  <text class="d-mono" x="452" y="200">yang tadinya keluaran</text>
-  <text class="d-mono" x="452" y="218">kini menjadi masukan</text>
-</svg>
+MMD_LOOP = """
+flowchart LR
+  X["Input X"] --> LAYER["Layer<br/>data transformation"]
+  W["Weights W"] --- LAYER
+  LAYER --> YP["Prediction Y'"]
+  YP --> LOSS["Loss function"]
+  Y["True target Y"] --> LOSS
+  LOSS --> OPT["Optimizer"]
+  OPT -. "update weights" .-> W
 """
 
-TIKZ_PARADIGM = r"""
-\begin{tikzpicture}[font=\sffamily\tiny,
-  bx/.style={draw=rule, fill=papertint, rounded corners=3pt, minimum width=1.9cm,
-             minimum height=0.6cm, text=ink2},
-  ax/.style={draw=signal!60, fill=signal!10, rounded corners=3pt, minimum width=1.8cm,
-             minimum height=0.6cm, text=ink},
-  vx/.style={draw=violet!70, fill=violet!12, rounded corners=3pt, minimum width=1.8cm,
-             minimum height=0.6cm, text=ink},
-  ar/.style={-{Stealth[length=4pt]}, signal, line width=0.7pt}]
-
-  \node[font=\bfseries\scriptsize, text=ink, anchor=west] at (0,1.55) {Pemrograman klasik};
-  \node[bx] (r1) at (1,1.0) {Aturan};
-  \node[bx] (d1) at (1,0.2) {Data};
-  \node[ax] (p1) at (3.6,0.6) {Program};
-  \node[bx] (a1) at (6.1,0.6) {Jawaban};
-  \draw[ar] (r1) -- (p1); \draw[ar] (d1) -- (p1); \draw[ar] (p1) -- (a1);
-
-  \draw[rule, line width=0.5pt] (0,-0.4) -- (8.6,-0.4);
-
-  \node[font=\bfseries\scriptsize, text=ink, anchor=west] at (0,-0.95) {Machine learning};
-  \node[bx] (d2) at (1,-1.4) {Data};
-  \node[bx] (a2) at (1,-2.2) {Jawaban};
-  \node[ax] (p2) at (3.6,-1.8) {Pelatihan};
-  \node[vx] (r2) at (6.1,-1.8) {Aturan};
-  \draw[ar] (d2) -- (p2); \draw[ar] (a2) -- (p2); \draw[ar] (p2) -- (r2);
-  \node[text=ink3, anchor=west, align=left] at (7.2,-1.8)
-    {yang tadinya keluaran\\kini menjadi masukan};
-\end{tikzpicture}
+MMD_SCOPE = """
+flowchart TB
+  AI["Artificial intelligence<br/><small>since the 1950s</small>"]
+  SYM["Symbolic AI<br/><small>hand-coded rules</small>"]
+  MLB["Machine learning<br/><small>rules learned from data</small>"]
+  DL["Deep learning<br/><small>successive layers</small>"]
+  SHAL["Shallow learning<br/><small>one or two layers</small>"]
+  AI --> SYM
+  AI --> MLB
+  MLB --> DL
+  MLB --> SHAL
 """
 
-SVG_LAYERS = """
-<svg viewBox="0 0 760 210" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="Empat lapisan representasi mengubah piksel angka menjadi probabilitas kelas">
-  <defs>
-    <marker id="ar2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
-      <path d="M0,0 L9,4.5 L0,9 z" fill="rgba(34,211,238,.7)"/>
-    </marker>
-  </defs>
-  <rect class="d-box" x="10" y="62" width="76" height="76" rx="8"/>
-  <text class="d-sm" x="48" y="96" text-anchor="middle">masukan</text>
-  <text class="d-sm" x="48" y="114" text-anchor="middle">28&#215;28</text>
-
-  <g>
-    <rect class="d-box-a" x="132" y="52" width="80" height="96" rx="8"/>
-    <text class="d-sm" x="172" y="94" text-anchor="middle">lapis 1</text>
-    <text class="d-mono" x="172" y="112" text-anchor="middle">tepi</text>
-  </g>
-  <g>
-    <rect class="d-box-a" x="248" y="52" width="80" height="96" rx="8"/>
-    <text class="d-sm" x="288" y="94" text-anchor="middle">lapis 2</text>
-    <text class="d-mono" x="288" y="112" text-anchor="middle">sudut</text>
-  </g>
-  <g>
-    <rect class="d-box-a" x="364" y="52" width="80" height="96" rx="8"/>
-    <text class="d-sm" x="404" y="94" text-anchor="middle">lapis 3</text>
-    <text class="d-mono" x="404" y="112" text-anchor="middle">bagian</text>
-  </g>
-  <g>
-    <rect class="d-box-a" x="480" y="52" width="80" height="96" rx="8"/>
-    <text class="d-sm" x="520" y="94" text-anchor="middle">lapis 4</text>
-    <text class="d-mono" x="520" y="112" text-anchor="middle">angka</text>
-  </g>
-
-  <rect x="600" y="62" width="150" height="76" rx="8"
-        fill="rgba(123,217,73,.12)" stroke="rgba(123,217,73,.6)" stroke-width="1.4"/>
-  <text class="d-sm" x="675" y="90" text-anchor="middle">keluaran</text>
-  <text class="d-mono" x="675" y="110" text-anchor="middle">P(0..9)</text>
-
-  <path class="d-arrow" d="M88,100 L128,100"  marker-end="url(#ar2)"/>
-  <path class="d-arrow" d="M214,100 L244,100" marker-end="url(#ar2)"/>
-  <path class="d-arrow" d="M330,100 L360,100" marker-end="url(#ar2)"/>
-  <path class="d-arrow" d="M446,100 L476,100" marker-end="url(#ar2)"/>
-  <path class="d-arrow" d="M562,100 L596,100" marker-end="url(#ar2)"/>
-
-  <text class="d-sm" x="10" y="182" fill="#7E93B4">
-    setiap lapis mengubah representasi menjadi bentuk yang sedikit lebih berguna
-  </text>
-  <text class="d-sm" x="10" y="30" fill="#7E93B4">
-    &#8220;kesulingan informasi&#8221; &#8212; informasi yang tidak relevan disaring, yang relevan diperkuat
-  </text>
-</svg>
+MMD_INGREDIENTS = """
+flowchart LR
+  I1["1. Input data<br/>sound, images, rows"]
+  I2["2. Expected outputs<br/>transcripts, labels"]
+  I3["3. A quality measure<br/>distance to the target"]
+  I1 --> T["Learning<br/>adjust until the<br/>measure improves"]
+  I2 --> T
+  I3 --> T
+  T --> R["A rule that<br/>generalises"]
 """
 
-TIKZ_LAYERS = r"""
-\begin{tikzpicture}[font=\sffamily\tiny,
-  lay/.style={draw=signal!60, fill=signal!9, rounded corners=3pt,
-              minimum width=1.25cm, minimum height=1.5cm, text=ink, align=center},
-  io/.style={draw=rule, fill=papertint, rounded corners=3pt,
-             minimum width=1.25cm, minimum height=1.2cm, text=ink2, align=center},
-  ar/.style={-{Stealth[length=4pt]}, signal, line width=0.7pt}]
-  \node[io]  (in) at (0,0)   {masukan\\$28\times28$};
-  \node[lay] (l1) at (1.9,0) {lapis 1\\\ttfamily tepi};
-  \node[lay] (l2) at (3.5,0) {lapis 2\\\ttfamily sudut};
-  \node[lay] (l3) at (5.1,0) {lapis 3\\\ttfamily bagian};
-  \node[lay] (l4) at (6.7,0) {lapis 4\\\ttfamily angka};
-  \node[draw=lime!60, fill=limebr!12, rounded corners=3pt, minimum width=1.6cm,
-        minimum height=1.2cm, text=ink, align=center] (out) at (8.7,0) {keluaran\\\ttfamily P(0..9)};
-  \draw[ar] (in) -- (l1); \draw[ar] (l1) -- (l2); \draw[ar] (l2) -- (l3);
-  \draw[ar] (l3) -- (l4); \draw[ar] (l4) -- (out);
-  \node[text=ink3, anchor=west] at (-0.7,-1.25)
-    {setiap lapis mengubah representasi menjadi bentuk yang sedikit lebih berguna};
-\end{tikzpicture}
-"""
-
-SVG_LOOP = """
-<svg viewBox="0 0 760 268" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="Lingkar pelatihan: bobot, prediksi, fungsi rugi, optimalisasi">
-  <defs>
-    <marker id="ar3" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
-      <path d="M0,0 L9,4.5 L0,9 z" fill="rgba(34,211,238,.75)"/>
-    </marker>
-    <marker id="ar4" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
-      <path d="M0,0 L9,4.5 L0,9 z" fill="rgba(245,179,1,.85)"/>
-    </marker>
-  </defs>
-
-  <rect class="d-box" x="16" y="96" width="104" height="40" rx="8"/>
-  <text class="d-sm" x="68" y="121" text-anchor="middle">Masukan X</text>
-
-  <rect x="164" y="60" width="132" height="112" rx="10"
-        fill="rgba(44,123,212,.14)" stroke="rgba(44,123,212,.6)" stroke-width="1.4"/>
-  <text class="d-sm" x="230" y="88" text-anchor="middle">Lapis</text>
-  <text class="d-sm" x="230" y="106" text-anchor="middle">(transformasi</text>
-  <text class="d-sm" x="230" y="124" text-anchor="middle">data)</text>
-  <rect x="180" y="136" width="100" height="24" rx="6"
-        fill="rgba(245,179,1,.16)" stroke="rgba(245,179,1,.6)" stroke-width="1.2"/>
-  <text class="d-mono" x="230" y="152" text-anchor="middle" fill="#F5B301">Bobot W</text>
-
-  <rect class="d-box" x="340" y="96" width="112" height="40" rx="8"/>
-  <text class="d-sm" x="396" y="121" text-anchor="middle">Prediksi Y&#39;</text>
-
-  <rect class="d-box" x="340" y="192" width="112" height="34" rx="8"/>
-  <text class="d-sm" x="396" y="214" text-anchor="middle">Target Y</text>
-
-  <rect x="500" y="118" width="126" height="42" rx="10"
-        fill="rgba(251,113,133,.14)" stroke="rgba(251,113,133,.6)" stroke-width="1.4"/>
-  <text class="d-sm" x="563" y="144" text-anchor="middle">Fungsi rugi</text>
-
-  <rect x="500" y="24" width="126" height="42" rx="10"
-        fill="rgba(123,217,73,.14)" stroke="rgba(123,217,73,.6)" stroke-width="1.4"/>
-  <text class="d-sm" x="563" y="50" text-anchor="middle">Optimalisasi</text>
-
-  <path class="d-arrow" d="M120,116 L160,116" marker-end="url(#ar3)"/>
-  <path class="d-arrow" d="M296,116 L336,116" marker-end="url(#ar3)"/>
-  <path class="d-arrow" d="M452,120 L496,133" marker-end="url(#ar3)"/>
-  <path class="d-arrow" d="M452,203 L496,158" marker-end="url(#ar3)"/>
-  <path d="M563,118 L563,70" stroke="rgba(245,179,1,.85)" stroke-width="1.6"
-        fill="none" marker-end="url(#ar4)"/>
-  <path d="M500,45 C420,45 300,30 230,30 L230,54" stroke="rgba(245,179,1,.85)"
-        stroke-width="1.6" fill="none" stroke-dasharray="5 4" marker-end="url(#ar4)"/>
-  <text class="d-mono" x="300" y="22" fill="#F5B301">perbarui bobot</text>
-
-  <text class="d-sm" x="640" y="144" fill="#FB7185">skor</text>
-  <text class="d-sm" x="640" y="50"  fill="#7BD949">arah</text>
-</svg>
-"""
-
-TIKZ_LOOP = r"""
-\begin{tikzpicture}[font=\sffamily\tiny,
-  bx/.style={draw=rule, fill=papertint, rounded corners=3pt, minimum width=1.7cm,
-             minimum height=0.62cm, text=ink2, align=center},
-  ar/.style={-{Stealth[length=4pt]}, signal, line width=0.7pt},
-  fb/.style={-{Stealth[length=4pt]}, amberbr, line width=0.8pt}]
-  \node[bx] (x) at (0,0) {Masukan $X$};
-  \node[draw=itbbluelt!70, fill=itbbluelt!12, rounded corners=4pt, minimum width=2.1cm,
-        minimum height=1.7cm, text=ink, align=center] (lay) at (2.5,0)
-        {Lapis\\(transformasi data)};
-  \node[draw=amber!70, fill=amberbr!16, rounded corners=3pt, minimum width=1.6cm,
-        minimum height=0.42cm, text=ink, font=\ttfamily\tiny] (w) at (2.5,-0.62) {Bobot $W$};
-  \node[bx] (yp) at (5.2,0) {Prediksi $\hat{Y}$};
-  \node[bx] (y)  at (5.2,-1.5) {Target $Y$};
-  \node[draw=rose!70, fill=rosebr!14, rounded corners=4pt, minimum width=1.9cm,
-        minimum height=0.62cm, text=ink] (loss) at (7.9,-0.75) {Fungsi rugi};
-  \node[draw=lime!70, fill=limebr!16, rounded corners=4pt, minimum width=1.9cm,
-        minimum height=0.62cm, text=ink] (opt) at (7.9,1.15) {Optimalisasi};
-
-  \draw[ar] (x) -- (lay); \draw[ar] (lay) -- (yp);
-  \draw[ar] (yp) -- (loss); \draw[ar] (y) -- (loss);
-  \draw[fb] (loss) -- (opt);
-  \draw[fb, dashed] (opt) -| (2.5,0.9) -- (lay.north);
-  \node[text=amber, anchor=south] at (4.6,1.3) {perbarui bobot};
-\end{tikzpicture}
+MMD_WAVES = """
+flowchart LR
+  W1["2013 - 2017<br/><b>Perception</b><br/>image, speech,<br/>handwriting"]
+  W2["2017 - 2022<br/><b>Language</b><br/>translation, NLP,<br/>the Transformer"]
+  W3["2022 - now<br/><b>Generative</b><br/>chat, code,<br/>image synthesis"]
+  W1 --> W2 --> W3
 """
 
 
@@ -315,744 +96,970 @@ TIKZ_LOOP = r"""
 #  Deck
 # =============================================================================
 
+NB = ["01_the_ml_paradigm.ipynb"]
+FIG = "figs/book/figure-1-1.png"
+
 DECK = {
     "id": "ch01",
     "kind": "chapter",
     "number": 1,
-    "title": "Apa Itu Deep Learning?",
-    "subtitle": "Meletakkan AI, machine learning, dan deep learning pada tempatnya "
-                "masing-masing -- lalu memisahkan capaian nyata dari gembar-gembor.",
-    "source": "Chollet & Watson, Deep Learning with Python 3e -- bab 1",
+    "title": "What Is Deep Learning?",
+    "subtitle": "Putting AI, machine learning, and deep learning in their right "
+                "places -- then separating what the field has actually achieved "
+                "from what it has merely promised.",
+    "source": "Chollet & Watson, Deep Learning with Python 3e -- chapter 1",
     "source_url": chapter_url(1),
-    "duration": "90 menit",
-    "presenter": {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Pengajar Utama"},
-    "resources": chapter_resources(1, local_notebooks=["01_paradigma_ml.ipynb"]),
+    "duration": "90 minutes",
+    "presenter": {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    "resources": chapter_resources(1, local_notebooks=NB),
     "objectives": [
-        "Menempatkan **AI, machine learning, dan deep learning** dalam hubungan "
-        "yang benar -- yang mana memuat yang mana, dan sejak kapan.",
-        "Menjelaskan **pembalikan paradigma**: pemrograman klasik menghasilkan "
-        "jawaban, machine learning menghasilkan aturan.",
-        "Menyebut **tiga bahan wajib** setiap sistem machine learning dan "
-        "menunjukkan apa yang rusak bila salah satunya hilang.",
-        "Menerangkan cara kerja deep learning lewat **bobot, fungsi rugi, dan "
-        "backpropagation** tanpa menurunkan satu pun rumus.",
-        "Membedakan **capaian yang sudah terbukti** dari **klaim yang belum**, "
-        "dan menyebut apa yang memicu dua musim dingin AI sebelumnya.",
+        "Place **AI, machine learning, and deep learning** in the correct "
+        "relationship -- which contains which, and since when.",
+        "Explain the **inversion**: classical programming outputs answers, "
+        "machine learning outputs rules.",
+        "Name the **three things** every machine learning system needs, and say "
+        "what breaks when one of them is missing.",
+        "Describe how deep learning works through **weights, a loss function, "
+        "and backpropagation** -- without deriving a single equation.",
+        "Separate **what deep learning has demonstrably done** from **what is "
+        "still a claim**, and name what triggered the two previous AI winters.",
     ],
     "slides": [
         {"type": "title"},
 
-        # ------------------------------------------------------------ peta ---
         {
             "type": "slide",
-            "kicker": "Peta bab",
-            "title": "Ke mana bab ini membawa kita",
+            "kicker": "Roadmap",
+            "title": "What this chapter is for",
             "blocks": [
-                {"t": "lead", "md": "Bab pembuka tidak mengajarkan satu baris kode pun. "
-                                    "Tugasnya lebih mendasar: memastikan kita memakai kata "
-                                    "yang sama untuk hal yang sama."},
+                {"t": "lead", "md": "Chapter 1 teaches no code at all. Its job is more "
+                                    "basic: to make sure everyone in the room uses the "
+                                    "same words for the same things."},
                 {"t": "cards", "cols": 3, "items": [
-                    {"ico": "🗺", "h": "Definisi dan sejarah",
-                     "p": "Tiga lingkaran bersarang: AI, ML, DL. Ditambah satu cabang "
-                          "yang **bukan** ML sama sekali -- symbolic AI.",
-                     "tag": "bag. 1-3"},
-                    {"ico": "⚙", "h": "Cara kerjanya",
-                     "p": "Representasi, bobot, fungsi rugi, backpropagation. "
-                          "Chollet menerangkannya dengan **tiga gambar**, bukan rumus.",
-                     "tag": "bag. 4-6"},
-                    {"ico": "⚖", "h": "Capaian vs gembar-gembor",
-                     "p": "Apa yang **sudah** dikerjakan deep learning, dan mengapa "
-                          "dua kali sebelumnya musim panas AI berubah jadi musim dingin.",
-                     "tag": "bag. 7-12"},
+                    {"ico": "🗺", "h": "Definitions and history",
+                     "p": "Three nested circles -- AI, ML, DL -- plus one branch that is "
+                          "**not** machine learning at all.",
+                     "tag": "1.1 – 1.5"},
+                    {"ico": "⚙", "h": "How it works",
+                     "p": "Representations, weights, loss, backpropagation. Chollet "
+                          "explains it with **three figures**, not equations.",
+                     "tag": "1.6 – 1.7"},
+                    {"ico": "⚖", "h": "Achievement vs hype",
+                     "p": "What deep learning has **already** done, and why the field went "
+                          "cold twice before.",
+                     "tag": "1.8 – 1.12"},
                 ]},
-                {"t": "band", "md": "Untuk kelas ini bab 1 punya beban tambahan: ia yang "
-                                    "menetapkan **kosakata bersama** yang dipakai sampai bab 20 "
-                                    "dan sampai topik agentic AI di akhir kursus."},
             ],
-            "notes": "Buka dengan pertanyaan ke peserta: siapa yang bisa menjelaskan beda "
-                     "AI dan machine learning dalam satu kalimat? Jawaban yang beragam di "
-                     "ruangan justru bahan yang bagus untuk masuk ke slide berikutnya.",
+            "notes": "Open by asking the room to define AI and machine learning in one "
+                     "sentence each. The spread of answers you get is the reason this "
+                     "chapter exists.",
         },
 
-        # --------------------------------------------------------- section ---
-        {"type": "section", "num": "01", "title": "AI, machine learning, deep learning",
-         "lead": "Tiga istilah yang di media dipakai bergantian, padahal bersarang."},
+        {"type": "section", "num": "01",
+         "title": "AI, machine learning, deep learning",
+         "lead": "Three terms the press uses interchangeably. They are nested."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.1",
-            "title": "Tiga lingkaran yang bersarang, bukan tiga sinonim",
+            "kicker": "Section 1.1",
+            "title": "Three nested circles, not three synonyms",
             "blocks": [
-                {"t": "fig", "svg": SVG_HIERARCHY, "tikz": TIKZ_HIERARCHY,
-                 "cap": "Gambar 1.1 -- deep learning adalah bagian dari machine learning, "
-                        "yang adalah bagian dari AI. Symbolic AI ada di dalam AI tetapi "
-                        "di luar machine learning."},
-                {"t": "bullets", "items": [
-                    "**AI** lahir 1950-an. Definisi kerjanya: *upaya mengotomasi tugas "
-                    "intelektual yang biasanya dikerjakan manusia*. Cakupannya jauh lebih "
-                    "luas dari ML.",
-                    "**Symbolic AI** mendominasi 1950-an sampai 1980-an: aturan ditulis "
-                    "tangan oleh pemrogram. Cukup untuk catur, ==runtuh== di persoalan "
-                    "kabur seperti mengenali gambar atau bahasa.",
-                    "**Machine learning** naik sejak 1990-an justru karena persoalan kabur "
-                    "itulah yang tersisa.",
-                ]},
+                {"t": "img", "src": FIG, "credit": True, "max_h": "44vh",
+                 "cap": "Figure 1.1 — deep learning is a subfield of machine learning, "
+                        "which is a subfield of AI."},
+                {"t": "p", "md": "The nesting is the whole point: every deep learning system "
+                                 "is a machine learning system, and every machine learning "
+                                 "system is an AI system -- ==but not the other way round=="},
             ],
-            "notes": "Tekankan: kegagalan symbolic AI bukan kegagalan gagasan AI. Ia gagal "
-                     "pada satu kelas persoalan tertentu -- yang aturannya tidak bisa "
-                     "dituliskan manusia karena manusia sendiri tidak sadar memakainya.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.1",
-            "title": "Kutipan yang membingkai seluruh bidang",
+            "kicker": "Section 1.2",
+            "title": "…and one branch that sits outside machine learning",
+            "blocks": [
+                {"t": "mmd", "id": "ch01-scope", "src": MMD_SCOPE,
+                 "cap": "Symbolic AI is inside AI but outside machine learning. Shallow "
+                        "learning is inside machine learning but outside deep learning."},
+            ],
+            "notes": "This is the slide people photograph. Leave it up while you talk "
+                     "through the next two.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.2",
+            "title": "Symbolic AI: what it was, and where it stopped",
+            "blocks": [
+                {"t": "cols", "ratio": "1-1", "cols": [
+                    [
+                        {"t": "p", "md": "**Artificial intelligence** was born in the 1950s. "
+                                         "The working definition: *the effort to automate "
+                                         "intellectual tasks normally performed by humans*."},
+                        {"t": "p", "md": "For roughly thirty years the dominant approach was "
+                                         "**symbolic AI**: programmers wrote the rules by "
+                                         "hand, and the machine executed them."},
+                    ],
+                    [
+                        {"t": "cards", "cols": 1, "items": [
+                            {"ico": "♟", "h": "Where it worked",
+                             "p": "Well-defined, logical problems. Chess is the canonical win.",
+                             "style": "good"},
+                            {"ico": "🌫", "h": "Where it collapsed",
+                             "p": "**Fuzzy** problems -- recognising an image, understanding "
+                                  "speech. Nobody can write down those rules, because nobody "
+                                  "is aware of using them.", "style": "bad"},
+                        ]},
+                    ],
+                ]},
+                {"t": "band",
+                 "md": "Machine learning rose from the 1990s onward precisely because "
+                       "==the fuzzy problems were the ones left over=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.2",
+            "title": "The question that opened the field, in 1843",
             "blocks": [
                 {"t": "quote",
                  "md": "The Analytical Engine has no pretensions whatever to originate "
                        "anything. It can do whatever we know how to order it to perform.",
-                 "cite": "Ada Lovelace, 1843 -- catatan atas mesin Charles Babbage"},
-                {"t": "quote",
-                 "md": "Every aspect of learning or any other feature of intelligence can "
-                       "in principle be so precisely described that a machine can be made "
-                       "to simulate it.",
-                 "cite": "John McCarthy dkk., proposal lokakarya Dartmouth, 1956"},
-                {"t": "band", "style": "amber",
-                 "md": "Dua kutipan ini berselisih 113 tahun dan berselisih pendapat. "
-                       "Pertanyaan Lovelace -- *bisakah mesin melampaui perintah kita?* -- "
-                       "belum tuntas sampai hari ini; ==machine learning adalah jawaban "
-                       "parsialnya==, sebab mesin memang menghasilkan sesuatu yang tidak "
-                       "kita tuliskan: aturannya."},
+                 "cite": "Ada Lovelace, 1843 — on Charles Babbage's machine"},
+                {"t": "p", "md": "Lovelace's objection is the oldest question in the field, "
+                                 "and it is not rhetorical: **can a machine ever produce "
+                                 "something we did not put into it?**"},
             ],
-            "notes": "Kutipan Lovelace dipakai Chollet sejak edisi pertama sebagai pembuka. "
-                     "Sambungkan ke pertanyaan yang akan diajukan auditor mana pun: kalau "
-                     "aturannya tidak kita tulis, siapa yang bertanggung jawab atas aturan itu?",
         },
-
-        # --------------------------------------------------------- section ---
-        {"type": "section", "num": "02", "title": "Pembalikan paradigma",
-         "lead": "Yang tadinya keluaran, kini menjadi masukan."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.1.2",
-            "title": "Machine learning membalik arah pemrograman",
+            "kicker": "Section 1.2",
+            "title": "…and the claim that answered it, in 1956",
             "blocks": [
-                {"t": "fig", "svg": SVG_PARADIGM, "tikz": TIKZ_PARADIGM,
-                 "cap": "Gambar 1.2 -- pemrograman klasik disuapi aturan dan data lalu "
-                        "mengeluarkan jawaban; machine learning disuapi data dan jawaban "
-                        "lalu mengeluarkan aturan."},
+                {"t": "quote",
+                 "md": "Every aspect of learning or any other feature of intelligence can in "
+                       "principle be so precisely described that a machine can be made to "
+                       "simulate it.",
+                 "cite": "John McCarthy et al., the Dartmouth workshop proposal, 1956"},
                 {"t": "band",
-                 "md": "Konsekuensinya langsung dan sering diremehkan: sistem ML "
-                       "==dilatih, bukan diprogram==. Kalau tidak ada contoh yang sudah "
-                       "berjawab, tidak ada yang bisa dilatih -- seberapa pun bagus "
-                       "arsitekturnya."},
+                 "md": "These two statements are 113 years apart and they disagree. Machine "
+                       "learning is a **partial** answer to Lovelace: the machine does "
+                       "produce something we never wrote down -- ==the rules=="},
             ],
-            "notes": "Di sini biasanya muncul pertanyaan 'kalau begitu datanya dari mana?'. "
-                     "Jawab singkat saja, bab 6 membahasnya penuh sebagai universal workflow.",
+            "notes": "Connect forward to the audit question that always comes up later: if "
+                     "we did not write the rule, who is accountable for it?",
+        },
+
+        {"type": "section", "num": "02", "title": "The inversion",
+         "lead": "What used to be the output becomes the input."},
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.3",
+            "title": "Machine learning runs programming backwards",
+            "blocks": [
+                {"t": "mmd", "id": "ch01-paradigm", "src": MMD_PARADIGM,
+                 "cap": "Figure 1.2 — classical programming is fed rules and data and emits "
+                        "answers; machine learning is fed data and answers and emits rules."},
+            ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.1.2",
-            "title": "Tiga bahan wajib -- hilang satu, bukan machine learning",
+            "kicker": "Section 1.3",
+            "title": "The consequence people underestimate",
+            "blocks": [
+                {"t": "band",
+                 "md": "A machine learning system is **trained, not programmed**. If you have "
+                       "no worked examples, there is ==nothing to train==, no matter how good "
+                       "the architecture is."},
+                {"t": "p", "md": "This is why the hardest part of most projects turns out to "
+                                 "be the dataset rather than the model. Chapter 6 is devoted "
+                                 "to that problem."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.4",
+            "title": "Three things every ML system needs",
             "blocks": [
                 {"t": "cards", "cols": 3, "items": [
-                    {"ico": "📥", "h": "1 · Titik data masukan",
-                     "p": "Berkas suara, gambar, baris transaksi. Inilah yang akan "
-                          "ditransformasi.", "style": "accent"},
-                    {"ico": "🎯", "h": "2 · Contoh keluaran yang diharapkan",
-                     "p": "Transkrip untuk suara, label untuk gambar, penanda "
-                          "*fraud* untuk transaksi.", "style": "accent"},
-                    {"ico": "📏", "h": "3 · Cara mengukur mutu",
-                     "p": "Jarak antara tebakan dan jawaban benar. Inilah "
-                          "**sinyal umpan balik** yang menyetel algoritmanya.",
-                     "style": "accent"},
+                    {"ico": "📥", "h": "1 · Input data points",
+                     "p": "Sound files for speech recognition; photographs for image tagging. "
+                          "This is what gets transformed.", "style": "accent"},
+                    {"ico": "🎯", "h": "2 · Examples of expected output",
+                     "p": "Human transcripts for the sound files; tags such as *dog* or *cat* "
+                          "for the pictures.", "style": "accent"},
+                    {"ico": "📏", "h": "3 · A way to measure quality",
+                     "p": "The distance between what the algorithm currently says and what it "
+                          "should say. This is the **feedback signal**.", "style": "accent"},
                 ]},
-                {"t": "p", "md": "Ketiganya adalah syarat minimum, bukan daftar keinginan. "
-                                 "Chollet menyebut inti persoalannya sebagai "
-                                 "*meaningfully transform data* -- mempelajari **representasi** "
-                                 "yang membuat tugas jadi lebih mudah."},
+                {"t": "p", "md": "That adjustment step, driven by the feedback signal, is "
+                                 "==exactly what the word *learning* means here=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.4",
+            "title": "The three, drawn as one pipeline",
+            "blocks": [
+                {"t": "mmd", "id": "ch01-ingredients", "src": MMD_INGREDIENTS,
+                 "cap": "All three feed the same adjustment step. Remove any one of them and "
+                        "the arrow into it disappears."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.4",
+            "title": "Lose one, and it stops being machine learning",
+            "blocks": [
                 {"t": "table",
-                 "head": ["Bahan yang hilang", "Yang sebenarnya Anda punya", "Akibatnya"],
-                 "widths": [26, 34, 40],
+                 "head": ["Missing ingredient", "What you actually have", "What follows"],
+                 "widths": [24, 30, 46],
                  "rows": [
-                     ["Contoh keluaran", "Data mentah tanpa label",
-                      "Bukan supervised learning. Pilihannya: pelabelan, atau pindah ke "
-                      "unsupervised / self-supervised."],
-                     ["Ukuran mutu", "Data dan label, tanpa metrik yang disepakati",
-                      "Model bisa dilatih tetapi tidak bisa dinilai -- dan ini kegagalan "
-                      "proyek yang paling sering di dunia nyata."],
-                     ["Data masukan yang mewakili", "Contoh yang tidak menyerupai kondisi produksi",
-                      "Model berhasil di laptop, gagal saat dipakai. Bab 5 dan 6 menamainya "
-                      "secara teknis."],
+                     ["Expected outputs", "Raw data with no labels",
+                      "Not supervised learning. Either label it, or move to unsupervised "
+                      "or self-supervised methods."],
+                     ["A quality measure", "Data and labels, no agreed metric",
+                      "The model can be trained but **not judged** — and this is the most "
+                      "common way real projects fail."],
+                     ["Representative inputs", "Examples unlike production conditions",
+                      "It works on the laptop and fails in the field. Chapters 5 and 6 give "
+                      "this its proper names."],
                  ]},
             ],
-            "notes": "Minta peserta memikirkan satu kasus pemakaian dari pekerjaannya sendiri, lalu "
-                     "uji ketiga bahan itu. Yang paling sering hilang adalah bahan ketiga -- "
-                     "kesepakatan tentang apa yang disebut 'benar'.",
+            "notes": "Ask the room to test one of their own use cases against all three. "
+                     "The third one is missing far more often than people expect.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.1.3",
-            "title": "Representasi: gagasan yang menyatukan seluruh buku",
+            "kicker": "Section 1.4",
+            "title": "Representation: the idea that runs through the whole book",
             "blocks": [
+                {"t": "p", "md": "A **representation** is simply a different way of encoding "
+                                 "the same data. The same photograph can be encoded as RGB "
+                                 "or as HSV -- identical content, different axes."},
                 {"t": "cols", "ratio": "1-1", "cols": [
                     [
-                        {"t": "p", "md": "**Representasi** adalah cara lain menyandikan data "
-                                         "yang sama. Foto yang sama bisa disandikan sebagai "
-                                         "RGB atau HSV -- isinya identik, tetapi tugas yang "
-                                         "mudah pada masing-masing berbeda."},
                         {"t": "bullets", "items": [
-                            "*Pilih semua piksel merah* -- mudah di **RGB**.",
-                            "*Buat gambar kurang jenuh* -- mudah di **HSV**.",
-                            "Persoalan yang sama; yang berubah hanya sumbunya.",
+                            "*Select all red pixels* — easy in **RGB**.",
+                            "*Make the image less saturated* — easy in **HSV**.",
                         ]},
-                        {"t": "band",
-                         "md": "Karena itu Chollet merumuskan machine learning sebagai "
-                               "==pencarian representasi yang membuat tugas jadi mudah==."},
                     ],
                     [
-                        {"t": "p", "md": "Contoh klasik bab ini: titik hitam dan putih yang "
-                                         "bercampur pada sumbu asal (gambar 1.3). Tidak ada "
-                                         "aturan sederhana yang memisahkannya."},
-                        {"t": "p", "md": "Ubah sumbunya -- pindahkan titik asal, putar -- dan "
-                                         "aturannya menjadi satu kalimat (gambar 1.4): "
-                                         "*hitam bila x > 0*."},
-                        {"t": "band", "style": "amber",
-                         "md": "Tidak ada model yang jadi lebih pintar. Yang berubah hanya "
-                               "representasinya. Inilah pekerjaan yang dulu disebut "
-                               "**feature engineering** dan dikerjakan manusia."},
+                        {"t": "band",
+                         "md": "Same picture, same task difficulty changed entirely. So "
+                               "machine learning is ==the search for a representation that "
+                               "makes the task easy=="},
                     ],
                 ]},
             ],
-            "notes": "Kalau ada waktu, gambar manual di papan: sebar titik, lalu putar sumbu. "
-                     "Peraga fisik ini jauh lebih nempel daripada slide.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.4",
-            "title": "Ruang hipotesis -- dan mengapa aturan tulis-tangan runtuh",
+            "kicker": "Section 1.4 · figures 1.3–1.4",
+            "title": "The worked example: change the axes, and the rule appears",
             "blocks": [
-                {"t": "p", "md": "Perubahan sumbu tadi kita rancang **dengan tangan**. Itu "
-                                 "sanggup untuk persoalan sesederhana itu. Tetapi bisakah "
-                                 "Anda menuliskan transformasi citra yang menjelaskan beda "
-                                 "6 dan 8, atau 1 dan 7, ==untuk segala macam tulisan tangan==?"},
-                {"t": "cards", "cols": 2, "items": [
-                    {"ico": "✍", "h": "Bisa -- sampai batas tertentu",
-                     "p": "Aturan seperti *menghitung banyaknya gelung tertutup*, atau "
-                          "histogram piksel tegak dan mendatar, lumayan membedakan angka "
-                          "tulisan tangan.", "style": "warn"},
-                    {"ico": "💥", "h": "Tetapi rapuh dan menyiksa",
-                     "p": "Tiap kali muncul contoh tulisan baru yang mematahkan aturan yang "
-                          "sudah disusun rapi, Anda harus menambah transformasi dan aturan "
-                          "baru -- **sambil memperhitungkan interaksinya dengan semua aturan "
-                          "sebelumnya**.", "style": "bad"},
+                {"t": "steps", "items": [
+                    "**Raw data.** White points and black points scattered in an (x, y) plane. "
+                    "No simple rule separates them.",
+                    "**Coordinate change.** Move the origin, rotate the axes. Nothing about "
+                    "the data changed -- only how it is written down.",
+                    "**Better representation.** The rule is now one sentence: *black points "
+                    "are those with x > 0*.",
                 ]},
                 {"t": "band",
-                 "md": "Algoritma machine learning **tidak kreatif** dalam menemukan "
-                       "transformasi ini. Ia sekadar menelusuri sehimpunan operasi yang "
-                       "sudah ditetapkan lebih dulu -- himpunan itulah yang disebut "
-                       "==ruang hipotesis (hypothesis space)==. Pada contoh 2D tadi, ruang "
-                       "hipotesisnya adalah ruang semua perubahan sumbu yang mungkin."},
-                {"t": "quote",
-                 "md": "Itulah machine learning, secara ringkas: **mencari representasi dan "
-                       "aturan yang berguna atas suatu data masukan, di dalam ruang "
-                       "kemungkinan yang sudah ditetapkan, dengan tuntunan sebuah sinyal "
-                       "umpan balik.**",
-                 "cite": "Chollet & Watson, bab 1.4"},
-                {"t": "p", "md": "Gagasan sesederhana itu menyelesaikan rentang tugas "
-                                 "intelektual yang luar biasa lebar -- dari kemudi otonom "
-                                 "sampai penjawaban pertanyaan dalam bahasa alami."},
+                 "md": "No model got smarter. Only the representation changed -- and that is "
+                       "the work that used to be called ==feature engineering== and was done "
+                       "by hand."},
             ],
-            "notes": "Istilah 'ruang hipotesis' akan kembali di bab 3 saat topologi model "
-                     "dibahas: memilih arsitektur = mempersempit ruang hipotesis.",
         },
-
-        # --------------------------------------------------------- section ---
-        {"type": "section", "num": "03", "title": "Yang 'dalam' pada deep learning",
-         "lead": "Bukan pemahaman yang lebih dalam. Hanya lapisan yang lebih banyak."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.1.4",
-            "title": "'Deep' menunjuk pada jumlah lapis, bukan kedalaman makna",
+            "kicker": "Section 1.4",
+            "title": "Why hand-written rules do not scale",
+            "blocks": [
+                {"t": "p", "md": "We designed that coordinate change ourselves. Fine for a toy. "
+                                 "But could you write explicit image transformations that "
+                                 "separate a 6 from an 8, or a 1 from a 7, ==across every "
+                                 "kind of handwriting=="},
+                {"t": "cards", "cols": 2, "items": [
+                    {"ico": "✍", "h": "Possible — up to a point",
+                     "p": "Rules such as *count the closed loops*, or vertical and horizontal "
+                          "pixel histograms, do a decent job on handwritten digits.",
+                     "style": "warn"},
+                    {"ico": "💥", "h": "But brittle, and miserable to maintain",
+                     "p": "Every new handwriting sample that breaks your carefully reasoned "
+                          "rules forces a new transformation and a new rule — **and you must "
+                          "check it against every rule you already wrote**.", "style": "bad"},
+                ]},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.4",
+            "title": "Hypothesis space: what the algorithm is allowed to search",
+            "blocks": [
+                {"t": "p", "md": "Machine learning algorithms are **not creative** about "
+                                 "finding these transformations. They search a predefined set "
+                                 "of operations -- and that set is called the "
+                                 "**hypothesis space**."},
+                {"t": "band",
+                 "md": "In the two-dimensional example, the hypothesis space was ==the space "
+                       "of all possible coordinate changes=="},
+                {"t": "p", "md": "Choosing a model architecture, in later chapters, is exactly "
+                                 "the act of choosing a hypothesis space."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.4",
+            "title": "The whole field, in one sentence",
+            "blocks": [
+                {"t": "quote",
+                 "md": "Machine learning is searching for useful representations and rules "
+                       "over some input data, within a predefined space of possibilities, "
+                       "using guidance from a feedback signal.",
+                 "cite": "Chollet & Watson, section 1.4"},
+                {"t": "p", "md": "That one idea covers a startling range of tasks -- from "
+                                 "autonomous driving to answering questions in natural "
+                                 "language."},
+            ],
+        },
+
+        {"type": "section", "num": "03", "title": "The \"deep\" in deep learning",
+         "lead": "Not deeper understanding. Just more layers."},
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.5",
+            "title": "\"Deep\" is a statement about architecture, nothing more",
             "blocks": [
                 {"t": "quote",
                  "md": "The \"deep\" in \"deep learning\" isn't a reference to any kind of "
-                       "deeper understanding -- rather, it stands for this idea of "
-                       "successive layers of representations.",
-                 "cite": "Chollet & Watson, bab 1"},
-                {"t": "fig", "svg": SVG_LAYERS, "tikz": TIKZ_LAYERS,
-                 "cap": "Gambar 1.5-1.6 -- jaringan empat lapis untuk klasifikasi angka. "
-                        "Representasi antara semakin jauh dari piksel dan semakin dekat "
-                        "ke jawaban."},
-                {"t": "bullets", "items": [
-                    "Banyaknya lapis = **kedalaman** model. Jaringan modern punya puluhan "
-                    "sampai ratusan lapis.",
-                    "Lawannya, **shallow learning**, hanya satu atau dua lapis representasi.",
-                    "Semua lapis dipelajari ==sekaligus, otomatis== dari data pelatihan -- "
-                    "bukan dirancang satu per satu oleh manusia.",
-                    "Chollet menyebut nama yang sebenarnya lebih tepat untuk bidang ini: "
-                    "*layered representations learning* atau *hierarchical representations "
-                    "learning*. Istilah **deep** menang karena sejarah, bukan karena akurasi.",
-                ]},
+                       "deeper understanding achieved by the approach; rather, it stands for "
+                       "this idea of successive layers of representations.",
+                 "cite": "Chollet & Watson, section 1.5"},
+                {"t": "p", "md": "The number of layers is the model's **depth**. Modern "
+                                 "networks run to tens or hundreds of them."},
             ],
-            "notes": "Koreksi salah paham yang paling umum di ruangan: 'deep' sering "
-                     "dikira berarti mesin memahami lebih dalam. Bukan. Ia sekadar "
-                     "keterangan arsitektur.",
+            "notes": "Correct the most common misconception in the room right here: 'deep' "
+                     "does not mean the machine understands anything more deeply.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.1.5 -- tiga gambar",
-            "title": "Cara kerja deep learning, tanpa satu pun rumus",
+            "kicker": "Section 1.5",
+            "title": "Each layer moves the data one step closer to the answer",
             "blocks": [
-                {"t": "fig", "svg": SVG_LOOP, "tikz": TIKZ_LOOP,
-                 "cap": "Gambar 1.7-1.9 digabung: bobot memarametrikan lapis, fungsi rugi "
-                        "mengukur jaraknya ke target, optimalisasi memakai skor itu untuk "
-                        "menggeser bobot."},
-                {"t": "steps", "items": [
-                    "**Bobot memarametrikan transformasi** (gambar 1.7). Apa yang dikerjakan "
-                    "sebuah lapis tersimpan di bobotnya. Belajar = menemukan nilai bobot yang "
-                    "benar. Jaringan besar punya puluhan juta parameter.",
-                    "**Fungsi rugi mengukur seberapa jauh melesetnya** (gambar 1.8). Ia "
-                    "menghitung jarak antara prediksi dan target. Disebut juga *objective* "
-                    "atau *cost function*.",
-                    "**Backpropagation memakai skor itu sebagai umpan balik** (gambar 1.9): "
-                    "geser bobot ke arah yang menurunkan rugi, ulangi ribuan kali. Inilah "
-                    "**lingkar pelatihan**.",
+                {"t": "mmd", "id": "ch01-layers", "src": MMD_LAYERS,
+                 "cap": "Figures 1.5–1.6 — a four-layer network for digit classification. "
+                        "Intermediate representations get further from the pixels and closer "
+                        "to the answer."},
+                {"t": "p", "md": "Chollet calls this **information distillation**: irrelevant "
+                                 "information is filtered out, relevant information is "
+                                 "amplified. All the layers are learned ==at once, "
+                                 "automatically==, from the training data."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.5",
+            "title": "Two better names the field never adopted",
+            "blocks": [
+                {"t": "cols", "ratio": "1-1", "cols": [
+                    [
+                        {"t": "bullets", "items": [
+                            "*layered representations learning*",
+                            "*hierarchical representations learning*",
+                        ]},
+                        {"t": "p", "md": "Either would have been more accurate. **Deep** won "
+                                         "on history, not on precision."},
+                    ],
+                    [
+                        {"t": "band", "style": "amber",
+                         "md": "Its opposite has a name too: **shallow learning**, which "
+                               "learns only one or two layers of representation -- for "
+                               "instance a pixel histogram followed by a classification rule."},
+                    ],
                 ]},
+            ],
+        },
+
+        {"type": "section", "num": "04", "title": "How deep learning actually works",
+         "lead": "Three figures, and not one equation."},
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.6 · figure 1.7",
+            "title": "Step 1 — weights parameterise what a layer does",
+            "blocks": [
+                {"t": "p", "md": "What a layer does to its input is stored in its **weights**, "
+                                 "which are just numbers. They are also called the layer's "
+                                 "**parameters**."},
                 {"t": "band",
-                 "md": "Bobot mula-mula diisi ==acak==, jadi keluaran awal tentu ngawur dan "
-                       "ruginya tinggi. Yang membuatnya bekerja adalah pengulangan lingkar "
-                       "itu, bukan tebakan awal yang bagus."},
+                 "md": "Learning, then, means ==finding values for every weight== such that "
+                       "the network maps its example inputs to their correct targets. A "
+                       "large network has tens of millions of them."},
             ],
-            "notes": "Ini slide paling penting di bab 1. Bab 2 akan membongkar setiap kotak "
-                     "di diagram ini menjadi tensor dan turunan; cukup pastikan bentuk "
-                     "lingkarnya tertanam dulu.",
         },
 
         {
             "type": "slide",
-            "kicker": "Peraga 1 dari 2",
-            "title": "Lingkar pelatihan itu, dalam sepuluh baris",
+            "kicker": "Section 1.6 · figure 1.8",
+            "title": "Step 2 — the loss function measures how far off you are",
             "blocks": [
-                {"t": "p", "md": "Bab 1 memang tidak memuat kode. Tetapi seluruh diagram di "
-                                 "slide sebelumnya muat dalam potongan sekecil ini."},
-                {"t": "code", "lang": "python", "file": "peraga kelas — bukan listing buku",
+                {"t": "p", "md": "The **loss function** takes the network's prediction and the "
+                                 "true target, and computes a distance score. It is also "
+                                 "called the *objective function* or *cost function*."},
+                {"t": "band",
+                 "md": "That single number is the entire feedback signal. ==Everything the "
+                       "network learns, it learns from that one score.=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.6 · figure 1.9",
+            "title": "Step 3 — backpropagation turns the score into an adjustment",
+            "blocks": [
+                {"t": "p", "md": "The loss score is used as a feedback signal to nudge the "
+                                 "weights in the direction that lowers the loss a little. "
+                                 "This adjustment is the job of the **backpropagation "
+                                 "algorithm**."},
+                {"t": "band", "style": "amber",
+                 "md": "The weights start out **random**, so the first outputs are nonsense "
+                       "and the first loss is high. What makes it work is ==repetition of the "
+                       "loop==, not a lucky starting point."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.6",
+            "title": "The three figures, joined into one loop",
+            "blocks": [
+                {"t": "mmd", "id": "ch01-loop", "src": MMD_LOOP,
+                 "cap": "Figures 1.7–1.9 combined: weights parameterise the layer, the loss "
+                        "scores the prediction against the target, and the optimizer uses "
+                        "that score to move the weights."},
+                {"t": "p", "md": "This is called the **training loop**, repeated over "
+                                 "thousands of examples. Chapter 2 takes every box in this "
+                                 "picture apart."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Teaching prop · 1 of 3",
+            "title": "The same loop, small enough to read in one sitting",
+            "blocks": [
+                {"t": "p", "md": "Chapter 1 carries no code. But the entire diagram above fits "
+                                 "in a few lines of NumPy, and seeing it run removes any "
+                                 "suspicion that something magical is going on."},
+                {"t": "p", "md": "We generate data from a law we choose -- `y = 2x + 1` -- and "
+                                 "then ==throw the law away==. The program never sees it. The "
+                                 "question is whether it can recover it."},
+                {"t": "code", "lang": "python", "file": "setup — data from a law we then hide",
                  "src": """import numpy as np
 
-# Data mainan: y = 2x + 1, ditambah sedikit derau.
 rng = np.random.default_rng(0)
 X = rng.uniform(-1, 1, size=(200, 1))
-Y = 2 * X + 1 + rng.normal(0, 0.05, size=(200, 1))
+Y = 2 * X + 1 + rng.normal(0, 0.05, size=(200, 1))   # the law, plus a little noise
 
-# 1) Bobot -- mula-mula acak, persis seperti kata bab ini.
+# The weights start random -- exactly as the chapter says.
 W, b = rng.normal(size=(1, 1)), np.zeros((1,))
+print(f"before training:  W {W[0, 0]:+.3f}   b {b[0]:+.3f}")"""},
+                {"t": "out", "src": "before training:  W +0.126   b +0.000"},
+            ],
+            "notes": "Run it live if you can. Point out that nothing in the code contains the "
+                     "numbers 2 and 1.",
+        },
 
-for step in range(600):
-    Y_pred = X @ W + b                  # lapis: transformasi data
-    loss = np.mean((Y_pred - Y) ** 2)   # 2) fungsi rugi: seberapa jauh melesetnya
+        {
+            "type": "slide",
+            "kicker": "Teaching prop · 2 of 3",
+            "title": "Four lines that are the three figures",
+            "blocks": [
+                {"t": "p", "md": "Each numbered comment below points at one of the three "
+                                 "figures we just walked through. Nothing else is happening."},
+                {"t": "code", "lang": "python", "file": "the training loop itself",
+                 "src": """for step in range(600):
+    Y_pred = X @ W + b                  # the layer: a data transformation (fig 1.7)
+    loss = np.mean((Y_pred - Y) ** 2)   # the loss: how far off are we? (fig 1.8)
 
-    # 3) gradien rugi terhadap bobot -- inti backpropagation
-    grad = 2.0 * (Y_pred - Y) / len(X)
-    W -= 0.5 * (X.T @ grad)             # geser ke arah yang menurunkan rugi
+    grad = 2.0 * (Y_pred - Y) / len(X)  # gradient of the loss (fig 1.9)
+    W -= 0.5 * (X.T @ grad)             # step downhill
     b -= 0.5 * grad.sum()
 
     if step % 200 == 0:
-        print(f"step {step:3d}  loss {loss:.5f}  W {W[0, 0]:+.3f}  b {b[0]:+.3f}")
-
-print(f"selesai    loss {loss:.5f}  W {W[0, 0]:+.3f}  b {b[0]:+.3f}")"""},
+        print(f"step {step:3d}  loss {loss:.5f}  W {W[0, 0]:+.3f}  b {b[0]:+.3f}")"""},
+                {"t": "band",
+                 "md": "Forward pass, loss, gradient, update. ==Every training loop in this "
+                       "book is that shape==, however large the model gets."},
             ],
-            "notes": "Jalankan langsung di depan kelas kalau memungkinkan. Tiga komentar "
-                     "bernomor di kode itu menunjuk persis ke tiga gambar pada slide "
-                     "sebelumnya -- tunjuk bolak-balik antara keduanya.",
         },
 
         {
             "type": "slide",
-            "kicker": "Peraga 2 dari 2",
-            "title": "Yang keluar dari lingkar itu: aturannya sendiri",
+            "kicker": "Teaching prop · 3 of 3",
+            "title": "What comes out is the rule itself",
             "blocks": [
                 {"t": "out", "src": """step   0  loss 4.02891  W +0.126  b +0.000
 step 200  loss 0.00932  W +1.842  b +0.968
 step 400  loss 0.00268  W +1.972  b +0.997
-selesai    loss 0.00251  W +1.994  b +1.000"""},
+done      loss 0.00251  W +1.994  b +1.000"""},
                 {"t": "band",
-                 "md": "Bobot bergerak dari acak ke ==W ≈ 2, b ≈ 1== -- hukum yang memang "
-                       "membangkitkan datanya, dan yang tidak pernah kita tuliskan. "
-                       "Itulah 'aturan sebagai keluaran' pada gambar 1.2."},
+                 "md": "The weights travel from random to ==W ≈ 2, b ≈ 1== -- the law that "
+                       "generated the data, which we never wrote down. That is *rules as "
+                       "output* from figure 1.2, made concrete."},
                 {"t": "bullets", "items": [
-                    "Tidak ada satu baris pun yang memberi tahu program bahwa jawabannya 2 dan 1.",
-                    "Yang diberikan hanya **data, jawaban, dan ukuran rugi** -- tiga bahan wajib itu.",
-                    "Bab 2 mengganti NumPy sebaris ini dengan tensor dan turunan otomatis; "
-                    "bentuk lingkarnya ==tidak berubah==.",
-                ]},
-                {"t": "links", "items": [
-                    {"k": "NOTEBOOK", "ic": "📓", "v": "01_paradigma_ml.ipynb",
-                     "href": "../../notebooks/ch01/01_paradigma_ml.ipynb"},
-                    {"k": "BAB PENUH", "ic": "📘", "v": "deeplearningwithpython.io",
-                     "href": chapter_url(1)},
+                    "Not one line told the program the answer was 2 and 1.",
+                    "It was given only **data, answers, and a measure of loss** — the three "
+                    "required ingredients.",
+                    "Chapter 2 swaps this NumPy for tensors and automatic differentiation. "
+                    "The shape of the loop ==does not change==.",
                 ]},
             ],
-            "notes": "Yang mau dilihat peserta bukan angkanya, melainkan bahwa loss turun "
-                     "sendiri tanpa ada yang memberitahu jawabannya.",
         },
 
-        # --------------------------------------------------------- section ---
-        {"type": "section", "num": "04", "title": "Mengapa deep learning menang",
-         "lead": "Tiga sifat, dan satu perubahan yang membuat pesaingnya tertinggal."},
+        {"type": "section", "num": "05", "title": "Why deep learning won",
+         "lead": "Three properties, and one change that left the alternatives behind."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.1.6",
-            "title": "Apa yang membuatnya berbeda dari shallow learning",
+            "kicker": "Section 1.7",
+            "title": "Property 1 — simplicity",
             "blocks": [
-                {"t": "cards", "cols": 3, "items": [
-                    {"ico": "🧩", "h": "Kesederhanaan",
-                     "p": "Feature engineering dikerjakan sendiri oleh model. Pipeline "
-                          "bertingkat digantikan **satu model ujung-ke-ujung**.",
-                     "tag": "simplicity", "style": "good"},
-                    {"ico": "📈", "h": "Skalabilitas",
-                     "p": "Cocok diparalelkan di GPU dan dilatih per *batch*, jadi ukuran "
-                          "data ==tidak lagi jadi batas atas==.",
-                     "tag": "scalability", "style": "good"},
-                    {"ico": "♻", "h": "Keluwesan & pakai ulang",
-                     "p": "Model bisa dilatih lanjut dengan data baru tanpa mulai dari nol; "
-                          "*foundation model* dipindah ke tugas lain dengan sedikit "
-                          "pelatihan tambahan.", "tag": "reusability", "style": "good"},
+                {"t": "p", "md": "Deep learning automates what used to be the most crucial "
+                                 "step in the workflow: **feature engineering**."},
+                {"t": "cols", "ratio": "1-1", "cols": [
+                    [
+                        {"t": "p", "md": "**Shallow learning** transformed the input into one "
+                                         "or two representation spaces -- not expressive "
+                                         "enough for most problems. So humans went to great "
+                                         "lengths to hand-engineer good representations first."},
+                    ],
+                    [
+                        {"t": "band",
+                         "md": "Deep learning learns **all** the features in one pass. "
+                               "Elaborate multistage pipelines get replaced by ==a single, "
+                               "end-to-end model=="},
+                    ],
                 ]},
-                {"t": "p", "md": "Perbedaan pokoknya satu: pendekatan dangkal memaksa manusia "
-                                 "merancang lapisan representasi dulu, lalu model bekerja di "
-                                 "atasnya. Deep learning ==mempelajari semua lapisan itu "
-                                 "sekaligus, dalam satu tarikan==."},
-                {"t": "band", "style": "amber",
-                 "md": "Ini juga sumber keluhan auditor: yang membuatnya kuat -- representasi "
-                       "yang ditemukan sendiri -- persis yang membuatnya sulit diterangkan. "
-                       "Bab 10 kembali ke soal ini untuk kasus citra."},
             ],
-            "notes": "Sambungkan ke topik kepatuhan yang akan dibahas di sesi lain: "
-                     "keterjelasan model bukan sekadar keinginan akademik di sektor "
-                     "diatur ketat, ia persyaratan.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.2",
-            "title": "Zaman AI generatif",
+            "kicker": "Section 1.7",
+            "title": "Property 2 — scalability",
             "blocks": [
-                {"t": "cols", "ratio": "3-2", "cols": [
-                    [
-                        {"t": "p", "md": "Mekanismenya: model menyusun ulang teks atau gambar "
-                                         "dari masukannya sendiri. Targetnya diambil **dari "
-                                         "masukan itu juga** -- inilah *self-supervised "
-                                         "learning*, dan itulah sebabnya ia lepas dari batas "
-                                         "ketersediaan label."},
-                        {"t": "bullets", "items": [
-                            "*Foundation model* dengan **ratusan miliar parameter**, dilatih "
-                            "di atas data lebih dari **satu petabyte**.",
-                            "Berperilaku seperti ==basis data kabur atas pengetahuan manusia==.",
-                            "Persoalan baru diselesaikan lewat **prompting**, tanpa "
-                            "pemrograman khusus per tugas.",
-                            "Masuk kesadaran umum pada **2022**, tetapi percobaan "
-                            "pembangkitan teks sudah ada sejak **1990-an**.",
-                        ]},
-                    ],
-                    [
-                        {"t": "stats", "cols": 1, "items": [
-                            {"v": "10¹¹", "l": "orde parameter pada foundation model terkini"},
-                            {"v": "> 1 PB", "l": "orde data pelatihan"},
-                            {"v": "2022", "l": "tahun ia menjadi perbincangan umum"},
-                        ]},
-                    ],
+                {"t": "bullets", "items": [
+                    "Highly amenable to **parallelisation on GPUs** and specialised hardware, "
+                    "so it rides Moore's law directly.",
+                    "Trained by iterating over **small batches**, which means dataset size is "
+                    "==no longer an upper bound==.",
+                    "The only real bottleneck is available parallel compute — and that "
+                    "barrier keeps moving.",
                 ]},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.7",
+            "title": "Property 3 — versatility and reusability",
+            "blocks": [
+                {"t": "p", "md": "Unlike most earlier approaches, a deep learning model can be "
+                                 "trained on **additional data without restarting from "
+                                 "scratch** -- which makes continuous online learning viable "
+                                 "for large production models."},
                 {"t": "band",
-                 "md": "Untuk kursus ini, bab 15-17 membongkar mesinnya (Transformer, "
-                       "pembangkitan teks, pembangkitan gambar), dan topik LLM serta "
-                       "agentic AI memakainya sebagai bahan bangunan."},
+                 "md": "Trained models are also **repurposable**. That is the idea behind "
+                       "==foundation models==: very large models trained on enormous data, "
+                       "reusable across many new tasks with little retraining, or none."},
             ],
-            "notes": "Tahan dulu pertanyaan tentang RAG dan fine-tuning; itu topik 4. "
-                     "Di sini cukup tegaskan bahwa self-supervised-lah yang membuat "
-                     "skala sebesar itu mungkin.",
         },
-
-        # --------------------------------------------------------- section ---
-        {"type": "section", "num": "05", "title": "Capaian, dan gembar-gembor",
-         "lead": "Yang sudah terbukti, dan mengapa dua kali sebelumnya kita salah menaksir."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.3",
-            "title": "Yang sudah benar-benar dikerjakan deep learning",
+            "kicker": "Section 1.7",
+            "title": "The cost of that power",
+            "blocks": [
+                {"t": "band", "style": "amber",
+                 "md": "The property that makes it strong -- **representations it discovers "
+                       "for itself** -- is exactly the property that makes it hard to explain. "
+                       "Chapter 10 returns to this for image models."},
+                {"t": "p", "md": "In regulated settings, explainability is not an academic "
+                                 "preference. It is a requirement, and it has to be designed "
+                                 "for rather than retrofitted."},
+            ],
+        },
+
+        {"type": "section", "num": "06", "title": "The age of generative AI",
+         "lead": "What changed in 2022, and what actually made it possible."},
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.8",
+            "title": "Self-supervised learning removed the labelling bottleneck",
+            "blocks": [
+                {"t": "p", "md": "Generative models learn to **reconstruct** the content fed "
+                                 "into them: recover a sharp image from a noisy one, predict "
+                                 "the next word in a sentence."},
+                {"t": "band",
+                 "md": "So the targets are taken **from the input itself**. That is "
+                       "==self-supervised learning==, and it is what lets these models use "
+                       "vast amounts of *unlabelled* data."},
+                {"t": "p", "md": "Doing away with manual annotation -- the bottleneck of every "
+                                 "earlier generation of machine learning -- unlocked a scale "
+                                 "never seen before."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.8",
+            "title": "The scale that resulted",
+            "blocks": [
+                {"t": "stats", "cols": 4, "items": [
+                    {"v": "10¹¹", "l": "order of parameters in a foundation model"},
+                    {"v": "> 1 PB", "l": "order of training data"},
+                    {"v": "$10s M", "l": "order of cost to train one"},
+                    {"v": "2022", "l": "the year it entered public awareness"},
+                ]},
+                {"t": "p", "md": "These models behave like a **fuzzy database of human "
+                                 "knowledge**. Because they have already memorised so much, "
+                                 "they solve new problems by **prompting** -- no "
+                                 "special-purpose programming, no retraining."},
+                {"t": "band", "style": "amber",
+                 "md": "It is newer in public attention than in research: the earliest text "
+                       "generation experiments date to the **1990s**, and the first edition "
+                       "of this book, in 2017, already had a chapter on generative models."},
+            ],
+        },
+
+        {"type": "section", "num": "07", "title": "What has actually been achieved",
+         "lead": "The record, before the argument about the forecasts."},
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.9",
+            "title": "Three waves in a single decade",
+            "blocks": [
+                {"t": "mmd", "id": "ch01-waves", "src": MMD_WAVES,
+                 "cap": "Perception matured first, language second, generation third."},
+                {"t": "band",
+                 "md": "Useful for planning: the capabilities that matured **earliest** are "
+                       "the cheapest and most reliable to deploy today. The newest ones are "
+                       "==the most expensive and the least settled=="},
+            ],
+            "notes": "This slide often redirects a budget conversation. Ask which wave the "
+                     "participant's actual use case belongs to.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.9",
+            "title": "Breakthroughs on problems that had long resisted machines",
             "blocks": [
                 {"t": "cards", "cols": 4, "items": [
-                    {"ico": "💬", "h": "Percakapan", "p": "ChatGPT, Gemini, Claude."},
-                    {"ico": "⌨", "h": "Pembangkitan kode", "p": "GitHub Copilot dan sejenisnya."},
-                    {"ico": "🖼", "h": "Gambar fotorealistik", "p": "Dari teks ke citra."},
-                    {"ico": "👁", "h": "Setara manusia",
-                     "p": "Klasifikasi citra, transkripsi suara, pengenalan tulisan tangan."},
-                    {"ico": "🌐", "h": "Terjemahan & TTS", "p": "Naik tajam mutunya."},
-                    {"ico": "🚗", "h": "Kemudi otonom",
-                     "p": "Beroperasi di Phoenix, San Francisco, Los Angeles, Austin (2025)."},
-                    {"ico": "♟", "h": "Melampaui manusia", "p": "Go, catur, poker."},
-                    {"ico": "🧬", "h": "Struktur protein", "p": "AlphaFold."},
+                    {"ico": "💬", "h": "Conversation", "p": "ChatGPT, Gemini, Claude."},
+                    {"ico": "⌨", "h": "Code assistance", "p": "GitHub Copilot and its kin."},
+                    {"ico": "🖼", "h": "Photorealistic images", "p": "Generated from text."},
+                    {"ico": "👁", "h": "Human-level perception",
+                     "p": "Image classification, speech transcription, handwriting."},
+                    {"ico": "🌐", "h": "Translation & speech", "p": "Both dramatically improved."},
+                    {"ico": "🚗", "h": "Autonomous driving",
+                     "p": "Deployed to the public in Phoenix, San Francisco, Los Angeles and "
+                          "Austin as of 2025."},
+                    {"ico": "♟", "h": "Superhuman play", "p": "Go, chess, and poker."},
+                    {"ico": "📺", "h": "Recommenders", "p": "YouTube, Netflix, Spotify."},
                 ]},
-                {"t": "cards", "cols": 3, "items": [
-                    {"ico": "📺", "h": "Sistem perekomendasi",
-                     "p": "YouTube, Netflix, Spotify -- yang paling banyak dipakai orang "
-                          "setiap hari tanpa menyadarinya."},
-                    {"ico": "📜", "h": "Naskah kuno",
-                     "p": "Puluhan ribu manuskrip di **Vatican Secret Archive** "
-                          "ditranskripsi otomatis."},
-                    {"ico": "🌱", "h": "Penyakit tanaman",
-                     "p": "Dideteksi dan digolongkan langsung di lahan, cukup dengan "
-                          "ponsel biasa."},
-                    {"ico": "🩺", "h": "Citra medis",
-                     "p": "Mendampingi onkolog dan radiolog menafsirkan hasil pencitraan."},
-                    {"ico": "🌊", "h": "Bencana alam",
-                     "p": "Meramalkan banjir, badai, bahkan gempa bumi."},
-                    {"ico": "🧬", "h": "Struktur protein",
-                     "p": "AlphaFold, dengan ketepatan yang belum pernah ada sebelumnya."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.9",
+            "title": "And problems thought impossible a few years ago",
+            "blocks": [
+                {"t": "cards", "cols": 4, "items": [
+                    {"ico": "📜", "h": "Ancient manuscripts",
+                     "p": "Tens of thousands in the Vatican Secret Archive, transcribed "
+                          "automatically.", "style": "good"},
+                    {"ico": "🌱", "h": "Plant disease",
+                     "p": "Detected and classified in the field with an ordinary smartphone.",
+                     "style": "good"},
+                    {"ico": "🩺", "h": "Medical imaging",
+                     "p": "Assisting oncologists and radiologists with interpretation.",
+                     "style": "good"},
+                    {"ico": "🌊", "h": "Natural disasters",
+                     "p": "Predicting floods, hurricanes, and even earthquakes.",
+                     "style": "good"},
                 ]},
                 {"t": "band",
-                 "md": "Daftar ini ==bukan janji==; semuanya sudah berjalan. Itulah yang "
-                       "membedakannya dari slide berikutnya."},
+                 "md": "This list is ==not a forecast==. Every item on it is already running. "
+                       "That is what separates it from the next section."},
             ],
-            "notes": "Sengaja ditaruh sebelum slide gembar-gembor. Urutannya penting: "
-                     "akui dulu capaiannya, baru kritik taksirannya. Kalau dibalik, "
-                     "terdengar seperti penyangkalan.",
         },
+
+        {"type": "section", "num": "08", "title": "Beware the short-term hype",
+         "lead": "Twice before, the field promised too much and lost its funding."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.9",
-            "title": "Tiga gelombang dalam satu dasawarsa",
+            "kicker": "Section 1.10",
+            "title": "What was promised in 2023, and what happened",
             "blocks": [
-                {"t": "cards", "cols": 3, "items": [
-                    {"ico": "👁", "h": "2013 – 2017 · persepsi",
-                     "p": "Hasil yang mencengangkan pada tugas persepsi: klasifikasi citra, "
-                          "transkripsi suara, pengenalan tulisan tangan.", "style": "accent"},
-                    {"ico": "💬", "h": "2017 – 2022 · bahasa",
-                     "p": "Kemajuan cepat pada pemrosesan bahasa alami. Transformer terbit "
-                          "2017 -- bab 15 membongkarnya.", "style": "accent"},
-                    {"ico": "🎨", "h": "2022 – kini · generatif",
-                     "p": "Gelombang aplikasi AI generatif yang mengubah cara orang bekerja "
-                          "sehari-hari.", "style": "accent"},
+                {"t": "bullets", "items": [
+                    "Soon after GPT-4, pundits claimed **nobody would need to work** and that "
+                    "mass unemployment was a year away.",
+                    "Others promised economic productivity would rise **10× to 100×**.",
+                    "Two years later: US unemployment remains low, and productivity is far "
+                    "from any such explosion.",
                 ]},
-                {"t": "p", "md": "Urutan ini penting untuk perencanaan: kemampuan yang "
-                                 "matang lebih dulu -- persepsi -- adalah yang **paling "
-                                 "murah dan paling andal** dipakai hari ini. Yang paling "
-                                 "baru justru yang paling mahal dan paling belum stabil."},
-                {"t": "band", "style": "amber",
-                 "md": "Di lapangan, banyak kasus pemakaian yang benar-benar mendesak "
-                       "sebetulnya jatuh di gelombang **pertama dan kedua** -- OCR dokumen, "
-                       "klasifikasi keluhan, deteksi anomali. ==Tidak semuanya menuntut "
-                       "model generatif.=="},
+                {"t": "band",
+                 "md": "To be fair to the technology: by mid-2025 generative AI was earning "
+                       "**tens of billions of dollars a year** -- extremely impressive for an "
+                       "industry that ==did not exist three years earlier=="},
             ],
-            "notes": "Slide ini sering mengubah arah diskusi anggaran. Tanyakan: kasus Anda "
-                     "sebetulnya butuh gelombang yang mana?",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.4 -- 1.5",
-            "title": "Waspadai gembar-gembor jangka pendek",
+            "kicker": "Section 1.11",
+            "title": "The gap that has to close somehow",
             "blocks": [
-                {"t": "cols", "ratio": "1-1", "cols": [
-                    [
-                        {"t": "p", "md": "**Ciri gembar-gembor sekarang**"},
-                        {"t": "bullets", "items": [
-                            "Ramalan pengangguran massal dan lonjakan produktivitas "
-                            "**10x-100x** -- yang belum terjadi.",
-                            "Narasi AGI dan superintelijensi yang menyeret jadwal jadi "
-                            "tidak masuk akal.",
-                            "Investasi AI -- terutama pusat data dan GPU -- melampaui "
-                            "**$200 miliar per tahun**, sementara pendapatannya jauh "
-                            "tertinggal di kisaran **$30 miliar**.",
-                        ]},
-                    ],
-                    [
-                        {"t": "p", "md": "**Dua musim dingin sebelumnya**"},
-                        {"t": "bullets", "items": [
-                            "**Pertama** -- Minsky, 1967: *\"Dalam satu generasi... persoalan "
-                            "menciptakan kecerdasan buatan pada dasarnya akan terpecahkan.\"* "
-                            "Pendanaan runtuh pada 1970-an.",
-                            "**Kedua** -- *expert system* pada 1980-an; sekitar 1985 "
-                            "perusahaan membelanjakan **lebih dari $1 miliar setahun**. "
-                            "Pada awal 1990-an terbukti mahal dirawat, sulit diskalakan, "
-                            "dan sempit cakupannya.",
-                            "**Sekarang** -- masih di fase optimisme. Menurut Chollet, "
-                            "kemunduran sebesar 1990-an ==tidak mungkin terulang== -- AI "
-                            "sudah membuktikan nilainya. Kalau ada musim dingin, mestinya "
-                            "sangat ringan.",
-                        ]},
-                    ],
+                {"t": "stats", "cols": 2, "items": [
+                    {"v": "> $200 bn", "l": "annual AI investment, mostly data centres and GPUs"},
+                    {"v": "≈ $30 bn", "l": "annual revenue generated against it"},
                 ]},
                 {"t": "quote",
-                 "md": "Today's \"artificial intelligence\" is more accurately described as "
-                       "\"cognitive automation.\" AI excels at solving problems with narrowly "
-                       "defined requirements.",
-                 "cite": "Chollet & Watson, bab 1"},
+                 "md": "AI is currently being judged by executives and investors not by what "
+                       "it has accomplished, but by what we are told it might soon become "
+                       "able to do — much of which will durably stay out of reach of existing "
+                       "technologies. Something will have to give.",
+                 "cite": "Chollet & Watson, section 1.11"},
             ],
-            "notes": "Ini slide yang paling berguna saat peserta duduk di rapat anggaran. "
-                     "Pesannya bukan 'jangan investasi', melainkan 'taksir sesuai apa yang "
-                     "terbukti, bukan sesuai apa yang dijanjikan'.",
+            "notes": "These are the book's figures, and they are the ones to quote in a "
+                     "budget meeting — not the $100bn/$10bn numbers circulating elsewhere.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.10",
-            "title": "Urutannya terbalik dari yang dikira orang",
+            "kicker": "Section 1.10",
+            "title": "The order is the opposite of what people assume",
             "blocks": [
-                {"t": "lead", "md": "Mudah mengira bahwa keberhasilan praktis AI generatif-lah "
-                                    "yang melahirkan keyakinan akan AGI dalam waktu dekat. "
-                                    "Menurut Chollet, ==yang terjadi justru sebaliknya=="},
+                {"t": "lead", "md": "It is tempting to think the practical success of "
+                                    "generative AI produced the belief in near-term AGI. "
+                                    "==It was the other way round=="},
                 {"t": "steps", "items": [
-                    "**2013** -- di kalangan elite teknologi sudah muncul kekhawatiran bahwa "
-                    "AGI akan tiba dalam beberapa tahun. Saat itu yang dianggap di jalur "
-                    "menuju ke sana adalah **DeepMind**, startup riset AI London yang "
-                    "kemudian diakuisisi Google.",
-                    "**2015** -- keyakinan itulah yang mendorong berdirinya **OpenAI**, yang "
-                    "semula bermaksud menjadi penyeimbang sumber terbuka bagi DeepMind.",
-                    "**2016** -- ajakan rekrutmen OpenAI menjanjikan **AGI tercapai pada 2020**. "
-                    "Adil untuk dicatat: hanya sebagian kecil orang di industri yang percaya "
-                    "jadwal seoptimistis itu waktu itu.",
-                    "**Awal 2023** -- sebagian besar insinyur di San Francisco Bay Area tampak "
-                    "yakin AGI akan tiba dalam satu-dua tahun berikutnya.",
+                    "**2013** — fears among tech elites that AGI was a few years out. The "
+                    "candidate was **DeepMind**, a London startup later acquired by Google.",
+                    "**2015** — that belief drove the founding of **OpenAI**, intended as an "
+                    "open-source counterweight to DeepMind.",
+                    "**2016** — OpenAI's recruiting pitch was that it would achieve **AGI by "
+                    "2020**. Only a minority in the industry believed that timeline.",
+                    "**Early 2023** — a significant fraction of Bay Area engineers were "
+                    "convinced AGI was one or two years away.",
                 ]},
                 {"t": "band", "style": "amber",
-                 "md": "OpenAI berperan penting menyalakan AI generatif. Jadi dalam pelintiran "
-                       "yang ganjil, **keyakinan akan AGI-lah yang menaikkan AI generatif**, "
-                       "bukan sebaliknya."},
+                 "md": "OpenAI was critical in kick-starting generative AI. So in a peculiar "
+                       "twist, **the belief in near-term AGI fuelled the rise of generative "
+                       "AI**, not the reverse."},
             ],
-            "notes": "Ini konteks yang jarang diketahui peserta dan sangat menolong saat "
-                     "membaca berita AI: banyak klaim yang beredar adalah keturunan dari "
-                     "keyakinan 2013, bukan simpulan dari bukti 2025.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.5",
-            "title": "Otomasi kognitif bukan kecerdasan",
+            "kicker": "Section 1.11",
+            "title": "Winter, the first time",
             "blocks": [
                 {"t": "quote",
-                 "md": "Intelligence is the ability to face the unknown, adapt to it, and "
-                       "learn from it. Automation, even at its best, can only handle "
-                       "situations it's been trained on.",
-                 "cite": "Chollet & Watson, bab 1"},
-                {"t": "table",
-                 "head": ["", "Otomasi kognitif (yang kita punya)", "Kecerdasan (yang belum)"],
-                 "widths": [18, 41, 41],
-                 "rows": [
-                     ["Cakupan", "Persoalan dengan syarat yang sempit dan jelas",
-                      "Persoalan yang belum pernah dirumuskan siapa pun"],
-                     ["Sumber kemampuan", "Contoh dalam data pelatihan",
-                      "Penyesuaian saat berhadapan dengan yang tak dikenal"],
-                     ["Saat menemui hal baru", "Menurun diam-diam, sering tanpa memberi tanda",
-                      "Belajar dari situasi itu lalu memperbaiki diri"],
-                 ]},
+                 "md": "Within a generation … the problem of creating \"artificial "
+                       "intelligence\" will substantially be solved.",
+                 "cite": "Marvin Minsky, 1967"},
+                {"t": "quote",
+                 "md": "In from three to eight years we will have a machine with the general "
+                       "intelligence of an average human being.",
+                 "cite": "Marvin Minsky, 1970"},
+                {"t": "p", "md": "When those expectations failed to materialise, researchers "
+                                 "and government funding turned away, and the **first AI "
+                                 "winter** began."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.11",
+            "title": "Winter, the second time — and where we are now",
+            "blocks": [
                 {"t": "cols", "ratio": "1-1", "cols": [
                     [
-                        {"t": "p", "md": "Metafora Chollet: **AI itu seperti tokoh kartun, "
-                                         "kecerdasan seperti makhluk hidup.** Kartun, "
-                                         "sebagus apa pun gambarnya, hanya bisa memainkan "
-                                         "adegan yang untuknya ia digambar. Makhluk hidup "
-                                         "bisa menyesuaikan diri dengan yang tak terduga."},
+                        {"t": "p", "md": "**The 1980s: expert systems.** A few early successes "
+                                         "triggered a wave of investment; by around 1985 "
+                                         "companies were spending **over $1 billion a year**."},
+                        {"t": "p", "md": "By the early 1990s these systems had proven expensive "
+                                         "to maintain, difficult to scale, and limited in "
+                                         "scope. Interest died."},
                     ],
                     [
-                        {"t": "p", "md": "*\"Kalau kartunnya digambar cukup realistis dan "
-                                         "mencakup cukup banyak adegan, apa bedanya?\"* "
-                                         "Bedanya adalah **keluwesan menyesuaikan diri** -- "
-                                         "dan itulah sebabnya membangun otomasi yang kukuh "
-                                         "begitu sulit: ia menuntut Anda memperhitungkan "
-                                         "==setiap skenario yang mungkin=="},
+                        {"t": "band",
+                         "md": "**Now.** Chollet's own view: a full-scale retreat like the "
+                               "1990s is unlikely -- AI has already demonstrated "
+                               "world-changing value. ==If there is a winter, it should be "
+                               "very mild.== But some air will have to come out."},
                     ],
                 ]},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.10",
+            "title": "Cognitive automation is not intelligence",
+            "blocks": [
+                {"t": "quote",
+                 "md": "Despite its name, today's \"artificial intelligence\" is more "
+                       "accurately described as \"cognitive automation\" — the encoding and "
+                       "operationalization of human skills and knowledge.",
+                 "cite": "Chollet & Watson, section 1.10"},
+                {"t": "p", "md": "It excels at problems with narrowly defined requirements, or "
+                                 "where ample precise examples exist. It is about **enhancing "
+                                 "the capabilities of computers**, not replicating human minds."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.10",
+            "title": "The cartoon and the living being",
+            "blocks": [
+                {"t": "cols", "ratio": "1-1", "cols": [
+                    [
+                        {"t": "p", "md": "**AI is like a cartoon character; intelligence is "
+                                         "like a living being.** A cartoon, however realistic, "
+                                         "can only act out the scenes it was drawn for."},
+                        {"t": "p", "md": "*\"If the cartoon is drawn with sufficient realism "
+                                         "and covers sufficiently many scenes, what's the "
+                                         "difference?\"*"},
+                    ],
+                    [
+                        {"t": "band", "style": "rose",
+                         "md": "The difference is **adaptability**. Intelligence is the ability "
+                               "to face the unknown, adapt to it, and learn from it. "
+                               "Automation, even at its best, can only handle situations it "
+                               "has been trained on."},
+                    ],
+                ]},
+                {"t": "p", "md": "That is why building robust automation is so hard: it "
+                                 "requires accounting for ==every possible scenario=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 1.10",
+            "title": "What follows for anything you put into production",
+            "blocks": [
                 {"t": "band", "style": "rose",
-                 "md": "Pembedaan ini punya akibat langsung di produksi: kalau sistem hanya "
-                       "sanggup menangani apa yang pernah dilatihkan, maka ==pemantauan "
-                       "pergeseran data bukan fitur tambahan==, melainkan syarat agar sistem "
-                       "tetap layak dipakai. Bab 18 kembali ke sini."},
-                {"t": "p", "md": "Karena itu Chollet menutup bagian ini dengan tenang: "
-                                 "jangan cemas AI tiba-tiba sadar diri lalu mengambil alih "
-                                 "kemanusiaan. Teknologi hari ini tidak menuju ke sana. "
-                                 "*\"Seperti mengharapkan jam yang lebih baik akan melahirkan "
-                                 "perjalanan waktu -- keduanya hal yang sama sekali berbeda.\"*"},
+                 "md": "If a system can only handle what it was trained on, then **monitoring "
+                       "for data drift is not an optional feature** -- it is a condition of "
+                       "the system remaining fit to use. Chapter 6 and chapter 18 return to "
+                       "this."},
+                {"t": "p", "md": "And the reassuring corollary: do not worry about AI suddenly "
+                                 "becoming self-aware. Today's technology is not headed that "
+                                 "way. *\"It's like expecting a better clock to lead to time "
+                                 "travel — they're just different things altogether.\"*"},
             ],
-            "notes": "Ini jembatan ke seluruh sisa kursus. Kalimat kuncinya: model yang "
-                     "bagus di laboratorium bisa jadi berbahaya di produksi, dan bedanya "
-                     "ada pada apa yang tidak pernah ia lihat.",
         },
+
+        {"type": "section", "num": "09", "title": "The promise of AI",
+         "lead": "The short-term forecasts deflate. The long-term change still arrives."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 1.6",
-            "title": "Janji jangka panjang",
+            "kicker": "Section 1.12",
+            "title": "A 2017 forecast, scored in 2025",
             "blocks": [
-                {"t": "p", "md": "Chollet menutup bab ini dengan ramalannya sendiri dari 2017, "
-                                 "yang sebagian besar sudah terpenuhi pada 2025 -- dipakai "
-                                 "bukan untuk menyombong, melainkan untuk menunjukkan bentuk "
-                                 "taksiran yang benar: **arahnya tepat, jadwalnya yang meleset**."},
                 {"t": "table",
-                 "head": ["Ramalan 2017", "Keadaannya pada 2025"],
-                 "widths": [40, 60],
+                 "head": ["Written in 2017", "Where it stands in 2025"],
+                 "widths": [36, 64],
                  "rows": [
-                     ["AI jadi asisten, bahkan teman",
-                      "**Puluhan juta orang** memakai ChatGPT, Gemini, Claude sebagai asisten "
-                      "harian. Ratusan ribu berinteraksi dengan \"teman\" AI di aplikasi "
-                      "seperti Character.ai."],
-                     ["Menjawab pertanyaan, membantu mendidik anak",
-                      "Ternyata **penjawaban pertanyaan dan bantuan pekerjaan rumah** justru "
-                      "menjadi pemakaian nomor satu chatbot ini."],
-                     ["Mengantar Anda dari A ke B",
-                      "Kemudi otonom penuh sudah terpasang dalam skala nyata di Phoenix, "
-                      "San Francisco, Los Angeles, dan Austin."],
-                     ["Membantu ilmuwan menemukan terobosan",
-                      "**AlphaFold** membantu biolog meramal struktur protein. Matematikawan "
-                      "**Terence Tao** memperkirakan AI bisa menjadi ko-penulis yang andal "
-                      "dalam riset matematika sekitar 2026."],
+                     ["AI as your assistant, even your friend",
+                      "**Tens of millions** use chatbots as daily assistants. Hundreds of "
+                      "thousands interact with AI \"friends\" in apps such as Character.ai."],
+                     ["It will answer your questions and help educate your kids",
+                      "Question-answering and homework assistance turned out to be the "
+                      "**top two** applications."],
+                     ["It will drive you from point A to point B",
+                      "Fully autonomous driving is deployed at scale in Phoenix, San "
+                      "Francisco, Los Angeles, and Austin."],
+                     ["It will help scientists make breakthroughs",
+                      "**AlphaFold** predicts protein structures. Terence Tao expects AI to "
+                      "be a reliable co-author in mathematical research around 2026."],
                  ]},
-                {"t": "band",
-                 "md": "Kesimpulan bab: ==gembar-gembor jangka pendek akan kempis, "
-                       "perubahan jangka panjang tetap datang==. Dua-duanya benar sekaligus, "
-                       "dan itulah yang membuat perencanaan jadi sulit."},
             ],
-            "notes": "Tutup dengan mengingatkan bahwa sisa buku ini praktis semua. Bab 1 "
-                     "adalah satu-satunya bab yang boleh berdebat; setelah ini semuanya kode.",
         },
 
-        # ------------------------------------------------------------- tutup -
         {
             "type": "slide",
-            "kicker": "Ringkasan",
-            "title": "Yang wajib terbawa dari bab 1",
+            "kicker": "Section 1.12",
+            "title": "Two things that are true at the same time",
+            "blocks": [
+                {"t": "cards", "cols": 2, "items": [
+                    {"ico": "📉", "h": "The short-term hype will deflate",
+                     "p": "The forecasts of 2023 have not held, and the investment-to-revenue "
+                          "gap has to close.", "style": "warn"},
+                    {"ico": "📈", "h": "The long-term change still comes",
+                     "p": "Across medicine, science, industry, and daily life — the direction "
+                          "was right even where the timing was wrong.", "style": "good"},
+                ]},
+                {"t": "band",
+                 "md": "Holding both at once is uncomfortable, and it is ==exactly what makes "
+                       "planning in this field difficult=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Summary",
+            "title": "What has to survive this chapter",
             "blocks": [
                 {"t": "steps", "items": [
-                    "**AI ⊃ machine learning ⊃ deep learning.** Symbolic AI ada di dalam AI, "
-                    "di luar ML.",
-                    "**Machine learning membalik arah pemrograman**: data + jawaban masuk, "
-                    "aturan keluar.",
-                    "**Tiga bahan wajib**: masukan, contoh keluaran, dan ukuran mutu. "
-                    "Yang paling sering hilang adalah yang ketiga.",
-                    "**'Deep' = banyak lapis representasi**, bukan pemahaman yang lebih dalam.",
-                    "**Bobot, fungsi rugi, backpropagation** -- lingkar pelatihan yang akan "
-                    "dibongkar bab 2.",
-                    "**Capaiannya nyata, taksirannya sering meleset.** Ini otomasi kognitif, "
-                    "belum kecerdasan.",
+                    "**AI ⊃ machine learning ⊃ deep learning.** Symbolic AI is inside AI and "
+                    "outside machine learning.",
+                    "**Machine learning inverts programming**: data and answers in, rules out.",
+                    "**Three required ingredients** — inputs, example outputs, and a measure "
+                    "of quality. The third goes missing most often.",
+                    "**\"Deep\" means many layers of representation**, not deeper understanding.",
+                    "**Weights, loss, backpropagation** — the training loop chapter 2 takes apart.",
+                    "**The achievements are real; the forecasts have repeatedly not been.** "
+                    "This is cognitive automation, not yet intelligence.",
                 ]},
                 {"t": "links", "items": [
-                    {"k": "BAB BERIKUT", "ic": "➡", "v": "Bab 2 — Blok bangunan matematis",
+                    {"k": "NOTEBOOK", "ic": "📓", "v": "01_the_ml_paradigm.ipynb",
+                     "href": "../../course-slides/notebooks/ch01/01_the_ml_paradigm.ipynb"},
+                    {"k": "NEXT", "ic": "➡", "v": "Chapter 2 — Mathematical building blocks",
                      "href": "../ch02/index.html"},
-                    {"k": "TEKS PENUH", "ic": "📘", "v": "deeplearningwithpython.io",
-                     "href": chapter_url(1)},
-                    {"k": "KODE BUKU", "ic": "⌥", "v": "fchollet/deep-learning-with-python-notebooks",
+                    {"k": "BOOK CODE", "ic": "⌥", "v": "fchollet/deep-learning-with-python-notebooks",
                      "href": BOOK["code_repo"]},
                 ]},
             ],
-            "notes": "Kalau waktu habis, enam butir ini yang harus sempat dibacakan.",
+            "notes": "If time runs out, these six lines are the ones to read aloud.",
         },
     ],
 }

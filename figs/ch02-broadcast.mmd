@@ -1,0 +1,7 @@
+
+flowchart LR
+  X["X<br/><code>(32, 10)</code>"] --> ADD(("+"))
+  Y["y<br/><code>(10,)</code>"] --> S1["add an axis<br/><code>(1, 10)</code>"]
+  S1 --> S2["repeat 32 times<br/><code>(32, 10)</code>"]
+  S2 --> ADD
+  ADD --> OUT["result<br/><code>(32, 10)</code>"]

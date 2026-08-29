@@ -1,0 +1,15 @@
+
+flowchart LR
+  subgraph CLASSIC["Classical programming"]
+    direction LR
+    R1["Rules"] --> P1["Program"]
+    D1["Data"] --> P1
+    P1 --> A1["Answers"]
+  end
+  subgraph ML["Machine learning"]
+    direction LR
+    D2["Data"] --> T2["Training"]
+    A2["Answers"] --> T2
+    T2 --> R2["Rules"]
+  end
+  CLASSIC ~~~ ML

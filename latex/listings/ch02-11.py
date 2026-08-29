@@ -1,4 +1,5 @@
-X = np.random.random((64, 3, 32, 10))
-y = np.random.random((32, 10))
-z = np.maximum(X, y)          # y disiarkan; hasilnya (64, 3, 32, 10)
-print(z.shape)
+(train_images, train_labels), _ = mnist.load_data()
+
+print(train_images.ndim)     # rank: how many axes
+print(train_images.shape)    # shape: how long each axis is
+print(train_images.dtype)    # dtype: what the entries are

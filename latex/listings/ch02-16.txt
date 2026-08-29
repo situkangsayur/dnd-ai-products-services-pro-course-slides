@@ -1,2 +1,1 @@
-tf.Tensor(2.0, shape=(), dtype=float32)
-tf.Tensor(9.8, shape=(), dtype=float32)
+(128, 28, 28)

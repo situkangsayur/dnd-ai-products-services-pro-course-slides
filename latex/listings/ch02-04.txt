@@ -1,7 +1,0 @@
-Epoch 1/5
-469/469 ---- 3s 5ms/step - accuracy: 0.8747 - loss: 0.4358
-Epoch 5/5
-469/469 ---- 2s 5ms/step - accuracy: 0.9890 - loss: 0.0361
-
-313/313 ---- 1s 2ms/step - accuracy: 0.9780 - loss: 0.0745
-test accuracy: 0.978

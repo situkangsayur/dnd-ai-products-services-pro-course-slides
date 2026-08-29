@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Bab 2 — The mathematical building blocks of neural networks.
+"""Chapter 2 — The mathematical building blocks of neural networks.
 
-Sumber: Chollet & Watson, *Deep Learning with Python*, 3rd ed., bab 2.
-https://deeplearningwithpython.io/chapters/chapter02_mathematical-building-blocks
+Source: Chollet & Watson, *Deep Learning with Python*, 3rd ed., chapter 2
+(pp. 17-56), read from the book PDF.
 
-Semua listing di bawah ini mengikuti naskah bab 2 (Keras 3). Keluaran yang
-ditampilkan adalah keluaran nyata dari notebook pendamping, bukan karangan;
-angka akurasi memang berayun sedikit antar-jalan, dan itu disebut apa adanya.
+Every listing here follows the book's own code (Keras 3). Where a printed
+result is reproduced, it is the book's; where a number swings between runs,
+the slide says so rather than pretending to a precision it does not have.
 """
 
 import sys, os
@@ -15,315 +15,169 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
 
 
-# =============================================================================
-#  Peraga
-# =============================================================================
-
-SVG_RANKS = """
-<svg viewBox="0 0 760 216" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="Skalar, vektor, matriks, dan tensor peringkat 3">
-  <g>
-    <text class="d-sm" x="14" y="20" fill="#22D3EE">rank 0 &#183; skalar</text>
-    <rect class="d-box-a" x="14" y="34" width="34" height="34" rx="6"/>
-    <text class="d-mono" x="31" y="56" text-anchor="middle">12</text>
-    <text class="d-sm" x="14" y="92">shape ()</text>
-  </g>
-  <g>
-    <text class="d-sm" x="150" y="20" fill="#22D3EE">rank 1 &#183; vektor</text>
-    <rect class="d-box-a" x="150" y="34" width="170" height="34" rx="6"/>
-    <text class="d-mono" x="235" y="56" text-anchor="middle">12  3  6  14  7</text>
-    <text class="d-sm" x="150" y="92">shape (5,)</text>
-  </g>
-  <g>
-    <text class="d-sm" x="410" y="20" fill="#22D3EE">rank 2 &#183; matriks</text>
-    <rect class="d-box-a" x="410" y="34" width="150" height="58" rx="6"/>
-    <text class="d-mono" x="485" y="54" text-anchor="middle">5 78  2 34 0</text>
-    <text class="d-mono" x="485" y="72" text-anchor="middle">6 79  3 35 1</text>
-    <text class="d-sm" x="410" y="112">shape (3, 5)</text>
-  </g>
-  <g>
-    <text class="d-sm" x="612" y="20" fill="#22D3EE">rank 3</text>
-    <rect class="d-box" x="632" y="34" width="104" height="46" rx="6"/>
-    <rect class="d-box" x="624" y="42" width="104" height="46" rx="6"/>
-    <rect class="d-box-a" x="616" y="50" width="104" height="46" rx="6"/>
-    <text class="d-mono" x="668" y="78" text-anchor="middle">matriks &#215; n</text>
-    <text class="d-sm" x="612" y="116">shape (3, 3, 5)</text>
-  </g>
-
-  <line x1="14" y1="140" x2="744" y2="140" stroke="rgba(140,190,255,.2)" stroke-width="1"/>
-  <text class="d-lbl" x="14" y="166" font-weight="700">MNIST sebagai tensor</text>
-  <text class="d-sm" x="14" y="188">
-    train_images.ndim = 3  &#183;  shape (60000, 28, 28)  &#183;  dtype uint8
-  </text>
-  <text class="d-sm" x="14" y="208" fill="#F5B301">
-    sumbu ke-0 selalu sumbu sampel &#8212; dan sumbu itulah yang dipotong jadi batch
-  </text>
-</svg>
+MMD_RANKS = """
+flowchart LR
+  R0["rank 0<br/><b>scalar</b><br/><code>shape ()</code>"]
+  R1["rank 1<br/><b>vector</b><br/><code>shape (5,)</code>"]
+  R2["rank 2<br/><b>matrix</b><br/><code>shape (3, 5)</code>"]
+  R3["rank 3<br/><b>cube</b><br/><code>shape (3, 3, 5)</code>"]
+  R0 --> R1 --> R2 --> R3
 """
 
-TIKZ_RANKS = r"""
-\begin{tikzpicture}[font=\sffamily\tiny,
-  bx/.style={draw=signal!60, fill=signal!9, rounded corners=2.5pt, text=ink},
-  gx/.style={draw=rule, fill=papertint, rounded corners=2.5pt, text=ink2}]
-  \node[text=signal, anchor=west] at (0,1.0) {rank 0 $\cdot$ skalar};
-  \node[bx, minimum width=0.7cm, minimum height=0.55cm] at (0.35,0.5) {\ttfamily 12};
-  \node[text=ink3, anchor=west] at (0,-0.1) {shape ()};
-
-  \node[text=signal, anchor=west] at (1.9,1.0) {rank 1 $\cdot$ vektor};
-  \node[bx, minimum width=2.6cm, minimum height=0.55cm] at (3.2,0.5) {\ttfamily 12~~3~~6~~14~~7};
-  \node[text=ink3, anchor=west] at (1.9,-0.1) {shape (5,)};
-
-  \node[text=signal, anchor=west] at (5.5,1.0) {rank 2 $\cdot$ matriks};
-  \node[bx, minimum width=2.5cm, minimum height=0.9cm, align=center] at (6.75,0.35)
-    {\ttfamily 5~78~~2~34~0\\\ttfamily 6~79~~3~35~1};
-  \node[text=ink3, anchor=west] at (5.5,-0.4) {shape (3, 5)};
-
-  \node[text=signal, anchor=west] at (8.6,1.0) {rank 3};
-  \node[gx, minimum width=1.7cm, minimum height=0.7cm] at (9.75,0.62) {};
-  \node[gx, minimum width=1.7cm, minimum height=0.7cm] at (9.62,0.48) {};
-  \node[bx, minimum width=1.7cm, minimum height=0.7cm] at (9.49,0.34) {\ttfamily matriks $\times$ n};
-  \node[text=ink3, anchor=west] at (8.6,-0.4) {shape (3, 3, 5)};
-
-  \draw[rule] (0,-0.8) -- (11.2,-0.8);
-  \node[anchor=west, font=\bfseries\scriptsize, text=ink] at (0,-1.15) {MNIST sebagai tensor};
-  \node[anchor=west, text=ink2] at (0,-1.5)
-    {\ttfamily train\_images.ndim = 3 $\cdot$ shape (60000, 28, 28) $\cdot$ dtype uint8};
-  \node[anchor=west, text=amber] at (0,-1.85)
-    {sumbu ke-0 selalu sumbu sampel --- dan sumbu itulah yang dipotong jadi batch};
-\end{tikzpicture}
+MMD_BROADCAST = """
+flowchart LR
+  X["X<br/><code>(32, 10)</code>"] --> ADD(("+"))
+  Y["y<br/><code>(10,)</code>"] --> S1["add an axis<br/><code>(1, 10)</code>"]
+  S1 --> S2["repeat 32 times<br/><code>(32, 10)</code>"]
+  S2 --> ADD
+  ADD --> OUT["result<br/><code>(32, 10)</code>"]
 """
 
-SVG_BROADCAST = """
-<svg viewBox="0 0 760 200" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="Broadcasting: vektor bentuk (10,) disiarkan ke matriks (32, 10)">
-  <defs>
-    <marker id="bc" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
-      <path d="M0,0 L9,4.5 L0,9 z" fill="rgba(34,211,238,.75)"/>
-    </marker>
-  </defs>
-  <rect class="d-box-a" x="20" y="40" width="120" height="110" rx="8"/>
-  <text class="d-sm" x="80" y="88" text-anchor="middle">X</text>
-  <text class="d-mono" x="80" y="110" text-anchor="middle">(32, 10)</text>
-
-  <text class="d-lbl" x="164" y="102">+</text>
-
-  <rect class="d-box" x="196" y="86" width="120" height="22" rx="6"/>
-  <text class="d-mono" x="256" y="102" text-anchor="middle">y  (10,)</text>
-
-  <path class="d-arrow" d="M330,97 L376,97" marker-end="url(#bc)"/>
-  <text class="d-sm" x="336" y="86" fill="#7E93B4">langkah 1</text>
-
-  <rect class="d-box" x="392" y="86" width="130" height="22" rx="6"/>
-  <text class="d-mono" x="457" y="102" text-anchor="middle">(1, 10)</text>
-  <text class="d-sm" x="392" y="128" fill="#7E93B4">tambah sumbu</text>
-
-  <path class="d-arrow" d="M530,97 L572,97" marker-end="url(#bc)"/>
-  <text class="d-sm" x="532" y="86" fill="#7E93B4">langkah 2</text>
-
-  <rect x="588" y="40" width="120" height="110" rx="8"
-        fill="rgba(123,217,73,.12)" stroke="rgba(123,217,73,.6)" stroke-width="1.4"/>
-  <text class="d-sm" x="648" y="88" text-anchor="middle">Y</text>
-  <text class="d-mono" x="648" y="110" text-anchor="middle">(32, 10)</text>
-  <text class="d-sm" x="588" y="168" fill="#7E93B4">diulang 32 kali</text>
-
-  <text class="d-sm" x="20" y="188" fill="#F5B301">
-    tidak ada penggandaan memori sungguhan &#8212; pengulangannya hanya algoritmis
-  </text>
-</svg>
+MMD_GRAPH = """
+flowchart LR
+  X["x"] --> X1["x1 = W . x"]
+  X1 --> X2["x2 = x1 + b"]
+  X2 --> Y["y = relu(x2)"]
+  Y --> L["loss"]
+  L -. "d loss / d y" .-> Y
+  Y -. "d y / d x2" .-> X2
+  X2 -. "d x2 / d x1" .-> X1
+  X1 -. "d x1 / d W" .-> X
 """
 
-TIKZ_BROADCAST = r"""
-\begin{tikzpicture}[font=\sffamily\tiny,
-  ar/.style={-{Stealth[length=4pt]}, signal, line width=0.7pt}]
-  \node[draw=signal!60, fill=signal!9, rounded corners=3pt, minimum width=1.7cm,
-        minimum height=1.6cm, text=ink, align=center] (x) at (0,0) {X\\\ttfamily (32, 10)};
-  \node[text=ink, font=\small] at (1.25,0) {$+$};
-  \node[draw=rule, fill=papertint, rounded corners=3pt, minimum width=1.7cm,
-        minimum height=0.42cm, text=ink2] (y) at (2.6,0) {\ttfamily y (10,)};
-  \node[draw=rule, fill=papertint, rounded corners=3pt, minimum width=1.5cm,
-        minimum height=0.42cm, text=ink2] (y2) at (5.0,0) {\ttfamily (1, 10)};
-  \node[draw=lime!60, fill=limebr!12, rounded corners=3pt, minimum width=1.7cm,
-        minimum height=1.6cm, text=ink, align=center] (Y) at (7.4,0) {Y\\\ttfamily (32, 10)};
-  \draw[ar] (y) -- node[above, text=ink3, font=\tiny]{langkah 1} (y2);
-  \draw[ar] (y2) -- node[above, text=ink3, font=\tiny]{langkah 2} (Y);
-  \node[text=ink3, anchor=north] at (5.0,-0.35) {tambah sumbu};
-  \node[text=ink3, anchor=north] at (7.4,-0.95) {diulang 32 kali};
-  \node[text=amber, anchor=west] at (-1.0,-1.55)
-    {tidak ada penggandaan memori sungguhan --- pengulangannya hanya algoritmis};
-\end{tikzpicture}
+MMD_LOOP4 = """
+flowchart LR
+  S1["1. Draw a batch<br/>x and y_true"]
+  S2["2. Forward pass<br/>y_pred = model(x)"]
+  S3["3. Compute loss<br/>how far off?"]
+  S4["4. Update weights<br/>lower the loss"]
+  S1 --> S2 --> S3 --> S4
+  S4 -. "repeat" .-> S1
 """
 
-SVG_GRAPH = """
-<svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="Graf komputasi dengan lintasan maju dan lintasan mundur">
-  <defs>
-    <marker id="fw" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
-      <path d="M0,0 L9,4.5 L0,9 z" fill="rgba(34,211,238,.8)"/>
-    </marker>
-    <marker id="bw" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
-      <path d="M0,0 L9,4.5 L0,9 z" fill="rgba(245,179,1,.9)"/>
-    </marker>
-  </defs>
-
-  <text class="d-sm" x="14" y="20" fill="#22D3EE">lintasan maju &#8212; hitung nilai</text>
-  <rect class="d-box" x="14"  y="34" width="86" height="30" rx="7"/>
-  <text class="d-mono" x="57" y="54" text-anchor="middle">x</text>
-  <rect class="d-box-a" x="140" y="34" width="96" height="30" rx="7"/>
-  <text class="d-mono" x="188" y="54" text-anchor="middle">x1 = W&#183;x</text>
-  <rect class="d-box-a" x="276" y="34" width="96" height="30" rx="7"/>
-  <text class="d-mono" x="324" y="54" text-anchor="middle">x2 = x1+b</text>
-  <rect class="d-box-a" x="412" y="34" width="106" height="30" rx="7"/>
-  <text class="d-mono" x="465" y="54" text-anchor="middle">y = relu(x2)</text>
-  <rect x="558" y="34" width="96" height="30" rx="7"
-        fill="rgba(251,113,133,.14)" stroke="rgba(251,113,133,.6)" stroke-width="1.4"/>
-  <text class="d-mono" x="606" y="54" text-anchor="middle">loss</text>
-  <path class="d-arrow" d="M100,49 L136,49"  marker-end="url(#fw)"/>
-  <path class="d-arrow" d="M236,49 L272,49"  marker-end="url(#fw)"/>
-  <path class="d-arrow" d="M372,49 L408,49"  marker-end="url(#fw)"/>
-  <path class="d-arrow" d="M518,49 L554,49"  marker-end="url(#fw)"/>
-
-  <line x1="14" y1="96" x2="744" y2="96" stroke="rgba(140,190,255,.2)" stroke-width="1"/>
-
-  <text class="d-sm" x="14" y="124" fill="#F5B301">
-    lintasan mundur &#8212; balik arah sisi, kalikan turunan sepanjang lintasan
-  </text>
-  <g stroke="rgba(245,179,1,.9)" stroke-width="1.6" fill="none">
-    <path d="M554,152 L518,152" marker-end="url(#bw)"/>
-    <path d="M408,152 L372,152" marker-end="url(#bw)"/>
-    <path d="M272,152 L236,152" marker-end="url(#bw)"/>
-    <path d="M136,152 L100,152" marker-end="url(#bw)"/>
-  </g>
-  <text class="d-mono" x="536" y="144" text-anchor="middle" fill="#F5B301">&#8706;loss/&#8706;y</text>
-  <text class="d-mono" x="390" y="144" text-anchor="middle" fill="#F5B301">&#8706;y/&#8706;x2</text>
-  <text class="d-mono" x="254" y="144" text-anchor="middle" fill="#F5B301">&#8706;x2/&#8706;x1</text>
-  <text class="d-mono" x="118" y="144" text-anchor="middle" fill="#F5B301">&#8706;x1/&#8706;W</text>
-
-  <rect x="14" y="180" width="730" height="52" rx="10"
-        fill="rgba(245,179,1,.07)" stroke="rgba(245,179,1,.35)" stroke-width="1.2"/>
-  <text class="d-mono" x="34" y="206" fill="#F0DFB4">
-    grad(loss, W) = &#8706;loss/&#8706;y &#215; &#8706;y/&#8706;x2 &#215; &#8706;x2/&#8706;x1 &#215; &#8706;x1/&#8706;W
-  </text>
-  <text class="d-sm" x="34" y="224">
-    aturan rantai, dijalankan mundur di atas graf &#8212; itulah backpropagation
-  </text>
-</svg>
-"""
-
-TIKZ_GRAPH = r"""
-\begin{tikzpicture}[font=\sffamily\tiny,
-  bx/.style={draw=rule, fill=papertint, rounded corners=3pt, minimum width=1.5cm,
-             minimum height=0.5cm, text=ink2},
-  ax/.style={draw=signal!60, fill=signal!9, rounded corners=3pt, minimum width=1.7cm,
-             minimum height=0.5cm, text=ink},
-  fw/.style={-{Stealth[length=4pt]}, signal, line width=0.7pt},
-  bw/.style={-{Stealth[length=4pt]}, amberbr, line width=0.8pt}]
-
-  \node[text=signal, anchor=west] at (0,0.7) {lintasan maju --- hitung nilai};
-  \node[bx] (x)  at (0.75,0)  {\ttfamily x};
-  \node[ax] (x1) at (2.9,0)   {\ttfamily x1 = W$\cdot$x};
-  \node[ax] (x2) at (5.1,0)   {\ttfamily x2 = x1+b};
-  \node[ax] (y)  at (7.4,0)   {\ttfamily y = relu(x2)};
-  \node[draw=rose!70, fill=rosebr!14, rounded corners=3pt, minimum width=1.4cm,
-        minimum height=0.5cm, text=ink] (l) at (9.6,0) {\ttfamily loss};
-  \draw[fw] (x) -- (x1); \draw[fw] (x1) -- (x2); \draw[fw] (x2) -- (y); \draw[fw] (y) -- (l);
-
-  \draw[rule] (0,-0.55) -- (10.5,-0.55);
-  \node[text=amber, anchor=west] at (0,-0.9)
-    {lintasan mundur --- balik arah sisi, kalikan turunan sepanjang lintasan};
-  \draw[bw] (9.0,-1.35) -- (8.1,-1.35);
-  \draw[bw] (6.8,-1.35) -- (5.8,-1.35);
-  \draw[bw] (4.5,-1.35) -- (3.6,-1.35);
-  \draw[bw] (2.3,-1.35) -- (1.4,-1.35);
-  \node[text=amber, font=\ttfamily\tiny] at (8.55,-1.1)  {$\partial$loss/$\partial$y};
-  \node[text=amber, font=\ttfamily\tiny] at (6.3,-1.1)   {$\partial$y/$\partial$x2};
-  \node[text=amber, font=\ttfamily\tiny] at (4.05,-1.1)  {$\partial$x2/$\partial$x1};
-  \node[text=amber, font=\ttfamily\tiny] at (1.85,-1.1)  {$\partial$x1/$\partial$W};
-
-  \node[draw=amber!45, fill=amberbr!8, rounded corners=4pt, minimum width=10.2cm,
-        minimum height=0.95cm, anchor=north west, align=left] at (0,-1.75) {};
-  \node[anchor=west, text=ink, font=\ttfamily\tiny] at (0.25,-2.05)
-    {grad(loss, W) = $\partial$loss/$\partial$y $\times$ $\partial$y/$\partial$x2 $\times$ $\partial$x2/$\partial$x1 $\times$ $\partial$x1/$\partial$W};
-  \node[anchor=west, text=ink3] at (0.25,-2.4)
-    {aturan rantai, dijalankan mundur di atas graf --- itulah backpropagation};
-\end{tikzpicture}
+MMD_GEOM = """
+flowchart TB
+  A["Vector addition"] --> A1["Translation"]
+  B["Multiply by a rotation matrix"] --> B1["Rotation"]
+  C["Multiply by a diagonal matrix"] --> C1["Scaling"]
+  D["Multiply by any matrix"] --> D1["Linear transform"]
+  E["Linear transform + translation"] --> E1["<b>Affine transform</b><br/>y = W . x + b"]
 """
 
 
-# =============================================================================
-#  Deck
-# =============================================================================
+MMD_PIPELINE = """
+flowchart LR
+  A["raw images<br/><code>(60000, 28, 28)</code><br/>uint8 0..255"]
+  B["reshape<br/><code>(60000, 784)</code>"]
+  C["cast + scale<br/>float32 0..1"]
+  D["Dense 512<br/>relu"]
+  E["Dense 10<br/>softmax"]
+  F["10 probabilities<br/>per image"]
+  A --> B --> C --> D --> E --> F
+"""
 
-NB = ["01_mnist_pertama.ipynb", "02_tensor_dan_operasi.ipynb",
-      "03_gradien_dan_sgd.ipynb", "04_mnist_dari_nol.ipynb"]
+MMD_SCRATCH = """
+flowchart TB
+  NS["NaiveSequential<br/><small>calls layers in order</small>"]
+  ND1["NaiveDense<br/><small>W, b, activation</small>"]
+  ND2["NaiveDense<br/><small>W, b, activation</small>"]
+  BG["BatchGenerator<br/><small>slices the batch axis</small>"]
+  ST["one_training_step<br/><small>forward, loss, grads, update</small>"]
+  FIT["fit<br/><small>epochs x batches</small>"]
+  NS --> ND1
+  NS --> ND2
+  FIT --> BG
+  FIT --> ST
+  ST --> NS
+"""
+
+NB = ["01_first_mnist.ipynb", "02_tensors_and_operations.ipynb",
+      "03_gradients_and_sgd.ipynb", "04_mnist_from_scratch.ipynb"]
 
 DECK = {
     "id": "ch02",
     "kind": "chapter",
     "number": 2,
-    "title": "Blok Bangunan Matematis Jaringan Saraf",
-    "subtitle": "Tensor, operasi tensor, dan penurunan berbasis gradien -- "
-                "dijelaskan lewat kode yang bisa dijalankan, bukan notasi.",
-    "source": "Chollet & Watson, Deep Learning with Python 3e -- bab 2",
+    "title": "The Mathematical Building Blocks of Neural Networks",
+    "subtitle": "Tensors, tensor operations, and gradient-based optimisation — "
+                "explained through code you can run rather than notation you have "
+                "to decode.",
+    "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 2",
     "source_url": chapter_url(2),
-    "duration": "3 jam (2 sesi)",
-    "presenter": {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Asisten Pengajar"},
+    "duration": "3 hours (2 sessions)",
+    "presenter": {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
     "resources": chapter_resources(2, local_notebooks=NB),
     "objectives": [
-        "Menjalankan contoh MNIST pertama dari ujung ke ujung dan menyebut peran "
-        "**layer, loss, optimizer, dan metric** pada tiap barisnya.",
-        "Membaca **rank, shape, dan dtype** sebuah tensor, dan memetakan data "
-        "nyata (vektor, deret waktu, citra, video) ke bentuk tensornya.",
-        "Menjelaskan **operasi elemen-demi-elemen, broadcasting, hasil kali "
-        "tensor, dan reshape** beserta arti geometrisnya.",
-        "Menerangkan **turunan, gradien, SGD mini-batch, dan aturan rantai**, "
-        "lalu menunjuk letaknya di dalam graf komputasi.",
-        "Menulis ulang MNIST **dari nol** -- Dense, Sequential, batch generator, "
-        "dan lingkar pelatihan -- tanpa memakai `fit()`.",
+        "Run the first MNIST example end to end and name the role of **layers, "
+        "loss, optimizer, and metrics** in each line of it.",
+        "Read a tensor's **rank, shape, and dtype**, and map real data — vectors, "
+        "timeseries, images, video — onto its tensor shape.",
+        "Explain **element-wise operations, broadcasting, the tensor product, and "
+        "reshaping**, together with what each one means geometrically.",
+        "Describe **derivatives, gradients, mini-batch SGD, and the chain rule**, "
+        "and point to where each lives in a computation graph.",
+        "Rewrite MNIST **from scratch** — layer, model, batch generator, and "
+        "training loop — without calling `fit()`.",
     ],
     "slides": [
         {"type": "title"},
 
         {
             "type": "slide",
-            "kicker": "Peta bab",
-            "title": "Satu contoh, dibongkar sampai ke bawah",
+            "kicker": "Roadmap",
+            "title": "One example, taken apart all the way down",
             "blocks": [
-                {"t": "lead", "md": "Bab 2 bergerak dalam satu lingkaran penuh: jalankan "
-                                    "MNIST dengan `fit()`, bongkar tiap potongnya, lalu "
-                                    "==tulis ulang seluruhnya dari nol== dan buktikan "
-                                    "hasilnya sama."},
+                {"t": "lead", "md": "The chapter travels a full circle: run MNIST with "
+                                    "`fit()`, dismantle every piece of it, then "
+                                    "==rewrite the whole thing from scratch== and show the "
+                                    "result holds up."},
                 {"t": "cards", "cols": 4, "items": [
-                    {"ico": "🔢", "h": "1 · Contoh pertama",
-                     "p": "MNIST dalam 10 baris. Berjalan dulu, dimengerti belakangan.",
-                     "tag": "bag. 2.1"},
-                    {"ico": "📦", "h": "2 · Tensor",
-                     "p": "Rank, shape, dtype, irisan, sumbu batch, dan data dunia nyata.",
-                     "tag": "bag. 2.2"},
-                    {"ico": "⚙", "h": "3 · Operasi tensor",
-                     "p": "Elemen-demi-elemen, broadcasting, matmul, reshape, dan geometrinya.",
-                     "tag": "bag. 2.3"},
-                    {"ico": "📉", "h": "4 · Mesinnya",
-                     "p": "Turunan, gradien, SGD, aturan rantai, autodiff.",
-                     "tag": "bag. 2.4-2.6"},
+                    {"ico": "🔢", "h": "1 · First example",
+                     "p": "MNIST in ten lines. Working first, understood second.",
+                     "tag": "2.1"},
+                    {"ico": "📦", "h": "2 · Tensors",
+                     "p": "Rank, shape, dtype, slicing, the batch axis, real-world data.",
+                     "tag": "2.2"},
+                    {"ico": "⚙", "h": "3 · Tensor operations",
+                     "p": "Element-wise, broadcasting, matmul, reshape — and their geometry.",
+                     "tag": "2.3"},
+                    {"ico": "📉", "h": "4 · The engine",
+                     "p": "Derivatives, gradients, SGD, the chain rule, autodiff.",
+                     "tag": "2.4 – 2.6"},
                 ]},
-                {"t": "quote",
-                 "md": "Kode yang bisa dijalankan adalah keterangan paling tepat dan paling "
-                       "tidak ambigu untuk sebuah operasi matematis.",
-                 "cite": "Semangat bab 2 -- notasi diganti implementasi"},
             ],
-            "notes": "Sesi ini panjang. Pecah di antara bagian 2.3 dan 2.4; separuh pertama "
-                     "soal data, separuh kedua soal belajar.",
+            "notes": "Long session. Break between 2.3 and 2.4: the first half is about data, "
+                     "the second half about learning.",
         },
-
-        {"type": "section", "num": "01", "title": "Sekali lihat jaringan saraf",
-         "lead": "MNIST -- 'hello world'-nya deep learning."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.1",
-            "title": "Muat data: 60.000 latih, 10.000 uji",
+            "kicker": "Roadmap",
+            "title": "Why this chapter shows code instead of notation",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "listing 2.1 — memuat MNIST",
+                {"t": "quote",
+                 "md": "Runnable code is the most precise, unambiguous description of a "
+                       "mathematical operation.",
+                 "cite": "The working principle of chapter 2"},
+                {"t": "p", "md": "Every concept here is introduced twice: once as an idea, "
+                                 "and once as a few lines you can execute and inspect. "
+                                 "If the two ever disagree, ==the code is right=="},
+            ],
+        },
+
+        {"type": "section", "num": "01", "title": "A first look at a neural network",
+         "lead": "MNIST — the \"hello world\" of deep learning."},
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.1",
+            "title": "The data: 60,000 to train on, 10,000 to be judged on",
+            "blocks": [
+                {"t": "p", "md": "MNIST is a set of grayscale images of handwritten digits, "
+                                 "each 28×28 pixels, already split into a training set and a "
+                                 "test set. Keras ships it, so there is nothing to download "
+                                 "by hand."},
+                {"t": "code", "lang": "python", "file": "listing 2.1 — loading MNIST",
                  "src": """from keras.datasets import mnist
 
 (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
@@ -334,57 +188,123 @@ print(test_images.shape)"""},
                 {"t": "out", "src": """(60000, 28, 28) uint8
 60000 [5 0 4 1 9 2 1 3 1 4]
 (10000, 28, 28)"""},
-                {"t": "table",
-                 "head": ["Istilah", "Artinya di sini"],
-                 "widths": [24, 76],
-                 "rows": [
-                     ["**Sample**", "Satu titik data -- satu citra 28×28."],
-                     ["**Class**", "Satu kategori -- angka 0 sampai 9."],
-                     ["**Label**", "Kelas yang melekat pada satu sample tertentu."],
-                 ]},
             ],
-            "notes": "Tunjukkan satu citra dengan matplotlib sebelum lanjut; peserta perlu "
-                     "melihat bahwa 'data' di sini benar-benar gambar.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.1",
-            "title": "Model, kompilasi, pelatihan -- sepuluh baris",
+            "kicker": "Section 2.1",
+            "title": "Three words used precisely from here on",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "listing 2.2-2.5 — MNIST ujung ke ujung",
+                {"t": "table",
+                 "head": ["Term", "What it means here"],
+                 "widths": [22, 78],
+                 "rows": [
+                     ["**Sample**", "One data point — a single 28×28 image."],
+                     ["**Class**", "One category — a digit from 0 to 9."],
+                     ["**Label**", "The class attached to one particular sample."],
+                 ]},
+                {"t": "p", "md": "These are used consistently for the rest of the book, and "
+                                 "mixing them up is the fastest way to misread an error "
+                                 "message later."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.1",
+            "title": "The model: two layers, and what a layer is for",
+            "blocks": [
+                {"t": "p", "md": "A **layer** is a filter for data: it takes data in and puts "
+                                 "out a more useful representation of it. The model below "
+                                 "chains two of them."},
+                {"t": "code", "lang": "python", "file": "listing 2.2 — the model",
                  "src": """import keras
 from keras import layers
 
 model = keras.Sequential([
     layers.Dense(512, activation="relu"),
     layers.Dense(10, activation="softmax"),
-])
-
-model.compile(
-    optimizer="adam",
-    loss="sparse_categorical_crossentropy",
-    metrics=["accuracy"],
-)
-
-train_images = train_images.reshape((60000, 28 * 28)).astype("float32") / 255
-test_images = test_images.reshape((10000, 28 * 28)).astype("float32") / 255
-
-model.fit(train_images, train_labels, epochs=5, batch_size=128)"""},
+])"""},
                 {"t": "band",
-                 "md": "Sebuah **layer** adalah *penyaring data*: ia menerima data dan "
-                       "mengeluarkan representasi yang lebih berguna. `softmax` di lapis "
-                       "akhir mengeluarkan ==10 skor peluang yang berjumlah 1==."},
+                 "md": "The final `softmax` layer emits ==10 probability scores that sum to "
+                       "1== — one per digit class. Note there is no `input_shape` anywhere; "
+                       "Keras infers it on the first call, which chapter 3 explains."},
             ],
-            "notes": "Perhatikan: tidak ada input_shape. Keras menyimpulkan bentuk masukan "
-                     "sendiri pada pemanggilan pertama — dibahas di bab 3.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.1",
-            "title": "Hasilnya -- dan celah pertama yang harus dicurigai",
+            "kicker": "Section 2.1",
+            "title": "Compilation: three choices, and only three",
             "blocks": [
+                {"t": "p", "md": "Before a model can be trained it has to be told how to judge itself and how to improve. `compile()` is where those decisions are recorded."},
+                {"t": "code", "lang": "python", "file": "listing 2.3 — compile",
+                 "src": """model.compile(
+    optimizer="adam",
+    loss="sparse_categorical_crossentropy",
+    metrics=["accuracy"],
+)"""},
+                {"t": "cards", "cols": 3, "items": [
+                    {"ico": "📏", "h": "Loss",
+                     "p": "The feedback signal the network steers by. **This is what gets "
+                          "minimised.**", "style": "accent"},
+                    {"ico": "🎚", "h": "Optimizer",
+                     "p": "The mechanism by which the network updates itself from that signal.",
+                     "style": "accent"},
+                    {"ico": "👁", "h": "Metrics",
+                     "p": "Watched during training, but ==never optimised for==.",
+                     "style": "accent"},
+                ]},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.1",
+            "title": "Preprocessing: flatten, cast, and scale",
+            "blocks": [
+                {"t": "p", "md": "The images arrive as 8-bit integers in a 28×28 grid. The "
+                                 "`Dense` layers want a flat vector of floats in a small "
+                                 "range, so both shape and dtype have to change."},
+                {"t": "code", "lang": "python", "file": "listing 2.4 — preparing the data",
+                 "src": """train_images = train_images.reshape((60000, 28 * 28))
+train_images = train_images.astype("float32") / 255
+
+test_images = test_images.reshape((10000, 28 * 28))
+test_images = test_images.astype("float32") / 255
+
+print(train_images.shape, train_images.dtype, train_images.min(), train_images.max())"""},
+                {"t": "out", "src": "(60000, 784) float32 0.0 1.0"},
+                {"t": "band",
+                 "md": "Two things changed: the shape went from `(60000, 28, 28)` to "
+                       "`(60000, 784)`, and the values went from `0..255` integers to "
+                       "==`0..1` floats==. Chapter 6 explains why the second matters so much."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.1",
+            "title": "The whole first example, as a shape pipeline",
+            "blocks": [
+                {"t": "mmd", "id": "ch02-pipeline", "src": MMD_PIPELINE,
+                 "cap": "Every arrow changes either the shape or the dtype. Nothing else "
+                        "happens in the first example."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.1",
+            "title": "Training, and the first crack to notice",
+            "blocks": [
+                {"t": "p", "md": "`fit()` runs the training loop: five passes over the data, 128 samples at a time. Then `evaluate()` asks the only question that matters — how does it do on images it has never seen?"},
+                {"t": "code", "lang": "python", "file": "listing 2.5 — fit",
+                 "src": """model.fit(train_images, train_labels, epochs=5, batch_size=128)
+
+test_loss, test_acc = model.evaluate(test_images, test_labels)
+print(f"test accuracy: {test_acc:.3f}")"""},
                 {"t": "out", "src": """Epoch 1/5
 469/469 ---- 3s 5ms/step - accuracy: 0.8747 - loss: 0.4358
 Epoch 5/5
@@ -392,381 +312,583 @@ Epoch 5/5
 
 313/313 ---- 1s 2ms/step - accuracy: 0.9780 - loss: 0.0745
 test accuracy: 0.978"""},
-                {"t": "cols", "ratio": "1-1", "cols": [
-                    [
-                        {"t": "stats", "cols": 2, "items": [
-                            {"v": "98,9%", "l": "akurasi pada data latih"},
-                            {"v": "97,8%", "l": "akurasi pada data uji"},
-                        ]},
-                    ],
-                    [
-                        {"t": "band", "style": "amber",
-                         "md": "Selisih ~1,1 poin itu bukan derau. Itu **overfitting**: "
-                               "model bekerja lebih baik pada yang pernah dilihatnya. "
-                               "Bab 5 membahasnya sebagai persoalan pokok."},
-                    ],
-                ]},
-                {"t": "code", "lang": "python", "file": "listing 2.6 — meramal",
+                {"t": "band", "style": "amber",
+                 "md": "**98.9%** on data it trained on, **97.8%** on data it had never seen. "
+                       "That gap is not noise — it is ==overfitting==, and chapter 5 treats "
+                       "it as the central problem of the field."},
+            ],
+            "notes": "Say up front that the exact digits move between runs, so nobody panics "
+                     "when their notebook prints 97.6%.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.1",
+            "title": "Making a prediction, and reading it",
+            "blocks": [
+                {"t": "p", "md": "`predict()` returns the ten probabilities per image. The "
+                                 "predicted class is simply the index of the largest one."},
+                {"t": "code", "lang": "python", "file": "listing 2.6 — predicting",
                  "src": """test_digits = test_images[0:10]
 predictions = model.predict(test_digits)
-print(predictions[0].argmax(), predictions[0].max(), test_labels[0])"""},
-                {"t": "out", "src": "7 0.99993 7"},
+
+print(predictions[0].argmax())      # which class?
+print(predictions[0].max())         # how confident?
+print(test_labels[0])               # what was the truth?"""},
+                {"t": "out", "src": """7
+0.99993
+7"""},
+                {"t": "p", "md": "Right answer, and near-total confidence. Chapter 5 will show "
+                                 "why ==confidence and correctness are not the same thing=="},
             ],
-            "notes": "Angka pastinya berayun tiap kali dilatih ulang — katakan itu di depan, "
-                     "supaya peserta tidak panik kalau notebooknya memberi 97,6%.",
         },
 
-        {"type": "section", "num": "02", "title": "Representasi data: tensor",
-         "lead": "Wadah untuk data. Tiga sifat, dan satu sumbu istimewa."},
+        {"type": "section", "num": "02", "title": "Data representations: tensors",
+         "lead": "A container for data. Three attributes, and one special axis."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.2",
+            "kicker": "Section 2.2",
             "title": "Rank, shape, dtype",
             "blocks": [
-                {"t": "fig", "svg": SVG_RANKS, "tikz": TIKZ_RANKS,
-                 "cap": "Tensor menggeneralisasi matriks ke sebarang jumlah sumbu. "
-                        "TensorFlow diberi nama menurut benda ini."},
-                {"t": "band", "style": "amber",
-                 "md": "Jebakan istilah: **vektor 5 dimensi ≠ tensor 5 dimensi**. Yang "
-                       "pertama punya ==satu sumbu berisi lima angka==; yang kedua punya "
-                       "==lima sumbu==. Salah baca di sini membuat pesan galat shape jadi "
-                       "tidak terbaca."},
+                {"t": "mmd", "id": "ch02-ranks", "src": MMD_RANKS,
+                 "cap": "Tensors generalise matrices to any number of axes. TensorFlow is "
+                        "named after this object."},
+                {"t": "p", "md": "Every tensor has exactly three defining attributes: its "
+                                 "**number of axes** (rank), its **shape**, and its "
+                                 "**dtype**. Everything else follows from those."},
             ],
-            "notes": "Tanya ke peserta: shape sebuah batch 128 citra RGB 224x224 itu apa? "
-                     "Jawabannya (128, 224, 224, 3) — dan itu latihan yang bagus.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.2",
-            "title": "Irisan tensor dan sumbu batch",
+            "kicker": "Section 2.2",
+            "title": "Reading them off a real tensor",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "listing 2.7-2.9 — irisan",
-                 "src": """my_slice = train_images[10:100]          # 90 citra
-print(my_slice.shape)
+                {"t": "p", "md": "MNIST before preprocessing is a rank-3 tensor: 60,000 "
+                                 "images, each a 28×28 grid of 8-bit grayscale values."},
+                {"t": "code", "lang": "python", "file": "the three attributes",
+                 "src": """(train_images, train_labels), _ = mnist.load_data()
 
-print(train_images[:, 14:, 14:].shape)   # pojok kanan-bawah 14x14
-print(train_images[:, 7:-7, 7:-7].shape) # 14x14 di tengah
+print(train_images.ndim)     # rank: how many axes
+print(train_images.shape)    # shape: how long each axis is
+print(train_images.dtype)    # dtype: what the entries are"""},
+                {"t": "out", "src": """3
+(60000, 28, 28)
+uint8"""},
+            ],
+        },
 
-batch = train_images[:128]               # batch ke-0
-batch = train_images[128:256]            # batch ke-1
-n = 3
-batch = train_images[128 * n : 128 * (n + 1)]"""},
+        {
+            "type": "slide",
+            "kicker": "Section 2.2",
+            "title": "The terminology trap that costs people an afternoon",
+            "blocks": [
+                {"t": "band", "style": "rose",
+                 "md": "A **5-dimensional vector** is not a **5-dimensional tensor**. The "
+                       "first has ==one axis holding five numbers==; the second has "
+                       "==five axes=="},
+                {"t": "p", "md": "Misreading this makes shape error messages unintelligible, "
+                                 "and shape errors are the most common failure you will hit "
+                                 "in the exercises."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.2",
+            "title": "Slicing tensors",
+            "blocks": [
+                {"t": "p", "md": "Selecting part of a tensor uses the same bracket syntax as "
+                                 "NumPy. A colon means *all of this axis*, and negative "
+                                 "indices count from the end."},
+                {"t": "code", "lang": "python", "file": "listing 2.7–2.8 — slices",
+                 "src": """print(train_images[10:100].shape)          # 90 images
+print(train_images[:, 14:, 14:].shape)     # bottom-right 14x14 corner
+print(train_images[:, 7:-7, 7:-7].shape)   # centre 14x14, via negative indices"""},
                 {"t": "out", "src": """(90, 28, 28)
 (60000, 14, 14)
 (60000, 14, 14)"""},
-                {"t": "band",
-                 "md": "Sumbu ke-0 selalu **sumbu sampel**, dan karena model dilatih per "
-                       "potongan kecil, sumbu itu juga disebut ==sumbu batch==. Setiap "
-                       "pesan galat shape yang akan Anda temui dimulai dari membaca "
-                       "sumbu ini."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.2.7-2.2.10",
-            "title": "Data dunia nyata, dan bentuk tensornya",
+            "kicker": "Section 2.2",
+            "title": "The batch axis is always axis 0",
+            "blocks": [
+                {"t": "p", "md": "Models are not trained on whole datasets; they are trained on "
+                                 "small **batches**. Cutting a batch is just a slice along "
+                                 "the first axis."},
+                {"t": "code", "lang": "python", "file": "listing 2.9 — batches",
+                 "src": """batch = train_images[:128]        # batch 0
+batch = train_images[128:256]     # batch 1
+
+n = 3
+batch = train_images[128 * n : 128 * (n + 1)]     # batch n
+print(batch.shape)"""},
+                {"t": "out", "src": "(128, 28, 28)"},
+                {"t": "band",
+                 "md": "Axis 0 is the **samples axis** — and because of batching it is also "
+                       "called the **batch axis**. ==Every shape error you will read starts "
+                       "with identifying this axis.=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.2.7 – 2.2.10",
+            "title": "Real-world data, and the shape it takes",
             "blocks": [
                 {"t": "table",
-                 "head": ["Jenis data", "Rank", "Shape", "Contoh dari buku"],
-                 "widths": [22, 8, 30, 40],
+                 "head": ["Kind of data", "Rank", "Shape", "Example from the book"],
+                 "widths": [20, 8, 30, 42],
                  "rows": [
-                     ["**Vektor**", "2", "`(samples, features)`",
-                      "100.000 orang × (usia, jenis kelamin, penghasilan) → (100000, 3)"],
-                     ["**Deret waktu**", "3", "`(samples, timesteps, features)`",
-                      "250 hari × 390 menit × 3 nilai → (250, 390, 3)"],
-                     ["**Citra**", "4", "`(samples, h, w, channels)`",
-                      "128 citra RGB 256×256 → (128, 256, 256, 3)"],
+                     ["**Vector data**", "2", "`(samples, features)`",
+                      "100,000 people × (age, gender, income) → (100000, 3)"],
+                     ["**Timeseries**", "3", "`(samples, timesteps, features)`",
+                      "250 days × 390 minutes × 3 values → (250, 390, 3)"],
+                     ["**Images**", "4", "`(samples, h, w, channels)`",
+                      "128 RGB images at 256×256 → (128, 256, 256, 3)"],
                      ["**Video**", "5", "`(samples, frames, h, w, channels)`",
-                      "4 klip × 240 bingkai × 144×256 × RGB → (4, 240, 144, 256, 3)"],
+                      "4 clips × 240 frames × 144×256 × RGB → (4, 240, 144, 256, 3)"],
                  ]},
-                {"t": "cols", "ratio": "3-2", "cols": [
-                    [
-                        {"t": "bullets", "items": [
-                            "**Channels-last** `(…, h, w, c)` -- kebiasaan TensorFlow dan JAX.",
-                            "**Channels-first** `(…, c, h, w)` -- kebiasaan PyTorch.",
-                            "Keras 3 memakai `image_data_format` untuk memilih; salah "
-                            "setelan di sini ==menghasilkan galat shape yang membingungkan==.",
-                        ]},
-                    ],
-                    [
-                        {"t": "stats", "cols": 1, "items": [
-                            {"v": "106.168.320", "l": "nilai dalam contoh video 60 detik itu"},
-                            {"v": "425 MB", "l": "ukurannya pada float32"},
-                        ]},
-                    ],
-                ]},
             ],
-            "notes": "Data tabular dan data transaksi umumnya masuk baris pertama (vektor) "
-                     "atau kedua (deret waktu). Minta peserta menaksir shape datanya sendiri.",
         },
-
-        {"type": "section", "num": "03", "title": "Gigi-giginya: operasi tensor",
-         "lead": "Semuanya bermuara pada segenggam operasi -- dan semuanya punya arti geometris."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.3",
-            "title": "Satu lapis Dense = tiga operasi",
+            "kicker": "Section 2.2.9",
+            "title": "Channels-last or channels-first — and why it bites",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "inti sebuah lapis Dense",
-                 "src": """# output = relu(matmul(input, W) + b)
-#            ^          ^            ^
-#            |          |            +-- penjumlahan (dengan broadcasting)
-#            |          +--------------- hasil kali tensor
-#            +-------------------------- operasi elemen-demi-elemen
+                {"t": "cols", "ratio": "1-1", "cols": [
+                    [
+                        {"t": "bullets", "items": [
+                            "**Channels-last** `(…, h, w, c)` — the TensorFlow and JAX "
+                            "convention.",
+                            "**Channels-first** `(…, c, h, w)` — the PyTorch convention.",
+                        ]},
+                        {"t": "p", "md": "Keras 3 picks between them with "
+                                         "`image_data_format`."},
+                    ],
+                    [
+                        {"t": "band", "style": "amber",
+                         "md": "Getting this wrong produces shape errors that look "
+                               "nonsensical, because both orderings are *valid* — just not "
+                               "for the same layer."},
+                    ],
+                ]},
+                {"t": "stats", "cols": 2, "items": [
+                    {"v": "106,168,320", "l": "values in that 60-second video example"},
+                    {"v": "425 MB", "l": "its size at float32"},
+                ]},
+            ],
+        },
 
-def naive_relu(x):
+        {"type": "section", "num": "03", "title": "The gears: tensor operations",
+         "lead": "It all reduces to a handful of operations — each with a geometric meaning."},
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.3",
+            "title": "A Dense layer is three operations, and nothing else",
+            "blocks": [
+                {"t": "p", "md": "Whatever else a network contains, its `Dense` layer computes "
+                                 "exactly this. Every symbol in it is covered in this section."},
+                {"t": "code", "lang": "python", "file": "the whole of a Dense layer",
+                 "src": """output = relu(matmul(input, W) + b)
+#        ^          ^            ^
+#        |          |            +-- addition (with broadcasting)
+#        |          +--------------- tensor product
+#        +-------------------------- element-wise operation"""},
+                {"t": "p", "md": "`relu(x)` is simply `max(x, 0)`: it zeroes out anything "
+                                 "negative and leaves the rest alone."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.3.1",
+            "title": "Element-wise operations, written the slow way",
+            "blocks": [
+                {"t": "p", "md": "An element-wise operation applies independently to each "
+                                 "entry — which is precisely why it parallelises so well. "
+                                 "Written out as loops, `relu` is this:"},
+                {"t": "code", "lang": "python", "file": "listing 2.10 — naive relu",
+                 "src": """def naive_relu(x):
     assert len(x.shape) == 2
     x = x.copy()
     for i in range(x.shape[0]):
         for j in range(x.shape[1]):
             x[i, j] = max(x[i, j], 0)
     return x"""},
-                {"t": "cols", "ratio": "1-1", "cols": [
-                    [
-                        {"t": "code", "lang": "python", "file": "versi tervektorisasi",
-                         "src": """z = x + y
-z = np.maximum(z, 0.0)"""},
-                    ],
-                    [
-                        {"t": "stats", "cols": 2, "items": [
-                            {"v": "0,02 s", "l": "NumPy tervektorisasi, 1.000 iterasi"},
-                            {"v": "2,45 s", "l": "gelung Python naif, 1.000 iterasi"},
-                        ]},
-                    ],
-                ]},
-                {"t": "band",
-                 "md": "Selisih ==sekitar 100 kali== itu bukan soal bahasa. Versi NumPy "
-                       "melimpahkan pekerjaannya ke BLAS yang ditulis dalam C dan Fortran; "
-                       "di GPU, kode CUDA-nya tervektorisasi penuh."},
+                {"t": "p", "md": "Correct, readable — and unusably slow, as the next slide "
+                                 "shows."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.3.2",
-            "title": "Broadcasting: bentuk kecil dipaskan ke bentuk besar",
+            "kicker": "Section 2.3.1",
+            "title": "…and the fast way, which is the same operation",
             "blocks": [
-                {"t": "fig", "svg": SVG_BROADCAST, "tikz": TIKZ_BROADCAST,
-                 "cap": "Dua langkah: tambahkan sumbu sampai rank sama, lalu ulangi "
-                        "sepanjang sumbu baru itu."},
-                {"t": "code", "lang": "python", "file": "listing 2.11 — aturannya",
+                {"t": "p", "md": "In practice you never write those loops. NumPy expresses the identical computation in two lines — and the difference is not cosmetic."},
+                {"t": "code", "lang": "python", "file": "the vectorised version",
+                 "src": """z = x + y
+z = np.maximum(z, 0.0)"""},
+                {"t": "stats", "cols": 2, "items": [
+                    {"v": "0.02 s", "l": "vectorised NumPy, 1,000 iterations"},
+                    {"v": "2.45 s", "l": "naive Python loops, 1,000 iterations"},
+                ]},
+                {"t": "band",
+                 "md": "Roughly **100×**, and it is not a language effect. NumPy hands the "
+                       "work to BLAS routines written in C and Fortran; on a GPU the same "
+                       "operation runs as ==fully vectorised CUDA=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.3.2",
+            "title": "Broadcasting: fitting a small shape to a big one",
+            "blocks": [
+                {"t": "mmd", "id": "ch02-broadcast", "src": MMD_BROADCAST,
+                 "cap": "Two steps: add axes until the ranks match, then repeat along the "
+                        "new axes."},
+                {"t": "p", "md": "No memory is actually duplicated — the repetition is "
+                                 "==algorithmic, not physical=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.3.2",
+            "title": "The rule, and where it quietly goes wrong",
+            "blocks": [
+                {"t": "p", "md": "Broadcasting applies when one tensor has shape "
+                                 "`(a, b, …, n, n+1, …, m)` and the other has "
+                                 "`(n, n+1, …, m)`."},
+                {"t": "code", "lang": "python", "file": "listing 2.11 — broadcasting in anger",
                  "src": """X = np.random.random((64, 3, 32, 10))
 y = np.random.random((32, 10))
-z = np.maximum(X, y)          # y disiarkan; hasilnya (64, 3, 32, 10)
+
+z = np.maximum(X, y)      # y is broadcast across the first two axes
 print(z.shape)"""},
                 {"t": "out", "src": "(64, 3, 32, 10)"},
+                {"t": "band", "style": "amber",
+                 "md": "This is the most common source of **silent** bugs: the shapes line "
+                       "up, the code runs, and the ==meaning is wrong==. When a result looks "
+                       "strange, print the shapes first."},
             ],
-            "notes": "Aturan umumnya: shape (a, b, ..., n, n+1, ..., m) berpasangan dengan "
-                     "(n, n+1, ..., m). Broadcasting adalah sumber bug diam yang paling "
-                     "sering — bentuknya cocok, artinya tidak.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.3.3-2.3.4",
-            "title": "Hasil kali tensor dan reshape",
+            "kicker": "Section 2.3.3",
+            "title": "The tensor product, and its one compatibility rule",
             "blocks": [
-                {"t": "cols", "ratio": "1-1", "cols": [
-                    [
-                        {"t": "code", "lang": "python", "file": "matmul",
-                         "src": """z = np.matmul(x, y)
-z = x @ y            # bentuk singkat
+                {"t": "p", "md": "The tensor product — `matmul`, or the `@` operator — is the "
+                                 "operation that actually combines features. It has exactly "
+                                 "one rule you must remember."},
+                {"t": "code", "lang": "python", "file": "matmul",
+                 "src": """z = np.matmul(x, y)
+z = x @ y                      # the same thing, shorter
 
-# aturan kecocokan:
-#   x.shape[1] == y.shape[0]
-# hasilnya:
-#   (x.shape[0], y.shape[1])
+# compatibility:  x.shape[1] == y.shape[0]
+# result shape:  (x.shape[0], y.shape[1])
 
-# (a, b, c, d) @ (d,)   -> (a, b, c)
-# (a, b, c, d) @ (d, e) -> (a, b, c, e)"""},
-                    ],
-                    [
-                        {"t": "code", "lang": "python", "file": "reshape & transpose",
-                         "src": """x = np.array([[0., 1.],
+# (a, b, c, d) @ (d,)    -> (a, b, c)
+# (a, b, c, d) @ (d, e)  -> (a, b, c, e)"""},
+                {"t": "p", "md": "Visually: line the two up as rectangles — ==the width of the "
+                                 "first must match the height of the second=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.3.4",
+            "title": "Reshaping rearranges; it never invents or destroys",
+            "blocks": [
+                {"t": "p", "md": "A reshape changes how the same coefficients are laid out. "
+                                 "The total count is unchanged, which is why it is cheap."},
+                {"t": "code", "lang": "python", "file": "listing 2.12 — reshape and transpose",
+                 "src": """x = np.array([[0., 1.],
               [2., 3.],
-              [4., 5.]])          # (3, 2)
+              [4., 5.]])          # shape (3, 2)
 
-np.reshape(x, (6,))               # (6,)
-np.reshape(x, (2, 3))             # (2, 3)
+print(np.reshape(x, (6,)).shape)     # flattened
+print(np.reshape(x, (2, 3)).shape)   # regrouped
 
-x = np.zeros((300, 20))
-np.transpose(x).shape             # (20, 300)"""},
-                    ],
+print(np.transpose(np.zeros((300, 20))).shape)   # rows and columns exchanged"""},
+                {"t": "out", "src": """(6,)
+(2, 3)
+(20, 300)"""},
+                {"t": "band",
+                 "md": "This is exactly what `train_images.reshape((60000, 784))` did in the "
+                       "first example: ==the pixels never changed, only their arrangement=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.3.5",
+            "title": "Every tensor operation is a geometric one",
+            "blocks": [
+                {"t": "mmd", "id": "ch02-geom", "src": MMD_GEOM,
+                 "cap": "Tensor contents are coordinates; operations on them are movements "
+                        "in space."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.3.5",
+            "title": "Why an activation function is not optional",
+            "blocks": [
+                {"t": "p", "md": "A `Dense` layer without an activation computes "
+                                 "`y = W @ x + b` — an affine transform. Chain two of them "
+                                 "and expand:"},
+                {"t": "code", "lang": "python", "file": "two affine layers collapse into one",
+                 "src": """affine2(affine1(x)) == (W2 @ W1) @ x + (W2 @ b1 + b2)
+#                     \\_________/         \\______________/
+#                      one matrix           one vector"""},
+                {"t": "band", "style": "rose",
+                 "md": "So a deep stack of `Dense` layers with no activation is ==secretly a "
+                       "single linear model==, however many layers you give it. Nonlinearities "
+                       "such as `relu` are what make the hypothesis space rich."},
+            ],
+            "notes": "If a product manager takes one thing from chapter 2, this is it: "
+                     "without nonlinearity, depth buys nothing at all.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.3.5",
+            "title": "Deep learning as uncrumpling a paper ball",
+            "blocks": [
+                {"t": "p", "md": "Chollet's image for what a deep network does: complicated, "
+                                 "folded data **manifolds** are gradually pulled apart until "
+                                 "the classes separate cleanly."},
+                {"t": "band",
+                 "md": "It happens through a long series of **small, elementary geometric "
+                       "moves** — like uncrumpling a paper ball with successive finger "
+                       "movements. ==Each layer disentangles the data a little.=="},
+                {"t": "p", "md": "Chapter 5 makes this precise, under the name of the "
+                                 "*manifold hypothesis*."},
+            ],
+        },
+
+        {"type": "section", "num": "04", "title": "The engine: gradient-based optimisation",
+         "lead": "Derivatives, gradients, SGD, and the chain rule."},
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.4",
+            "title": "The training loop, and which step is hard",
+            "blocks": [
+                {"t": "mmd", "id": "ch02-loop4", "src": MMD_LOOP4,
+                 "cap": "Four steps, repeated over batches. Only the fourth is difficult."},
+                {"t": "band", "style": "amber",
+                 "md": "Tuning each coefficient by hand is impossible — modern networks have "
+                       "==millions to billions of parameters==. Gradient descent solves for "
+                       "all of them at once."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.4.1",
+            "title": "A derivative is the slope of a local approximation",
+            "blocks": [
+                {"t": "p", "md": "For a smooth function, a small change in `x` produces a "
+                                 "small change in `y`. Near a point, `f(x + ε) ≈ y + a·ε`, "
+                                 "and that `a` is the **derivative**."},
+                {"t": "bullets", "items": [
+                    "`a` negative → increasing `x` **decreases** `f(x)`.",
+                    "`a` positive → increasing `x` **increases** `f(x)`.",
+                    "Its magnitude says how fast the change happens.",
                 ]},
                 {"t": "band",
-                 "md": "Reshape ==tidak mengubah satu pun koefisien==; ia hanya menata "
-                       "ulang. Itulah yang terjadi pada `train_images.reshape((60000, 784))` "
-                       "di contoh pertama tadi."},
+                 "md": "So to make `f` smaller, move `x` ==in the direction opposite its "
+                       "derivative==. That single sentence is the whole of optimisation."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.3.5",
-            "title": "Tafsir geometris -- dan mengapa aktivasi wajib ada",
+            "kicker": "Section 2.4.2",
+            "title": "A gradient is a derivative for tensors",
             "blocks": [
-                {"t": "table",
-                 "head": ["Operasi", "Artinya secara geometris"],
-                 "widths": [30, 70],
-                 "rows": [
-                     ["Penjumlahan vektor", "**Translasi** -- geser objek sejauh dan searah vektor itu."],
-                     ["Kali matriks rotasi", "**Rotasi** sebesar sudut θ."],
-                     ["Kali matriks diagonal", "**Penskalaan** mendatar dan menegak."],
-                     ["Kali matriks sebarang", "**Transformasi linear**."],
-                     ["Linear + translasi", "**Transformasi afin** -- persis `y = W @ x + b`."],
-                 ]},
+                {"t": "p", "md": "Hold the data fixed, and the loss becomes a function of the "
+                                 "weights alone: `loss_value = f(W)`."},
+                {"t": "code", "lang": "python", "file": "what the gradient is a gradient of",
+                 "src": """y_pred = matmul(x, W)
+loss_value = loss(y_pred, y_true)
+
+# For fixed x and y_true this is just  loss_value = f(W)
+# grad(loss_value, W0) is a tensor SHAPED LIKE W, whose every coefficient says
+# in which direction, and how strongly, the loss moves if you nudge that weight."""},
+                {"t": "band",
+                 "md": "To lower the loss, step against the gradient: "
+                       "`W1 = W0 - step * grad(f(W0), W0)`"},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.4.3",
+            "title": "Why this is done by iteration and not by solving",
+            "blocks": [
+                {"t": "p", "md": "Minima occur where the derivative is zero. So why not just "
+                                 "solve `grad(f(W), W) = 0` directly?"},
                 {"t": "band", "style": "rose",
-                 "md": "Merangkai dua transformasi afin menghasilkan **satu** transformasi "
-                       "afin lagi: `affine2(affine1(x)) = (W2 @ W1) @ x + (W2 @ b1 + b2)`. "
-                       "Jadi tumpukan Dense tanpa aktivasi ==diam-diam hanyalah satu model "
-                       "linear==, sedalam apa pun. Fungsi aktivasi seperti ReLU-lah yang "
-                       "membuat ruang hipotesisnya kaya."},
-                {"t": "p", "md": "Gambaran yang dipakai Chollet: deep learning seperti "
-                                 "**membuka remasan kertas**. Data yang terlipat rumit "
-                                 "diluruskan sedikit demi sedikit oleh tiap lapis, sampai "
-                                 "kelas-kelasnya bisa dipisah dengan bersih."},
-            ],
-            "notes": "Kalau ada satu hal dari bab 2 yang harus diingat manajer produk, ini: "
-                     "tanpa nonlinearitas, kedalaman tidak membeli apa pun.",
-        },
-
-        {"type": "section", "num": "04", "title": "Mesinnya: penurunan berbasis gradien",
-         "lead": "Turunan, gradien, SGD, dan aturan rantai."},
-
-        {
-            "type": "slide",
-            "kicker": "Bagian 2.4",
-            "title": "Lingkar pelatihan, dan langkah yang sulit",
-            "blocks": [
-                {"t": "steps", "items": [
-                    "Ambil satu batch sampel `x` dan target `y_true`.",
-                    "Jalankan model pada `x` (**lintasan maju**) → `y_pred`.",
-                    "Hitung **rugi**: selisih antara `y_pred` dan `y_true`.",
-                    "Perbarui bobot supaya ruginya turun sedikit.",
-                ]},
-                {"t": "band", "style": "amber",
-                 "md": "Langkah 4 itulah yang sulit. Menyetel tiap koefisien satu per satu "
-                       "mustahil -- jaringan modern punya ==jutaan sampai miliaran parameter==. "
-                       "Penurunan gradien menyelesaikannya sekaligus."},
-                {"t": "cols", "ratio": "1-1", "cols": [
-                    [
-                        {"t": "p", "md": "**Turunan** adalah kemiringan hampiran linear "
-                                         "setempat: untuk ε_x cukup kecil, "
-                                         "`f(x + ε_x) ≈ y + a·ε_x`."},
-                        {"t": "bullets", "items": [
-                            "`a` negatif → menaikkan `x` **menurunkan** `f(x)`.",
-                            "`a` positif → menaikkan `x` **menaikkan** `f(x)`.",
-                            "Untuk mengecilkan `f`, geser `x` ==berlawanan arah turunannya==.",
-                        ]},
-                    ],
-                    [
-                        {"t": "p", "md": "**Gradien** adalah turunan untuk operasi tensor. "
-                                         "Ia tensor sebentuk `W`, dan tiap koefisiennya "
-                                         "menyatakan arah dan besar perubahan rugi bila "
-                                         "koefisien `W` itu digeser."},
-                        {"t": "band",
-                         "md": "`W1 = W0 - step * grad(f(W0), W0)`"},
-                    ],
-                ]},
+                 "md": "Because for a network with millions of parameters that is "
+                       "==analytically intractable==. Iteration is not a shortcut; it is the "
+                       "only available route."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.4.3",
-            "title": "SGD mini-batch, dan mengapa tidak diselesaikan secara analitis",
+            "kicker": "Section 2.4.3",
+            "title": "Mini-batch stochastic gradient descent",
             "blocks": [
-                {"t": "p", "md": "Minimum ada di tempat turunannya nol. Tetapi menyelesaikan "
-                                 "`grad(f(W), W) = 0` secara analitis ==tidak terjangkau== "
-                                 "untuk jaringan berparameter jutaan. Maka: iterasi."},
                 {"t": "steps", "items": [
-                    "Ambil batch acak `x`, `y_true`. (Kata *stochastic* datang dari **acak** ini.)",
-                    "Lintasan maju → `y_pred`.",
-                    "Hitung rugi.",
-                    "**Lintasan mundur** → gradien rugi terhadap parameter.",
+                    "Draw a **random** batch of samples and targets. (The word *stochastic* "
+                    "comes from this randomness.)",
+                    "Forward pass → predictions.",
+                    "Compute the loss.",
+                    "**Backward pass** → gradient of the loss with respect to the parameters.",
                     "`W -= learning_rate * gradient`.",
                 ]},
+                {"t": "p", "md": "Repeat. Each step lowers the loss a little; enough steps "
+                                 "and the model fits."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.4.3",
+            "title": "Learning rate: the one number that decides whether it works",
+            "blocks": [
                 {"t": "cards", "cols": 3, "items": [
-                    {"ico": "🐢", "h": "Learning rate terlalu kecil",
-                     "p": "Kekonvergenan lambat; banyak langkah untuk sedikit kemajuan.",
-                     "style": "warn"},
-                    {"ico": "🌀", "h": "Terlalu besar",
-                     "p": "Pembaruan jadi ==acak==; rugi melompat-lompat dan tidak turun.",
-                     "style": "bad"},
+                    {"ico": "🐢", "h": "Too small",
+                     "p": "Convergence crawls — many steps for very little progress. It can "
+                          "look as though training has stalled.", "style": "warn"},
+                    {"ico": "🌀", "h": "Too large",
+                     "p": "Updates overshoot wildly; the loss jumps around and ==never comes "
+                          "down==.", "style": "bad"},
                     {"ico": "🎯", "h": "Momentum",
-                     "p": "Perbarui berdasar gradien **sekarang dan pembaruan sebelumnya** -- "
-                          "seperti bola menggelinding, cukup laju untuk melewati cekungan "
-                          "dangkal.", "style": "good"},
+                     "p": "Update using the current gradient **and** previous updates — like "
+                          "a ball rolling downhill with enough speed to cross a shallow dip.",
+                     "style": "good"},
                 ]},
-                {"t": "p", "md": "Varian yang memperbaiki kekonvergenan disebut **optimizer**: "
-                                 "SGD dengan momentum, Adagrad, RMSprop, Adam."},
+                {"t": "p", "md": "The variants that improve on plain SGD are called "
+                                 "**optimizers**: SGD with momentum, Adagrad, RMSprop, Adam."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.4.4-2.4.5",
-            "title": "Aturan rantai di atas graf komputasi = backpropagation",
+            "kicker": "Section 2.4.4",
+            "title": "The chain rule, applied backwards over a graph",
             "blocks": [
-                {"t": "fig", "svg": SVG_GRAPH, "tikz": TIKZ_GRAPH,
-                 "cap": "Graf komputasi adalah graf berarah tanpa siklus. Ia membuat "
-                        "perhitungan bisa diperlakukan sebagai data -- struktur yang "
-                        "terbaca mesin."},
+                {"t": "mmd", "id": "ch02-graph", "src": MMD_GRAPH,
+                 "cap": "Solid arrows are the forward pass; dashed arrows are the backward "
+                        "pass, each carrying one local derivative."},
+                {"t": "p", "md": "Multiply the local derivatives along a path and you have the "
+                                 "gradient. Applying the chain rule this way over a network "
+                                 "**is** backpropagation."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.4.5",
+            "title": "Two details that make the graph work",
+            "blocks": [
                 {"t": "bullets", "items": [
-                    "Bila ada **beberapa lintasan** dari simpul `a` ke `b`, sumbangan tiap "
-                    "lintasan ==dijumlahkan==.",
-                    "Kerangka kerja modern menjalankan ini sendiri: itulah **automatic "
-                    "differentiation**. Anda tidak pernah menulis backprop dengan tangan.",
+                    "When there are **several paths** from node `a` to node `b`, the "
+                    "contributions of the paths are ==summed==.",
+                    "A **computation graph** is a directed acyclic graph of operations. It "
+                    "makes computation itself into data — a structure a machine can read and "
+                    "manipulate.",
                 ]},
+                {"t": "band",
+                 "md": "Modern frameworks walk that graph for you. That is **automatic "
+                       "differentiation**, and it is why ==you will never write "
+                       "backpropagation by hand=="},
             ],
-            "notes": "Kalau peserta pernah menurunkan backprop manual di kuliah S1, katakan "
-                     "bahwa yang mereka kerjakan dulu itu persis ini — hanya saja kini "
-                     "dikerjakan oleh graf.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.4.5",
-            "title": "GradientTape: gradien dalam tiga baris",
+            "kicker": "Section 2.4.5",
+            "title": "Autodiff in three lines",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "listing 2.19-2.20 — autodiff",
+                {"t": "p", "md": "TensorFlow records operations inside a `GradientTape` scope, "
+                                 "then replays them backwards on request."},
+                {"t": "code", "lang": "python", "file": "listing 2.19 — a first derivative",
                  "src": """import tensorflow as tf
 
 x = tf.Variable(3.0)
 with tf.GradientTape() as tape:
     y = 2 * x + 3
-print(tape.gradient(y, x))          # dy/dx = 2
 
-# turunan kedua: pita bersarang
-time = tf.Variable(0.0)
+print(tape.gradient(y, x))      # dy/dx"""},
+                {"t": "out", "src": "tf.Tensor(2.0, shape=(), dtype=float32)"},
+                {"t": "p", "md": "The answer is 2, which is what you would get by hand — "
+                                 "except nothing here was told the rule for differentiating "
+                                 "a line."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.4.5",
+            "title": "…and a second derivative, which is a physics answer",
+            "blocks": [
+                {"t": "p", "md": "Tapes can be nested: the inner one differentiates the position, the outer one differentiates that result again."},
+                {"t": "code", "lang": "python", "file": "listing 2.20 — nested tapes",
+                 "src": """time = tf.Variable(0.0)
+
 with tf.GradientTape() as outer_tape:
     with tf.GradientTape() as inner_tape:
         position = 4.9 * time ** 2
     speed = inner_tape.gradient(position, time)
+
 acceleration = outer_tape.gradient(speed, time)
-print(acceleration)                 # 9.8"""},
-                {"t": "out", "src": """tf.Tensor(2.0, shape=(), dtype=float32)
-tf.Tensor(9.8, shape=(), dtype=float32)"""},
+print(acceleration)"""},
+                {"t": "out", "src": "tf.Tensor(9.8, shape=(), dtype=float32)"},
                 {"t": "band",
-                 "md": "Contoh kedua bukan sekadar pamer: `position = 4.9·t²` adalah "
-                       "jatuh bebas, dan turunan keduanya memang ==percepatan gravitasi==. "
-                       "Autodiff mengembalikan 9,8 tanpa pernah diberi tahu rumusnya."},
+                 "md": "`position = 4.9·t²` is free fall. Its second derivative is the "
+                       "==acceleration due to gravity==, and autodiff returned 9.8 without "
+                       "ever being given the formula."},
             ],
         },
 
-        {"type": "section", "num": "05", "title": "Menulis ulang dari nol",
-         "lead": "Tanpa fit(), tanpa Dense bawaan. Hasilnya harus sama."},
+        {"type": "section", "num": "05", "title": "Rewriting the first example from scratch",
+         "lead": "No fit(), no built-in Dense. The result has to hold up."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.6.1",
-            "title": "NaiveDense dan NaiveSequential",
+            "kicker": "Section 2.6",
+            "title": "What we are about to rebuild",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "listing 2.21-2.22 — lapis dan model",
+                {"t": "mmd", "id": "ch02-scratch", "src": MMD_SCRATCH,
+                 "cap": "Four small classes and one function replace Sequential, Dense, and "
+                        "fit() between them."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.6.1",
+            "title": "A layer, written out",
+            "blocks": [
+                {"t": "p", "md": "A `Dense` layer owns two weights and applies one "
+                                 "transformation. That is the entire class."},
+                {"t": "code", "lang": "python", "file": "listing 2.21 — NaiveDense",
                  "src": """import keras
 from keras import ops
 
@@ -782,9 +904,20 @@ class NaiveDense:
 
     @property
     def weights(self):
-        return [self.W, self.b]
+        return [self.W, self.b]"""},
+                {"t": "p", "md": "`W` starts random and `b` starts at zero — exactly the "
+                                 "starting condition chapter 1 described."},
+            ],
+        },
 
-class NaiveSequential:
+        {
+            "type": "slide",
+            "kicker": "Section 2.6.1",
+            "title": "A model is just layers, applied in order",
+            "blocks": [
+                {"t": "p", "md": "With a layer in hand, a model needs to do only two things: call the layers in sequence, and expose all their weights together so the optimizer can reach them."},
+                {"t": "code", "lang": "python", "file": "listing 2.22 — NaiveSequential",
+                 "src": """class NaiveSequential:
     def __init__(self, layers):
         self.layers = layers
 
@@ -797,15 +930,20 @@ class NaiveSequential:
     @property
     def weights(self):
         return [w for layer in self.layers for w in layer.weights]"""},
+                {"t": "band",
+                 "md": "Note how little there is to it: a model is ==a list of layers and a "
+                       "for loop==. Everything else in Keras is convenience on top."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.6.2-2.6.4",
-            "title": "Satu langkah pelatihan, dan gelungnya",
+            "kicker": "Section 2.6.2 – 2.6.3",
+            "title": "One training step is the four figures, in code",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "listing 2.24-2.26 — lingkar pelatihan",
+                {"t": "p", "md": "Forward pass, loss, gradients, update — the same four moves "
+                                 "as the loop diagram, now with a real optimizer."},
+                {"t": "code", "lang": "python", "file": "listing 2.24 — one_training_step",
                  "src": """import tensorflow as tf
 from keras import optimizers
 
@@ -813,14 +951,26 @@ optimizer = optimizers.SGD(learning_rate=1e-3)
 
 def one_training_step(model, images_batch, labels_batch):
     with tf.GradientTape() as tape:
-        predictions = model(images_batch)
+        predictions = model(images_batch)                       # forward
         loss = ops.sparse_categorical_crossentropy(labels_batch, predictions)
-        average_loss = ops.mean(loss)
-    gradients = tape.gradient(average_loss, model.weights)
-    optimizer.apply_gradients(zip(gradients, model.weights))
-    return average_loss
+        average_loss = ops.mean(loss)                           # loss
+    gradients = tape.gradient(average_loss, model.weights)      # gradients
+    optimizer.apply_gradients(zip(gradients, model.weights))    # update
+    return average_loss"""},
+                {"t": "band",
+                 "md": "Four lines, four ideas: ==forward, loss, gradients, update==. Every "
+                       "training loop in the rest of the book is a variation on this shape."},
+            ],
+        },
 
-def fit(model, images, labels, epochs, batch_size=128):
+        {
+            "type": "slide",
+            "kicker": "Section 2.6.4",
+            "title": "And the loop around it",
+            "blocks": [
+                {"t": "p", "md": "Wrapping that single step in two loops — over epochs, and over batches within an epoch — is all that `fit()` does underneath."},
+                {"t": "code", "lang": "python", "file": "listing 2.26 — fit, by hand",
+                 "src": """def fit(model, images, labels, epochs, batch_size=128):
     for epoch in range(epochs):
         print(f"Epoch {epoch}")
         gen = BatchGenerator(images, labels, batch_size)
@@ -829,18 +979,18 @@ def fit(model, images, labels, epochs, batch_size=128):
             loss = one_training_step(model, images_batch, labels_batch)
             if i % 100 == 0:
                 print(f"  loss at batch {i}: {loss:.2f}")"""},
-                {"t": "band",
-                 "md": "Empat langkah pada slide lingkar pelatihan tadi kini terlihat "
-                       "sebagai empat baris: ==maju, rugi, gradien, perbarui==."},
+                {"t": "p", "md": "`BatchGenerator` is a dozen lines that hand out consecutive "
+                                 "slices — the batch axis from section 2.2, put to work."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 2.6.5",
-            "title": "Buktinya: hasilnya memang sama",
+            "kicker": "Section 2.6.5",
+            "title": "Does it work? Run it and see",
             "blocks": [
-                {"t": "code", "lang": "python", "file": "listing 2.27 — menilai model",
+                {"t": "p", "md": "Assemble the same two-layer network out of the hand-written parts, train it for ten epochs, and score it the same way the built-in version was scored."},
+                {"t": "code", "lang": "python", "file": "listing 2.27 — evaluating it",
                  "src": """model = NaiveSequential([
     NaiveDense(input_size=28 * 28, output_size=512, activation=ops.relu),
     NaiveDense(input_size=512, output_size=10, activation=ops.softmax),
@@ -849,8 +999,7 @@ fit(model, train_images, train_labels, epochs=10, batch_size=128)
 
 predictions = model(test_images)
 predicted_labels = ops.argmax(predictions, axis=1)
-matches = predicted_labels == test_labels
-print(f"accuracy: {ops.mean(matches):.2f}")"""},
+print(f"accuracy: {ops.mean(predicted_labels == test_labels):.2f}")"""},
                 {"t": "out", "src": """Epoch 0
   loss at batch 0: 6.19
   loss at batch 400: 2.21
@@ -858,39 +1007,50 @@ Epoch 9
   loss at batch 0: 0.36
   loss at batch 400: 0.34
 accuracy: 0.90"""},
-                {"t": "band", "style": "amber",
-                 "md": "Sengaja ==lebih rendah dari 97,8%==. Bedanya bukan sihir Keras: "
-                       "versi ini memakai SGD polos dengan learning rate 1e-3, sedangkan "
-                       "yang pertama memakai **Adam**. Itu justru pelajarannya -- pilihan "
-                       "optimizer berdampak sebesar itu."},
             ],
-            "notes": "Ini slide yang paling sering salah dibaca. Tegaskan: turunnya akurasi "
-                     "bukan bukti bahwa implementasi manualnya salah.",
         },
 
         {
             "type": "slide",
-            "kicker": "Ringkasan",
-            "title": "Yang wajib terbawa dari bab 2",
+            "kicker": "Section 2.6.5",
+            "title": "90% versus 97.8% — and why that is the lesson",
+            "blocks": [
+                {"t": "band", "style": "amber",
+                 "md": "The hand-written version scores **lower**, and that is not a bug. "
+                       "It uses plain SGD at `learning_rate=1e-3`; the first example used "
+                       "==**Adam**=="},
+                {"t": "p", "md": "So the gap measures **the choice of optimizer**, not the "
+                                 "quality of the implementation. It is one of the clearest "
+                                 "demonstrations in the book of how much that choice is worth."},
+            ],
+            "notes": "This slide is misread more than any other in the chapter. State plainly "
+                     "that the lower number does not mean the manual code is wrong.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Summary",
+            "title": "What has to survive this chapter",
             "blocks": [
                 {"t": "steps", "items": [
-                    "**Tensor** = wadah angka dengan **rank, shape, dtype**. Sumbu ke-0 "
-                    "adalah sumbu sampel alias sumbu batch.",
-                    "**Operasi tensor** punya arti geometris. Dense tanpa aktivasi hanya "
-                    "transformasi afin -- dan tumpukannya tetap afin.",
-                    "**Belajar** = mencari nilai bobot yang mengecilkan rugi pada data latih.",
-                    "**SGD mini-batch** memperbarui bobot dari gradien pada batch acak.",
-                    "**Aturan rantai + autodiff** = backpropagation; graf komputasi yang "
-                    "mengerjakannya.",
-                    "**Loss** menakar keberhasilan tugas; **optimizer** menentukan varian "
-                    "penurunan gradiennya.",
+                    "**Tensors** are containers with **rank, shape, dtype**. Axis 0 is the "
+                    "samples axis, and therefore the batch axis.",
+                    "**Tensor operations are geometric.** A Dense layer without an activation "
+                    "is an affine transform, and stacking those still gives an affine transform.",
+                    "**Learning** means finding weight values that minimise the loss on the "
+                    "training data.",
+                    "**Mini-batch SGD** updates weights from gradients computed on random batches.",
+                    "**Chain rule + autodiff = backpropagation**, carried out over a "
+                    "computation graph.",
+                    "**Loss** measures success at the task; **optimizer** decides how the "
+                    "descent is performed — and that choice is worth several points of accuracy.",
                 ]},
                 {"t": "links", "items": [
-                    {"k": "NOTEBOOK", "ic": "📓", "v": "01_mnist_pertama.ipynb",
-                     "href": "../../course-slides/notebooks/ch02/01_mnist_pertama.ipynb"},
-                    {"k": "NOTEBOOK", "ic": "📓", "v": "04_mnist_dari_nol.ipynb",
-                     "href": "../../course-slides/notebooks/ch02/04_mnist_dari_nol.ipynb"},
-                    {"k": "BAB BERIKUT", "ic": "➡", "v": "Bab 3 — Kerangka kerja",
+                    {"k": "NOTEBOOK", "ic": "📓", "v": "01_first_mnist.ipynb",
+                     "href": "../../course-slides/notebooks/ch02/01_first_mnist.ipynb"},
+                    {"k": "NOTEBOOK", "ic": "📓", "v": "04_mnist_from_scratch.ipynb",
+                     "href": "../../course-slides/notebooks/ch02/04_mnist_from_scratch.ipynb"},
+                    {"k": "NEXT", "ic": "➡", "v": "Chapter 3 — The frameworks",
                      "href": "../ch03/index.html"},
                 ]},
             ],
