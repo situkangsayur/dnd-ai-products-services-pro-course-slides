@@ -1,0 +1,3 @@
+{
+  "_comment": "Page + crop box in PDF points (origin top-left) for figures whose automatic band/column detection is wrong. Workflow: run `python3 tools/bookfigs.py --pdf BOOK --page N --full-page X.Y`, measure the region on the rendered page, then record it here. Do NOT guess the numbers - a wrong box silently ships a slab of body text as a figure."
+}

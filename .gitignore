@@ -18,3 +18,7 @@ venv/
 
 # Notebook scratch
 .ipynb_checkpoints/
+
+# Book figures are derived from a copyrighted PDF that is not in this repo.
+# Re-extract with:  python3 tools/bookfigs.py --pdf <book.pdf> --all-in <ch>
+figs/book/

@@ -11,14 +11,14 @@ COURSE = {
     "tagline": "AI for Professional",
     "by": "ITB Team",
     "org": "Institut Teknologi Bandung",
-    "unit": "Direktorat Pendidikan Profesional Berkelanjutan",
+    "unit": "Directorate of Continuing Professional Education",
     "partner": "PT Bank Rakyat Indonesia (Persero) Tbk",
-    "format": "Microcredential · hybrid · berbayar",
+    "format": "Microcredential · hybrid · paid",
     # From BRI-diskusi-20-08-2026: 6 sks, 1 sks = 45 jam, dipecah
     # 15 jam kuliah + 15 jam exercise + 15 jam independent study per sks.
-    "credits": "6 sks (setara 2 mata kuliah S2)",
-    "hours": "1 sks = 45 jam · 15 jam kuliah + 15 jam exercise + 15 jam studi mandiri",
-    "assessment": "Tugas kelompok + presentasi + pendampingan. Tidak ada ujian tertulis.",
+    "credits": "6 credits (equivalent to two master's-level courses)",
+    "hours": "1 credit = 45 hours · 15 h lecture + 15 h exercise + 15 h independent study",
+    "assessment": "Group assignments, presentations, and supervision. No written exam.",
     "start": "September 2026",
 }
 
@@ -30,40 +30,41 @@ TEAM = [
     {
         "key": "bambang",
         "name": "Prof. Bambang Riyanto Trilaksono",
-        "role": "Pengajar Utama",
-        "aff": "Guru Besar STEI ITB · Ketua KK Sistem Kendali dan Komputer · "
-               "salah satu pendiri Pusat AI ITB",
+        "role": "Lead Instructor",
+        "aff": "Professor, School of Electrical Engineering and Informatics (STEI) ITB · "
+               "Head of the Control and Computer Systems Research Group · "
+               "co-founder of the ITB Center for Artificial Intelligence",
         "url": "https://stei.itb.ac.id/en/dosen/bambang-riyanto-trilaksono/",
-        "topics": "Konsep, teori, dan pemodelan (sesi pagi)",
+        "topics": "Concepts, theory, and modelling (morning sessions)",
     },
     {
         "key": "rahman",
         "name": "Rahman Indra Kesuma, S.Kom., M.Cs.",
-        "role": "Asisten Pengajar",
-        "aff": "Dosen Teknik Informatika, Institut Teknologi Sumatera (ITERA) · "
-               "Artificial Intelligence dan Data Engineering",
+        "role": "Teaching Assistant",
+        "aff": "Lecturer in Informatics Engineering, Institut Teknologi Sumatera (ITERA) · "
+               "Artificial Intelligence and Data Engineering",
         "url": "https://if.itera.ac.id/dosen-rahman-indra-kesuma/",
-        "topics": "Topik 2 — Machine Learning · Topik 3 — Deep Learning",
+        "topics": "Topic 2 — Machine Learning · Topic 3 — Deep Learning",
     },
     {
         "key": "viny",
         "name": "Viny",
-        "role": "Asisten Pengajar",
-        "aff": "Kandidat Doktor · fokus riset Large Language Model, "
-               "fine-tuning, RAG, re-ranker, dan guardrail",
+        "role": "Teaching Assistant",
+        "aff": "Doctoral candidate · research focus on large language models, "
+               "fine-tuning, RAG, re-rankers, and guardrails",
         "url": "https://scholar.google.com/citations?user=hayqUI0AAAAJ&hl=en",
-        "topics": "Topik 4 — LLM, fine-tuning, dan RAG",
-        # Nama lengkap belum dikonfirmasi; profil Scholar memblokir pengambilan
-        # otomatis. Tandai agar tidak terbaca sebagai fakta terverifikasi.
+        "topics": "Topic 4 — LLMs, fine-tuning, and RAG",
+        # Full name not yet confirmed; the Scholar profile blocks automated
+        # fetching. Flagged so it is not read as a verified fact.
         "name_pending": True,
     },
     {
         "key": "hendri",
         "name": "Hendri Karisma, M.T.",
-        "role": "Asisten Pengajar",
-        "aff": "VP of Engineering, Jejakin · Kandidat Doktor STEI ITB",
+        "role": "Teaching Assistant",
+        "aff": "VP of Engineering, Jejakin · Doctoral candidate, STEI ITB",
         "url": "https://hendrikarisma.my.id",
-        "topics": "Topik 6 — Agentic AI",
+        "topics": "Topic 6 — Agentic AI",
     },
 ]
 
@@ -77,8 +78,8 @@ BOOK = {
     "site": "https://deeplearningwithpython.io/",
     "chapters_url": "https://deeplearningwithpython.io/chapters/",
     "code_repo": "https://github.com/fchollet/deep-learning-with-python-notebooks",
-    "note": "Kode edisi ke-3 ditulis dengan Keras 3 dan dapat dijalankan di atas "
-            "JAX, TensorFlow, atau PyTorch.",
+    "note": "The third-edition code is written with Keras 3 and runs on top of "
+            "JAX, TensorFlow, or PyTorch.",
 }
 
 CH_SLUG = {
@@ -127,12 +128,12 @@ def book_source(n):
 
 def chapter_resources(n, local_notebooks=()):
     """Standard resource row for a chapter deck."""
-    res = [{"kind": "book", "label": f"Bab {n} — teks penuh",
+    res = [{"kind": "book", "label": f"Chapter {n} — full text",
             "href": chapter_url(n)}]
     for nb in local_notebooks:
         res.append({"kind": "notebook", "label": nb,
                     "href": f"../../notebooks/ch{n:02d}/{nb}"})
     up = official_nb_url(n)
     if up:
-        res.append({"kind": "github", "label": "Notebook resmi penulis", "href": up})
+        res.append({"kind": "github", "label": "Author's official notebook", "href": up})
     return res

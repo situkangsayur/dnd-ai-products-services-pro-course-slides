@@ -8,8 +8,8 @@ import os
 from inline import tex as it, esc_tex, tex_url
 
 RES_LABEL = {
-    "notebook": "Notebook", "github": "Repo", "book": "Buku",
-    "paper": "Paper", "tool": "Tool", "dataset": "Dataset", "site": "Situs",
+    "notebook": "Notebook", "github": "Repo", "book": "Book",
+    "paper": "Paper", "tool": "Tool", "dataset": "Dataset", "site": "Site",
 }
 
 CARD_ENV = {"": "icard", "accent": "icardaccent", "warn": "icardwarn",
@@ -260,8 +260,8 @@ def build(deck, listings_dir=None):
                 for r in d["resources"]]})
         out.append(
             "\\framekicker{Learning outcomes}\n"
-            "\\begin{frame}[shrink=25]{Tujuan Sesi}\n"
-            "\\leadpar{Setelah sesi ini, peserta dapat:}\n"
+            "\\begin{frame}[shrink=25]{Session Objectives}\n"
+            "\\leadpar{By the end of this session, participants can:}\n"
             f"\\begin{{isteps}}\n{items}\n\\end{{isteps}}\n{res}"
             "\\end{frame}\n\n")
 

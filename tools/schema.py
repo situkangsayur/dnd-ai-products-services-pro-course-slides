@@ -135,3 +135,126 @@ def validate(deck):
     if errs:
         raise ValueError("\n".join(errs))
     return True
+
+
+# =============================================================================
+#  Quality rules
+#  These are not style preferences; each one encodes a failure we actually hit
+#  while authoring, and each is checked on every build so it cannot come back.
+# =============================================================================
+
+# Blocks that count as explanation around a listing.
+PROSE_KINDS = {"p", "lead", "bullets", "steps", "band", "quote",
+               "table", "cards", "stats", "out", "fig"}
+
+# Rough visual weight of one block, in "lines of slide". Tuned against the
+# rendered decks: a slide over MAX_WEIGHT overflows or has to be shrunk so far
+# that the room can no longer read it.
+WEIGHT = {
+    "p": 3.2, "lead": 3.6, "bullets": 2.0, "steps": 2.4, "cards": 7.0,
+    "stats": 5.0, "code": 1.15, "out": 1.15, "table": 2.2, "quote": 5.0,
+    "band": 3.6, "fig": 12.0, "links": 3.0,
+}
+MAX_WEIGHT = 34.0          # above this a slide is too dense: split it
+HEADROOM_WEIGHT = 6.0      # below this it is too thin: merge or add substance
+
+
+def _flatten(blocks):
+    out = []
+    for b in blocks:
+        if b.get("t") == "cols":
+            for col in b.get("cols", []):
+                out.extend(_flatten(col))
+        else:
+            out.append(b)
+    return out
+
+
+def _weight(blocks):
+    """Estimated vertical weight of a slide body.
+
+    Columns are counted at the weight of their heaviest column, since they sit
+    side by side rather than stacking.
+    """
+    total = 0.0
+    for b in blocks:
+        t = b.get("t")
+        if t == "cols":
+            total += max((_weight(col) for col in b.get("cols", [])), default=0.0)
+        elif t == "code":
+            total += WEIGHT["code"] * (b.get("src", "").count("\n") + 3)
+        elif t == "out":
+            total += WEIGHT["out"] * (b.get("src", "").count("\n") + 3)
+        elif t == "bullets":
+            total += WEIGHT["bullets"] * len(b.get("items", []))
+        elif t == "steps":
+            total += WEIGHT["steps"] * len(b.get("items", []))
+        elif t == "table":
+            total += WEIGHT["table"] * (len(b.get("rows", [])) + 1.6)
+        elif t == "cards":
+            rows = -(-len(b.get("items", [])) // (b.get("cols") or 3))
+            total += WEIGHT["cards"] * rows
+        elif t == "stats":
+            rows = -(-len(b.get("items", [])) // (b.get("cols") or 4))
+            total += WEIGHT["stats"] * rows
+        else:
+            total += WEIGHT.get(t, 2.0)
+    return total
+
+
+def lint(deck, strict=False):
+    """Return a list of quality warnings for one deck.
+
+    Rules
+      code-unexplained  a listing with no prose before AND after it. A slide
+                        that drops code on the room with no lead-in and no
+                        takeaway teaches nothing.
+      slide-too-dense   body weight over MAX_WEIGHT; it will be scaled down
+                        past readability. Split it.
+      deck-too-short    a book chapter under MIN_CHAPTER_SLIDES; the chapter is
+                        almost certainly not covered.
+      no-figure         a content-heavy chapter deck with too few diagrams.
+    """
+    warns = []
+    did = deck.get("id", "?")
+    slides = [s for s in deck.get("slides", []) if s.get("type") == "slide"]
+
+    for i, s in enumerate(slides):
+        blocks = s.get("blocks", [])
+        seq = _flatten(blocks)
+        kinds = [b.get("t") for b in seq]
+
+        for j, t in enumerate(kinds):
+            if t != "code":
+                continue
+            before = any(k in PROSE_KINDS for k in kinds[:j])
+            after = any(k in PROSE_KINDS for k in kinds[j + 1:])
+            if not before or not after:
+                missing = []
+                if not before:
+                    missing.append("no lead-in")
+                if not after:
+                    missing.append("no follow-through")
+                warns.append(
+                    f"{did}: code-unexplained  \"{s.get('title', '')[:46]}\" ({', '.join(missing)})")
+                break
+
+        w = _weight(blocks)
+        if w > MAX_WEIGHT:
+            warns.append(f"{did}: slide-too-dense   \"{s.get('title', '')[:46]}\" "
+                         f"(weight {w:.0f} > {MAX_WEIGHT:.0f})")
+
+    if deck.get("kind") == "chapter":
+        if len(slides) < MIN_CHAPTER_SLIDES:
+            warns.append(f"{did}: deck-too-short    {len(slides)} content slides "
+                         f"(< {MIN_CHAPTER_SLIDES})")
+        figs = sum(1 for s in slides for b in _flatten(s.get("blocks", []))
+                   if b.get("t") == "fig")
+        want = max(6, len(slides) // 6)
+        if figs < want:
+            warns.append(f"{did}: too-few-figures   {figs} diagrams (want >= {want})")
+
+    return warns
+
+
+MIN_CHAPTER_SLIDES = 34

@@ -134,11 +134,11 @@ def _title_slide(deck):
     people = d.get("presenter")
     meta = []
     if d.get("duration"):
-        meta.append(f'<span class="chip"><b>Durasi</b> {esc_html(d["duration"])}</span>')
+        meta.append(f'<span class="chip"><b>Duration</b> {esc_html(d["duration"])}</span>')
     if people:
-        meta.append(f'<span class="chip"><b>Pengajar</b> {esc_html(people["name"])}</span>')
+        meta.append(f'<span class="chip"><b>Instructor</b> {esc_html(people["name"])}</span>')
     if d.get("source"):
-        meta.append(f'<span class="chip"><b>Sumber</b> {esc_html(d["source"])}</span>')
+        meta.append(f'<span class="chip"><b>Source</b> {esc_html(d["source"])}</span>')
 
     kicker = d.get("kicker") or (
         f"Chapter {d['number']}" if d.get("number") else "Module")
@@ -158,11 +158,11 @@ def _title_slide(deck):
             '<div class="cobrand">'
             '<img src="../_engine/assets/itb-logo.png" alt="ITB">'
             '<div class="co-txt"><b>Institut Teknologi Bandung</b><br>'
-            'Direktorat Pendidikan Profesional Berkelanjutan'
+            'Directorate of Continuing Professional Education'
             # The cohort partner is named only on decks that declare one. The
             # book chapters are reused across cohorts and institutions, so they
             # deliberately carry no partner branding.
-            + (f'<br><span style="opacity:.7">× {esc_html(d["partner"])}</span>'
+            + (f'<br><span style="opacity:.7">in partnership with {esc_html(d["partner"])}</span>'
                if d.get("partner") else "")
             + "</div>"
             "</div>"
@@ -216,7 +216,7 @@ def build_slides(deck):
 # ------------------------------------------------------------------ files ----
 
 INDEX = """<!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -237,11 +237,11 @@ INDEX = """<!DOCTYPE html>
     <span class="tb-event">{brand}</span>
   </div>
   <div class="tb-right">
-    <a class="tb-btn home" href="../../site-index.html" title="Kembali ke daftar materi">⌂ Kursus</a>
-    <button id="present-btn" class="tb-btn" title="Layar penuh di layar ini (F5) — clicker jalan di sini">▶ Present</button>
-    <button id="presenter-btn" class="tb-btn" title="Presenter view — buka jendela kedua untuk proyektor">⧉ Presenter</button>
-    <button id="pdf-btn" class="tb-btn" title="Cetak / simpan PDF (P)">⬇ PDF</button>
-    <button id="overview-btn" class="tb-btn" title="Peta slide (O)">▦</button>
+    <a class="tb-btn home" href="../index.html" title="Back to the course index">⌂ Course</a>
+    <button id="present-btn" class="tb-btn" title="Full screen on this display (F5) — the clicker works here">▶ Present</button>
+    <button id="presenter-btn" class="tb-btn" title="Presenter view — opens a second window for the projector">⧉ Presenter</button>
+    <button id="pdf-btn" class="tb-btn" title="Print / save as PDF (P)">⬇ PDF</button>
+    <button id="overview-btn" class="tb-btn" title="Slide overview (O)">▦</button>
   </div>
 </header>
 
@@ -252,9 +252,9 @@ INDEX = """<!DOCTYPE html>
 <div id="overview" class="hidden"><div id="overview-grid"></div></div>
 
 <nav id="controls">
-  <button id="prev" class="ctrl-btn" aria-label="Sebelumnya">‹</button>
+  <button id="prev" class="ctrl-btn" aria-label="Previous">‹</button>
   <span id="counter">1 / 1</span>
-  <button id="next" class="ctrl-btn" aria-label="Berikutnya">›</button>
+  <button id="next" class="ctrl-btn" aria-label="Next">›</button>
 </nav>
 
 <script src="slides.js"></script>

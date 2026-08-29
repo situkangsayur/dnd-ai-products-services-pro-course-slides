@@ -229,9 +229,9 @@
   \IfFileExists{\itb@logo}{\raisebox{-3.4mm}{\includegraphics[height=11mm]{\itb@logo}}\hspace{4mm}}{}%
   \begin{minipage}[b]{0.60\paperwidth}
     {\fontsize{7.4}{9.4}\selectfont\color{dink}\textbf{Institut Teknologi Bandung}}\par
-    {\fontsize{6.6}{8.4}\selectfont\color{dink3}Direktorat Pendidikan Profesional Berkelanjutan}\par
+    {\fontsize{6.6}{8.4}\selectfont\color{dink3}Directorate of Continuing Professional Education}\par
     \ifx\itb@partner\@empty\else
-      {\fontsize{6.6}{8.4}\selectfont\color{dink3}\texttimes\ \itb@partner}\par
+      {\fontsize{6.6}{8.4}\selectfont\color{dink3}in partnership with \itb@partner}\par
     \fi
   \end{minipage}
 
@@ -247,11 +247,11 @@
     {\color{dink2}\fontsize{9.4}{12.6}\selectfont\raggedright\itb@subtitle\par}
   \fi
   \vskip 11pt
-  \ifx\itb@duration\@empty\else\itb@chip{Durasi}{\itb@duration}\hspace{3pt}\fi
-  \ifx\itb@pname\@empty\else\itb@chip{Pengajar}{\itb@pname}\fi
+  \ifx\itb@duration\@empty\else\itb@chip{Duration}{\itb@duration}\hspace{3pt}\fi
+  \ifx\itb@pname\@empty\else\itb@chip{Instructor}{\itb@pname}\fi
   % The source line is long enough to run off the plate beside the others, so
   % it gets its own row rather than being truncated at the right margin.
-  \ifx\itb@source\@empty\else\par\vskip 5pt\itb@chip{Sumber}{\itb@source}\fi
+  \ifx\itb@source\@empty\else\par\vskip 5pt\itb@chip{Source}{\itb@source}\fi
 \end{minipage}
 \end{frame}
 }%
@@ -486,9 +486,9 @@
 % =============================================================================
 %  Objectives frame — used once per deck, right after the cover
 % =============================================================================
-\newcommand{\itb@objtitle}{Setelah sesi ini, peserta dapat}
+\newcommand{\itb@objtitle}{By the end of this session, participants can}
 \newenvironment{objectives}
-  {\begin{frame}{Tujuan Sesi}\framekicker{Learning outcomes}%
+  {\begin{frame}{Session Objectives}\framekicker{Learning outcomes}%
    \leadpar{\itb@objtitle:}\begin{isteps}}
   {\end{isteps}\end{frame}}
 
