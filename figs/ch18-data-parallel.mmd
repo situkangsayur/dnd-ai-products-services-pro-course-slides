@@ -1,0 +1,12 @@
+
+flowchart TB
+  B["Global batch<br/><small>128 samples</small>"]
+  S1["Sub-batch<br/><small>64 samples</small>"]
+  S2["Sub-batch<br/><small>64 samples</small>"]
+  R1["<b>Replica 0</b><br/>gpu:0"]
+  R2["<b>Replica 1</b><br/>gpu:1"]
+  G["<b>Average the gradients</b><br/><small>update every replica<br/>from the average</small>"]
+  E["State identical to training<br/>on the full batch of 128<br/><small>synchronous training</small>"]
+  B --> S1 --> R1 --> G
+  B --> S2 --> R2 --> G
+  G --> E

@@ -1,0 +1,10 @@
+
+flowchart TB
+  A["<b>1.</b> Choose hyperparameters<br/><small>automatically</small>"]
+  B["<b>2.</b> Build the model"]
+  C["<b>3.</b> Fit, and measure on<br/>the validation data"]
+  D["<b>4.</b> Choose the next set<br/><small>automatically</small>"]
+  E["<b>6.</b> Eventually, measure<br/>on the test data"]
+  A --> B --> C --> D
+  D -- "5. repeat" --> A
+  C --> E

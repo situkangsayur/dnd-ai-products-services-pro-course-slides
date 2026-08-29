@@ -1,0 +1,3 @@
+model = ...
+model.quantize("int8")
+predictions = model.predict(...)

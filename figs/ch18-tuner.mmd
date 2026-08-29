@@ -1,0 +1,7 @@
+
+flowchart LR
+  P["<b>Pick</b> a set of<br/>hyperparameter values"]
+  B["<b>Call</b> the model-building<br/>function with them"]
+  T["<b>Train</b> and record<br/>the metrics"]
+  P --> B --> T
+  T -. "loop, max_trials times" .-> P

@@ -1,0 +1,9 @@
+
+flowchart LR
+  A["float32 tensors"]
+  B["<b>Scale</b><br/><small>abs-max, into [-127, 127]</small>"]
+  C["<b>Cast to int8</b><br/><small>round and clip</small>"]
+  D["<b>matmul in int8</b><br/><small>the fast part</small>"]
+  E["<b>Cast back, unscale</b><br/><small>divide by the product<br/>of the two scales</small>"]
+  F["float32 output,<br/>very nearly identical"]
+  A --> B --> C --> D --> E --> F

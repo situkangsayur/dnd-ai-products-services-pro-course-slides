@@ -1,0 +1,5 @@
+>>> model.layers[0].kernel.value.sharding
+NamedSharding(
+    mesh=Mesh("data": 2, "model": 4),
+    spec=PartitionSpec(None, "model")
+)

@@ -1,0 +1,9 @@
+
+flowchart TB
+  Q["Two ways to spread work<br/>across devices"]
+  DP["<b>Data parallelism</b><br/><small>one model replicated on<br/>every device; each processes<br/>a different sub-batch</small>"]
+  MP["<b>Model parallelism</b><br/><small>different parts of one model<br/>on different devices, working<br/>on the same batch</small>"]
+  DR["Speed. Requires the model<br/>to <b>fit on one device</b>."]
+  MR["Size. Used when the model<br/><b>does not fit</b> anywhere."]
+  Q --> DP --> DR
+  Q --> MP --> MR

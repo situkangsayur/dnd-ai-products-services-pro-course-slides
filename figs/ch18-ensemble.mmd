@@ -1,0 +1,13 @@
+
+flowchart TB
+  A["Model A<br/><small>touches the trunk</small>"]
+  B["Model B<br/><small>touches a leg</small>"]
+  C["Model C<br/><small>touches an ear</small>"]
+  D["Model D<br/><small>a tree model, quite<br/>different from the rest</small>"]
+  W["<b>Weighted average</b><br/><small>weights learned on<br/>the validation set</small>"]
+  O["A far more accurate<br/>description than any one<br/>of them alone"]
+  A --> W
+  B --> W
+  C --> W
+  D --> W
+  W --> O

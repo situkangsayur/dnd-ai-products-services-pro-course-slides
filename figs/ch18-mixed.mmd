@@ -1,0 +1,9 @@
+
+flowchart TB
+  I["Inputs"]
+  C["<b>compute_dtype = float16</b><br/><small>most of the forward pass,<br/>on half-precision copies<br/>of the weights</small>"]
+  G["float16 gradients"]
+  CAST["<b>Cast to float32</b>"]
+  V["<b>variable_dtype = float32</b><br/><small>weights stored and updated<br/>in full precision</small>"]
+  I --> C --> G --> CAST --> V
+  V -. "half-precision copies" .-> C

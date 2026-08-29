@@ -1,0 +1,9 @@
+
+flowchart TB
+  P["<b>Precision is to numbers<br/>what resolution is to images</b>"]
+  H["<b>float16</b><br/>half precision<br/><small>smallest safe gap: 1e-3</small>"]
+  S["<b>float32</b><br/>single precision<br/><small>smallest safe gap: 1e-7</small>"]
+  D["<b>float64</b><br/>double precision<br/><small>smallest safe gap: 1e-16</small>"]
+  P --> H
+  P --> S
+  P --> D

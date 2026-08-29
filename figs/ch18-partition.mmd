@@ -1,0 +1,9 @@
+
+flowchart TB
+  Q["Splitting one model<br/>across devices"]
+  H["<b>Horizontal partitioning</b><br/><small>each device handles<br/>different layers</small>"]
+  V["<b>Vertical partitioning</b><br/><small>each layer split across<br/>all devices</small>"]
+  HR["Communication overhead:<br/>layer 1's output must be<br/>copied before layer 2 runs.<br/><b>GPUs sit idle.</b>"]
+  VR["matmul and convolution are<br/>highly parallelizable, so this is<br/>easy to implement and<br/><b>almost always the best fit</b>."]
+  Q --> H --> HR
+  Q --> V --> VR

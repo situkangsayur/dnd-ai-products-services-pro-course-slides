@@ -1,0 +1,7 @@
+{sign} * (2 ** ({exponent} - 127)) * 1.{mantissa}
+
+Pi in float32:   sign 0 | exponent 10000000 | mantissa 10010010000111111011011
+                        1 bit       8 bits             23 bits
+
+value = +1 * (2 ** (128 - 127)) * 1.5707963705062866
+value = 3.1415927410125732

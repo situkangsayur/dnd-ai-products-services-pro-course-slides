@@ -135,5 +135,16 @@
  "ch17-train-step": "b3f872ec27024d09",
  "ch17-unet": "b55497781c7d3c60",
  "ch17-vae": "6c0a790b8a23f814",
- "ch17-vae-loss": "02b425ac7400b61d"
+ "ch17-vae-loss": "02b425ac7400b61d",
+ "ch18-data-parallel": "570958c4b70ee375",
+ "ch18-ensemble": "5c9ba1d60c348260",
+ "ch18-float": "b275d75ffbc43a55",
+ "ch18-hpo-hard": "91158d57999383e5",
+ "ch18-hpo-loop": "46833513985fb073",
+ "ch18-mesh": "9bae1dbe30be4e0c",
+ "ch18-mixed": "f626895ef3b19db7",
+ "ch18-parallelism": "3228979dbb8a5324",
+ "ch18-partition": "969a24129d8e523a",
+ "ch18-quant": "786022c0f35f4175",
+ "ch18-tuner": "4dde12dc934a9dbe"
 }

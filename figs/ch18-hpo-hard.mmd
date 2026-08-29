@@ -1,0 +1,11 @@
+
+flowchart TB
+  W["<b>Training weights</b><br/><small>compute a loss on a mini-batch,<br/>backpropagate</small>"]
+  H["<b>Updating hyperparameters</b>"]
+  H1["Space is <b>discrete</b><br/><small>no gradient descent;<br/>gradient-free methods only</small>"]
+  H2["Feedback is <b>expensive</b><br/><small>each signal costs a full<br/>training run from scratch</small>"]
+  H3["Feedback is <b>noisy</b><br/><small>is 0.2% a better config,<br/>or a lucky init?</small>"]
+  W --> E["Easy"]
+  H --> H1
+  H --> H2
+  H --> H3

@@ -1,0 +1,8 @@
+
+flowchart TB
+  M["<b>DeviceMesh</b><br/><small>shape (2, 4), eight devices</small>"]
+  A0["<b>axis 0: &quot;data&quot;</b><br/><small>2 replicas</small>"]
+  A1["<b>axis 1: &quot;model&quot;</b><br/><small>each replica split<br/>across 4 devices</small>"]
+  L["<b>LayoutMap</b><br/><small>per variable, per dimension:<br/>shard or replicate</small>"]
+  M --> A0 --> L
+  M --> A1 --> L
