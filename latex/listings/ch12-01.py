@@ -1,7 +1,10 @@
-image_size = 448
-
-backbone = keras_hub.models.Backbone.from_preset("resnet_50_imagenet")
-preprocessor = keras_hub.layers.ImageConverter.from_preset(
-    "resnet_50_imagenet",
-    image_size=(image_size, image_size),
+images_path = keras.utils.get_file(
+    "coco",
+    "http://images.cocodataset.org/zips/train2017.zip",
+    extract=True,
+)
+annotations_path = keras.utils.get_file(
+    "annotations",
+    "http://images.cocodataset.org/annotations/annotations_trainval2017.zip",
+    extract=True,
 )

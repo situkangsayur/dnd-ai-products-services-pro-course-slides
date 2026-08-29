@@ -1,14 +1,20 @@
-grid_size, num_labels = 6, 91
+with open(f"{annotations_path}/annotations/instances_train2017.json") as f:
+    annotations = json.load(f)
+images = {image["id"]: image for image in annotations["images"]}
 
-inputs = keras.Input(shape=(image_size, image_size, 3))
-x = backbone(inputs)
-x = layers.Conv2D(512, (3, 3), strides=(2, 2))(x)      # shrink the feature map
-x = layers.Flatten()(x)
-x = layers.Dense(2048, activation="relu", kernel_initializer="glorot_normal")(x)
-x = layers.Dropout(0.5)(x)
-x = layers.Dense(grid_size * grid_size * (num_labels + 5))(x)
-x = layers.Reshape((grid_size, grid_size, num_labels + 5))(x)
+def scale_box(box, width, height):
+    scale = 1.0 / max(width, height)          # longest side becomes 1.0
+    x, y, w, h = [v * scale for v in box]
+    x += (height - width) * scale / 2 if height > width else 0    # centre the
+    y += (width - height) * scale / 2 if width > height else 0    # short side
+    return [x, y, w, h]
 
-box_predictions = x[..., :5]                            # 4 box numbers + confidence
-class_predictions = layers.Activation("softmax")(x[..., 5:])
-model = keras.Model(inputs, {"box": box_predictions, "class": class_predictions})
+metadata = {}
+for annotation in annotations["annotations"]:
+    id = annotation["image_id"]
+    metadata.setdefault(id, {"boxes": [], "labels": []})
+    image = images[id]
+    metadata[id]["boxes"].append(scale_box(annotation["bbox"],
+                                           image["width"], image["height"]))
+    metadata[id]["labels"].append(annotation["category_id"])
+    metadata[id]["path"] = images_path + "/train2017/" + image["file_name"]

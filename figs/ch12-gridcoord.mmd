@@ -1,0 +1,8 @@
+
+flowchart LR
+  A["Box in image coordinates<br/><code>x, y, w, h</code> in [0,1]"]
+  B["to_grid()"]
+  C["Cell index <code>(ix, iy)</code><br/>+ offset within the cell"]
+  D["from_grid()"]
+  A --> B --> C
+  C --> D --> A

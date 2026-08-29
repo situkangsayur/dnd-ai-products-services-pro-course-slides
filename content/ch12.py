@@ -86,6 +86,28 @@ flowchart TB
 """
 
 
+MMD_COCO = """
+flowchart LR
+  Z1["train2017.zip<br/><small>18 GB of images,<br/>no labels</small>"]
+  Z2["annotations.zip<br/><small>one JSON:<br/>image IDs and boxes</small>"]
+  J["Join on image ID"]
+  S["Rescale every box<br/>to a unit square"]
+  M["metadata:<br/>boxes, labels, path<br/>per image"]
+  Z1 --> J
+  Z2 --> J
+  J --> S --> M
+"""
+
+MMD_GRIDCOORD = """
+flowchart LR
+  A["Box in image coordinates<br/><code>x, y, w, h</code> in [0,1]"]
+  B["to_grid()"]
+  C["Cell index <code>(ix, iy)</code><br/>+ offset within the cell"]
+  D["from_grid()"]
+  A --> B --> C
+  C --> D --> A
+"""
+
 NB = ["01_coco_and_boxes.ipynb", "02_yolo_from_scratch.ipynb",
       "03_pretrained_retinanet.ipynb"]
 
@@ -248,6 +270,77 @@ DECK = {
 
         {
             "type": "slide",
+            "kicker": "Section 12.2.1 · listing 12.1",
+            "title": "Downloading COCO",
+            "blocks": [
+                {"t": "p", "md": "Two archives: the images, and a JSON of annotations. At "
+                                 "**18 GB** this is the largest dataset in the book — though "
+                                 "the book notes it is not large by modern standards."},
+                {"t": "code", "lang": "python", "file": "listing 12.1 — the 2017 COCO dataset",
+                 "src": """images_path = keras.utils.get_file(
+    "coco",
+    "http://images.cocodataset.org/zips/train2017.zip",
+    extract=True,
+)
+annotations_path = keras.utils.get_file(
+    "annotations",
+    "http://images.cocodataset.org/annotations/annotations_trainval2017.zip",
+    extract=True,
+)"""},
+                {"t": "p", "md": "The first gives an **unlabelled directory of images**; the "
+                                 "second gives all the metadata. They have to be joined."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 12.2.1",
+            "title": "Joining images to their boxes",
+            "blocks": [
+                {"t": "mmd", "id": "ch12-coco", "src": MMD_COCO,
+                 "cap": "COCO associates each image file with an ID, and each bounding box "
+                        "with one of those IDs."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 12.2.1 · listing 12.2",
+            "title": "…and normalising the coordinates while you are at it",
+            "blocks": [
+                {"t": "p", "md": "Boxes arrive as pixel coordinates from the top-left corner. "
+                                 "Rescaling them into a unit square means the rest of the code "
+                                 "**never has to check an image's size**."},
+                {"t": "code", "lang": "python", "file": "listing 12.2 — parsing the annotations",
+                 "src": """with open(f"{annotations_path}/annotations/instances_train2017.json") as f:
+    annotations = json.load(f)
+images = {image["id"]: image for image in annotations["images"]}
+
+def scale_box(box, width, height):
+    scale = 1.0 / max(width, height)          # longest side becomes 1.0
+    x, y, w, h = [v * scale for v in box]
+    x += (height - width) * scale / 2 if height > width else 0    # centre the
+    y += (width - height) * scale / 2 if width > height else 0    # short side
+    return [x, y, w, h]
+
+metadata = {}
+for annotation in annotations["annotations"]:
+    id = annotation["image_id"]
+    metadata.setdefault(id, {"boxes": [], "labels": []})
+    image = images[id]
+    metadata[id]["boxes"].append(scale_box(annotation["bbox"],
+                                           image["width"], image["height"]))
+    metadata[id]["labels"].append(annotation["category_id"])
+    metadata[id]["path"] = images_path + "/train2017/" + image["file_name"]"""},
+                {"t": "band",
+                 "md": "The two centring lines matter: images are not square, so scaling by "
+                       "the longest side leaves letterboxing — and the boxes have to be "
+                       "==shifted by half that gap== or every prediction is offset."},
+            ],
+        },
+
+        {
+            "type": "slide",
             "kicker": "Section 12.2.2",
             "title": "The core idea: a grid of small predictors",
             "blocks": [
@@ -376,6 +469,75 @@ model = keras.Model(inputs, {"box": box_predictions, "class": class_predictions}
                 {"t": "p", "md": "This is why the box format matters: the coordinates are "
                                  "stored as centre-x, centre-y, width, height, so the cell "
                                  "assignment is a direct lookup."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 12.2.3",
+            "title": "Two coordinate systems, and the pair of functions between them",
+            "blocks": [
+                {"t": "mmd", "id": "ch12-gridcoord", "src": MMD_GRIDCOORD,
+                 "cap": "The model predicts positions relative to a cell; the labels arrive "
+                        "relative to the image."},
+                {"t": "p", "md": "**`x` and `y` are relative to the grid cell** (0 to 1 within "
+                                 "it), while **`w` and `h` stay relative to the whole image**. "
+                                 "The widths and heights need no conversion; ==only the "
+                                 "centres do=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 12.2.3",
+            "title": "…written out",
+            "blocks": [
+                {"t": "p", "md": "Two small functions, exact inverses of one another — one to "
+                                 "prepare targets, one to read predictions back."},
+                {"t": "code", "lang": "python", "file": "converting to and from the grid",
+                 "src": """def to_grid(box):
+    x, y, w, h = box
+    cx, cy = (x + w / 2) * grid_size, (y + h / 2) * grid_size   # centre, in cells
+    ix, iy = int(cx), int(cy)                                   # which cell
+    return (ix, iy), (cx - ix, cy - iy, w, h)                   # offset within it
+
+def from_grid(loc, box):
+    (xi, yi), (x, y, w, h) = loc, box
+    x = (xi + x) / grid_size - w / 2
+    y = (yi + y) / grid_size - h / 2
+    return (x, y, w, h)"""},
+                {"t": "band", "style": "amber",
+                 "md": "Getting one of these subtly wrong is the classic detection bug: the "
+                       "loss still falls, the boxes still appear, and they are ==consistently "
+                       "in the wrong place=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 12.2.3 · listing 12.7",
+            "title": "Building the two target arrays",
+            "blocks": [
+                {"t": "p", "md": "One array holds the class map, the other the boxes with "
+                                 "their confidence — and the confidence in the **labels** is "
+                                 "always exactly 1 or 0."},
+                {"t": "code", "lang": "python", "file": "listing 12.7 — creating the targets",
+                 "src": """class_array = np.zeros((len(metadata), grid_size, grid_size))
+box_array = np.zeros((len(metadata), grid_size, grid_size, 5))
+
+for index, sample in enumerate(metadata):
+    for box, label in zip(sample["boxes"], sample["labels"]):
+        (x, y, w, h) = box
+        left, right = math.floor(x * grid_size), math.ceil((x + w) * grid_size)
+        bottom, top = math.floor(y * grid_size), math.ceil((y + h) * grid_size)
+        class_array[index, bottom:top, left:right] = label     # every cell it covers
+        loc, grid_box = to_grid(box)
+        box_array[index, loc[1], loc[0]] = (*grid_box, 1.0)    # only the CENTRE cell"""},
+                {"t": "band",
+                 "md": "Note the asymmetry: **the class map marks every cell the box "
+                       "overlaps**, while **the box array marks only the cell containing its "
+                       "centre**. Overlapping boxes are ==deliberately not handled==, to keep "
+                       "the example readable."},
             ],
         },
 

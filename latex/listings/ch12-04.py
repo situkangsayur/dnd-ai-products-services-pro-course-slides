@@ -1,7 +1,14 @@
-x, y = next(iter(val_dataset.rebatch(1)))
-preds = model.predict(x)
+grid_size, num_labels = 6, 91
 
-boxes = preds["box"][0]
-classes = np.argmax(preds["class"][0], axis=-1)      # most likely label per cell
+inputs = keras.Input(shape=(image_size, image_size, 3))
+x = backbone(inputs)
+x = layers.Conv2D(512, (3, 3), strides=(2, 2))(x)      # shrink the feature map
+x = layers.Flatten()(x)
+x = layers.Dense(2048, activation="relu", kernel_initializer="glorot_normal")(x)
+x = layers.Dropout(0.5)(x)
+x = layers.Dense(grid_size * grid_size * (num_labels + 5))(x)
+x = layers.Reshape((grid_size, grid_size, num_labels + 5))(x)
 
-draw_prediction(path, boxes, classes, cutoff=0.1)    # a LOW cutoff, deliberately
+box_predictions = x[..., :5]                            # 4 box numbers + confidence
+class_predictions = layers.Activation("softmax")(x[..., 5:])
+model = keras.Model(inputs, {"box": box_predictions, "class": class_predictions})

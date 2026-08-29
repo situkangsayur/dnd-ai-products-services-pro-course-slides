@@ -1,0 +1,10 @@
+
+flowchart LR
+  Z1["train2017.zip<br/><small>18 GB of images,<br/>no labels</small>"]
+  Z2["annotations.zip<br/><small>one JSON:<br/>image IDs and boxes</small>"]
+  J["Join on image ID"]
+  S["Rescale every box<br/>to a unit square"]
+  M["metadata:<br/>boxes, labels, path<br/>per image"]
+  Z1 --> J
+  Z2 --> J
+  J --> S --> M

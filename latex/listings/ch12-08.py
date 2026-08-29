@@ -1,11 +1,7 @@
-fig, ax = plt.subplots(dpi=300)
-draw_image(ax, path)
+x, y = next(iter(val_dataset.rebatch(1)))
+preds = model.predict(x)
 
-num_detections = predictions["num_detections"][0]
-for i in range(num_detections):
-    box = predictions["boxes"][0][i]
-    label = predictions["labels"][0][i]
-    label_name = keras_hub.utils.coco_id_to_name(label)
-    draw_box(ax, box, label_name, label_to_color(label))
+boxes = preds["box"][0]
+classes = np.argmax(preds["class"][0], axis=-1)      # most likely label per cell
 
-plt.show()
+draw_prediction(path, boxes, classes, cutoff=0.1)    # a LOW cutoff, deliberately
