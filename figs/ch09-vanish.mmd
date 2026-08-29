@@ -1,0 +1,7 @@
+
+flowchart LR
+  X["x"] --> F1["f1"] --> F2["f2"] --> F3["f3"] --> F4["f4"] --> Y["y"]
+  Y -. "error signal" .-> F4
+  F4 -. "+ noise" .-> F3
+  F3 -. "+ more noise" .-> F2
+  F2 -. "signal lost" .-> F1

@@ -1,0 +1,8 @@
+
+flowchart TB
+  I["Input"]
+  B["Block<br/><small>may be destructive or noisy</small>"]
+  A(("+"))
+  O["Output"]
+  I --> B --> A --> O
+  I -- "residual connection" --> A

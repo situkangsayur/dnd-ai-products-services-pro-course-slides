@@ -1,0 +1,15 @@
+
+flowchart TB
+  IN["Block input"]
+  BN1["BatchNormalization"]
+  A1["Activation relu"]
+  S1["SeparableConv2D"]
+  BN2["BatchNormalization"]
+  A2["Activation relu"]
+  S2["SeparableConv2D"]
+  MP["MaxPooling2D<br/>stride 2"]
+  ADD(("+"))
+  OUT["Block output"]
+  PROJ["Conv2D 1x1<br/>stride 2<br/><small>projects the residual</small>"]
+  IN --> BN1 --> A1 --> S1 --> BN2 --> A2 --> S2 --> MP --> ADD --> OUT
+  IN --> PROJ --> ADD

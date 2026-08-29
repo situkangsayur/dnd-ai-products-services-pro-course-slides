@@ -47,5 +47,12 @@
  "ch08-localglobal": "9b5a99cd69cd25fb",
  "ch08-shapes": "7a783128f167d8f5",
  "ch08-transfer": "3b1f6320711eb263",
- "ch08-twoways": "deef4209a3973604"
+ "ch08-twoways": "deef4209a3973604",
+ "ch09-block": "f236dfa0f989c419",
+ "ch09-mhr": "7659fbdd465308da",
+ "ch09-residual": "9cdcec52670d8f0a",
+ "ch09-separable": "cec9125465f9a61a",
+ "ch09-vanish": "5432e341909ca819",
+ "ch09-vit": "e1579d74b7e4f6cc",
+ "ch09-xception": "b284c2984af81f21"
 }
