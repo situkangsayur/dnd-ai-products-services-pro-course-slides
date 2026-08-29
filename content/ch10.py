@@ -312,6 +312,9 @@ for layer_name, layer_activation in zip(layer_names, activations):
             channel_image = np.clip(channel_image, 0, 255).astype("uint8")
             display_grid[col * (size + 1): (col + 1) * size + col,
                          row * (size + 1): (row + 1) * size + row] = channel_image"""},
+                {"t": "p", "md": "One canvas per layer, sixteen channels to a row. The next "
+                                 "slide explains the standardisation in the middle of that "
+                                 "loop, which is the part that makes the result readable."},
             ],
         },
 
