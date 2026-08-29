@@ -76,5 +76,12 @@
  "ch12-singlestage": "c7a8504de7bd1f97",
  "ch12-twostage": "e4d3455719b7e53a",
  "ch12-yologrid": "97b1a9ca3b5a3fa6",
- "ch12-yolohead": "4507f0771ff169e2"
+ "ch12-yolohead": "4507f0771ff169e2",
+ "ch13-dropoutmask": "9b7541fb0fef09dd",
+ "ch13-feedvsrec": "cb1f995df8d47731",
+ "ch13-ladder": "085a31eb59da7992",
+ "ch13-lstm": "7007d56fb245739e",
+ "ch13-rnnloop": "02203ef3755760bf",
+ "ch13-stack": "768c27925bc67993",
+ "ch13-tasks": "d7d7cf728e5e6427"
 }

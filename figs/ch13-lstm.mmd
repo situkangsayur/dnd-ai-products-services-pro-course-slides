@@ -1,0 +1,8 @@
+
+flowchart LR
+  C0["carry c(t-1)"] --> C1["carry c(t)"] --> C2["carry c(t+1)"]
+  I["input at t"] --> CELL["cell"]
+  S["state at t"] --> CELL
+  CELL --> OUT["output at t"]
+  CELL --> C1
+  C1 -. "modulates the next<br/>output and state" .-> CELL

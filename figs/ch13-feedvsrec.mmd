@@ -1,0 +1,13 @@
+
+flowchart TB
+  subgraph F["Feedforward — no memory"]
+    direction TB
+    F1["Flatten the whole sequence<br/>into one big vector"] --> F2["Process it in one go"]
+    F2 --> F3["<b>The notion of time is gone</b>"]
+  end
+  subgraph R["Recurrent — has memory"]
+    direction TB
+    R1["Iterate through<br/>the sequence"] --> R2["Keep a state describing<br/>what has been seen"]
+    R2 --> R3["<b>Order and causality survive</b>"]
+  end
+  F ~~~ R

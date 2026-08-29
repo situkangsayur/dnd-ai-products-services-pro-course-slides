@@ -1,0 +1,7 @@
+
+flowchart LR
+  I["Input sequence"]
+  L1["GRU<br/><code>return_sequences=True</code><br/><small>emits a full sequence</small>"]
+  L2["GRU<br/><small>emits only the last step</small>"]
+  D["Dense 1"]
+  I --> L1 --> L2 --> D

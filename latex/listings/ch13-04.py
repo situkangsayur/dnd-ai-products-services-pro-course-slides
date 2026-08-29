@@ -1,0 +1,7 @@
+x = layers.Conv1D(8, 24, activation="relu")(inputs)
+x = layers.MaxPooling1D(2)(x)
+x = layers.Conv1D(8, 12, activation="relu")(x)
+x = layers.MaxPooling1D(2)(x)
+x = layers.Conv1D(8, 6, activation="relu")(x)
+x = layers.GlobalAveragePooling1D()(x)
+outputs = layers.Dense(1)(x)

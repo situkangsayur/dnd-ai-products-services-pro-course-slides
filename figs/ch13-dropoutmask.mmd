@@ -1,0 +1,13 @@
+
+flowchart TB
+  subgraph W["Wrong — a new mask each timestep"]
+    direction TB
+    W1["mask A at t=1"] --> W2["mask B at t=2"] --> W3["mask C at t=3"]
+    W3 --> W4["<b>The error signal through<br/>time is disrupted</b>"]
+  end
+  subgraph C["Correct — one mask, held constant"]
+    direction TB
+    C1["mask A at t=1"] --> C2["mask A at t=2"] --> C3["mask A at t=3"]
+    C3 --> C4["<b>Error propagates through<br/>time properly</b>"]
+  end
+  W ~~~ C

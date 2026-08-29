@@ -1,0 +1,7 @@
+
+flowchart TB
+  F["<b>Forecasting</b><br/>what happens next<br/><small>demand, revenue, weather</small>"]
+  A["<b>Anomaly detection</b><br/>something unusual<br/><small>usually unsupervised:<br/>you cannot train on<br/>anomalies you have not seen</small>"]
+  C["<b>Classification</b><br/>a label for a whole series<br/><small>bot or human?</small>"]
+  E["<b>Event detection</b><br/>a specific expected event<br/><small>&quot;OK Google&quot;, &quot;Hey Alexa&quot;</small>"]
+  F ~~~ A ~~~ C ~~~ E

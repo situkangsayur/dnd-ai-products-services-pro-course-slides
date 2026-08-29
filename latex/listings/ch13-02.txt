@@ -1,0 +1,2 @@
+Validation MAE: 2.44
+Test MAE: 2.62

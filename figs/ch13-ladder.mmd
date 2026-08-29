@@ -1,0 +1,7 @@
+
+flowchart LR
+  B["Common-sense baseline<br/><b>2.44</b> val MAE"]
+  D["Dense network<br/><b>~2.5</b> — worse"]
+  C["1D ConvNet<br/><b>~2.9</b> — much worse"]
+  L["LSTM<br/><b>2.36</b> — finally better"]
+  B --> D --> C --> L

@@ -1,0 +1,1 @@
+validation MAE: about 2.9 degrees
