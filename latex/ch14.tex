@@ -96,6 +96,25 @@ The goal was to attract excitement and funding, and in that sense \textbf{it was
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The \inlinecode{[UNK]} fallback is the important detail: \textbf{anything outside the vocabulary becomes one shared token}, and how often that happens is a property of the tokenizer's design.\par}\vskip 4pt
 \end{frame}
 
+\framekicker{Section 14.2.1}
+\begin{frame}[shrink=25]{Building a vocabulary, and capping it}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}A tokenizer needs a vocabulary. Rather than mapping every distinct token to an index, it is capped at the most common ones --- which is a modelling decision, not a technicality.\par}\vskip 4pt
+\icode{python}{computing a capped vocabulary}{listings/ch14-02.py}
+\begin{iband}[signal]
+Capping the vocabulary is the same \textbf{feature selection} move as chapter 5's \inlinecode{num\_words=10000}: rare tokens carry little signal and \hilite{invite the spurious correlations chapter 5 warned about}
+\end{iband}
+\end{frame}
+
+\framekicker{Section 14.2.1}
+\begin{frame}[shrink=25]{Word level: shorter sequences, a harder vocabulary problem}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Splitting on whitespace instead of on characters gives far shorter sequences --- and immediately raises two questions the character tokenizer never had.\par}\vskip 4pt
+\icode{python}{a word-level split}{listings/ch14-03.py}
+\begin{ibullets}
+\item \textbf{How large should the vocabulary be?} English has hundreds of thousands of word forms.
+\item \textbf{What happens to a word you have never seen?} It becomes \inlinecode{[UNK]}, and \hilite{all its meaning is gone}.
+\end{ibullets}
+\end{frame}
+
 \framekicker{Section 14.2.1 -- 14.2.2}
 \begin{frame}[shrink=25]{Three levels, and the trade-off between them}
 \begin{center}
@@ -120,7 +139,7 @@ That analogy turned out to be powerful: one of the most effective tricks of the 
 \framekicker{Section 14.2.2}
 \begin{frame}[shrink=25]{How byte-pair encoding builds its vocabulary}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Start from characters, then repeatedly merge the most frequent adjacent pair into a new token.\par}\vskip 4pt
-\icode{python}{the BPE idea, in outline}{listings/ch14-02.py}
+\icode{python}{the BPE idea, in outline}{listings/ch14-04.py}
 \begin{iband}[signal]
 Common words end up as \textbf{single tokens}; rare words decompose into \textbf{familiar pieces}. Nothing is ever \inlinecode{[UNK]}, because \hilite{the character level is always available as a fallback}
 \end{iband}
@@ -148,8 +167,8 @@ Unlike the steps of a timeseries, \textbf{words in a sentence have no natural, c
 \framekicker{Section 14.3.1}
 \begin{frame}[shrink=25]{The benchmark: raw IMDB this time}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Chapters 4 and 5 used a \textbf{prevectorised} IMDB. Here the raw text is processed --- as you would with any new text problem.\par}\vskip 4pt
-\icode{python}{listing 14.8 --- downloading raw IMDB}{listings/ch14-03.py}
-\ioutput{listings/ch14-04.txt}
+\icode{python}{listing 14.8 --- downloading raw IMDB}{listings/ch14-05.py}
+\ioutput{listings/ch14-06.txt}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Note \inlinecode{train/unsup} --- 25,000 \textbf{unlabelled} reviews. They are ignored at first and become essential in section 14.5.4.\par}\vskip 4pt
 \end{frame}
 
@@ -167,7 +186,7 @@ Unlike the steps of a timeseries, \textbf{words in a sentence have no natural, c
 \framekicker{Section 14.4.1 $\cdot$ listing 14.12}
 \begin{frame}[shrink=25]{TextVectorization does all of it}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Keras has a preprocessing layer for this. Like several such layers it has an \textbf{\inlinecode{adapt()}} method that learns state --- here, the vocabulary --- by iterating over a dataset.\par}\vskip 4pt
-\icode{python}{listing 14.12 --- bag-of-words encoding}{listings/ch14-05.py}
+\icode{python}{listing 14.12 --- bag-of-words encoding}{listings/ch14-07.py}
 \begin{iband}[signal]
 \textbf{20,000 words is a good starting point} for text classification. Note \inlinecode{adapt()} is given the reviews \textbf{without labels} --- it is learning vocabulary, \hilite{not learning the task}
 \end{iband}
@@ -176,14 +195,14 @@ Unlike the steps of a timeseries, \textbf{words in a sentence have no natural, c
 \framekicker{Section 14.4.1}
 \begin{frame}[shrink=25]{The model on top is tiny}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Once the text is a 20,000-long multi-hot vector, the classifier is the same kind of small dense network as chapter 4.\par}\vskip 4pt
-\icode{python}{the bag-of-words classifier}{listings/ch14-06.py}
+\icode{python}{the bag-of-words classifier}{listings/ch14-08.py}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}It performs respectably --- which is the point. \textbf{A model that cannot tell \textit{"good, not bad"} from \textit{"bad, not good"} still does well on sentiment}, because long reviews carry plenty of unordered evidence.\par}\vskip 4pt
 \end{frame}
 
 \framekicker{Section 14.4.2}
 \begin{frame}[shrink=25]{Bigrams: putting a little order back by hand}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}A bigram is a pair of adjacent words treated as one token. It restores \textbf{local} order without any change to the model.\par}\vskip 4pt
-\icode{python}{listing --- bigram encoding}{listings/ch14-07.py}
+\icode{python}{listing --- bigram encoding}{listings/ch14-09.py}
 \begin{iband}[signal]
 One argument, and the model improves: \textit{"not good"} is now a token in its own right. But the approach \hilite{only scales to a local ordering of a few words}, and it is feature engineering done by hand.
 \end{iband}
@@ -202,7 +221,7 @@ As so often in deep learning: rather than building the features yourself, \textb
 \framekicker{Section 14.5}
 \begin{frame}[shrink=25]{One wrinkle: batches have to be rectangular}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Reviews have different lengths, but a batch must be a rectangular tensor so the computation parallelises on a GPU.\par}\vskip 4pt
-\icode{python}{padding and truncation}{listings/ch14-08.py}
+\icode{python}{padding and truncation}{listings/ch14-10.py}
 \begin{iband}[amber]
 Padding introduces a new problem the model has to be told about: \textbf{those zeros are not words}. Getting this wrong means \hilite{the model spends capacity learning about padding}
 \end{iband}
@@ -211,9 +230,29 @@ Padding introduces a new problem the model has to be told about: \textbf{those z
 \framekicker{Section 14.5.1}
 \begin{frame}[shrink=25]{A recurrent model on the raw sequence}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Chapter 13's machinery applies directly --- a bidirectional LSTM, which here \textbf{does} help, because both directions of a sentence carry meaning.\par}\vskip 4pt
-\icode{python}{a sequence model}{listings/ch14-09.py}
+\icode{python}{a sequence model}{listings/ch14-11.py}
 \begin{iband}[signal]
 \textbf{\inlinecode{mask\_zero=True}} is the answer to the padding problem: it tells every downstream layer to \hilite{skip the padded positions entirely}
+\end{iband}
+\end{frame}
+
+\framekicker{Section 14.5.1}
+\begin{frame}[shrink=25]{What the sequence model buys, and what it costs}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardgood}
+\cardh{What it buys}
+Word order is \textbf{learned rather than engineered}, so dependencies longer than a bigram become reachable.
+\end{icardgood}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardwarn}
+\cardh{What it costs}
+Far slower to train than a bag-of-words model, and it needs \textbf{more data} to justify the extra parameters.
+\end{icardwarn}
+\end{minipage}%
+\begin{iband}[signal]
+The book's standing advice applies: \textbf{start with the cheap model}. If bag-of-words is close to the sequence model on your data, \hilite{the sequence model is not earning its cost}
 \end{iband}
 \end{frame}
 
@@ -257,6 +296,20 @@ The book's answer is careful: \textbf{possibly --- but we have yet to compute an
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}An \inlinecode{Embedding} layer trained with the classifier learns a space specialised to \textit{this} task. That is often fine --- and when labelled data is scarce, it is not.\par}\vskip 4pt
 \end{frame}
 
+\framekicker{Section 14.5.3}
+\begin{frame}[shrink=25]{Choosing the embedding dimension}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The \inlinecode{output\_dim} of an \inlinecode{Embedding} layer is a capacity decision, and the usual rule from chapter 5 applies in both directions.\par}\vskip 4pt
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.6956\textwidth}}
+\thead{Dimension} & \thead{When it fits} \\ \midrule
+\textbf{Too small} & An information bottleneck --- the space cannot separate words that mean different things. Chapter 4's 4-unit layer, again. \\
+\textbf{256 -- 1,024} & Typical for large vocabularies, and the range the book works in. \\
+\textbf{Too large} & More parameters than the data can constrain; the embedding memorises rather than generalises. \\
+\end{itable}
+\begin{iband}[signal]
+For comparison: one-hot over this vocabulary would be \textbf{20,000 dimensions}. An embedding \hilite{packs more information into far fewer}
+\end{iband}
+\end{frame}
+
 \coursesection{06}{Pretraining}{Where the unlabelled 25,000 reviews finally earn their place.}
 
 \framekicker{Section 14.5.4}
@@ -279,7 +332,7 @@ The idea: \textbf{devise an unsupervised task that needs no labels}. Pretraining
 \framekicker{Section 14.5.4}
 \begin{frame}[shrink=25]{Where the extra data comes from}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Remember the \inlinecode{unsup/} directory that was skipped during dataset preparation? It holds \textbf{another 25,000 reviews} --- the same size as the training set.\par}\vskip 4pt
-\icode{python}{combining labelled and unlabelled text}{listings/ch14-10.py}
+\icode{python}{combining labelled and unlabelled text}{listings/ch14-12.py}
 \begin{iband}[signal]
 \textbf{Doubling the text costs nothing}, because the CBOW task does not care whether a review is positive or negative --- \hilite{it only needs words in context}
 \end{iband}
@@ -288,7 +341,7 @@ The idea: \textbf{devise an unsupervised task that needs no labels}. Pretraining
 \framekicker{Section 14.5.5}
 \begin{frame}[shrink=25]{Using the pretrained embedding}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The pretrained weights are loaded into the classifier's \inlinecode{Embedding} layer, which then either stays frozen or is fine-tuned --- the same two options as chapter 8.\par}\vskip 4pt
-\icode{python}{loading pretrained weights}{listings/ch14-11.py}
+\icode{python}{loading pretrained weights}{listings/ch14-13.py}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}This is \textbf{transfer learning for text}, structurally identical to feature extraction from a pretrained ConvNet --- \hilite{and it is the pattern the whole of chapter 15 builds on}\par}\vskip 4pt
 \end{frame}
 
@@ -302,6 +355,41 @@ The idea: \textbf{devise an unsupervised task that needs no labels}. Pretraining
 And the practical caveat: \textbf{the bag-of-words model is close behind, trains in seconds, and is trivial to explain}. On short texts, or with little data, \hilite{it is frequently the right answer}
 \end{iband}
 \end{frame}
+
+\framekicker{Practice}
+\begin{frame}[shrink=25]{Four ways text pipelines go wrong}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardbad}
+\cardh{Padding treated as content}
+Forgetting \inlinecode{mask\_zero=True}. The model spends capacity modelling zeros, and long reviews are penalised against short ones.
+\end{icardbad}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardbad}
+\cardh{adapt() on the wrong data}
+Calling \inlinecode{adapt()} on the full dataset builds the vocabulary from \textbf{test text} --- an information leak in the sense of chapter 5.
+\end{icardbad}
+\end{minipage}%
+
+
+\vskip 4pt
+
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardwarn}
+\cardh{Truncation that cuts the answer}
+\inlinecode{output\_sequence\_length} shorter than the reviews means the ending --- often where sentiment resolves --- is discarded.
+\end{icardwarn}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardwarn}
+\cardh{A tokenizer trained on the wrong language}
+A vocabulary built on English text will decompose other languages into near-characters, inflating sequence length enormously.
+\end{icardwarn}
+\end{minipage}%
+\end{frame}
+\note{The second one is the subtle one and the most common in submitted work: adapt() is learning from data, so it obeys the same split discipline as training does.}
 
 \framekicker{Summary}
 \begin{frame}[shrink=25]{What has to survive this chapter}

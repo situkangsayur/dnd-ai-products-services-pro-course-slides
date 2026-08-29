@@ -1,7 +1,7 @@
-max_length = 600
+inputs = keras.Input(shape=(max_tokens,))
+x = layers.Dense(16, activation="relu")(inputs)
+x = layers.Dropout(0.5)(x)
+outputs = layers.Dense(1, activation="sigmoid")(x)
+model = keras.Model(inputs, outputs)
 
-text_vectorization = layers.TextVectorization(
-    max_tokens=max_tokens,
-    output_mode="int",           # integer token IDs, in order
-    output_sequence_length=max_length,   # pad or truncate to a fixed length
-)
+model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])

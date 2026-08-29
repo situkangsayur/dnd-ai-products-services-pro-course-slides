@@ -233,6 +233,56 @@ DECK = {
 
         {
             "type": "slide",
+            "kicker": "Section 14.2.1",
+            "title": "Building a vocabulary, and capping it",
+            "blocks": [
+                {"t": "p", "md": "A tokenizer needs a vocabulary. Rather than mapping every "
+                                 "distinct token to an index, it is capped at the most common "
+                                 "ones — which is a modelling decision, not a technicality."},
+                {"t": "code", "lang": "python", "file": "computing a capped vocabulary",
+                 "src": """def compute_vocabulary(text_iterable, max_size, split_fn):
+    counts = collections.Counter()
+    for text in text_iterable:
+        counts.update(split_fn(text.lower()))
+
+    vocabulary = {"[UNK]": 0}                    # index 0 is always the fallback
+    for token, _ in counts.most_common(max_size - 1):
+        vocabulary[token] = len(vocabulary)
+    return vocabulary"""},
+                {"t": "band",
+                 "md": "Capping the vocabulary is the same **feature selection** move as "
+                       "chapter 5's `num_words=10000`: rare tokens carry little signal and "
+                       "==invite the spurious correlations chapter 5 warned about=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 14.2.1",
+            "title": "Word level: shorter sequences, a harder vocabulary problem",
+            "blocks": [
+                {"t": "p", "md": "Splitting on whitespace instead of on characters gives far "
+                                 "shorter sequences — and immediately raises two questions the "
+                                 "character tokenizer never had."},
+                {"t": "code", "lang": "python", "file": "a word-level split",
+                 "src": """class WordTokenizer(CharTokenizer):
+    def standardize(self, inputs):
+        inputs = inputs.lower()
+        return "".join(c for c in inputs if c not in string.punctuation)
+
+    def split(self, inputs):
+        return re.findall(r"\w+", inputs)"""},
+                {"t": "bullets", "items": [
+                    "**How large should the vocabulary be?** English has hundreds of thousands "
+                    "of word forms.",
+                    "**What happens to a word you have never seen?** It becomes `[UNK]`, and "
+                    "==all its meaning is gone==.",
+                ]},
+            ],
+        },
+
+        {
+            "type": "slide",
             "kicker": "Section 14.2.1 – 14.2.2",
             "title": "Three levels, and the trade-off between them",
             "blocks": [
@@ -495,6 +545,26 @@ model = keras.Model(inputs, outputs)"""},
             ],
         },
 
+        {
+            "type": "slide",
+            "kicker": "Section 14.5.1",
+            "title": "What the sequence model buys, and what it costs",
+            "blocks": [
+                {"t": "cards", "cols": 2, "items": [
+                    {"ico": "📈", "h": "What it buys",
+                     "p": "Word order is **learned rather than engineered**, so dependencies "
+                          "longer than a bigram become reachable.", "style": "good"},
+                    {"ico": "⏱", "h": "What it costs",
+                     "p": "Far slower to train than a bag-of-words model, and it needs "
+                          "**more data** to justify the extra parameters.", "style": "warn"},
+                ]},
+                {"t": "band",
+                 "md": "The book's standing advice applies: **start with the cheap model**. "
+                       "If bag-of-words is close to the sequence model on your data, "
+                       "==the sequence model is not earning its cost=="},
+            ],
+        },
+
         {"type": "section", "num": "05", "title": "Word embeddings",
          "lead": "One-hot encoding makes an assumption that is plainly false."},
 
@@ -563,6 +633,31 @@ model = keras.Model(inputs, outputs)"""},
                 {"t": "p", "md": "An `Embedding` layer trained with the classifier learns a "
                                  "space specialised to *this* task. That is often fine — and "
                                  "when labelled data is scarce, it is not."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 14.5.3",
+            "title": "Choosing the embedding dimension",
+            "blocks": [
+                {"t": "p", "md": "The `output_dim` of an `Embedding` layer is a capacity "
+                                 "decision, and the usual rule from chapter 5 applies in both "
+                                 "directions."},
+                {"t": "table",
+                 "head": ["Dimension", "When it fits"],
+                 "widths": [26, 74],
+                 "rows": [
+                     ["**Too small**", "An information bottleneck — the space cannot separate "
+                      "words that mean different things. Chapter 4's 4-unit layer, again."],
+                     ["**256 – 1,024**", "Typical for large vocabularies, and the range the "
+                      "book works in."],
+                     ["**Too large**", "More parameters than the data can constrain; the "
+                      "embedding memorises rather than generalises."],
+                 ]},
+                {"t": "band",
+                 "md": "For comparison: one-hot over this vocabulary would be **20,000 "
+                       "dimensions**. An embedding ==packs more information into far fewer=="},
             ],
         },
 
@@ -658,6 +753,34 @@ outputs = layers.Dense(1, activation="sigmoid")(layers.Dropout(0.5)(x))"""},
                        "trains in seconds, and is trivial to explain**. On short texts, or "
                        "with little data, ==it is frequently the right answer=="},
             ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Practice",
+            "title": "Four ways text pipelines go wrong",
+            "blocks": [
+                {"t": "cards", "cols": 2, "items": [
+                    {"ico": "🕳", "h": "Padding treated as content",
+                     "p": "Forgetting `mask_zero=True`. The model spends capacity modelling "
+                          "zeros, and long reviews are penalised against short ones.",
+                     "style": "bad"},
+                    {"ico": "🔤", "h": "adapt() on the wrong data",
+                     "p": "Calling `adapt()` on the full dataset builds the vocabulary from "
+                          "**test text** — an information leak in the sense of chapter 5.",
+                     "style": "bad"},
+                    {"ico": "✂", "h": "Truncation that cuts the answer",
+                     "p": "`output_sequence_length` shorter than the reviews means the ending "
+                          "— often where sentiment resolves — is discarded.", "style": "warn"},
+                    {"ico": "🌍", "h": "A tokenizer trained on the wrong language",
+                     "p": "A vocabulary built on English text will decompose other languages "
+                          "into near-characters, inflating sequence length enormously.",
+                     "style": "warn"},
+                ]},
+            ],
+            "notes": "The second one is the subtle one and the most common in submitted work: "
+                     "adapt() is learning from data, so it obeys the same split discipline as "
+                     "training does.",
         },
 
         {

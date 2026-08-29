@@ -1,8 +1,6 @@
-embedding_layer = layers.Embedding(max_tokens, 256, mask_zero=True)
-embedding_layer.build((None,))
-embedding_layer.set_weights(pretrained_embedding.get_weights())
-
 inputs = keras.Input(shape=(max_length,), dtype="int32")
-x = embedding_layer(inputs)
+x = layers.Embedding(input_dim=max_tokens, output_dim=256, mask_zero=True)(inputs)
 x = layers.Bidirectional(layers.LSTM(32))(x)
-outputs = layers.Dense(1, activation="sigmoid")(layers.Dropout(0.5)(x))
+x = layers.Dropout(0.5)(x)
+outputs = layers.Dense(1, activation="sigmoid")(x)
+model = keras.Model(inputs, outputs)

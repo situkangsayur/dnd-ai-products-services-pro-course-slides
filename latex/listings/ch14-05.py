@@ -1,11 +1,10 @@
-from keras import layers
-
-max_tokens = 20_000
-text_vectorization = layers.TextVectorization(
-    max_tokens=max_tokens,
-    split="whitespace",         # word-level vocabulary
-    output_mode="multi_hot",    # and multi-hot output, in one layer
+zip_path = keras.utils.get_file(
+    origin="https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
+    fname="imdb",
+    extract=True,
 )
+imdb_extract_dir = pathlib.Path(zip_path) / "aclImdb"
 
-train_ds_no_labels = train_ds.map(lambda x, y: x)
-text_vectorization.adapt(train_ds_no_labels)
+for path in imdb_extract_dir.glob("*/*"):
+    if path.is_dir():
+        print(path)

@@ -1,10 +1,7 @@
-zip_path = keras.utils.get_file(
-    origin="https://ai.stanford.edu/~amaas/data/sentiment/aclImdb_v1.tar.gz",
-    fname="imdb",
-    extract=True,
-)
-imdb_extract_dir = pathlib.Path(zip_path) / "aclImdb"
+class WordTokenizer(CharTokenizer):
+    def standardize(self, inputs):
+        inputs = inputs.lower()
+        return "".join(c for c in inputs if c not in string.punctuation)
 
-for path in imdb_extract_dir.glob("*/*"):
-    if path.is_dir():
-        print(path)
+    def split(self, inputs):
+        return re.findall(r"\w+", inputs)

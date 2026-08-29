@@ -1,6 +1,5 @@
-inputs = keras.Input(shape=(max_length,), dtype="int32")
-x = layers.Embedding(input_dim=max_tokens, output_dim=256, mask_zero=True)(inputs)
-x = layers.Bidirectional(layers.LSTM(32))(x)
-x = layers.Dropout(0.5)(x)
-outputs = layers.Dense(1, activation="sigmoid")(x)
-model = keras.Model(inputs, outputs)
+text_vectorization = layers.TextVectorization(
+    ngrams=2,                   # unigrams AND bigrams
+    max_tokens=max_tokens,
+    output_mode="multi_hot",
+)
