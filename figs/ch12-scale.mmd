@@ -1,0 +1,13 @@
+
+flowchart TB
+  subgraph Y["Our YOLO"]
+    direction TB
+    Y1["Use only the FINAL<br/>backbone output"] --> Y2["Features map to large<br/>areas of the image"]
+    Y2 --> Y3["Poor at small objects"]
+  end
+  subgraph R["RetinaNet"]
+    direction TB
+    R1["Use features from<br/>SEVERAL depths"] --> R2["Fine and coarse features<br/>available together"]
+    R2 --> R3["Handles small and large<br/>objects at once"]
+  end
+  Y ~~~ R

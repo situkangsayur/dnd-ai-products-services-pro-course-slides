@@ -1,0 +1,7 @@
+
+flowchart LR
+  I["Input image"]
+  B["ConvNet backbone"]
+  H["Detection head<br/><small>boxes AND labels,<br/>predicted jointly</small>"]
+  O["Final detections"]
+  I --> B --> H --> O

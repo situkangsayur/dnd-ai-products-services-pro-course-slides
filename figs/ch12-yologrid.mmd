@@ -1,0 +1,11 @@
+
+flowchart TB
+  IMG["Image divided into<br/>an S x S grid"]
+  D["Each grid cell predicts"]
+  B["1 bounding box<br/><small>4 numbers</small>"]
+  CF["1 confidence score<br/><small>1 number</small>"]
+  CL["Class probabilities<br/><small>91 numbers</small>"]
+  IMG --> D
+  D --> B
+  D --> CF
+  D --> CL

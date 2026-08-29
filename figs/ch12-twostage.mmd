@@ -1,0 +1,8 @@
+
+flowchart LR
+  I["Input image"]
+  R["<b>Stage 1</b><br/>Region proposal<br/><small>a few thousand overlapping<br/>object-like boxes</small>"]
+  C["<b>Stage 2</b><br/>ConvNet classifier<br/><small>classify each proposal</small>"]
+  F["Discard low scores,<br/>refine the survivors"]
+  O["Final detections"]
+  I --> R --> C --> F --> O

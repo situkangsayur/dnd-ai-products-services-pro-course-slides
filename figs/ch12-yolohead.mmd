@@ -1,0 +1,11 @@
+
+flowchart LR
+  A["Backbone output<br/><code>14 x 14 x 2048</code><br/><small>401,408 floats</small>"]
+  B["Strided Conv2D 512<br/><code>6 x 6 x 512</code><br/><small>18,432 floats</small>"]
+  C["Flatten + Dense 2048<br/>+ Dropout 0.5"]
+  D["Dense 6*6*96<br/>then Reshape<br/><code>6 x 6 x 96</code>"]
+  E["box: <code>[..., :5]</code>"]
+  F["class: <code>[..., 5:]</code><br/>softmax"]
+  A --> B --> C --> D
+  D --> E
+  D --> F

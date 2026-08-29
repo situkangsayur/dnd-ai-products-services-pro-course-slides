@@ -68,5 +68,11 @@
  "ch11-poolvstride": "e7b2de04023f64d6",
  "ch11-sam": "40d622921ce3b47e",
  "ch11-samloop": "ea4c9a7637fb3635",
- "ch11-tasks": "44db03210648b6de"
+ "ch11-tasks": "44db03210648b6de",
+ "ch12-conf": "62a9e76883605a1d",
+ "ch12-scale": "a6c46b2fdbe2d59c",
+ "ch12-singlestage": "c7a8504de7bd1f97",
+ "ch12-twostage": "e4d3455719b7e53a",
+ "ch12-yologrid": "97b1a9ca3b5a3fa6",
+ "ch12-yolohead": "4507f0771ff169e2"
 }

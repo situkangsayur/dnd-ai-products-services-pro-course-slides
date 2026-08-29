@@ -1,0 +1,8 @@
+
+flowchart TB
+  Q{"Does this grid cell<br/>contain an object?"}
+  Z["Target confidence = 0"]
+  I["Target confidence =<br/><b>IoU</b> between the predicted<br/>box and the true box"]
+  Q -- "no" --> Z
+  Q -- "yes" --> I
+  I -. "as boxes improve,<br/>so does the target" .-> I
