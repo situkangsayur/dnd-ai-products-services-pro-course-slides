@@ -1,0 +1,15 @@
+
+flowchart TB
+  S1{"Does the training<br/>loss go down?"}
+  F1["Tune the learning rate<br/>and the batch size"]
+  S2{"Can you beat the<br/>common-sense baseline?"}
+  F2["Wrong architecture priors,<br/>or the data does not<br/>contain the answer"]
+  S3{"Can you make<br/>it overfit?"}
+  F3["Not enough capacity:<br/>more layers, wider layers"]
+  F4["Now switch to<br/>maximising generalisation"]
+  S1 -- no --> F1
+  S1 -- yes --> S2
+  S2 -- no --> F2
+  S2 -- yes --> S3
+  S3 -- no --> F3
+  S3 -- yes --> F4

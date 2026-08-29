@@ -1,0 +1,7 @@
+
+flowchart LR
+  A["Layer output<br/><code>[0.2, 0.5, 1.3, 0.8, 1.1]</code>"]
+  B["Drop 50% at random<br/><code>[0, 0.5, 1.3, 0, 1.1]</code>"]
+  C["Scale up by 1/(1-rate)<br/>during training"]
+  D["At test time:<br/>nothing dropped,<br/>nothing rescaled"]
+  A --> B --> C --> D

@@ -1,0 +1,9 @@
+
+flowchart TB
+  Q{"How much data<br/>do you have?"}
+  H["Hold-out validation<br/><small>1 model</small>"]
+  K["K-fold validation<br/><small>K models</small>"]
+  I["Iterated K-fold<br/>with shuffling<br/><small>P x K models</small>"]
+  Q -- "plenty" --> H
+  Q -- "not much" --> K
+  Q -- "very little, and<br/>precision matters" --> I

@@ -6,6 +6,8 @@ Pairs with latex/itbpro.sty. Run through tools/build.py rather than directly.
 import os
 
 import figures
+
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 from inline import tex as it, esc_tex, tex_url
 
 RES_LABEL = {
@@ -178,6 +180,13 @@ def render_block(b, depth=0):
                 "\\includegraphics[width=0.92\\linewidth,height=0.60\\textheight,"
                 "keepaspectratio]{%s}\n\\end{center}\n%s\n" % (pdf, cap))
     if t == "img":
+        # Book figures are derived from a PDF that is not in the repository, so
+        # a fresh clone may not have them yet. Degrade to the caption rather
+        # than failing the whole build.
+        if not os.path.exists(os.path.join(_ROOT, b["src"])):
+            return ("\\begin{iband}[amber]\n%s\n\\end{iband}\n"
+                    % (it(b.get("cap", "")) +
+                       r"~\textit{(figure not extracted; run tools/bookfigs.py)}"))
         cap = it(b.get("cap", ""))
         if b.get("credit"):
             cap += (r"~\textcolor{ink3}{\footnotesize---~Chollet \& Watson, "

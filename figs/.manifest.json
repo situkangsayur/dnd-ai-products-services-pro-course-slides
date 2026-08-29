@@ -23,5 +23,11 @@
  "ch04-heads": "d7077c4f713be757",
  "ch04-kfold": "b37e354516b4ca5a",
  "ch04-leak": "fdee4877c7395378",
- "ch04-workflow": "cb5e02e98af44083"
+ "ch04-workflow": "cb5e02e98af44083",
+ "ch05-diagnose": "112645d7c655333b",
+ "ch05-dropout": "54f7e5077eddbf70",
+ "ch05-protocols": "2f143135bd6d7672",
+ "ch05-regularise": "6caf406a61fab47a",
+ "ch05-splits": "2cfddbf2feeb245d",
+ "ch05-tension": "864c283b312e82ae"
 }

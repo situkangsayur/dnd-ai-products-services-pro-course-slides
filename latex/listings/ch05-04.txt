@@ -1,0 +1,2 @@
+training loss      : falls steadily, smoothly
+validation accuracy: stuck at ~10%  (= the random baseline for 10 classes)

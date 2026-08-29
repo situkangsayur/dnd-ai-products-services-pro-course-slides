@@ -1,1 +1,1 @@
-model sekarang bisa dilatih
+accuracy stalls at 20%-40%

@@ -1,0 +1,10 @@
+
+flowchart LR
+  ALL["All labelled data"]
+  TR["Training set<br/><small>the model is fitted here</small>"]
+  VA["Validation set<br/><small>hyperparameters tuned here</small>"]
+  TE["Test set<br/><small>touched once, at the end</small>"]
+  ALL --> TR
+  ALL --> VA
+  ALL --> TE
+  VA -. "information leaks<br/>a little each time" .-> TR

@@ -7,6 +7,5 @@ model = keras.Sequential([
     layers.Dense(1, activation="sigmoid"),
 ])
 
-# pilihan lain:
 regularizers.l1(0.001)                     # L1
-regularizers.l1_l2(l1=0.001, l2=0.001)     # L1 dan L2 sekaligus
+regularizers.l1_l2(l1=0.001, l2=0.001)     # both at once

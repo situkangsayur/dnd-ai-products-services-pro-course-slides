@@ -6,6 +6,8 @@ Run through tools/build.py rather than directly.
 import json
 import os
 
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 import figures
 from inline import html as ih, esc_html
 
@@ -123,6 +125,9 @@ def render_block(b):
         cap = f'<figcaption>{ih(b["cap"])}</figcaption>' if b.get("cap") else ""
         return f'<figure class="fig fig-mmd">{markup}{cap}</figure>'
     if t == "img":
+        if not os.path.exists(os.path.join(_ROOT, b["src"])):
+            return ('<div class="band amber"><p>%s <i>(figure not extracted; run '
+                    'tools/bookfigs.py)</i></p></div>' % ih(b.get("cap", "")))
         cap = ih(b.get("cap", ""))
         if b.get("credit"):
             cap += ('<span class="credit">Chollet &amp; Watson, '
