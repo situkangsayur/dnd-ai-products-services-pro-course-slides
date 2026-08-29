@@ -1,0 +1,11 @@
+
+flowchart LR
+  Q["Query"]
+  R["<b>Retriever</b><br/><small>dense, sparse, or hybrid</small>"]
+  K["Top-k candidates"]
+  RR["<b>Re-ranker</b><br/><small>cross-encoder over<br/>query and candidate</small>"]
+  C["Ordered context"]
+  G["<b>Generator</b>"]
+  A["Grounded answer"]
+  Q --> R --> K --> RR --> C --> G --> A
+  Q --> RR

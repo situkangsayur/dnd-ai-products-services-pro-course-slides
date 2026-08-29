@@ -1,0 +1,8 @@
+
+flowchart LR
+  M["<b>Model</b>"]
+  S["<b>Tool schema</b><br/><small>name, description,<br/>typed parameters</small>"]
+  CALL["<b>Tool call</b><br/><small>structured, validated</small>"]
+  EX["<b>Your code</b><br/><small>the only thing that<br/>actually touches a system</small>"]
+  R["<b>Result</b><br/><small>appended to the context</small>"]
+  S --> M --> CALL --> EX --> R --> M

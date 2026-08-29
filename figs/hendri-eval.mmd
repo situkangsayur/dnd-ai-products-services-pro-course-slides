@@ -1,0 +1,10 @@
+
+flowchart TB
+  T["<b>Trace</b><br/><small>every step, tool call,<br/>and token, recorded</small>"]
+  U["<b>Unit evals</b><br/><small>does this tool get called<br/>with the right arguments?</small>"]
+  E["<b>End-to-end evals</b><br/><small>a fixed set of tasks with<br/>known good outcomes</small>"]
+  H["<b>Human review</b><br/><small>sampled, and every<br/>escalation</small>"]
+  R["<b>Regression gate</b><br/><small>run before every<br/>prompt or model change</small>"]
+  T --> U --> R
+  T --> E --> R
+  T --> H --> R

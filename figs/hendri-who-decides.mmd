@@ -1,0 +1,9 @@
+
+flowchart TB
+  Q["<b>Who decides the next step?</b>"]
+  W["<b>You do, at design time</b><br/><small>the control flow is in your code</small>"]
+  A["<b>The model does, at run time</b><br/><small>the control flow is in the prompt<br/>and the tool results</small>"]
+  WR["That is a <b>workflow</b><br/><small>testable, cheap, predictable</small>"]
+  AR["That is an <b>agent</b><br/><small>flexible, expensive, hard to test</small>"]
+  Q --> W --> WR
+  Q --> A --> AR

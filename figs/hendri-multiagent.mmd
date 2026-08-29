@@ -1,0 +1,13 @@
+
+flowchart TB
+  U["Request"]
+  S["<b>Supervisor</b><br/><small>decomposes, routes,<br/>and assembles</small>"]
+  A1["<b>Specialist A</b><br/><small>own tools,<br/>own context</small>"]
+  A2["<b>Specialist B</b>"]
+  A3["<b>Specialist C</b>"]
+  R["Assembled answer"]
+  U --> S
+  S --> A1 --> S
+  S --> A2 --> S
+  S --> A3 --> S
+  S --> R

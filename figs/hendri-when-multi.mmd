@@ -1,0 +1,15 @@
+
+flowchart TB
+  Q["Should this be<br/>more than one agent?"]
+  C1["Do the subtasks need<br/><b>genuinely different tools<br/>or permissions</b>?"]
+  C2["Can they run<br/><b>in parallel</b>?"]
+  C3["Would one context window<br/><b>overflow</b> otherwise?"]
+  Y["<b>Yes -- split</b>"]
+  N["<b>No -- one agent,<br/>more tools</b>"]
+  Q --> C1
+  Q --> C2
+  Q --> C3
+  C1 --> Y
+  C2 --> Y
+  C3 --> Y
+  Q -- "none of the above" --> N

@@ -168,5 +168,18 @@
  "ch20-limits": "5c9cde7663356a2d",
  "ch20-nesting": "7b0fbd45ec248693",
  "ch20-uncrumple": "f19d4ad34c3936b4",
- "ch20-workflow": "5dfd8e2f4eb3cca6"
+ "ch20-workflow": "5dfd8e2f4eb3cca6",
+ "hendri-eval": "fd8ccff1977e82ba",
+ "hendri-failure": "8fdea7f29893e429",
+ "hendri-ladder": "458328418b0b4029",
+ "hendri-loop": "a550329e3d748717",
+ "hendri-maturity": "07746960874067d4",
+ "hendri-memory": "a63d82fd629d434d",
+ "hendri-multiagent": "35657395b44e7792",
+ "hendri-stack": "ec0e1dfa2b0483d0",
+ "hendri-tool": "5faf5dc13e061896",
+ "hendri-when-multi": "ca32b5914219b762",
+ "hendri-who-decides": "49e706628c807b8f",
+ "viny-arc": "d937135f8e111aee",
+ "viny-rag": "6b1c291832dd2636"
 }

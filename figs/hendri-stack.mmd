@@ -1,0 +1,12 @@
+
+flowchart TB
+  MOD["<b>Model layer</b><br/><small>hosted API, or a self-hosted<br/>open-weights model</small>"]
+  ORCH["<b>Orchestration layer</b><br/><small>the loop, tool routing,<br/>retries, budgets</small>"]
+  TOOLS["<b>Tool layer</b><br/><small>your APIs, databases,<br/>search, code execution</small>"]
+  MEM["<b>Memory layer</b><br/><small>vector store, transcript store,<br/>document store</small>"]
+  OBS["<b>Observability layer</b><br/><small>traces, evals, cost accounting,<br/>human review queue</small>"]
+  GUARD["<b>Guardrail layer</b><br/><small>input filters, output checks,<br/>approval gates</small>"]
+  MOD --> ORCH
+  TOOLS --> ORCH
+  MEM --> ORCH
+  ORCH --> GUARD --> OBS

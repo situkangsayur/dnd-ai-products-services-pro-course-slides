@@ -1,0 +1,11 @@
+
+flowchart TB
+  W["<b>Working memory</b><br/><small>the context window<br/>-- this turn only</small>"]
+  E["<b>Episodic memory</b><br/><small>what happened in past runs<br/>-- a transcript store</small>"]
+  S["<b>Semantic memory</b><br/><small>facts and documents<br/>-- a vector or keyword index</small>"]
+  P["<b>Procedural memory</b><br/><small>learned routines<br/>-- prompts, tools, playbooks</small>"]
+  A["The agent's next step"]
+  W --> A
+  E --> A
+  S --> A
+  P --> A
