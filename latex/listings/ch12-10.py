@@ -1,7 +1,6 @@
-[(k, v.shape) for k, v in predictions.items()]
-# [("boxes", (1, 100, 4)),
-#  ("confidence", (1, 100)),
-#  ("labels", (1, 100)),
-#  ("num_detections", (1,))]
+detector = keras_hub.models.ObjectDetector.from_preset(
+    "retinanet_resnet50_fpn_v2_coco",
+    bounding_box_format="rel_xywh",     # same format as our YOLO, so the same
+)                                       # drawing utilities work unchanged
 
-predictions["boxes"][0][0]
+predictions = detector.predict(image)

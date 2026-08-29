@@ -158,6 +158,13 @@ The two centring lines matter: images are not square, so scaling by the longest 
 \end{iband}
 \end{frame}
 
+\framekicker{Section 12.2.1 $\cdot$ listing 12.2}
+\begin{frame}[shrink=25]{\ldots{}and collating it per image}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}COCO stores one row per \textit{annotation}, not per image, so the boxes belonging to one picture have to be gathered together.\par}\vskip 4pt
+\icode{python}{aggregating by image ID}{listings/ch12-03.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The result is one record per image carrying \textbf{its boxes, its labels, and its file path} --- which is what the target-array builder consumes.\par}\vskip 4pt
+\end{frame}
+
 \framekicker{Section 12.2.2}
 \begin{frame}[shrink=25]{The core idea: a grid of small predictors}
 \begin{center}
@@ -178,7 +185,7 @@ So each cell also outputs a \textbf{confidence}: high where an object is detecte
 \framekicker{Section 12.2.2 $\cdot$ listing 12.5}
 \begin{frame}[shrink=25]{The backbone: ResNet, not Xception}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Same KerasHub pattern as chapter 8, with two deliberate changes: a different architecture, and a larger input size.\par}\vskip 4pt
-\icode{python}{listing 12.5 --- loading ResNet}{listings/ch12-03.py}
+\icode{python}{listing 12.5 --- loading ResNet}{listings/ch12-04.py}
 \begin{ibullets}
 \item \textbf{ResNet} is structurally similar to Xception but downsamples with \textbf{strides instead of pooling} --- and chapter 11 established that strides preserve location, which detection needs.
 \item \textbf{448 $\times$ 448} rather than 180 $\times$ 180: \hilite{input size matters a great deal} for detection, because small objects vanish at low resolution.
@@ -188,7 +195,7 @@ So each cell also outputs a \textbf{confidence}: high where an object is detecte
 \framekicker{Section 12.2.2 $\cdot$ listing 12.6}
 \begin{frame}[shrink=25]{The detection head}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The head proposed in the YOLO paper is simple: take the backbone output, push it through two dense layers, then split the result.\par}\vskip 4pt
-\icode{python}{listing 12.6 --- attaching the head}{listings/ch12-04.py}
+\icode{python}{listing 12.6 --- attaching the head}{listings/ch12-05.py}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The \inlinecode{+ 5} is four box coordinates plus one confidence. Everything after that is the class distribution.\par}\vskip 4pt
 \end{frame}
 
@@ -243,7 +250,7 @@ The assignment rule: \textbf{each grid detector is responsible for any box whose
 \framekicker{Section 12.2.3}
 \begin{frame}[shrink=25]{\ldots{}written out}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Two small functions, exact inverses of one another --- one to prepare targets, one to read predictions back.\par}\vskip 4pt
-\icode{python}{converting to and from the grid}{listings/ch12-05.py}
+\icode{python}{converting to and from the grid}{listings/ch12-06.py}
 \begin{iband}[amber]
 Getting one of these subtly wrong is the classic detection bug: the loss still falls, the boxes still appear, and they are \hilite{consistently in the wrong place}
 \end{iband}
@@ -252,7 +259,7 @@ Getting one of these subtly wrong is the classic detection bug: the loss still f
 \framekicker{Section 12.2.3 $\cdot$ listing 12.7}
 \begin{frame}[shrink=25]{Building the two target arrays}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}One array holds the class map, the other the boxes with their confidence --- and the confidence in the \textbf{labels} is always exactly 1 or 0.\par}\vskip 4pt
-\icode{python}{listing 12.7 --- creating the targets}{listings/ch12-06.py}
+\icode{python}{listing 12.7 --- creating the targets}{listings/ch12-07.py}
 \begin{iband}[signal]
 Note the asymmetry: \textbf{the class map marks every cell the box overlaps}, while \textbf{the box array marks only the cell containing its centre}. Overlapping boxes are \hilite{deliberately not handled}, to keep the example readable.
 \end{iband}
@@ -280,7 +287,7 @@ Note the asymmetry: \textbf{the class map marks every cell the box overlaps}, wh
 \framekicker{Section 12.2.4 $\cdot$ listing 12.10}
 \begin{frame}[shrink=25]{Computing IoU for a batch of boxes}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Chapter 11 used IoU as a metric; here it has to be differentiable and run inside the loss, so it is written with \inlinecode{keras.ops}.\par}\vskip 4pt
-\icode{python}{listing 12.10 --- intersection area}{listings/ch12-07.py}
+\icode{python}{listing 12.10 --- intersection area}{listings/ch12-08.py}
 \begin{iband}[signal]
 The \inlinecode{ops.maximum(0.0, ...)} at the end is what handles \textbf{boxes that do not overlap at all}: a negative width would otherwise produce \hilite{a spurious positive area}
 \end{iband}
@@ -289,7 +296,7 @@ The \inlinecode{ops.maximum(0.0, ...)} at the end is what handles \textbf{boxes 
 \framekicker{Section 12.2.4 $\cdot$ listing 12.13}
 \begin{frame}[shrink=25]{Running it, and reading the prediction}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Predictions come back as a grid, so drawing them means taking an argmax for the label at each cell and filtering by confidence.\par}\vskip 4pt
-\icode{python}{listing 12.13 --- visualising a prediction}{listings/ch12-08.py}
+\icode{python}{listing 12.13 --- visualising a prediction}{listings/ch12-09.py}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The cutoff is set low because, as the next slide says plainly, \hilite{the model is not a very good detector yet}\par}\vskip 4pt
 \end{frame}
 
@@ -330,7 +337,7 @@ Together those approach the original YOLO training recipe. Doing it properly wou
 \framekicker{Section 12.3}
 \begin{frame}[shrink=25]{Loading it, and the box format argument}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}One line to instantiate --- and one argument worth understanding, because box formats are a persistent source of silent errors.\par}\vskip 4pt
-\icode{python}{loading RetinaNet}{listings/ch12-09.py}
+\icode{python}{loading RetinaNet}{listings/ch12-10.py}
 \begin{iband}[signal]
 \inlinecode{rel} means \textbf{relative to the image size} --- coordinates in [0, 1]. Most Keras models and layers that handle boxes accept this argument, and \hilite{setting it wrongly produces boxes in the wrong place with no error at all}
 \end{iband}
@@ -339,15 +346,15 @@ Together those approach the original YOLO training recipe. Doing it properly wou
 \framekicker{Section 12.3}
 \begin{frame}[shrink=25]{What comes back}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Four outputs, structurally similar to the YOLO model's --- with a fixed ceiling of 100 detections per image.\par}\vskip 4pt
-\icode{python}{inspecting the prediction}{listings/ch12-10.py}
-\ioutput{listings/ch12-11.txt}
+\icode{python}{inspecting the prediction}{listings/ch12-11.py}
+\ioutput{listings/ch12-12.txt}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}\inlinecode{num\_detections} is the one to read first --- the arrays are padded to 100, so \textbf{the rest is not meaningful}.\par}\vskip 4pt
 \end{frame}
 
 \framekicker{Section 12.3 $\cdot$ listing 12.15}
 \begin{frame}[shrink=25]{Drawing the detections}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Iterate only up to \inlinecode{num\_detections}, and translate the numeric COCO label into a name.\par}\vskip 4pt
-\icode{python}{listing 12.15 --- running inference}{listings/ch12-12.py}
+\icode{python}{listing 12.15 --- running inference}{listings/ch12-13.py}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}That is the whole of using a pretrained detector: load, predict, draw.\par}\vskip 4pt
 \end{frame}
 

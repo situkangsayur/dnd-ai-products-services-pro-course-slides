@@ -323,19 +323,36 @@ def scale_box(box, width, height):
     y += (width - height) * scale / 2 if width > height else 0    # short side
     return [x, y, w, h]
 
-metadata = {}
-for annotation in annotations["annotations"]:
-    id = annotation["image_id"]
-    metadata.setdefault(id, {"boxes": [], "labels": []})
-    image = images[id]
-    metadata[id]["boxes"].append(scale_box(annotation["bbox"],
-                                           image["width"], image["height"]))
-    metadata[id]["labels"].append(annotation["category_id"])
-    metadata[id]["path"] = images_path + "/train2017/" + image["file_name"]"""},
+"""},
                 {"t": "band",
                  "md": "The two centring lines matter: images are not square, so scaling by "
                        "the longest side leaves letterboxing — and the boxes have to be "
                        "==shifted by half that gap== or every prediction is offset."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 12.2.1 · listing 12.2",
+            "title": "…and collating it per image",
+            "blocks": [
+                {"t": "p", "md": "COCO stores one row per *annotation*, not per image, so the "
+                                 "boxes belonging to one picture have to be gathered together."},
+                {"t": "code", "lang": "python", "file": "aggregating by image ID",
+                 "src": """metadata = {}
+for annotation in annotations["annotations"]:
+    id = annotation["image_id"]
+    metadata.setdefault(id, {"boxes": [], "labels": []})
+    image = images[id]
+    metadata[id]["boxes"].append(
+        scale_box(annotation["bbox"], image["width"], image["height"]))
+    metadata[id]["labels"].append(annotation["category_id"])
+    metadata[id]["path"] = images_path + "/train2017/" + image["file_name"]
+
+metadata = list(metadata.values())"""},
+                {"t": "p", "md": "The result is one record per image carrying **its boxes, its "
+                                 "labels, and its file path** — which is what the target-array "
+                                 "builder consumes."},
             ],
         },
 

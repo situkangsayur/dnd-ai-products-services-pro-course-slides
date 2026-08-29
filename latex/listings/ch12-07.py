@@ -1,13 +1,11 @@
-from keras import ops
+class_array = np.zeros((len(metadata), grid_size, grid_size))
+box_array = np.zeros((len(metadata), grid_size, grid_size, 5))
 
-def unpack(box):
-    return box[..., 0], box[..., 1], box[..., 2], box[..., 3]
-
-def intersection(box1, box2):
-    cx1, cy1, w1, h1 = unpack(box1)
-    cx2, cy2, w2, h2 = unpack(box2)
-    left   = ops.maximum(cx1 - w1 / 2, cx2 - w2 / 2)
-    bottom = ops.maximum(cy1 - h1 / 2, cy2 - h2 / 2)
-    right  = ops.minimum(cx1 + w1 / 2, cx2 + w2 / 2)
-    top    = ops.minimum(cy1 + h1 / 2, cy2 + h2 / 2)
-    return ops.maximum(0.0, right - left) * ops.maximum(0.0, top - bottom)
+for index, sample in enumerate(metadata):
+    for box, label in zip(sample["boxes"], sample["labels"]):
+        (x, y, w, h) = box
+        left, right = math.floor(x * grid_size), math.ceil((x + w) * grid_size)
+        bottom, top = math.floor(y * grid_size), math.ceil((y + h) * grid_size)
+        class_array[index, bottom:top, left:right] = label     # every cell it covers
+        loc, grid_box = to_grid(box)
+        box_array[index, loc[1], loc[0]] = (*grid_box, 1.0)    # only the CENTRE cell

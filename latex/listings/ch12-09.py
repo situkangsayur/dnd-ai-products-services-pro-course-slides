@@ -1,6 +1,7 @@
-detector = keras_hub.models.ObjectDetector.from_preset(
-    "retinanet_resnet50_fpn_v2_coco",
-    bounding_box_format="rel_xywh",     # same format as our YOLO, so the same
-)                                       # drawing utilities work unchanged
+x, y = next(iter(val_dataset.rebatch(1)))
+preds = model.predict(x)
 
-predictions = detector.predict(image)
+boxes = preds["box"][0]
+classes = np.argmax(preds["class"][0], axis=-1)      # most likely label per cell
+
+draw_prediction(path, boxes, classes, cutoff=0.1)    # a LOW cutoff, deliberately
