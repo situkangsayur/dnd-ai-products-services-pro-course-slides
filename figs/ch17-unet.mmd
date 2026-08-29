@@ -1,0 +1,9 @@
+
+flowchart TB
+  IN["<b>Two inputs</b><br/><small>noisy image 128x128<br/>+ noise rate</small>"]
+  DOWN["<b>Downsampling stage</b><br/><small>128 -&gt; 64 -&gt; 32 -&gt; 16<br/>widths 32, 64, 96</small>"]
+  MID["<b>Middle stage</b><br/><small>16x16, constant size<br/>width 128</small>"]
+  UP["<b>Upsampling stage</b><br/><small>16 -&gt; 32 -&gt; 64 -&gt; 128<br/>widths 96, 64, 32</small>"]
+  OUT["<b>Predicted noise mask</b><br/><small>not a denoised image</small>"]
+  IN --> DOWN --> MID --> UP --> OUT
+  DOWN -. "concatenative skip connections<br/>preserve image detail" .-> UP

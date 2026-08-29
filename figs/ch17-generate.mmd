@@ -1,0 +1,10 @@
+
+flowchart TB
+  N["Start from pure noise<br/><small>diffusion_times = 1.0</small>"]
+  D["<b>denoise()</b><br/><small>predict the noise mask,<br/>subtract it</small>"]
+  S["Step forward:<br/>t = t - 1/diffusion_steps"]
+  R["Re-noise to the<br/><b>next</b> schedule point"]
+  O["Denormalize to [0, 255]"]
+  N --> D --> S --> R
+  R -. "loop diffusion_steps times" .-> D
+  R --> O

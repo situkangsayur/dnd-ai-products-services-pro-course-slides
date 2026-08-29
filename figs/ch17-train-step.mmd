@@ -1,0 +1,9 @@
+
+flowchart TB
+  A["<b>1.</b> Normalize the images"]
+  B["<b>2.</b> Sample random<br/>diffusion times<br/><small>the full spectrum, 0 to 1</small>"]
+  C["<b>3.</b> Compute noise rates<br/>and signal rates<br/><small>from the schedule</small>"]
+  D["<b>4.</b> Add noise<br/><small>signal * image + noise * mask</small>"]
+  E["<b>5.</b> Denoise"]
+  F["Loss = mean absolute error<br/>between the <b>real</b> noise mask<br/>and the <b>predicted</b> one"]
+  A --> B --> C --> D --> E --> F

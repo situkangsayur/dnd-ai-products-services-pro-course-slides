@@ -122,5 +122,18 @@
  "ch16-sampling": "4e97f0272d10b8ef",
  "ch16-scaling": "118aa16208d2c90b",
  "ch16-temperature": "1ef0a1fd964eaf6a",
- "ch16-tied": "05800096fbd9d50e"
+ "ch16-tied": "05800096fbd9d50e",
+ "ch17-autoencoder": "e0a6880b3663e580",
+ "ch17-diffusion-idea": "bf026693561a5588",
+ "ch17-generate": "68f0a073c2fd2ad5",
+ "ch17-latent": "2a081a79b7c02fa8",
+ "ch17-reverse": "e03286b82b1b1a06",
+ "ch17-slerp": "3c68bfbcf4c8c9b2",
+ "ch17-t2i": "9986768d3da0956d",
+ "ch17-t2i-steps": "70d03a46e4591627",
+ "ch17-t2i-train": "eee141196c360051",
+ "ch17-train-step": "b3f872ec27024d09",
+ "ch17-unet": "b55497781c7d3c60",
+ "ch17-vae": "6c0a790b8a23f814",
+ "ch17-vae-loss": "02b425ac7400b61d"
 }

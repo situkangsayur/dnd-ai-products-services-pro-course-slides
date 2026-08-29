@@ -1,0 +1,10 @@
+
+flowchart TB
+  P["Prompt<br/><small>a short description<br/>of the image</small>"]
+  TE["<b>Pretrained text encoder</b><br/><small>a Transformer encoder,<br/>like RoBERTa</small>"]
+  EMB["Text embeddings"]
+  NI["Noisy image"]
+  DN["<b>Denoising model</b><br/><small>two inputs now</small>"]
+  OUT["Predicted noise mask"]
+  P --> TE --> EMB --> DN
+  NI --> DN --> OUT

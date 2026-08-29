@@ -1,0 +1,9 @@
+
+flowchart LR
+  X["Original input<br/><small>x</small>"]
+  E["<b>Encoder</b>"]
+  C["Compressed<br/>representation<br/><small>the code</small>"]
+  D["<b>Decoder</b>"]
+  Y["Reconstructed input<br/><small>x'</small>"]
+  X --> E --> C --> D --> Y
+  X -. "is also the target" .-> Y

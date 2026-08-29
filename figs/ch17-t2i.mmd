@@ -1,0 +1,8 @@
+
+flowchart LR
+  T["Text prompt<br/><small>&quot;horse riding a bike<br/>on the moon&quot;</small>"]
+  TE["<b>Text encoder</b>"]
+  LS["<b>Latent text/image space</b>"]
+  ID["<b>Image decoder</b>"]
+  IM["Generated image"]
+  T --> TE --> LS --> ID --> IM

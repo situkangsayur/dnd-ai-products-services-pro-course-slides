@@ -1,0 +1,9 @@
+
+flowchart TB
+  M["The text manifold<br/><small>smooth, all vectors of<br/>roughly the same magnitude</small>"]
+  L["<b>Linear interpolation</b><br/><small>cuts through the inside<br/>of the sphere</small>"]
+  S["<b>Spherical interpolation</b><br/><small>stays on the surface</small>"]
+  B["Off the manifold:<br/>embeddings lose meaning<br/>for the denoiser"]
+  G["On the manifold:<br/>every intermediate point<br/>is a meaningful prompt"]
+  M --> L --> B
+  M --> S --> G

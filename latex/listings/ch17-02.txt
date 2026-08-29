@@ -1,0 +1,10 @@
+>>> encoder.summary()
+Model: "encoder"
+│ input_layer (InputLayer) │ (None, 28, 28, 1)  │      0 │
+│ conv2d (Conv2D)          │ (None, 14, 14, 32) │    320 │
+│ conv2d_1 (Conv2D)        │ (None, 7, 7, 64)   │ 18,496 │
+│ flatten (Flatten)        │ (None, 3136)       │      0 │
+│ dense (Dense)            │ (None, 16)         │ 50,192 │
+│ z_mean (Dense)           │ (None, 2)          │     34 │
+│ z_log_var (Dense)        │ (None, 2)          │     34 │
+ Total params: 69,076 (269.83 KB)

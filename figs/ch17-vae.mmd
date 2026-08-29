@@ -1,0 +1,9 @@
+
+flowchart LR
+  I["Input image"]
+  E["<b>Encoder</b>"]
+  M["z_mean<br/><small>and z_log_var</small>"]
+  S["<b>Sample</b><br/><small>z = mean + exp(0.5 * log_var) * epsilon</small>"]
+  D["<b>Decoder</b>"]
+  R["Reconstructed image"]
+  I --> E --> M --> S --> D --> R

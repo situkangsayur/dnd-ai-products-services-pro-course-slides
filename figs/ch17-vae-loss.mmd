@@ -1,0 +1,8 @@
+
+flowchart TB
+  T["<b>Two losses, added</b>"]
+  R["<b>Reconstruction loss</b><br/><small>binary crossentropy</small><br/>forces the decoded sample<br/>to match the input"]
+  K["<b>Regularization loss</b><br/><small>Kullback-Leibler divergence</small><br/>nudges the encoder output<br/>toward a normal distribution<br/>centred on zero"]
+  E["A latent space that is<br/><b>continuous and well-rounded</b>"]
+  T --> R --> E
+  T --> K --> E

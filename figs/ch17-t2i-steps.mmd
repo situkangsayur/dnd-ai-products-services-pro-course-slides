@@ -1,0 +1,6 @@
+
+flowchart LR
+  A["<b>1. Encode</b><br/><small>tokenize the prompt,<br/>embed it</small>"]
+  B["<b>2. Denoise</b><br/><small>pure noise to latents,<br/>conditioned on the text</small>"]
+  C["<b>3. Decode and scale</b><br/><small>[-1, 1] back to [0, 255]</small>"]
+  A --> B --> C
