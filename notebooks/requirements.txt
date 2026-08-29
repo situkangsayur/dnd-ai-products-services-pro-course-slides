@@ -1,0 +1,31 @@
+# One environment for the whole course.
+#
+#   python3 -m venv .venv && source .venv/bin/activate
+#   pip install -r notebooks/requirements.txt
+#   jupyter lab notebooks/
+#
+# Keras 3 needs exactly one backend installed and selected via KERAS_BACKEND.
+# TensorFlow is the default here because chapters 13-16 use tf.data pipelines
+# that the other backends do not ship an equivalent for. Chapter 18 argues for
+# JAX when you get to distributed training -- swap the line below at that point
+# rather than installing all three, which will fight over GPU memory.
+
+keras>=3.5
+tensorflow>=2.17          # the backend; swap for jax[cuda12] or torch as needed
+keras-hub>=0.18           # pretrained models: chapters 8, 11, 12, 15, 16, 17
+
+numpy>=1.26
+scipy>=1.11
+pandas>=2.1
+matplotlib>=3.8
+pillow>=10.2
+
+scikit-learn>=1.4         # baselines and metrics, chapters 5, 6, 18
+keras-tuner>=1.4          # chapter 18
+
+jupyterlab>=4.1
+ipywidgets>=8.1           # progress bars in long training cells
+
+# Chapter-specific, and large. Uncomment when you reach them.
+# kagglehub>=0.3          # chapter 8 and 16: pretrained weights behind a login
+# sentencepiece>=0.2      # chapter 16: the tokenizer, if not pulled in by keras-hub

@@ -22,6 +22,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
+import gen_index          # noqa: E402
 import gen_latex          # noqa: E402
 import gen_web            # noqa: E402
 import schema             # noqa: E402
@@ -119,6 +120,7 @@ def main():
     fails = []
     warns = []
     overfull = []
+    built = []
     total_slides = 0
     for did, path in found:
         try:
@@ -127,6 +129,7 @@ def main():
             warns.extend(schema.lint(deck))
             n = gen_web.write(deck, os.path.join(WEB_DECKS, deck["id"]))
             tex = gen_latex.write(deck, LATEX)
+            built.append((deck, n))
             total_slides += n
             line = (f"  {deck['id']:20s} {n:3d} slides  ->  "
                     f"latex/{deck['id']}.tex + course-web-slides/{deck['id']}/")
@@ -152,6 +155,13 @@ def main():
         except Exception as e:
             fails.append((did, str(e)))
             print(f"  {did:20s} FAILED: {e}")
+
+    if built:
+        # Merges rather than replaces, so building a single deck never drops
+        # the other twenty out of the gallery.
+        listed = gen_index.write(built, WEB_DECKS)
+        print(f"  {'index':20s}      ->  course-web-slides/index.html "
+              f"+ decks.json ({listed} decks)")
 
     print(f"\n{len(found)} deck(s), {total_slides} slides total.")
     if warns:
