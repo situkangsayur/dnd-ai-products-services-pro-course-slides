@@ -1,15 +1,7 @@
-model.compile(
-    optimizer="adam",
-    loss={"priority": "mean_squared_error",
-          "department":
-              "sparse_categorical_crossentropy"},
-    metrics={"priority": ["mean_absolute_error"],
-             "department": ["accuracy"]})
+keras.utils.plot_model(model, "ticket_classifier.png")
 
-model.fit(
-    {"title": title_data,
-     "text_body": text_body_data,
-     "tags": tags_data},
-    {"priority": priority_data,
-     "department": department_data},
-    epochs=1)
+# far more useful while debugging:
+keras.utils.plot_model(model, "ticket_classifier_with_shape_info.png",
+                       show_shapes=True, show_layer_names=True)
+
+print(model.layers[3].output)

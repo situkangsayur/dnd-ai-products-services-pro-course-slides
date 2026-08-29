@@ -1,0 +1,1 @@
+<KerasTensor shape=(None, 20100), dtype=float32>

@@ -14,6 +14,6 @@ class RootMeanSquaredError(keras.metrics.Metric):
     def result(self):
         return ops.sqrt(self.mse_sum / self.total_samples)
 
-    def reset_state(self):                 # supaya objek metrik yang sama bisa dipakai
-        self.mse_sum.assign(0.)            # lintas-epoch dan lintas latih/evaluasi
+    def reset_state(self):
+        self.mse_sum.assign(0.)
         self.total_samples.assign(0.)

@@ -1,0 +1,8 @@
+
+flowchart LR
+  A["1. Forward pass<br/><code>model(x, training=True)</code>"]
+  B["2. Loss<br/><code>loss_fn(y, y_pred)</code>"]
+  C["3. Gradients<br/>w.r.t. trainable_weights"]
+  D["4. Update<br/><code>optimizer.apply(...)</code>"]
+  A --> B --> C --> D
+  D -. "next batch" .-> A

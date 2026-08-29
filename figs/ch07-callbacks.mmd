@@ -1,0 +1,9 @@
+
+flowchart LR
+  TB["on_train_begin"] --> EB["on_epoch_begin"]
+  EB --> BB["on_batch_begin"]
+  BB --> BE["on_batch_end"]
+  BE -. "next batch" .-> BB
+  BE --> EE["on_epoch_end"]
+  EE -. "next epoch" .-> EB
+  EE --> TE["on_train_end"]

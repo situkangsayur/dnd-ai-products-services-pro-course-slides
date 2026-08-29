@@ -1,0 +1,7 @@
+
+flowchart LR
+  A["<b>1 · Define the task</b><br/>frame the problem<br/>collect and annotate data<br/>choose a success measure"]
+  B["<b>2 · Develop a model</b><br/>prepare the data<br/>beat a baseline<br/>scale up, then regularise"]
+  C["<b>3 · Deploy</b><br/>set expectations<br/>ship inference<br/>monitor and maintain"]
+  A --> B --> C
+  C -. "new production data<br/>feeds the next generation" .-> A

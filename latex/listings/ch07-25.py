@@ -1,5 +1,7 @@
-values = ops.array([0, 1, 2, 3, 4])
-mean_tracker = keras.metrics.Mean()
-for value in values:
-    mean_tracker.update_state(value)
-print(f"Mean: {mean_tracker.result():.2f}")
+metric = keras.metrics.SparseCategoricalAccuracy()
+targets = ops.array([0, 1, 2])
+predictions = ops.array([[1, 0, 0],
+                         [0, 1, 0],
+                         [0, 0, 1]])
+metric.update_state(targets, predictions)
+print(f"result: {metric.result():.2f}")

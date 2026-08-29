@@ -1,0 +1,8 @@
+
+flowchart LR
+  T["title<br/><code>(10000,)</code>"] --> C["Concatenate<br/><code>(20100,)</code>"]
+  B["text_body<br/><code>(10000,)</code>"] --> C
+  G["tags<br/><code>(100,)</code>"] --> C
+  C --> D["Dense 64 relu<br/><code>dense_features</code>"]
+  D --> P["priority<br/>1 unit, sigmoid"]
+  D --> DP["department<br/>4 units, softmax"]

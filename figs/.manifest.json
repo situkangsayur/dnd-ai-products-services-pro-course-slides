@@ -29,5 +29,17 @@
  "ch05-protocols": "2f143135bd6d7672",
  "ch05-regularise": "6caf406a61fab47a",
  "ch05-splits": "2cfddbf2feeb245d",
- "ch05-tension": "864c283b312e82ae"
+ "ch05-tension": "864c283b312e82ae",
+ "ch06-deploy": "583fb403457bc46e",
+ "ch06-drift": "82a9fbec80a36031",
+ "ch06-leakcheck": "ed59961442078b20",
+ "ch06-optimise": "24aebd7dc951f1f4",
+ "ch06-stages": "75837379bd8f1d27",
+ "ch06-workflow": "1e811c41669129f0",
+ "ch07-apichoice": "703dcdf35e612529",
+ "ch07-callbacks": "279d2d30fdbd3cba",
+ "ch07-loopchoice": "e3bde90352280882",
+ "ch07-reuse": "0bba2a0a75b7ab74",
+ "ch07-ticket": "4d25840524f77a55",
+ "ch07-trainstep": "ab8fe354aca3c806"
 }

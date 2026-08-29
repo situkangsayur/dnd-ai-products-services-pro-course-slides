@@ -1,0 +1,1 @@
+accuracy: 0.9612 - loss: 0.1284 - rmse: 0.2371

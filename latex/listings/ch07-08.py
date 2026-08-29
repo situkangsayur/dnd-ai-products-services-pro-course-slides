@@ -1,8 +1,14 @@
-# Mau menambah keluaran ketiga: taksiran kesulitan tiket.
-# TIDAK perlu membangun dan melatih ulang dari nol.
-features = model.layers[4].output          # lapis Dense antara tadi
-difficulty = layers.Dense(3, activation="softmax", name="difficulty")(features)
+class CustomerTicketModel(keras.Model):
+    def __init__(self, num_departments):
+        super().__init__()                       # do not forget the super constructor
+        self.concat_layer = layers.Concatenate()
+        self.mixing_layer = layers.Dense(64, activation="relu")
+        self.priority_scorer = layers.Dense(1, activation="sigmoid")
+        self.department_classifier = layers.Dense(num_departments,
+                                                  activation="softmax")
 
-new_model = keras.Model(
-    inputs=[title, text_body, tags],
-    outputs=[priority, department, difficulty])
+    def call(self, inputs):                      # the forward pass lives here
+        features = self.concat_layer(
+            [inputs["title"], inputs["text_body"], inputs["tags"]])
+        features = self.mixing_layer(features)
+        return self.priority_scorer(features), self.department_classifier(features)

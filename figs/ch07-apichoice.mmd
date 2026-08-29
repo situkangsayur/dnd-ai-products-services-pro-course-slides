@@ -1,0 +1,11 @@
+
+flowchart TB
+  Q1{"Can the model be drawn as a<br/>directed acyclic graph of layers?"}
+  Q2{"Is it a simple<br/>linear stack?"}
+  SEQ["Sequential"]
+  FUN["Functional API<br/><small>recommended default</small>"]
+  SUB["Model subclassing"]
+  Q1 -- yes --> Q2
+  Q2 -- yes --> SEQ
+  Q2 -- no --> FUN
+  Q1 -- "no: loops, recursion,<br/>arbitrary control flow" --> SUB

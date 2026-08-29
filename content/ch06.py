@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-"""Bab 6 — The universal workflow of machine learning.
+"""Chapter 6 — The universal workflow of machine learning.
 
-Sumber: Chollet & Watson, *Deep Learning with Python*, 3rd ed., bab 6
-(hlm. 171-189). Ditulis dari naskah bukunya langsung.
+Source: Chollet & Watson, *Deep Learning with Python*, 3rd ed., chapter 6
+(pp. 171-189), read from the book PDF.
 
-Ini bab yang paling dekat dengan pekerjaan sehari-hari seorang praktisi:
-perumusan masalah, pengumpulan data, etika, penyerahan ke produksi, pemantauan,
-dan pergeseran konsep. Contoh ambang fraud di bagian 6.3.1 dipakai apa adanya
-dari buku -- angka contoh buku, bukan angka organisasi mana pun.
+The chapter closest to a practitioner's daily work: framing, data collection,
+ethics, shipping, monitoring, and concept drift. The fraud-threshold example in
+6.3.1 is the book's own, with the book's numbers -- not any organisation's.
 """
 
 import sys, os
@@ -16,760 +15,790 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
 
 
-SVG_WORKFLOW = """
-<svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="Alur kerja universal machine learning: tetapkan tugas, kembangkan model, serahkan">
-  <defs>
-    <marker id="wf" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
-      <path d="M0,0 L9,4.5 L0,9 z" fill="rgba(34,211,238,.8)"/>
-    </marker>
-    <marker id="wb" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
-      <path d="M0,0 L9,4.5 L0,9 z" fill="rgba(245,179,1,.9)"/>
-    </marker>
-  </defs>
-
-  <rect x="20" y="46" width="222" height="150" rx="12"
-        fill="rgba(44,123,212,.12)" stroke="rgba(44,123,212,.6)" stroke-width="1.4"/>
-  <text class="d-lbl" x="40" y="72" font-weight="700">1 &#183; Tetapkan tugas</text>
-  <text class="d-sm" x="40" y="98">&#183; rumuskan persoalannya</text>
-  <text class="d-sm" x="40" y="118">&#183; kumpulkan &amp; anotasi data</text>
-  <text class="d-sm" x="40" y="138">&#183; pahami datanya</text>
-  <text class="d-sm" x="40" y="158">&#183; pilih ukuran keberhasilan</text>
-  <text class="d-sm" x="40" y="182" fill="#F5B301">bagian tersulit</text>
-
-  <rect x="270" y="46" width="222" height="150" rx="12"
-        fill="rgba(34,211,238,.12)" stroke="rgba(34,211,238,.6)" stroke-width="1.4"/>
-  <text class="d-lbl" x="290" y="72" font-weight="700">2 &#183; Kembangkan model</text>
-  <text class="d-sm" x="290" y="98">&#183; siapkan data</text>
-  <text class="d-sm" x="290" y="118">&#183; pilih protokol evaluasi</text>
-  <text class="d-sm" x="290" y="138">&#183; kalahkan tolok banding</text>
-  <text class="d-sm" x="290" y="158">&#183; besarkan sampai overfit</text>
-  <text class="d-sm" x="290" y="178">&#183; regularisasi &amp; setel</text>
-
-  <rect x="520" y="46" width="222" height="150" rx="12"
-        fill="rgba(123,217,73,.12)" stroke="rgba(123,217,73,.6)" stroke-width="1.4"/>
-  <text class="d-lbl" x="540" y="72" font-weight="700">3 &#183; Serahkan</text>
-  <text class="d-sm" x="540" y="98">&#183; jelaskan ke pemangku</text>
-  <text class="d-sm" x="540" y="118">&#183; kirim model inferensi</text>
-  <text class="d-sm" x="540" y="138">&#183; pantau di lapangan</text>
-  <text class="d-sm" x="540" y="158">&#183; rawat &amp; kumpulkan data baru</text>
-
-  <path class="d-arrow" d="M242,121 L266,121" marker-end="url(#wf)"/>
-  <path class="d-arrow" d="M492,121 L516,121" marker-end="url(#wf)"/>
-
-  <path d="M700,200 C700,244 200,244 132,244 L132,202"
-        fill="none" stroke="rgba(245,179,1,.9)" stroke-width="1.8"
-        stroke-dasharray="6 4" marker-end="url(#wb)"/>
-  <text class="d-sm" x="330" y="262" fill="#F5B301">
-    data baru dari produksi &#8212; menjadi bahan generasi model berikutnya
-  </text>
-  <text class="d-sm" x="20" y="290" fill="#7E93B4">
-    Tidak ada model yang bertahan selamanya. Lingkarnya tidak pernah tertutup.
-  </text>
-</svg>
+MMD_WORKFLOW = """
+flowchart LR
+  A["<b>1 · Define the task</b><br/>frame the problem<br/>collect and annotate data<br/>choose a success measure"]
+  B["<b>2 · Develop a model</b><br/>prepare the data<br/>beat a baseline<br/>scale up, then regularise"]
+  C["<b>3 · Deploy</b><br/>set expectations<br/>ship inference<br/>monitor and maintain"]
+  A --> B --> C
+  C -. "new production data<br/>feeds the next generation" .-> A
 """
 
-TIKZ_WORKFLOW = r"""
-\begin{tikzpicture}[font=\sffamily\tiny,
-  ar/.style={-{Stealth[length=4pt]}, signal, line width=0.8pt},
-  bk/.style={-{Stealth[length=4pt]}, amberbr, line width=0.9pt, dashed}]
-  \node[draw=itbbluelt!70, fill=itbbluelt!10, rounded corners=5pt, minimum width=3.3cm,
-        minimum height=2.2cm, anchor=north west, align=left] (a) at (0,0)
-    {\textbf{1 $\cdot$ Tetapkan tugas}\\[3pt]
-     $\cdot$ rumuskan persoalannya\\$\cdot$ kumpulkan \& anotasi data\\
-     $\cdot$ pahami datanya\\$\cdot$ pilih ukuran keberhasilan\\[2pt]
-     \textcolor{amber}{bagian tersulit}};
-  \node[draw=signal!70, fill=signal!10, rounded corners=5pt, minimum width=3.3cm,
-        minimum height=2.2cm, anchor=north west, align=left] (b) at (3.7,0)
-    {\textbf{2 $\cdot$ Kembangkan model}\\[3pt]
-     $\cdot$ siapkan data\\$\cdot$ pilih protokol evaluasi\\
-     $\cdot$ kalahkan tolok banding\\$\cdot$ besarkan sampai overfit\\
-     $\cdot$ regularisasi \& setel};
-  \node[draw=lime!70, fill=limebr!10, rounded corners=5pt, minimum width=3.3cm,
-        minimum height=2.2cm, anchor=north west, align=left] (c) at (7.4,0)
-    {\textbf{3 $\cdot$ Serahkan}\\[3pt]
-     $\cdot$ jelaskan ke pemangku\\$\cdot$ kirim model inferensi\\
-     $\cdot$ pantau di lapangan\\$\cdot$ rawat \& kumpulkan data baru};
-  \draw[ar] (a.east) -- (b.west);
-  \draw[ar] (b.east) -- (c.west);
-  \draw[bk] (c.south) -- ++(0,-0.5) -| (a.south);
-  \node[text=amber, anchor=north] at (5.4,-2.75)
-    {data baru dari produksi --- menjadi bahan generasi model berikutnya};
-\end{tikzpicture}
+MMD_DRIFT = """
+flowchart LR
+  F["Credit-card fraud<br/><b>days</b>"] --> M["Music recommender<br/><b>weeks</b>"]
+  M --> I["Image search engine<br/><b>a couple of years, at best</b>"]
 """
 
-SVG_DRIFT = """
-<svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" role="img"
-     aria-label="Umur pakai model berbeda-beda menurut kecepatan pergeseran konsep">
-  <line x1="120" y1="188" x2="720" y2="188" stroke="rgba(140,190,255,.35)" stroke-width="1.2"/>
-  <text class="d-sm" x="420" y="212" text-anchor="middle" fill="#7E93B4">
-    umur pakai sebelum model harus dilatih ulang
-  </text>
-
-  <text class="d-sm" x="112" y="52" text-anchor="end">deteksi fraud kartu</text>
-  <rect x="120" y="36" width="70" height="22" rx="5"
-        fill="rgba(251,113,133,.22)" stroke="rgba(251,113,133,.75)"/>
-  <text class="d-mono" x="204" y="52" fill="#FB7185">hari</text>
-
-  <text class="d-sm" x="112" y="94" text-anchor="end">perekomendasi musik</text>
-  <rect x="120" y="78" width="160" height="22" rx="5"
-        fill="rgba(245,179,1,.22)" stroke="rgba(245,179,1,.7)"/>
-  <text class="d-mono" x="294" y="94" fill="#F5B301">minggu</text>
-
-  <text class="d-sm" x="112" y="136" text-anchor="end">mesin pencari citra</text>
-  <rect x="120" y="120" width="480" height="22" rx="5"
-        fill="rgba(123,217,73,.20)" stroke="rgba(123,217,73,.65)"/>
-  <text class="d-mono" x="614" y="136" fill="#7BD949">beberapa tahun (paling baik)</text>
-
-  <text class="d-sm" x="120" y="172" fill="#F5B301">
-    Pergeseran konsep paling tajam di konteks adversarial: pola kecurangan berubah nyaris tiap hari.
-  </text>
-</svg>
+MMD_DEPLOY = """
+flowchart TB
+  Q1{"Is the input data<br/>highly sensitive, or<br/>connectivity poor?"}
+  Q2{"Strict latency<br/>requirements?"}
+  Q3{"Do you want to move<br/>compute to the user?"}
+  API["REST API<br/><small>~500 ms round trip</small>"]
+  DEV["On device<br/><small>TF Lite, ONNX runtime</small>"]
+  BR["In the browser<br/><small>TensorFlow.js, ONNX JS</small>"]
+  Q1 -- yes --> DEV
+  Q1 -- no --> Q2
+  Q2 -- yes --> Q3
+  Q2 -- no --> API
+  Q3 -- yes --> BR
+  Q3 -- no --> API
 """
 
-TIKZ_DRIFT = r"""
-\begin{tikzpicture}[font=\sffamily\tiny]
-  \node[text=ink2, anchor=east] at (0,1.4) {deteksi fraud kartu};
-  \node[draw=rose!75, fill=rosebr!22, rounded corners=2.5pt, minimum width=0.8cm,
-        minimum height=0.34cm, anchor=west] at (0.15,1.4) {};
-  \node[text=rose, anchor=west, font=\ttfamily\tiny] at (1.1,1.4) {hari};
+MMD_LEAKCHECK = """
+flowchart TB
+  F["A feature in your training data"]
+  Q{"Will it exist, in the<br/>same form, at the moment<br/>the model must decide?"}
+  OK["Safe to use"]
+  BAD["<b>Target leak</b><br/>remove it"]
+  F --> Q
+  Q -- yes --> OK
+  Q -- no --> BAD
+"""
 
-  \node[text=ink2, anchor=east] at (0,0.8) {perekomendasi musik};
-  \node[draw=amber!70, fill=amberbr!22, rounded corners=2.5pt, minimum width=1.9cm,
-        minimum height=0.34cm, anchor=west] at (0.15,0.8) {};
-  \node[text=amber, anchor=west, font=\ttfamily\tiny] at (2.2,0.8) {minggu};
-
-  \node[text=ink2, anchor=east] at (0,0.2) {mesin pencari citra};
-  \node[draw=lime!65, fill=limebr!20, rounded corners=2.5pt, minimum width=5.6cm,
-        minimum height=0.34cm, anchor=west] at (0.15,0.2) {};
-  \node[text=lime, anchor=west, font=\ttfamily\tiny] at (5.9,0.2) {beberapa tahun (paling baik)};
-
-  \draw[rule] (0.15,-0.2) -- (8.6,-0.2);
-  \node[text=ink3, anchor=north] at (4.4,-0.3) {umur pakai sebelum model harus dilatih ulang};
-  \node[text=amber, anchor=west, align=left] at (-2.4,-1.0)
-    {Pergeseran konsep paling tajam di konteks adversarial:\\pola kecurangan berubah nyaris tiap hari.};
-\end{tikzpicture}
+MMD_OPTIMISE = """
+flowchart LR
+  M["Trained model<br/>float32"]
+  P["Weight pruning<br/><small>keep only the<br/>significant coefficients</small>"]
+  Q["Weight quantization<br/><small>float32 to int8</small>"]
+  S["4x smaller,<br/>near the original accuracy"]
+  M --> P --> Q --> S
 """
 
 
-NB = ["01_memahami_data_sebelum_model.ipynb", "02_pra_pemrosesan_umum.ipynb",
-      "03_ekspor_dan_kuantisasi.ipynb"]
+MMD_STAGES = """
+flowchart LR
+  S1["<b>Stage 1</b><br/>Beat a baseline<br/><small>statistical power</small>"]
+  S2["<b>Stage 2</b><br/>Scale up<br/><small>until it overfits</small>"]
+  S3["<b>Stage 3</b><br/>Regularise and tune<br/><small>maximise generalisation</small>"]
+  S1 --> S2 --> S3
+  S3 -. "if test << validation,<br/>your protocol was not reliable" .-> S3
+"""
+
+NB = ["01_understand_data_before_modelling.ipynb", "02_common_preprocessing.ipynb",
+      "03_export_and_quantize.ipynb"]
 
 DECK = {
     "id": "ch06",
     "kind": "chapter",
     "number": 6,
-    "title": "Alur Kerja Universal Machine Learning",
-    "subtitle": "Anda tidak memulai dari kumpulan data. Anda memulai dari persoalan -- "
-                "dan pekerjaan tersulitnya justru sebelum baris kode pertama.",
-    "source": "Chollet & Watson, Deep Learning with Python 3e -- bab 6 (hlm. 171-189)",
+    "title": "The Universal Workflow of Machine Learning",
+    "subtitle": "You do not start from a dataset. You start from a problem — and "
+                "the hardest work happens before the first line of model code.",
+    "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 6",
     "source_url": chapter_url(6),
-    "duration": "3 jam (2 sesi)",
-    "presenter": {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Pengajar Utama"},
+    "duration": "3 hours (2 sessions)",
+    "presenter": {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
     "resources": chapter_resources(6, local_notebooks=NB),
     "objectives": [
-        "Merumuskan sebuah persoalan bisnis menjadi **jenis tugas machine learning** "
-        "yang tepat -- termasuk mengenali kapan machine learning **bukan** jawabannya.",
-        "Menyebut **dua hipotesis** yang diam-diam Anda buat setiap kali memulai "
-        "proyek, dan apa artinya bila keduanya salah.",
-        "Merancang pengumpulan dan anotasi data yang **mewakili data produksi**, "
-        "dan mengenali **bias pencuplikan**, **kebocoran target**, serta "
-        "**pergeseran konsep**.",
-        "Memilih ukuran keberhasilan, lalu memilih **aktivasi lapis akhir, fungsi "
-        "rugi, dan metrik** yang sepadan dengannya.",
-        "Menjalankan tiga tahap pengembangan model: **kalahkan tolok banding → "
-        "besarkan sampai overfit → regularisasi dan setel**.",
-        "Memilih cara penyerahan -- **REST API, di perangkat, atau di peramban** -- "
-        "beserta pengoptimalan inferensinya (pemangkasan dan kuantisasi bobot).",
-        "Menyusun **penetapan harapan pemangku kepentingan** dalam bahasa "
-        "false-positive dan false-negative, bukan 'akurasi 98%'.",
+        "Frame a business problem as the right **kind of machine learning task** — "
+        "including recognising when machine learning is **not** the answer.",
+        "Name the **two hypotheses** you make silently at the start of every "
+        "project, and what it means if either is false.",
+        "Design collection and annotation so the data **represents production**, "
+        "and recognise **sampling bias**, **target leaks**, and **concept drift**.",
+        "Choose a success measure, then choose the **last-layer activation, loss, "
+        "and metrics** that match it.",
+        "Run the three development stages: **beat a baseline → scale up until it "
+        "overfits → regularise and tune**.",
+        "Choose a deployment route — **REST API, on device, or in the browser** — "
+        "and optimise the model for inference.",
+        "Set stakeholder expectations in **false-positive and false-negative** "
+        "terms rather than \"98% accurate\".",
     ],
     "slides": [
         {"type": "title"},
 
         {
             "type": "slide",
-            "kicker": "Pembuka",
-            "title": "Di dunia nyata, `keras.datasets` tidak ada",
+            "kicker": "Opening",
+            "title": "In the real world, `keras.datasets` does not exist",
             "blocks": [
-                {"t": "lead", "md": "Bayangkan Anda membuka jasa konsultasi machine learning "
-                                    "sendiri. Proyeknya mulai berdatangan -- dan ==tidak "
-                                    "satu pun datang bersama kumpulan datanya=="},
+                {"t": "lead", "md": "Imagine opening your own machine learning consultancy. "
+                                    "The projects start rolling in — and ==not one of them "
+                                    "arrives with its dataset=="},
                 {"t": "cards", "cols": 4, "items": [
-                    {"ico": "🔍", "h": "Pencarian foto",
-                     "p": "Ketik *wedding*, dapatkan semua foto pernikahan -- tanpa penandaan "
-                          "manual."},
-                    {"ico": "🚫", "h": "Spam & konten kasar",
-                     "p": "Menandai kiriman pada aplikasi obrolan yang baru tumbuh."},
-                    {"ico": "🎵", "h": "Perekomendasi musik",
-                     "p": "Untuk pengguna radio daring."},
-                    {"ico": "💳", "h": "Fraud kartu kredit",
-                     "p": "Untuk sebuah situs niaga elektronik."},
-                    {"ico": "📢", "h": "Click-through rate iklan",
-                     "p": "Memutuskan iklan mana yang disajikan ke siapa, kapan."},
-                    {"ico": "🍪", "h": "Kue cacat",
-                     "p": "Menandai kue janggal di ban berjalan pabrik."},
-                    {"ico": "🛰", "h": "Situs arkeologi",
-                     "p": "Menebak lokasi situs yang belum diketahui dari citra satelit."},
-                    {"ico": "🏦", "h": "…dan kasus Anda sendiri",
-                     "p": "Yang akan dibawa ke tugas kelompok nanti.", "style": "accent"},
+                    {"ico": "🔍", "h": "Photo search",
+                     "p": "Type *wedding*, get every wedding photo — with no manual tagging."},
+                    {"ico": "🚫", "h": "Spam and abuse",
+                     "p": "Flagging posts in a growing chat app."},
+                    {"ico": "🎵", "h": "Music recommendation",
+                     "p": "For the users of an online radio station."},
+                    {"ico": "💳", "h": "Credit-card fraud",
+                     "p": "For an e-commerce site."},
+                    {"ico": "📢", "h": "Ad click-through rate",
+                     "p": "Deciding which ad to serve to whom, and when."},
+                    {"ico": "🍪", "h": "Defective biscuits",
+                     "p": "Flagging anomalies on a factory conveyor belt."},
+                    {"ico": "🛰", "h": "Archaeological sites",
+                     "p": "Locating undiscovered ones from satellite imagery."},
+                    {"ico": "🏢", "h": "…and your own case",
+                     "p": "Which you will carry through this chapter as the group assignment.",
+                     "style": "accent"},
                 ]},
-                {"t": "band",
-                 "md": "Ketujuh contoh ini dipakai berulang sepanjang bab, dan tiap tahap "
-                       "alur kerja diuji terhadap ketujuhnya. ==Perhatikan bahwa dua di "
-                       "antaranya ternyata bukan persoalan deep learning sama sekali.=="},
             ],
-            "notes": "Minta peserta memilih satu kasus dari organisasinya sendiri di awal "
-                     "sesi lalu membawanya melewati setiap tahap di bab ini. Itu rangka "
-                     "tugas kelompoknya.",
+            "notes": "Have each participant pick one case from their own work at the start "
+                     "and carry it through every stage. That becomes the assignment.",
         },
 
         {
             "type": "slide",
-            "kicker": "Peta bab",
-            "title": "Tiga bagian, dan yang tersulit ada di depan",
+            "kicker": "Roadmap",
+            "title": "Three parts — and the hard one comes first",
             "blocks": [
-                {"t": "fig", "svg": SVG_WORKFLOW, "tikz": TIKZ_WORKFLOW,
-                 "cap": "Alur kerja universal -- dan panah balik yang membuatnya tidak "
-                        "pernah benar-benar selesai."},
+                {"t": "mmd", "id": "ch06-workflow", "src": MMD_WORKFLOW,
+                 "cap": "Note the return arrow: the loop never actually closes."},
                 {"t": "quote",
-                 "md": "Pengembangan model hanyalah satu langkah dalam alur kerja machine "
-                       "learning, dan menurut kami bukan yang tersulit. Yang paling sulit "
-                       "adalah **merumuskan persoalan serta mengumpulkan, menganotasi, dan "
-                       "membersihkan data**.",
-                 "cite": "Chollet & Watson, bab 6.2"},
+                 "md": "Model development is only one step in the machine learning workflow, "
+                       "and if you ask us, it's not the most difficult one. The hardest things "
+                       "in machine learning are framing problems and collecting, annotating, "
+                       "and cleaning data.",
+                 "cite": "Chollet & Watson, section 6.2"},
             ],
         },
 
-        {"type": "section", "num": "01", "title": "Menetapkan tugas",
-         "lead": "Anda tidak bisa bekerja baik tanpa memahami konteksnya secara mendalam."},
+        {"type": "section", "num": "01", "title": "Defining the task",
+         "lead": "You cannot do good work without deeply understanding the context."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 6.1.1",
-            "title": "Empat pertanyaan yang harus ada di kepala",
+            "kicker": "Section 6.1.1",
+            "title": "Four questions to keep at the front of your mind",
             "blocks": [
                 {"t": "steps", "items": [
-                    "**Apa data masukannya? Apa yang hendak diramalkan?** Anda hanya bisa "
-                    "belajar meramalkan sesuatu bila ada data latihnya. ==Ketersediaan data "
-                    "biasanya jadi faktor pembatas di tahap ini.==",
-                    "**Jenis tugas machine learning apa ini?** Biner? Multikelas? Regresi "
-                    "skalar? Segmentasi citra? Perangkingan? Atau -- mungkin saja -- "
-                    "**machine learning bukan cara terbaik**, dan analisis statistik biasa "
-                    "lebih tepat.",
-                    "**Seperti apa penyelesaian yang sudah ada?** Mungkin pelanggan sudah "
-                    "punya algoritma buatan tangan dengan banyak `if` bersarang. Mungkin "
-                    "ada manusia yang sekarang mengerjakannya secara manual. Pahami sistem "
-                    "yang sudah berjalan.",
-                    "**Adakah kendala khusus?** Aplikasi terenkripsi ujung-ke-ujung → model "
-                    "harus hidup di ponsel pengguna. Kendala latensi ketat → model harus "
-                    "jalan di perangkat tertanam di pabrik, bukan di server jauh.",
+                    "**What will the input data be? What are you trying to predict?** You can "
+                    "only learn to predict something you have training data for. "
+                    "==Data availability is usually the limiting factor here.==",
+                    "**What type of task is this?** Binary? Multiclass? Scalar regression? "
+                    "Segmentation? Ranking? Or — quite possibly — **machine learning is not "
+                    "the best way** and plain statistics would serve better.",
+                    "**What do existing solutions look like?** Perhaps a hand-crafted "
+                    "algorithm full of nested `if` statements. Perhaps a person doing it "
+                    "manually today. Understand what is already in place.",
+                    "**Are there particular constraints?** End-to-end encryption may force "
+                    "the model onto the user's phone. Latency may force it onto an embedded "
+                    "device at the factory rather than a remote server.",
                 ]},
-                {"t": "band", "style": "amber",
-                 "md": "Perhatikan pertanyaan ketiga. Di banyak proyek nyata, "
-                       "==tolok bandingnya bukan 'acak', melainkan sistem berbasis aturan "
-                       "yang sudah berjalan bertahun-tahun== -- dan itu jauh lebih sulit "
-                       "dikalahkan."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 6.1.1",
-            "title": "Ketujuh contoh, dipetakan ke jenis tugasnya",
+            "kicker": "Section 6.1.1",
+            "title": "Why the third question matters more than it looks",
+            "blocks": [
+                {"t": "band", "style": "amber",
+                 "md": "In most real projects the baseline is **not** \"random\". It is a "
+                       "rules-based system that has been running for years and that people "
+                       "already trust — and ==that is a much harder thing to beat=="},
+                {"t": "p", "md": "It is also the thing you will be compared against when the "
+                                 "project is reviewed, so it should be measured properly at "
+                                 "the start rather than described from memory."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.1.1",
+            "title": "The seven examples, mapped to task types",
             "blocks": [
                 {"t": "table",
-                 "head": ["Proyek", "Jenis tugasnya", "Catatan"],
-                 "widths": [24, 30, 46],
+                 "head": ["Project", "Task type", "Note"],
+                 "widths": [22, 28, 50],
                  "rows": [
-                     ["Pencarian foto", "Klasifikasi **multikelas, multilabel**", "—"],
-                     ["Spam", "Klasifikasi **biner**",
-                      "Jadi **tiga kelas** kalau *konten kasar* dijadikan kelas tersendiri."],
-                     ["Perekomendasi musik", "==Bukan deep learning==",
-                      "Lebih baik ditangani **faktorisasi matriks** (collaborative filtering)."],
-                     ["Fraud kartu kredit", "Klasifikasi **biner**", "—"],
-                     ["Click-through rate", "**Regresi skalar**", "—"],
-                     ["Kue cacat", "Klasifikasi **biner**",
-                      "Tetapi butuh **deteksi objek** dulu untuk memotong kuenya dari citra "
-                      "mentah. Catatan buku: teknik yang dikenal sebagai *anomaly detection* "
-                      "==justru tidak cocok di sini=="],
-                     ["Situs arkeologi", "**Perangkingan kemiripan citra**",
-                      "Mengambil citra yang paling mirip situs yang sudah dikenal."],
+                     ["Photo search", "**Multiclass, multilabel**", "—"],
+                     ["Spam", "**Binary**",
+                      "Becomes **three-way** if *offensive content* is a separate class."],
+                     ["Music recommendation", "==Not deep learning==",
+                      "Better handled by **matrix factorisation** (collaborative filtering)."],
+                     ["Credit-card fraud", "**Binary**", "—"],
+                     ["Click-through rate", "**Scalar regression**", "—"],
+                     ["Defective biscuits", "**Binary**",
+                      "But needs **object detection** first, to crop the biscuits out of the "
+                      "raw images. The book notes that *anomaly detection* ==would not fit "
+                      "here=="],
+                     ["Archaeological sites", "**Image similarity ranking**",
+                      "Retrieve images most like known sites."],
                  ]},
-                {"t": "band",
-                 "md": "Dua pelajaran dari tabel ini: ada persoalan yang **bukan** deep "
-                       "learning, dan ada persoalan yang **butuh dua model bertahap**. "
-                       "Keduanya sering terlewat kalau langsung meloncat ke pemodelan."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 6.1.1",
-            "title": "Dua hipotesis yang selalu Anda buat diam-diam",
+            "kicker": "Section 6.1.1",
+            "title": "Two lessons hiding in that table",
             "blocks": [
                 {"t": "cards", "cols": 2, "items": [
-                    {"ico": "1️⃣", "h": "Target bisa diramalkan dari masukan",
-                     "p": "Bahwa hubungan itu memang ada.", "style": "accent"},
-                    {"ico": "2️⃣", "h": "Data yang ada cukup informatif",
-                     "p": "Untuk mempelajari hubungan antara masukan dan target itu.",
-                     "style": "accent"},
+                    {"ico": "🚫", "h": "Some problems are not deep learning problems",
+                     "p": "The music recommender is better served by collaborative filtering. "
+                          "Recognising that early saves months.", "style": "warn"},
+                    {"ico": "🔗", "h": "Some need two models in sequence",
+                     "p": "The biscuit case needs detection before classification. Framing it "
+                          "as one model would fail quietly.", "style": "warn"},
                 ]},
-                {"t": "band", "style": "rose",
-                 "md": "Sampai Anda punya model yang bekerja, keduanya **sekadar hipotesis** "
-                       "yang menunggu dibuktikan atau digugurkan. Menyusun contoh X dan "
-                       "target Y ==tidak berarti X memuat cukup informasi untuk meramal Y=="},
-                {"t": "p", "md": "Contoh yang diberikan buku: meramalkan pergerakan saham "
-                                 "dari riwayat harganya saja **tidak mungkin berhasil**, "
-                                 "sebab riwayat harga tidak memuat banyak informasi yang "
-                                 "meramalkan."},
-                {"t": "p", "md": "Kalau setelah mencoba beberapa arsitektur yang masuk akal "
-                                 "Anda tetap tidak bisa mengalahkan tolok banding sederhana, "
-                                 "besar kemungkinan **jawaban atas pertanyaan Anda memang "
-                                 "tidak ada di dalam data masukannya**. Kembali ke papan gambar."},
+                {"t": "p", "md": "Both are missed routinely when a team jumps straight to "
+                                 "modelling."},
             ],
-            "notes": "Ini slide yang menyelamatkan waktu paling banyak. Uji dua hipotesis ini "
-                     "di rapat perumusan, bukan setelah tiga bulan pemodelan.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 6.1.1 · catatan etika",
-            "title": "Teknologi tidak pernah netral",
+            "kicker": "Section 6.1.1",
+            "title": "The two hypotheses you are making silently",
             "blocks": [
-                {"t": "p", "md": "Buku ini menyisipkan satu catatan etika, dan letaknya "
-                                 "sengaja di tahap perumusan -- bukan di akhir. Contohnya: "
-                                 "*\"membangun AI yang menilai tingkat dapat-dipercayanya "
-                                 "seseorang dari foto wajahnya\"*."},
+                {"t": "cards", "cols": 2, "items": [
+                    {"ico": "1️⃣", "h": "Your targets can be predicted from your inputs",
+                     "p": "That the relationship exists at all.", "style": "accent"},
+                    {"ico": "2️⃣", "h": "Your data is sufficiently informative",
+                     "p": "That it is enough to learn that relationship.", "style": "accent"},
+                ]},
+                {"t": "band", "style": "rose",
+                 "md": "Until you have a working model these are **merely hypotheses**. "
+                       "Assembling examples of X and targets Y ==does not mean X contains "
+                       "enough information to predict Y=="},
+                {"t": "p", "md": "The book's example: predicting a stock's movement from its "
+                                 "recent price history is **unlikely to succeed**, because "
+                                 "price history does not contain much predictive information."},
+            ],
+            "notes": "Test both hypotheses in the framing meeting, not after three months of "
+                     "modelling. This is the single biggest time-saver in the chapter.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.1.1 · ethics",
+            "title": "Technology is never neutral",
+            "blocks": [
+                {"t": "p", "md": "The book places its ethics note **in the framing stage**, "
+                                 "not at the end. Its example: *\"building an AI that rates "
+                                 "the trustworthiness of someone from a picture of their "
+                                 "face\"*."},
                 {"t": "steps", "items": [
-                    "**Kesahihannya sendiri meragukan** -- tidak jelas mengapa sifat "
-                    "dapat-dipercaya akan tercermin di wajah seseorang.",
-                    "Mengumpulkan datanya sama saja dengan **merekam bias dan prasangka "
-                    "orang-orang yang melabeli fotonya**.",
-                    "Model yang dilatih di atasnya hanya akan **menyandikan bias yang sama "
-                    "ke dalam algoritma kotak hitam** -- yang justru memberinya lapisan "
-                    "tipis keabsahan.",
+                    "**The validity is already in doubt** — it is not clear why "
+                    "trustworthiness would be reflected in a face.",
+                    "Collecting a dataset would amount to **recording the biases and "
+                    "prejudices of the people labelling the pictures**.",
+                    "A model trained on it would merely **encode those same biases into a "
+                    "black-box algorithm** — which gives them a thin veneer of legitimacy.",
                 ]},
-                {"t": "quote",
-                 "md": "Di masyarakat yang sebagian besar belum melek teknologi seperti kita, "
-                       "*\"algoritma AI mengatakan orang ini tidak bisa dipercaya\"* anehnya "
-                       "terdengar lebih berbobot dan lebih objektif daripada *\"John Smith "
-                       "mengatakan orang ini tidak bisa dipercaya\"* -- padahal yang pertama "
-                       "adalah hampiran terpelajar atas yang kedua.",
-                 "cite": "Chollet & Watson, bab 6.1.1"},
-                {"t": "band", "style": "rose",
-                 "md": "**Teknologi tidak pernah netral.** Kalau pekerjaan Anda berdampak "
-                       "pada dunia, dampak itu punya arah moral: ==pilihan teknis juga "
-                       "pilihan etis==. Selalu sengaja memilih nilai apa yang hendak "
-                       "didukung pekerjaan Anda."},
             ],
-            "notes": "Contoh yang mudah didekatkan ke peserta mana pun: penilaian kelayakan, "
-                     "penetapan harga, dan penandaan pelanggan — semuanya bisa mencuci bias "
-                     "historis lalu memberinya wajah objektif.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 6.1.2",
-            "title": "Mengumpulkan data -- bagian termahal, dan yang paling berimbal hasil",
+            "kicker": "Section 6.1.1 · ethics",
+            "title": "Why the veneer is the dangerous part",
             "blocks": [
                 {"t": "quote",
-                 "md": "Kalau Anda punya tambahan 50 jam untuk sebuah proyek, kemungkinan "
-                       "besar cara paling efektif membelanjakannya adalah **mengumpulkan "
-                       "lebih banyak data**, bukan mencari perbaikan pemodelan yang "
-                       "sedikit demi sedikit.",
-                 "cite": "Chollet & Watson, bab 6.1.2"},
-                {"t": "p", "md": "Titik bahwa **data lebih penting daripada algoritma** "
-                                 "paling terkenal dikemukakan makalah peneliti Google tahun "
-                                 "2009, *\"The Unreasonable Effectiveness of Data\"* -- "
-                                 "judulnya memelesetkan buku Eugene Wigner 1960, *The "
-                                 "Unreasonable Effectiveness of Mathematics in the Natural "
-                                 "Sciences*. Itu ditulis **sebelum** deep learning populer, "
-                                 "dan naiknya deep learning ==justru menambah== pentingnya data."},
+                 "md": "In a largely tech-illiterate society like ours, \"The AI algorithm said "
+                       "this person cannot be trusted\" strangely appears to carry more weight "
+                       "and objectivity than \"John Smith said this person cannot be trusted\" "
+                       "— despite the former being a learned approximation of the latter.",
+                 "cite": "Chollet & Watson, section 6.1.1"},
+                {"t": "band", "style": "rose",
+                 "md": "**Technical choices are also ethical choices.** If your work has any "
+                       "impact on the world, that impact has a moral direction — so ==be "
+                       "deliberate about the values your work supports=="},
+            ],
+            "notes": "Easy to make concrete for any audience: eligibility scoring, pricing, "
+                     "and customer flagging can all launder historical bias and give it an "
+                     "objective face.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.1.2",
+            "title": "Collecting data is the expensive part — and the highest-return one",
+            "blocks": [
+                {"t": "quote",
+                 "md": "If you get an extra 50 hours to spend on a project, chances are that "
+                       "the most effective way to allocate them is to collect more data, "
+                       "rather than search for incremental modeling improvements.",
+                 "cite": "Chollet & Watson, section 6.1.2"},
+                {"t": "p", "md": "The point that data matters more than algorithms was made "
+                                 "most famously in a 2009 Google paper, *\"The Unreasonable "
+                                 "Effectiveness of Data\"* — itself a play on Eugene Wigner's "
+                                 "1960 title. That predates the popularity of deep learning, "
+                                 "and the rise of deep learning has ==only increased the "
+                                 "importance of data=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.1.2",
+            "title": "Who should do the annotating",
+            "blocks": [
                 {"t": "table",
-                 "head": ["Pilihan anotasi", "Untungnya", "Risikonya"],
+                 "head": ["Option", "Upside", "Risk"],
                  "widths": [26, 36, 38],
                  "rows": [
-                     ["**Anotasi sendiri**", "Kendali penuh atas mutu.",
-                      "Lambat dan mahal dalam waktu."],
-                     ["**Urun daya** (mis. Mechanical Turk)", "Murah dan berskala baik.",
-                      "Anotasinya bisa ==cukup berderau=="],
-                     ["**Perusahaan pelabelan khusus**", "Menghemat waktu dan biaya.",
-                      "Melepaskan kendali."],
+                     ["**Annotate it yourself**", "Full control over quality.",
+                      "Slow and costly in time."],
+                     ["**Crowdsourcing** (e.g. Mechanical Turk)", "Inexpensive and scales well.",
+                      "Annotations may end up ==quite noisy=="],
+                     ["**A specialist labelling company**", "Saves time and money.",
+                      "Takes away control."],
                  ]},
+                {"t": "p", "md": "Your annotation process determines the quality of your "
+                                 "targets, which in turn determines the quality of your model. "
+                                 "It deserves the same scrutiny as the architecture."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.1.2",
+            "title": "Three questions that decide which option",
+            "blocks": [
                 {"t": "bullets", "items": [
-                    "Apakah pelabelnya **harus ahli bidang**? Kucing vs anjing bisa siapa "
-                    "saja; ras anjing perlu pengetahuan khusus; CT scan patah tulang "
-                    "praktis menuntut gelar kedokteran.",
-                    "Kalau perlu keahlian, **bisakah orang dilatih** untuk itu? Kalau tidak, "
-                    "bagaimana Anda mengakses ahlinya?",
-                    "**Apakah Anda sendiri paham** bagaimana ahli itu sampai pada anotasinya? "
-                    "Kalau tidak, data Anda jadi kotak hitam dan rekayasa fitur manual "
-                    "tertutup -- tidak fatal, tetapi membatasi.",
-                    "Perangkat lunak anotasi yang produktif **menghemat sangat banyak waktu**; "
-                    "layak diinvestasikan sejak awal proyek.",
+                    "**Do the labellers need to be subject-matter experts?** Cat versus dog "
+                    "can be done by anyone; dog breeds need specialised knowledge; annotating "
+                    "CT scans of fractures ==pretty much requires a medical degree==.",
+                    "**If expertise is needed, can you train people?** If not, how will you "
+                    "get access to the relevant experts at all?",
+                    "**Do you yourself understand how the experts arrive at the annotations?** "
+                    "If not, your dataset becomes a black box and manual feature engineering "
+                    "is closed to you — not fatal, but limiting.",
                 ]},
+                {"t": "band",
+                 "md": "And decide early what software will record the annotations. Productive "
+                       "annotation tooling **saves a great deal of time**, so it is worth "
+                       "investing in ==at the start of a project, not the middle=="},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 6.1.2",
-            "title": "Data yang tidak mewakili -- dosa besar",
+            "kicker": "Section 6.1.2",
+            "title": "Non-representative data — the cardinal sin",
             "blocks": [
-                {"t": "cols", "ratio": "1-1", "cols": [
-                    [
-                        {"t": "p", "md": "**Contoh dari buku.** Aplikasi pengenal masakan "
-                                         "dari foto. Model dilatih dengan foto dari jejaring "
-                                         "sosial berbagi gambar yang populer di kalangan "
-                                         "penggemar kuliner. Akurasi uji jauh di atas 90%."},
-                        {"t": "band", "style": "rose",
-                         "md": "Setelah dirilis: **salah 8 dari 10 kali**. Foto unggahan "
-                               "pengguna -- masakan acak, restoran acak, ponsel acak -- "
-                               "==sama sekali tidak menyerupai== foto profesional yang "
-                               "pencahayaannya bagus dan menggugah selera itu."},
-                    ],
-                    [
-                        {"t": "p", "md": "**Aturannya**"},
-                        {"t": "bullets", "items": [
-                            "Bila mungkin, kumpulkan data **langsung dari lingkungan tempat "
-                            "model akan dipakai**.",
-                            "Model sentimen ulasan film dipakai pada ulasan IMDB baru -- "
-                            "bukan pada ulasan restoran Yelp, bukan pada status Twitter.",
-                            "Kalau melatih di data produksi tidak mungkin, **pahami betul "
-                            "bedanya** dan koreksi perbedaan itu secara aktif.",
-                        ]},
-                    ],
-                ]},
-                {"t": "p", "md": "**Bias pencuplikan** adalah bentuknya yang paling licik: "
-                                 "proses pengumpulan data berinteraksi dengan hal yang "
-                                 "hendak Anda ramalkan. Contoh sejarahnya terkenal -- malam "
-                                 "pemilu 1948, *Chicago Tribune* memasang tajuk **\"DEWEY "
-                                 "DEFEATS TRUMAN\"**. Paginya Truman yang menang. Redakturnya "
-                                 "memercayai survei telepon; padahal pengguna telepon pada "
-                                 "1948 ==bukan cuplikan acak yang mewakili pemilih== -- "
-                                 "mereka cenderung lebih kaya dan konservatif."},
-            ],
-        },
-
-        {
-            "type": "slide",
-            "kicker": "Bagian 6.1.2",
-            "title": "Pergeseran konsep -- dan umur pakai model",
-            "blocks": [
-                {"t": "fig", "svg": SVG_DRIFT, "tikz": TIKZ_DRIFT,
-                 "cap": "Angka-angka ini dari buku. Perhatikan bahwa deteksi fraud -- kasus yang "
-                        "paling adversarial -- adalah yang paling cepat basi."},
-                {"t": "bullets", "items": [
-                    "**Pergeseran konsep** terjadi saat sifat data produksi berubah seiring "
-                    "waktu, sehingga akurasi model merosot perlahan.",
-                    "Kumpulan IMDB dikumpulkan pada 2011; model yang dilatih di atasnya "
-                    "akan bekerja lebih buruk pada ulasan 2020 daripada ulasan 2012 -- "
-                    "kosakata, ungkapan, dan genre film berubah.",
-                    "Menangani pergeseran yang cepat menuntut **pengumpulan data, anotasi, "
-                    "dan pelatihan ulang yang terus-menerus**.",
-                ]},
-                {"t": "band", "style": "amber",
-                 "md": "Kalimat penutupnya keras: memakai machine learning yang dilatih atas "
-                       "data masa lalu untuk meramal masa depan berarti **mengandaikan masa "
-                       "depan akan berkelakuan seperti masa lalu**. ==Sering kali tidak.=="},
-            ],
-        },
-
-        {
-            "type": "slide",
-            "kicker": "Bagian 6.1.3",
-            "title": "Memahami data Anda -- daftar periksa sebelum melatih",
-            "blocks": [
-                {"t": "p", "md": "Memperlakukan kumpulan data sebagai kotak hitam adalah "
-                                 "**praktik yang buruk**. Sebelum melatih apa pun, jelajahi "
-                                 "dan gambarkan datanya."},
-                {"t": "steps", "items": [
-                    "Ada citra atau teks? **Lihat langsung** beberapa contohnya, berikut "
-                    "labelnya.",
-                    "Ada fitur numerik? **Gambar histogramnya** untuk merasakan rentang "
-                    "nilai dan seberapa sering tiap nilai muncul.",
-                    "Ada informasi lokasi? **Petakan**. Apakah ada pola yang muncul?",
-                    "Ada sampel yang **nilainya hilang**? Itu harus ditangani saat penyiapan.",
-                    "Tugas klasifikasi? **Cetak jumlah contoh tiap kelas.** Kalau tidak "
-                    "seimbang, ketidakseimbangan itu harus diperhitungkan.",
-                    "Periksa **kebocoran target**.",
-                ]},
+                {"t": "p", "md": "The book's example: an app that identifies a dish from a "
+                                 "photo, trained on pictures from an image-sharing network "
+                                 "popular with food enthusiasts. Test accuracy well over 90%."},
                 {"t": "band", "style": "rose",
-                 "md": "**Kebocoran target** -- adanya fitur yang memberi informasi tentang "
-                       "target tetapi ==tidak akan tersedia di produksi==. Contoh buku: "
-                       "melatih model atas rekam medis untuk meramal apakah seseorang akan "
-                       "dirawat karena kanker, sementara rekamnya memuat fitur *\"orang ini "
-                       "telah didiagnosis kanker\"*."},
-                {"t": "p", "md": "Pertanyaan yang harus selalu Anda ajukan: **apakah setiap "
-                                 "fitur dalam data saya akan tersedia dalam bentuk yang sama "
-                                 "di produksi?**"},
+                 "md": "After release: **wrong 8 times out of 10**. User photos — random "
+                       "dishes, random restaurants, random phones — ==look nothing like== the "
+                       "professional, well-lit, appetising pictures it was trained on."},
+                {"t": "bullets", "items": [
+                    "Where possible, collect data **directly from the environment the model "
+                    "will be used in**.",
+                    "A review sentiment model belongs on new IMDB reviews — not Yelp reviews, "
+                    "not tweets.",
+                    "If training on production data is impossible, **understand exactly how "
+                    "they differ** and correct for it actively.",
+                ]},
             ],
-            "notes": "Bentuk yang paling sering: kolom yang diisi BELAKANGAN oleh petugas — "
-                     "status penanganan, kode penutupan, catatan tindak lanjut. Semuanya "
-                     "belum ada saat model harus memutuskan.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 6.1.4",
-            "title": "Memilih ukuran keberhasilan",
+            "kicker": "Section 6.1.2",
+            "title": "Sampling bias: DEWEY DEFEATS TRUMAN",
+            "blocks": [
+                {"t": "p", "md": "**Sampling bias** is the subtlest form: your collection "
+                                 "process interacts with the thing you are trying to predict."},
+                {"t": "p", "md": "On election night in 1948 the *Chicago Tribune* printed the "
+                                 "headline **\"DEWEY DEFEATS TRUMAN\"**. By morning Truman had "
+                                 "won. The editor had trusted a telephone survey — but "
+                                 "telephone users in 1948 ==were not a representative sample "
+                                 "of voters==. They were likelier to be richer, more "
+                                 "conservative, and to vote for Dewey."},
+                {"t": "band", "style": "amber",
+                 "md": "Every phone survey now accounts for this. That does not make sampling "
+                       "bias a thing of the past — ==only a thing pollsters are now aware "
+                       "of=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.1.2",
+            "title": "Concept drift, and how long a model lives",
+            "blocks": [
+                {"t": "mmd", "id": "ch06-drift", "src": MMD_DRIFT,
+                 "cap": "The book's own figures. The most adversarial problem is the one that "
+                        "goes stale fastest."},
+                {"t": "p", "md": "**Concept drift** is when the properties of production data "
+                                 "change over time, gradually degrading the model. The IMDB "
+                                 "dataset was collected in 2011; a model trained on it does "
+                                 "worse on 2020 reviews than on 2012 ones, because vocabulary, "
+                                 "expressions, and genres move."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.1.2",
+            "title": "The assumption underneath every deployed model",
+            "blocks": [
+                {"t": "band", "style": "rose",
+                 "md": "Machine learning can only memorise patterns **present in the training "
+                       "data**. Using a model trained on the past to predict the future "
+                       "assumes **the future will behave like the past**. ==Often it does "
+                       "not.=="},
+                {"t": "p", "md": "Handling fast drift requires continuous data collection, "
+                                 "annotation, and retraining — which is a staffing decision "
+                                 "as much as a technical one."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.1.3",
+            "title": "Understand your data before you model it",
+            "blocks": [
+                {"t": "p", "md": "Treating a dataset as a black box is **bad practice**. "
+                                 "Before training anything, explore and visualise."},
+                {"t": "steps", "items": [
+                    "Images or text? **Look at a few samples directly**, with their labels.",
+                    "Numeric features? **Plot the histograms** to feel the ranges and "
+                    "frequencies.",
+                    "Location data? **Put it on a map.** Do patterns appear?",
+                    "Any **missing values**? They must be handled during preparation.",
+                    "A classification task? **Print the count per class.** If it is not "
+                    "balanced, that has to be accounted for.",
+                    "Check for **target leaks**.",
+                ]},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.1.3",
+            "title": "Target leaking, and the one question that catches it",
+            "blocks": [
+                {"t": "mmd", "id": "ch06-leakcheck", "src": MMD_LEAKCHECK,
+                 "cap": "Ask it of every column, not just the suspicious ones."},
+                {"t": "p", "md": "The book's example: training on medical records to predict "
+                                 "whether someone will be treated for cancer, where the "
+                                 "records include the feature *\"this person has been "
+                                 "diagnosed with cancer\"*."},
+                {"t": "band", "style": "amber",
+                 "md": "The common real-world shape: **fields filled in later by an operator** "
+                       "— handling status, closure code, follow-up notes. None of them exist "
+                       "==at the moment the model has to decide=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.1.4",
+            "title": "Choosing a measure of success",
             "blocks": [
                 {"t": "quote",
-                 "md": "Untuk mengendalikan sesuatu, Anda harus bisa mengamatinya. Untuk "
-                       "berhasil dalam sebuah proyek, Anda harus lebih dulu menetapkan apa "
-                       "yang Anda maksud dengan berhasil.",
-                 "cite": "Chollet & Watson, bab 6.1.4"},
+                 "md": "To control something, you need to be able to observe it. To achieve "
+                       "success on a project, you must first define what you mean by success.",
+                 "cite": "Chollet & Watson, section 6.1.4"},
                 {"t": "table",
-                 "head": ["Bentuk persoalan", "Metrik yang lazim"],
+                 "head": ["Problem shape", "Common metrics"],
                  "widths": [40, 60],
                  "rows": [
-                     ["Klasifikasi **seimbang**", "Akurasi, dan **AUC** dari kurva ROC."],
-                     ["Kelas **tidak seimbang**, perangkingan, multilabel",
-                      "**Presisi dan recall**, atau metrik yang menghitung "
-                      "false positive / true positive / false negative / true negative."],
-                     ["Bukan salah satu di atas",
-                      "Tidak jarang Anda harus **menetapkan metrik sendiri**."],
+                     ["**Balanced** classification", "Accuracy, and **AUC** of the ROC curve."],
+                     ["**Imbalanced**, ranking, multilabel",
+                      "**Precision and recall**, or a metric counting false/true positives "
+                      "and negatives."],
+                     ["Neither of the above",
+                      "It is not unusual to have to **define your own metric**."],
                  ]},
                 {"t": "band",
-                 "md": "Metrik keberhasilan **menuntun semua pilihan teknis** sepanjang "
-                       "proyek. Ia harus selaras langsung dengan sasaran yang lebih tinggi "
-                       "-- yaitu ==keberhasilan bisnis pelanggan Anda==."},
-                {"t": "p", "md": "Untuk merasakan keragaman metrik dan kaitannya dengan "
-                                 "ranah persoalan, buku menyarankan menjelajahi kompetisi "
-                                 "di [Kaggle](https://kaggle.com)."},
+                 "md": "The metric guides **every technical decision** in the project, so it "
+                       "must align directly with the higher-level goal — ==the customer's "
+                       "business success=="},
             ],
         },
 
-        {"type": "section", "num": "02", "title": "Mengembangkan model",
-         "lead": "Bagian yang paling banyak diajarkan tutorial -- dan bukan yang tersulit."},
+        {"type": "section", "num": "02", "title": "Developing a model",
+         "lead": "The part every tutorial covers — and not the hardest one."},
 
         {
             "type": "slide",
-            "kicker": "Bagian 6.2.1",
-            "title": "Menyiapkan data: vektorisasi, normalisasi, nilai hilang",
+            "kicker": "Section 6.2.1",
+            "title": "Vectorisation and normalisation",
             "blocks": [
-                {"t": "cols", "ratio": "1-1", "cols": [
-                    [
-                        {"t": "p", "md": "**Vektorisasi.** Semua masukan dan target harus "
-                                         "berupa tensor bilangan titik-mengambang (atau, "
-                                         "dalam kasus khusus, tensor bilangan bulat atau "
-                                         "string). Suara, citra, teks -- semuanya diubah "
-                                         "jadi tensor lebih dulu."},
-                        {"t": "p", "md": "**Normalisasi nilai.** Tidak aman menyuapkan data "
-                                         "bernilai relatif besar (bilangan bulat berdigit "
-                                         "banyak, jauh lebih besar dari nilai awal bobot "
-                                         "jaringan) atau data yang **heterogen** (satu fitur "
-                                         "di 0-1, yang lain di 100-200). Itu memicu "
-                                         "pembaruan gradien besar yang ==mencegah jaringan "
-                                         "konvergen=="},
-                    ],
-                    [
-                        {"t": "code", "lang": "python", "file": "dua sifat yang diinginkan",
-                         "src": """# 1. Bernilai kecil - umumnya di rentang 0-1
-# 2. Homogen - semua fitur kira-kira
-#    dalam rentang yang sama
+                {"t": "p", "md": "Neural networks do not ingest raw data. Whatever you have — "
+                                 "sound, images, text — must become float tensors first, and "
+                                 "those tensors must have sane ranges."},
+                {"t": "code", "lang": "python", "file": "the two properties you want",
+                 "src": """# 1. Take small values  - most values in the 0-1 range
+# 2. Be homogeneous     - all features on roughly the same scale
 
-# praktik yang lebih ketat, sering
-# menolong walau tidak selalu perlu:
-x -= x.mean(axis=0)   # rerata 0
-x /= x.std(axis=0)    # simpangan baku 1
-# (x = matriks 2D (samples, features))"""},
-                    ],
-                ]},
+# The stricter, common practice:
+x -= x.mean(axis=0)     # each feature centred on 0
+x /= x.std(axis=0)      # each feature with unit standard deviation"""},
+                {"t": "band",
+                 "md": "Feeding in large values (multi-digit integers) or heterogeneous ones "
+                       "(one feature 0–1, another 100–200) triggers **large gradient updates "
+                       "that prevent the network from converging**."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.2.1",
+            "title": "Missing values: categorical and numerical differ",
+            "blocks": [
                 {"t": "table",
-                 "head": ["Nilai hilang pada fitur…", "Yang dilakukan"],
+                 "head": ["Missing value in a…", "What to do"],
                  "widths": [26, 74],
                  "rows": [
-                     ["**Kategorik**",
-                      "Aman membuat **kategori baru** yang berarti *nilainya hilang*. "
-                      "Model akan belajar sendiri apa artinya terhadap target."],
-                     ["**Numerik**",
-                      "**Hindari mengisi nilai sembarang seperti 0** -- itu bisa menciptakan "
-                      "ketakbersinambungan pada ruang laten. Pakai **rerata atau median** "
-                      "fitur itu; atau latih model untuk menebak nilainya dari fitur lain."],
+                     ["**Categorical** feature",
+                      "Safe to create a **new category meaning \"missing\"**. The model will "
+                      "learn what that implies about the target on its own."],
+                     ["**Numerical** feature",
+                      "**Avoid an arbitrary value such as 0** — it can create a discontinuity "
+                      "in the latent space. Use the **mean or median**, or train a model to "
+                      "predict the value from the other features."],
                  ]},
                 {"t": "band", "style": "amber",
-                 "md": "Jebakan yang halus: kalau Anda **mengharapkan** fitur kategorik "
-                       "hilang di data uji tetapi jaringan dilatih tanpa satu pun nilai "
-                       "hilang, jaringan ==tidak pernah belajar mengabaikannya==. Obatnya: "
-                       "buat sampel latih buatan yang bolong -- salin beberapa sampel, lalu "
-                       "buang fitur yang diperkirakan akan hilang."},
+                 "md": "A subtle trap: if you **expect** missing categorical values at test "
+                       "time but trained on complete data, the network ==never learned to "
+                       "ignore them==. Fix it by generating training samples with holes — "
+                       "duplicate some rows and drop the fields you expect to lose."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 6.2.3 · tabel 6.1",
-            "title": "Kalahkan tolok banding: tiga hal yang perlu benar",
+            "kicker": "Section 6.2.3 – 6.2.5",
+            "title": "Model development is three stages, in order",
+            "blocks": [
+                {"t": "mmd", "id": "ch06-stages", "src": MMD_STAGES,
+                 "cap": "Doing them out of order — regularising before you can overfit — "
+                        "wastes the most time."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.2.3",
+            "title": "Stage 1 — beat a baseline",
             "blocks": [
                 {"t": "cards", "cols": 3, "items": [
-                    {"ico": "🧪", "h": "Rekayasa fitur",
-                     "p": "Saring fitur yang tidak informatif (seleksi fitur), dan pakai "
-                          "pengetahuan Anda tentang persoalan untuk membuat fitur baru.",
-                     "style": "accent"},
-                    {"ico": "🏛", "h": "Prior arsitektur yang benar",
-                     "p": "Jaringan padat? ConvNet? Rekuren? Transformer? Atau -- apakah "
-                          "deep learning memang pendekatan yang baik untuk tugas ini?",
-                     "style": "accent"},
-                    {"ico": "🎛", "h": "Konfigurasi pelatihan yang cukup baik",
-                     "p": "Fungsi rugi apa? Ukuran batch dan learning rate berapa?",
+                    {"ico": "🧪", "h": "Feature engineering",
+                     "p": "Filter out uninformative features, and use knowledge of the problem "
+                          "to build likely-useful new ones.", "style": "accent"},
+                    {"ico": "🏛", "h": "The right architecture priors",
+                     "p": "Densely connected? ConvNet? Recurrent? Transformer? Or is deep "
+                          "learning even the right approach here?", "style": "accent"},
+                    {"ico": "🎛", "h": "A good enough training configuration",
+                     "p": "Which loss function? What batch size and learning rate?",
                      "style": "accent"},
                 ]},
+                {"t": "p", "md": "The goal at this stage is **statistical power**: a small "
+                                 "model that beats a simple baseline. Nothing more."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.2.3 · table 6.1",
+            "title": "The reference table for that third choice",
+            "blocks": [
                 {"t": "table",
-                 "head": ["Tugas", "Aktivasi lapis akhir", "Fungsi rugi", "Metrik"],
+                 "head": ["Task", "Last-layer activation", "Loss function", "Metrics"],
                  "widths": [26, 18, 26, 30],
                  "rows": [
-                     ["Klasifikasi biner", "Sigmoid", "Binary crossentropy",
+                     ["Binary classification", "Sigmoid", "Binary crossentropy",
                       "Binary accuracy, ROC AUC"],
-                     ["Multikelas, label tunggal", "Softmax", "Categorical crossentropy",
+                     ["Multiclass, single-label", "Softmax", "Categorical crossentropy",
                       "Categorical accuracy, top-k, ROC AUC"],
-                     ["Multikelas, multilabel", "Sigmoid", "Binary crossentropy",
+                     ["Multiclass, multi-label", "Sigmoid", "Binary crossentropy",
                       "Binary accuracy, ROC AUC"],
-                     ["Regresi", "Tidak ada", "Mean squared error", "Mean absolute error"],
+                     ["Regression", "None", "Mean squared error", "Mean absolute error"],
                  ]},
-                {"t": "band",
-                 "md": "**Mengapa metriknya tidak langsung dioptimalkan?** Fungsi rugi harus "
-                       "bisa dihitung hanya dari satu mini-batch (idealnya bahkan dari satu "
-                       "titik data) dan harus **terdiferensialkan**. ROC AUC tidak memenuhi "
-                       "keduanya, jadi yang dioptimalkan adalah ==pengganti==-nya, biasanya "
-                       "crossentropy -- dengan harapan makin rendah crossentropy, makin "
-                       "tinggi ROC AUC."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 6.2.4-6.2.5",
-            "title": "Besarkan, lalu regularisasi",
+            "kicker": "Section 6.2.3",
+            "title": "Why you optimise a proxy instead of the metric you care about",
             "blocks": [
-                {"t": "cols", "ratio": "1-1", "cols": [
-                    [
-                        {"t": "p", "md": "**6.2.4 · Kembangkan model yang overfit**"},
-                        {"t": "bullets", "items": [
-                            "Tambah lapis.",
-                            "Perbesar lapisnya.",
-                            "Latih lebih banyak epoch.",
-                        ]},
-                        {"t": "band",
-                         "md": "Model ideal berdiri **tepat di perbatasan** antara underfit "
-                               "dan overfit. Untuk tahu di mana perbatasannya, ==Anda harus "
-                               "melewatinya lebih dulu.=="},
-                    ],
-                    [
-                        {"t": "p", "md": "**6.2.5 · Regularisasi dan setel** -- tahap yang "
-                                         "makan waktu paling banyak"},
-                        {"t": "bullets", "items": [
-                            "Coba arsitektur berbeda; tambah atau kurangi lapis.",
-                            "Tambahkan **dropout**.",
-                            "Kalau modelnya kecil, tambahkan **regularisasi L1 atau L2**.",
-                            "Coba hiperparameter lain -- jumlah unit per lapis, learning rate.",
-                            "Bila perlu, ulangi **kurasi data atau rekayasa fitur**.",
-                        ]},
-                    ],
-                ]},
-                {"t": "band", "style": "rose",
-                 "md": "Peringatan yang sama, sekali lagi: tiap kali Anda memakai umpan balik "
-                       "validasi untuk menyetel model, informasi bocor ke dalam model. "
-                       "Beberapa kali tidak apa-apa; **dilakukan sistematis selama banyak "
-                       "iterasi, model akan overfit terhadap proses validasi itu sendiri** -- "
-                       "walau tidak ada model yang dilatih langsung atas data validasi."},
-                {"t": "p", "md": "Sebagian besar pekerjaan ini bisa diotomasi dengan perangkat "
-                                 "penyetelan hiperparameter seperti **KerasTuner** (bab 18). "
-                                 "Dan bila unjuk kerja di himpunan uji ternyata jauh lebih "
-                                 "buruk daripada di validasi: prosedur validasi Anda tidak "
-                                 "andal, atau Anda sudah overfit ke data validasi. "
-                                 "==Pindah ke protokol yang lebih andal, misalnya K-lipat "
-                                 "berulang.=="},
+                {"t": "p", "md": "A loss function must be computable from a single mini-batch "
+                                 "— ideally from a single data point — and it must be "
+                                 "**differentiable**, or backpropagation cannot run."},
+                {"t": "band",
+                 "md": "**ROC AUC satisfies neither**, so it cannot be optimised directly. "
+                       "In classification we optimise a proxy — usually crossentropy — "
+                       "==hoping that as crossentropy falls, ROC AUC rises=="},
+                {"t": "p", "md": "For most problems there are existing templates. You are not "
+                                 "the first person to build a spam detector or an image "
+                                 "classifier, so **research the prior art** before inventing."},
             ],
         },
 
-        {"type": "section", "num": "03", "title": "Menyerahkan model",
-         "lead": "Proyek tidak berakhir di notebook Colab yang bisa menyimpan model terlatih."},
+        {
+            "type": "slide",
+            "kicker": "Section 6.2.4",
+            "title": "Stage 2 — scale up until it overfits",
+            "blocks": [
+                {"t": "p", "md": "Statistical power is not enough. Is the model *powerful "
+                                 "enough*? A logistic regression has statistical power on "
+                                 "MNIST but cannot solve it well."},
+                {"t": "bullets", "items": [
+                    "Add layers.",
+                    "Make the layers bigger.",
+                    "Train for more epochs.",
+                ]},
+                {"t": "band",
+                 "md": "The ideal model sits **exactly on the border** between underfitting "
+                       "and overfitting. ==To find where the border is, you must cross it.=="},
+            ],
+        },
 
         {
             "type": "slide",
-            "kicker": "Bagian 6.3.1",
-            "title": "Menetapkan harapan -- jangan bilang 'akurasi 98%'",
+            "kicker": "Section 6.2.5",
+            "title": "Stage 3 — regularise and tune",
+            "blocks": [
+                {"t": "p", "md": "This phase takes the most time: modify, train, evaluate on "
+                                 "**validation** data, modify again, and repeat until the "
+                                 "model is as good as it will get."},
+                {"t": "bullets", "items": [
+                    "Try different architectures; add or remove layers.",
+                    "Add **dropout**.",
+                    "If the model is small, add **L1 or L2 regularisation**.",
+                    "Try different hyperparameters — units per layer, learning rate.",
+                    "Optionally iterate on **data curation or feature engineering** again.",
+                ]},
+                {"t": "p", "md": "Much of this can be automated with hyperparameter tuning "
+                                 "software such as **KerasTuner** (chapter 18)."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.2.5",
+            "title": "The leak that comes back at the end",
+            "blocks": [
+                {"t": "band", "style": "rose",
+                 "md": "Every time you use validation feedback to tune, information leaks into "
+                       "the model. A few times is harmless. Done **systematically over many "
+                       "iterations**, the model overfits ==to the validation process itself== "
+                       "— even though no model was ever trained on validation data."},
+                {"t": "p", "md": "So if test performance turns out **significantly worse** "
+                                 "than validation performance, either your validation "
+                                 "procedure was not reliable, or you overfitted to it. The "
+                                 "remedy is a more reliable protocol — **iterated K-fold**."},
+            ],
+        },
+
+        {"type": "section", "num": "03", "title": "Deploying your model",
+         "lead": "A project does not end at a notebook that saves a trained model."},
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.3.1",
+            "title": "Do not say \"98% accurate\"",
             "blocks": [
                 {"t": "bullets", "items": [
-                    "Harapan orang awam terhadap sistem AI sering **tidak realistis**: "
-                    "mereka mengira sistem *memahami* tugasnya dan punya akal sehat "
-                    "seperti manusia.",
-                    "Obatnya: **tunjukkan contoh cara model itu gagal** -- terutama "
-                    "kesalahan klasifikasi yang terasa mengejutkan.",
-                    "Hindari pernyataan abstrak seperti *\"modelnya berakurasi 98%\"*, yang "
-                    "==oleh kebanyakan orang dibulatkan ke 100%== dalam kepala mereka.",
+                    "Non-specialists often expect the system to **understand** its task and "
+                    "to exercise human-like common sense.",
+                    "The remedy: **show examples of how it fails** — especially "
+                    "misclassifications that look surprising.",
+                    "Avoid abstract statements like *\"the model is 98% accurate\"*, which "
+                    "==most people mentally round up to 100%==.",
                 ]},
                 {"t": "band",
-                 "md": "Bicaralah dalam **laju false-negative dan false-positive**, lalu "
-                       "terjemahkan ke angka harian yang bisa dibayangkan."},
+                 "md": "Speak in **false-negative and false-positive rates**, then translate "
+                       "them into daily volumes that a person can picture."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.3.1",
+            "title": "What that sounds like in practice",
+            "blocks": [
                 {"t": "quote",
-                 "md": "Dengan setelan ini, model deteksi fraud akan punya laju "
-                       "false-negative 5% dan false-positive 2,5%. Setiap hari, rata-rata "
-                       "200 transaksi sah akan ditandai sebagai fraud dan dikirim ke "
-                       "pemeriksaan manual, dan rata-rata 14 transaksi fraud akan terlewat. "
-                       "Rata-rata 266 transaksi fraud akan tertangkap dengan benar.",
-                 "cite": "Contoh penetapan harapan dari Chollet & Watson, bab 6.3.1"},
+                 "md": "With these settings, the fraud detection model would have a 5% "
+                       "false-negative rate and a 2.5% false-positive rate. Every day, an "
+                       "average of 200 valid transactions would be flagged as fraudulent and "
+                       "sent for manual review, and an average of 14 fraudulent transactions "
+                       "would be missed. An average of 266 fraudulent transactions would be "
+                       "correctly caught.",
+                 "cite": "The book's own worked example, section 6.3.1"},
                 {"t": "band", "style": "amber",
-                 "md": "Bahas juga **pemilihan ambang** bersama pemangku kepentingan -- "
-                       "ambang peluang yang berbeda menghasilkan laju false-negative dan "
-                       "false-positive yang berbeda. Keputusan itu menyangkut pertukaran "
-                       "yang ==hanya bisa ditangani dengan pemahaman mendalam atas konteks "
-                       "bisnisnya=="},
+                 "md": "Also discuss the **threshold** with stakeholders. Different thresholds "
+                       "give different error rates, and that trade-off ==can only be resolved "
+                       "with deep knowledge of the business context=="},
             ],
-            "notes": "Ini slide yang paling langsung bisa dipakai peserta besok pagi. "
-                     "Latihan kelas: tulis ulang satu klaim akurasi dari proyek Anda ke "
-                     "dalam bentuk kalimat di atas.",
+            "notes": "The most directly usable slide in the chapter. Exercise: have each "
+                     "participant rewrite one accuracy claim from their own project in this "
+                     "form.",
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 6.3.2",
-            "title": "Tiga cara menyerahkan model",
+            "kicker": "Section 6.3.2",
+            "title": "Three deployment routes",
             "blocks": [
-                {"t": "cards", "cols": 3, "items": [
-                    {"ico": "🌐", "h": "REST API",
-                     "p": "Pakai bila: ada **akses internet andal**; **tidak ada kendala "
-                          "latensi ketat** (pulang-pergi sekitar **500 ms**); dan data "
-                          "masukannya **tidak sangat peka** -- sebab data harus tersedia "
-                          "dalam bentuk terdekripsi di server.",
-                     "tag": "pencari citra · perekomendasi · fraud · satelit", "style": "accent"},
-                    {"ico": "📱", "h": "Di perangkat",
-                     "p": "Pakai bila: **latensi ketat** atau **konektivitas rendah**; model "
-                          "bisa dibuat cukup kecil; akurasi tertinggi **bukan** hal kritis; "
-                          "dan data masukannya sangat peka sehingga tak boleh didekripsi "
-                          "di server jauh.",
-                     "tag": "spam terenkripsi · kue di pabrik", "style": "accent"},
-                    {"ico": "🖥", "h": "Di peramban",
-                     "p": "Pakai bila: ingin **memindahkan komputasi ke pengguna** (biaya "
-                          "server turun tajam); data harus tetap di perangkat pengguna; "
-                          "latensi ketat (hemat ~100 ms pulang-pergi jaringan); atau aplikasi "
-                          "harus tetap jalan **tanpa koneksi**.",
-                     "tag": "versi web & desktop aplikasi obrolan", "style": "accent"},
-                ]},
+                {"t": "mmd", "id": "ch06-deploy", "src": MMD_DEPLOY,
+                 "cap": "The constraints choose the route, not the other way round."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.3.2",
+            "title": "When each route is the right one",
+            "blocks": [
+                {"t": "table",
+                 "head": ["Route", "Use it when", "Example from the book"],
+                 "widths": [18, 50, 32],
+                 "rows": [
+                     ["**REST API**",
+                      "Reliable internet · no strict latency (round trip ≈ **500 ms**) · "
+                      "input data is not highly sensitive, since it must be decrypted on the "
+                      "server.",
+                      "Image search, recommender, fraud detection, satellite imagery."],
+                     ["**On device**",
+                      "Strict latency or poor connectivity · the model can be made small "
+                      "enough · top accuracy is not mission-critical · input data must not be "
+                      "decryptable off-device.",
+                      "Spam filter inside an end-to-end encrypted chat app; biscuit detection "
+                      "at the factory."],
+                     ["**In the browser**",
+                      "You want to move compute to the user (server costs drop sharply) · data "
+                      "must stay on their machine · latency matters · it must work offline "
+                      "after download.",
+                      "The web and desktop versions of the chat app."],
+                 ]},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.3.2",
+            "title": "One warning about the browser route",
+            "blocks": [
                 {"t": "band", "style": "rose",
-                 "md": "Peringatan untuk penyerahan di peramban: seluruh model **diunduh ke "
-                       "perangkat pengguna**. Pastikan tidak ada bagian model yang harus "
-                       "dirahasiakan -- sebab dari model terlatih ==biasanya masih mungkin "
-                       "memulihkan sebagian informasi tentang data pelatihannya==. Jangan "
-                       "publikasikan model yang dilatih atas data peka."},
+                 "md": "The **entire model is downloaded to the user's device**. Make sure "
+                       "nothing about it needs to stay confidential — because given a trained "
+                       "model it is usually possible to ==recover some information about its "
+                       "training data=="},
+                {"t": "p", "md": "Which means: do not publish a model that was trained on "
+                                 "sensitive data, however convenient the deployment would be."},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 6.3.2",
-            "title": "Mengekspor model: TensorFlow Serving dan ONNX",
+            "kicker": "Section 6.3.2",
+            "title": "Exporting: TensorFlow Serving and ONNX",
             "blocks": [
+                {"t": "p", "md": "Both work by lifting the weights and the computation graph "
+                                 "**out of the Python program**, so the model can be served "
+                                 "from a C++ server, a phone, or a browser."},
                 {"t": "cols", "ratio": "1-1", "cols": [
                     [
                         {"t": "code", "lang": "python", "file": "TensorFlow SavedModel",
                          "src": """model.export("path/to/location",
              format="tf_saved_model")
 
-reloaded = tf.saved_model.load(
-    "path/to/location")
+reloaded = tf.saved_model.load("path/to/location")
 predictions = reloaded.serve(input_data)"""},
                     ],
                     [
@@ -782,113 +811,125 @@ ort_session = onnxruntime.InferenceSession(
 predictions = ort_session.run(None, input_data)"""},
                     ],
                 ]},
-                {"t": "p", "md": "Keduanya bekerja dengan **mengangkat seluruh bobot model "
-                                 "dan graf komputasinya keluar dari program Python**, "
-                                 "sehingga bisa dilayani dari banyak lingkungan berbeda -- "
-                                 "misalnya server C++. Kalau ini terdengar mirip mekanisme "
-                                 "kompilasi di bab 3, ==memang begitu==: TensorFlow Serving "
-                                 "pada dasarnya pustaka untuk melayani graf `tf.function` "
-                                 "dengan sehimpunan bobot tersimpan."},
-                {"t": "bullets", "items": [
-                    "**TensorFlow Lite** -- inferensi di perangkat: Android, iOS, CPU ARM, "
-                    "Raspberry Pi, dan sebagian mikrokontroler. Formatnya sama dengan "
-                    "TensorFlow Serving. Runtime ONNX juga bisa jalan di perangkat bergerak.",
-                    "**TensorFlow.js** -- menjalankan model di peramban; ia bahkan "
-                    "mengimplementasikan hampir seluruh API Keras (nama kerjanya dulu "
-                    "*WebKeras*). ONNX punya runtime JavaScript sendiri.",
-                    "Pilihan lain: **layanan awan terkelola** seperti Cloud AI Platform, "
-                    "yang mengurus pem-batch-an prediksi, penyeimbangan beban, dan penskalaan.",
-                ]},
-            ],
-        },
-
-        {
-            "type": "slide",
-            "kicker": "Bagian 6.3.2",
-            "title": "Mengoptimalkan model untuk inferensi",
-            "blocks": [
-                {"t": "cards", "cols": 2, "items": [
-                    {"ico": "✂", "h": "Pemangkasan bobot (weight pruning)",
-                     "p": "Tidak setiap koefisien pada tensor bobot menyumbang sama besar "
-                          "terhadap prediksi. Dengan hanya menyimpan yang paling berarti, "
-                          "jumlah parameter bisa **turun banyak** dengan ongkos kecil pada "
-                          "metrik. Seberapa banyak dipangkas = kendali Anda atas pertukaran "
-                          "ukuran lawan akurasi.", "style": "accent"},
-                    {"ico": "🔢", "h": "Kuantisasi bobot (weight quantization)",
-                     "p": "Model dilatih dengan bobot float32. Bobot itu bisa dikuantisasi "
-                          "ke **int8**, menghasilkan model khusus-inferensi yang **empat "
-                          "kali lebih kecil** tetapi tetap mendekati akurasi aslinya.",
-                     "style": "accent"},
-                ]},
-                {"t": "code", "lang": "python", "file": "API kuantisasi bawaan Keras",
-                 "src": """model.quantize("int8")     # tiap bobot dimampatkan jadi satu byte"""},
                 {"t": "band",
-                 "md": "Pengoptimalan ini **terutama penting** saat menyerahkan ke lingkungan "
-                       "dengan kendala daya dan memori ketat -- ponsel dan perangkat tertanam "
-                       "-- atau untuk aplikasi berlatensi rendah. Lakukan ==sebelum== "
-                       "mengimpor ke TensorFlow.js atau mengekspor ke TensorFlow Lite."},
+                 "md": "If that sounds like the compilation mechanism from chapter 3, it is: "
+                       "TensorFlow Serving is essentially ==a library for serving "
+                       "`tf.function` graphs with a saved set of weights=="},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Bagian 6.3.3-6.3.4",
-            "title": "Memantau dan merawat -- pekerjaan yang tak berujung",
+            "kicker": "Section 6.3.2",
+            "title": "Where those exports run",
             "blocks": [
-                {"t": "p", "md": "Anda sudah mengekspor model inferensi, memasangkannya ke "
-                                 "aplikasi, dan menjalankan uji coba di data produksi. "
-                                 "**Bahkan ini belum akhirnya.**"},
-                {"t": "steps", "items": [
-                    "**Uji A/B teracak.** Sebagian kasus lewat model baru, sebagian lagi "
-                    "-- kelompok kendali -- tetap lewat proses lama. Setelah cukup banyak "
-                    "kasus, selisih hasilnya ==bisa dikaitkan ke modelnya==, bukan ke "
-                    "perubahan lain.",
-                    "**Audit manual berkala** atas prediksi di data produksi. Infrastruktur "
-                    "anotasi yang sama bisa dipakai ulang: kirim sebagian data produksi "
-                    "untuk dianotasi manual, lalu bandingkan.",
-                    "**Kalau audit manual mustahil**, cari jalur penilaian lain -- misalnya "
-                    "survei pengguna, untuk sistem penandaan spam dan konten kasar.",
-                ]},
-                {"t": "band", "style": "amber",
-                 "md": "**Begitu model diluncurkan, Anda harus sudah bersiap melatih generasi "
-                       "berikutnya yang akan menggantikannya.**"},
                 {"t": "bullets", "items": [
-                    "Awasi **perubahan pada data produksi**. Apakah ada fitur baru? Apakah "
-                    "himpunan labelnya perlu diperluas atau diubah?",
-                    "Terus kumpulkan dan anotasi data, dan **perbaiki jalur anotasi** dari "
-                    "waktu ke waktu.",
-                    "Beri perhatian khusus pada **sampel yang tampak sulit diklasifikasikan** "
-                    "oleh model sekarang -- sampel itulah yang ==paling mungkin memperbaiki "
-                    "unjuk kerja==.",
+                    "**TensorFlow Lite** — on-device inference for Android and iOS, ARM CPUs, "
+                    "Raspberry Pi, and some microcontrollers. Same save format as TF Serving. "
+                    "The ONNX runtime also runs on mobile.",
+                    "**TensorFlow.js** — runs in the browser and implements almost the whole "
+                    "Keras API (its working name was *WebKeras*). ONNX has its own JavaScript "
+                    "runtime.",
+                    "**Managed cloud services** such as Cloud AI Platform handle batching, "
+                    "load balancing, and scaling for you.",
                 ]},
             ],
         },
 
         {
             "type": "slide",
-            "kicker": "Ringkasan",
-            "title": "Yang wajib terbawa dari bab 6",
+            "kicker": "Section 6.3.2",
+            "title": "Optimising for inference",
+            "blocks": [
+                {"t": "mmd", "id": "ch06-optimise", "src": MMD_OPTIMISE,
+                 "cap": "Both techniques trade a little accuracy for a lot of size and speed."},
+                {"t": "p", "md": "**Pruning** drops the coefficients that contribute least; "
+                                 "how much you prune is your lever on the size-versus-accuracy "
+                                 "trade-off. **Quantization** converts float32 weights to "
+                                 "int8, giving a model **four times smaller** that stays near "
+                                 "the original accuracy."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.3.2",
+            "title": "Quantization is one line",
+            "blocks": [
+                {"t": "p", "md": "Keras exposes it directly on the model, so it can be applied "
+                                 "just before export."},
+                {"t": "code", "lang": "python", "file": "the built-in quantize API",
+                 "src": """model.quantize("int8")      # compress each weight down to a single byte
+model.export("path/to/location", format="onnx")"""},
+                {"t": "band",
+                 "md": "Do this **before** importing into TensorFlow.js or exporting to "
+                       "TensorFlow Lite — it matters most where power and memory are tight, "
+                       "==phones and embedded devices=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.3.3",
+            "title": "Monitoring: pressing the button is not the end",
             "blocks": [
                 {"t": "steps", "items": [
-                    "**Tetapkan tugasnya dulu.** Pahami konteks, tujuan akhir, dan kendalanya; "
-                    "kumpulkan dan anotasi data; pilih cara mengukur keberhasilan.",
-                    "Anda selalu membuat **dua hipotesis**. Sampai ada model yang bekerja, "
-                    "keduanya belum terbukti.",
-                    "**Pilihan teknis juga pilihan etis.** Teknologi tidak pernah netral.",
-                    "**Data harus mewakili produksi.** Waspadai bias pencuplikan, kebocoran "
-                    "target, dan pergeseran konsep.",
-                    "**Kalahkan tolok banding → besarkan sampai overfit → regularisasi dan "
-                    "setel.** Dalam urutan itu.",
-                    "**Serahkan sesuai kendalanya**: REST API, di perangkat, atau di peramban "
-                    "-- lalu pangkas dan kuantisasi untuk inferensi.",
-                    "**Bicara dalam false-positive dan false-negative**, bukan persen akurasi.",
-                    "**Tidak ada model yang bertahan selamanya.** Pantau, audit, dan siapkan "
-                    "generasi berikutnya sejak hari peluncuran.",
+                    "**Randomised A/B testing.** Send a subset of cases through the new model "
+                    "and keep a control subset on the old process. Once enough cases have run, "
+                    "the difference ==can be attributed to the model== rather than to "
+                    "everything else that changed.",
+                    "**Regular manual audits** of predictions on production data. Reuse the "
+                    "annotation infrastructure: send a fraction out for labelling and compare.",
+                    "**When manual audit is impossible**, use alternatives such as user "
+                    "surveys — the book's suggestion for the spam and abuse flagging system.",
+                ]},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 6.3.4",
+            "title": "Maintenance starts on launch day",
+            "blocks": [
+                {"t": "band", "style": "amber",
+                 "md": "**As soon as your model has launched, you should be getting ready to "
+                       "train the next generation that will replace it.**"},
+                {"t": "bullets", "items": [
+                    "Watch for **changes in production data**. Are new features available? "
+                    "Should the label set be expanded or edited?",
+                    "Keep collecting and annotating, and **keep improving the annotation "
+                    "pipeline** over time.",
+                    "Pay special attention to samples the current model finds **difficult** — "
+                    "those are ==the ones most likely to improve performance==",
+                ]},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Summary",
+            "title": "What has to survive this chapter",
+            "blocks": [
+                {"t": "steps", "items": [
+                    "**Define the task first.** Understand the context, the goal, and the "
+                    "constraints; collect and annotate data; choose how success is measured.",
+                    "You always make **two hypotheses**. Until a model works, neither is proven.",
+                    "**Technical choices are ethical choices.** Technology is never neutral.",
+                    "**Data must represent production.** Watch for sampling bias, target "
+                    "leaks, and concept drift.",
+                    "**Beat a baseline → scale up until it overfits → regularise and tune.** "
+                    "In that order.",
+                    "**Deploy according to the constraints** — API, device, or browser — then "
+                    "prune and quantize for inference.",
+                    "**Talk in false positives and false negatives**, not percentages of "
+                    "accuracy.",
+                    "**No model lasts forever.** Monitor, audit, and prepare the successor "
+                    "from launch day.",
                 ]},
                 {"t": "links", "items": [
-                    {"k": "NOTEBOOK", "ic": "📓", "v": "03_ekspor_dan_kuantisasi.ipynb",
-                     "href": "../../course-slides/notebooks/ch06/03_ekspor_dan_kuantisasi.ipynb"},
-                    {"k": "BAB BERIKUT", "ic": "➡", "v": "Bab 7 — Menyelam ke Keras",
+                    {"k": "NOTEBOOK", "ic": "📓", "v": "03_export_and_quantize.ipynb",
+                     "href": "../../course-slides/notebooks/ch06/03_export_and_quantize.ipynb"},
+                    {"k": "NEXT", "ic": "➡", "v": "Chapter 7 — A deep dive on Keras",
                      "href": "../ch07/index.html"},
                 ]},
             ],

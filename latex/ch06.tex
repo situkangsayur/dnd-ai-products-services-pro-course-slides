@@ -3,15 +3,15 @@
 \documentclass[aspectratio=169,11pt,t]{beamer}
 \usepackage{itbpro}
 
-\coursetitle{Alur Kerja Universal Machine Learning}
-\coursesubtitle{Anda tidak memulai dari kumpulan data. Anda memulai dari persoalan -- dan pekerjaan tersulitnya justru sebelum baris kode pertama.}
+\coursetitle{The Universal Workflow of Machine Learning}
+\coursesubtitle{You do not start from a dataset. You start from a problem --- and the hardest work happens before the first line of model code.}
 \coursekicker{Chapter 6}
-\coursesource{Chollet \& Watson, Deep Learning with Python 3e -- bab 6 (hlm. 171-189)}
-\courseduration{3 jam (2 sesi)}
-\coursepresenter{Prof. Bambang Riyanto Trilaksono}{Pengajar Utama}
+\coursesource{Chollet \& Watson, Deep Learning with Python 3e --- chapter 6}
+\courseduration{3 hours (2 sessions)}
+\coursepresenter{Prof. Bambang Riyanto Trilaksono}{Lead Instructor}
 \coursebrand{AI for Professional \textperiodcentered\ ITB \textperiodcentered\ Ch 6}
 
-\title{Alur Kerja Universal Machine Learning}
+\title{The Universal Workflow of Machine Learning}
 \author{Prof. Bambang Riyanto Trilaksono}
 \date{}
 
@@ -19,55 +19,55 @@
 \covertitle
 
 \framekicker{Learning outcomes}
-\begin{frame}[shrink=25]{Tujuan Sesi}
-\leadpar{Setelah sesi ini, peserta dapat:}
+\begin{frame}[shrink=25]{Session Objectives}
+\leadpar{By the end of this session, participants can:}
 \begin{isteps}
-\item Merumuskan sebuah persoalan bisnis menjadi \textbf{jenis tugas machine learning} yang tepat -- termasuk mengenali kapan machine learning \textbf{bukan} jawabannya.
-\item Menyebut \textbf{dua hipotesis} yang diam-diam Anda buat setiap kali memulai proyek, dan apa artinya bila keduanya salah.
-\item Merancang pengumpulan dan anotasi data yang \textbf{mewakili data produksi}, dan mengenali \textbf{bias pencuplikan}, \textbf{kebocoran target}, serta \textbf{pergeseran konsep}.
-\item Memilih ukuran keberhasilan, lalu memilih \textbf{aktivasi lapis akhir, fungsi rugi, dan metrik} yang sepadan dengannya.
-\item Menjalankan tiga tahap pengembangan model: \textbf{kalahkan tolok banding $\rightarrow$ besarkan sampai overfit $\rightarrow$ regularisasi dan setel}.
-\item Memilih cara penyerahan -- \textbf{REST API, di perangkat, atau di peramban} -- beserta pengoptimalan inferensinya (pemangkasan dan kuantisasi bobot).
-\item Menyusun \textbf{penetapan harapan pemangku kepentingan} dalam bahasa false-positive dan false-negative, bukan 'akurasi 98\%'.
+\item Frame a business problem as the right \textbf{kind of machine learning task} --- including recognising when machine learning is \textbf{not} the answer.
+\item Name the \textbf{two hypotheses} you make silently at the start of every project, and what it means if either is false.
+\item Design collection and annotation so the data \textbf{represents production}, and recognise \textbf{sampling bias}, \textbf{target leaks}, and \textbf{concept drift}.
+\item Choose a success measure, then choose the \textbf{last-layer activation, loss, and metrics} that match it.
+\item Run the three development stages: \textbf{beat a baseline $\rightarrow$ scale up until it overfits $\rightarrow$ regularise and tune}.
+\item Choose a deployment route --- \textbf{REST API, on device, or in the browser} --- and optimise the model for inference.
+\item Set stakeholder expectations in \textbf{false-positive and false-negative} terms rather than "98\% accurate".
 \end{isteps}
 
 \vskip 6pt
 \vskip 4pt
-\reslink{Buku}{Bab 6 --- teks penuh}{https://deeplearningwithpython.io/chapters/chapter06\_universal-workflow-of-ml}
-\reslink{Notebook}{01\_memahami\_data\_sebelum\_model.ipynb}{../../notebooks/ch06/01\_memahami\_data\_sebelum\_model.ipynb}
-\reslink{Notebook}{02\_pra\_pemrosesan\_umum.ipynb}{../../notebooks/ch06/02\_pra\_pemrosesan\_umum.ipynb}
-\reslink{Notebook}{03\_ekspor\_dan\_kuantisasi.ipynb}{../../notebooks/ch06/03\_ekspor\_dan\_kuantisasi.ipynb}
+\reslink{Book}{Chapter 6 --- full text}{https://deeplearningwithpython.io/chapters/chapter06\_universal-workflow-of-ml}
+\reslink{Notebook}{01\_understand\_data\_before\_modelling.ipynb}{../../notebooks/ch06/01\_understand\_data\_before\_modelling.ipynb}
+\reslink{Notebook}{02\_common\_preprocessing.ipynb}{../../notebooks/ch06/02\_common\_preprocessing.ipynb}
+\reslink{Notebook}{03\_export\_and\_quantize.ipynb}{../../notebooks/ch06/03\_export\_and\_quantize.ipynb}
 \vskip 2pt
 \end{frame}
 
-\framekicker{Pembuka}
-\begin{frame}[shrink=25]{Di dunia nyata, \inlinecode{keras.datasets} tidak ada}
-\leadpar{Bayangkan Anda membuka jasa konsultasi machine learning sendiri. Proyeknya mulai berdatangan -- dan \hilite{tidak satu pun datang bersama kumpulan datanya}}
+\framekicker{Opening}
+\begin{frame}[shrink=25]{In the real world, \inlinecode{keras.datasets} does not exist}
+\leadpar{Imagine opening your own machine learning consultancy. The projects start rolling in --- and \hilite{not one of them arrives with its dataset}}
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Pencarian foto}
-Ketik \textit{wedding}, dapatkan semua foto pernikahan -- tanpa penandaan manual.
+\cardh{Photo search}
+Type \textit{wedding}, get every wedding photo --- with no manual tagging.
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Spam \& konten kasar}
-Menandai kiriman pada aplikasi obrolan yang baru tumbuh.
+\cardh{Spam and abuse}
+Flagging posts in a growing chat app.
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Perekomendasi musik}
-Untuk pengguna radio daring.
+\cardh{Music recommendation}
+For the users of an online radio station.
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Fraud kartu kredit}
-Untuk sebuah situs niaga elektronik.
+\cardh{Credit-card fraud}
+For an e-commerce site.
 \end{icard}
 \end{minipage}%
 
@@ -76,409 +76,415 @@ Untuk sebuah situs niaga elektronik.
 
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Click-through rate iklan}
-Memutuskan iklan mana yang disajikan ke siapa, kapan.
+\cardh{Ad click-through rate}
+Deciding which ad to serve to whom, and when.
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Kue cacat}
-Menandai kue janggal di ban berjalan pabrik.
+\cardh{Defective biscuits}
+Flagging anomalies on a factory conveyor belt.
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icard}
-\cardh{Situs arkeologi}
-Menebak lokasi situs yang belum diketahui dari citra satelit.
+\cardh{Archaeological sites}
+Locating undiscovered ones from satellite imagery.
 \end{icard}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.241\textwidth}
 \begin{icardaccent}
-\cardh{\ldots{}dan kasus Anda sendiri}
-Yang akan dibawa ke tugas kelompok nanti.
+\cardh{\ldots{}and your own case}
+Which you will carry through this chapter as the group assignment.
 \end{icardaccent}
 \end{minipage}%
-\begin{iband}[signal]
-Ketujuh contoh ini dipakai berulang sepanjang bab, dan tiap tahap alur kerja diuji terhadap ketujuhnya. \hilite{Perhatikan bahwa dua di antaranya ternyata bukan persoalan deep learning sama sekali.}
-\end{iband}
 \end{frame}
-\note{Minta peserta memilih satu kasus dari organisasinya sendiri di awal sesi lalu membawanya melewati setiap tahap di bab ini. Itu rangka tugas kelompoknya.}
+\note{Have each participant pick one case from their own work at the start and carry it through every stage. That becomes the assignment.}
 
-\framekicker{Peta bab}
-\begin{frame}[shrink=25]{Tiga bagian, dan yang tersulit ada di depan}
+\framekicker{Roadmap}
+\begin{frame}[shrink=25]{Three parts --- and the hard one comes first}
 \begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.52\textheight}{%
-
-\begin{tikzpicture}[font=\sffamily\tiny,
-  ar/.style={-{Stealth[length=4pt]}, signal, line width=0.8pt},
-  bk/.style={-{Stealth[length=4pt]}, amberbr, line width=0.9pt, dashed}]
-  \node[draw=itbbluelt!70, fill=itbbluelt!10, rounded corners=5pt, minimum width=3.3cm,
-        minimum height=2.2cm, anchor=north west, align=left] (a) at (0,0)
-    {\textbf{1 $\cdot$ Tetapkan tugas}\\[3pt]
-     $\cdot$ rumuskan persoalannya\\$\cdot$ kumpulkan \& anotasi data\\
-     $\cdot$ pahami datanya\\$\cdot$ pilih ukuran keberhasilan\\[2pt]
-     \textcolor{amber}{bagian tersulit}};
-  \node[draw=signal!70, fill=signal!10, rounded corners=5pt, minimum width=3.3cm,
-        minimum height=2.2cm, anchor=north west, align=left] (b) at (3.7,0)
-    {\textbf{2 $\cdot$ Kembangkan model}\\[3pt]
-     $\cdot$ siapkan data\\$\cdot$ pilih protokol evaluasi\\
-     $\cdot$ kalahkan tolok banding\\$\cdot$ besarkan sampai overfit\\
-     $\cdot$ regularisasi \& setel};
-  \node[draw=lime!70, fill=limebr!10, rounded corners=5pt, minimum width=3.3cm,
-        minimum height=2.2cm, anchor=north west, align=left] (c) at (7.4,0)
-    {\textbf{3 $\cdot$ Serahkan}\\[3pt]
-     $\cdot$ jelaskan ke pemangku\\$\cdot$ kirim model inferensi\\
-     $\cdot$ pantau di lapangan\\$\cdot$ rawat \& kumpulkan data baru};
-  \draw[ar] (a.east) -- (b.west);
-  \draw[ar] (b.east) -- (c.west);
-  \draw[bk] (c.south) -- ++(0,-0.5) -| (a.south);
-  \node[text=amber, anchor=north] at (5.4,-2.75)
-    {data baru dari produksi --- menjadi bahan generasi model berikutnya};
-\end{tikzpicture}
-
-}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch06-workflow.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Alur kerja universal -- dan panah balik yang membuatnya tidak pernah benar-benar selesai.\par}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Note the return arrow: the loop never actually closes.\par}
 \begin{iquote}
-\quotetext{Pengembangan model hanyalah satu langkah dalam alur kerja machine learning, dan menurut kami bukan yang tersulit. Yang paling sulit adalah \textbf{merumuskan persoalan serta mengumpulkan, menganotasi, dan membersihkan data}.}\quotecite{Chollet \& Watson, bab 6.2}
+\quotetext{Model development is only one step in the machine learning workflow, and if you ask us, it's not the most difficult one. The hardest things in machine learning are framing problems and collecting, annotating, and cleaning data.}\quotecite{Chollet \& Watson, section 6.2}
 \end{iquote}
 \end{frame}
 
-\coursesection{01}{Menetapkan tugas}{Anda tidak bisa bekerja baik tanpa memahami konteksnya secara mendalam.}
+\coursesection{01}{Defining the task}{You cannot do good work without deeply understanding the context.}
 
-\framekicker{Bagian 6.1.1}
-\begin{frame}[shrink=25]{Empat pertanyaan yang harus ada di kepala}
+\framekicker{Section 6.1.1}
+\begin{frame}[shrink=25]{Four questions to keep at the front of your mind}
 \begin{isteps}
-\item \textbf{Apa data masukannya? Apa yang hendak diramalkan?} Anda hanya bisa belajar meramalkan sesuatu bila ada data latihnya. \hilite{Ketersediaan data biasanya jadi faktor pembatas di tahap ini.}
-\item \textbf{Jenis tugas machine learning apa ini?} Biner? Multikelas? Regresi skalar? Segmentasi citra? Perangkingan? Atau -- mungkin saja -- \textbf{machine learning bukan cara terbaik}, dan analisis statistik biasa lebih tepat.
-\item \textbf{Seperti apa penyelesaian yang sudah ada?} Mungkin pelanggan sudah punya algoritma buatan tangan dengan banyak \inlinecode{if} bersarang. Mungkin ada manusia yang sekarang mengerjakannya secara manual. Pahami sistem yang sudah berjalan.
-\item \textbf{Adakah kendala khusus?} Aplikasi terenkripsi ujung-ke-ujung $\rightarrow$ model harus hidup di ponsel pengguna. Kendala latensi ketat $\rightarrow$ model harus jalan di perangkat tertanam di pabrik, bukan di server jauh.
+\item \textbf{What will the input data be? What are you trying to predict?} You can only learn to predict something you have training data for. \hilite{Data availability is usually the limiting factor here.}
+\item \textbf{What type of task is this?} Binary? Multiclass? Scalar regression? Segmentation? Ranking? Or --- quite possibly --- \textbf{machine learning is not the best way} and plain statistics would serve better.
+\item \textbf{What do existing solutions look like?} Perhaps a hand-crafted algorithm full of nested \inlinecode{if} statements. Perhaps a person doing it manually today. Understand what is already in place.
+\item \textbf{Are there particular constraints?} End-to-end encryption may force the model onto the user's phone. Latency may force it onto an embedded device at the factory rather than a remote server.
 \end{isteps}
+\end{frame}
+
+\framekicker{Section 6.1.1}
+\begin{frame}[shrink=25]{Why the third question matters more than it looks}
 \begin{iband}[amber]
-Perhatikan pertanyaan ketiga. Di banyak proyek nyata, \hilite{tolok bandingnya bukan 'acak', melainkan sistem berbasis aturan yang sudah berjalan bertahun-tahun} -- dan itu jauh lebih sulit dikalahkan.
+In most real projects the baseline is \textbf{not} "random". It is a rules-based system that has been running for years and that people already trust --- and \hilite{that is a much harder thing to beat}
 \end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}It is also the thing you will be compared against when the project is reviewed, so it should be measured properly at the start rather than described from memory.\par}\vskip 4pt
 \end{frame}
 
-\framekicker{Bagian 6.1.1}
-\begin{frame}[shrink=25]{Ketujuh contoh, dipetakan ke jenis tugasnya}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.2256\textwidth}>{\raggedright\arraybackslash}p{0.282\textwidth}>{\raggedright\arraybackslash}p{0.4324\textwidth}}
-\thead{Proyek} & \thead{Jenis tugasnya} & \thead{Catatan} \\ \midrule
-Pencarian foto & Klasifikasi \textbf{multikelas, multilabel} & --- \\
-Spam & Klasifikasi \textbf{biner} & Jadi \textbf{tiga kelas} kalau \textit{konten kasar} dijadikan kelas tersendiri. \\
-Perekomendasi musik & \hilite{Bukan deep learning} & Lebih baik ditangani \textbf{faktorisasi matriks} (collaborative filtering). \\
-Fraud kartu kredit & Klasifikasi \textbf{biner} & --- \\
-Click-through rate & \textbf{Regresi skalar} & --- \\
-Kue cacat & Klasifikasi \textbf{biner} & Tetapi butuh \textbf{deteksi objek} dulu untuk memotong kuenya dari citra mentah. Catatan buku: teknik yang dikenal sebagai \textit{anomaly detection} \hilite{justru tidak cocok di sini} \\
-Situs arkeologi & \textbf{Perangkingan kemiripan citra} & Mengambil citra yang paling mirip situs yang sudah dikenal. \\
+\framekicker{Section 6.1.1}
+\begin{frame}[shrink=25]{The seven examples, mapped to task types}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.2632\textwidth}>{\raggedright\arraybackslash}p{0.47\textwidth}}
+\thead{Project} & \thead{Task type} & \thead{Note} \\ \midrule
+Photo search & \textbf{Multiclass, multilabel} & --- \\
+Spam & \textbf{Binary} & Becomes \textbf{three-way} if \textit{offensive content} is a separate class. \\
+Music recommendation & \hilite{Not deep learning} & Better handled by \textbf{matrix factorisation} (collaborative filtering). \\
+Credit-card fraud & \textbf{Binary} & --- \\
+Click-through rate & \textbf{Scalar regression} & --- \\
+Defective biscuits & \textbf{Binary} & But needs \textbf{object detection} first, to crop the biscuits out of the raw images. The book notes that \textit{anomaly detection} \hilite{would not fit here} \\
+Archaeological sites & \textbf{Image similarity ranking} & Retrieve images most like known sites. \\
 \end{itable}
-\begin{iband}[signal]
-Dua pelajaran dari tabel ini: ada persoalan yang \textbf{bukan} deep learning, dan ada persoalan yang \textbf{butuh dua model bertahap}. Keduanya sering terlewat kalau langsung meloncat ke pemodelan.
-\end{iband}
 \end{frame}
 
-\framekicker{Bagian 6.1.1}
-\begin{frame}[shrink=25]{Dua hipotesis yang selalu Anda buat diam-diam}
+\framekicker{Section 6.1.1}
+\begin{frame}[shrink=25]{Two lessons hiding in that table}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardwarn}
+\cardh{Some problems are not deep learning problems}
+The music recommender is better served by collaborative filtering. Recognising that early saves months.
+\end{icardwarn}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardwarn}
+\cardh{Some need two models in sequence}
+The biscuit case needs detection before classification. Framing it as one model would fail quietly.
+\end{icardwarn}
+\end{minipage}%
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Both are missed routinely when a team jumps straight to modelling.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 6.1.1}
+\begin{frame}[shrink=25]{The two hypotheses you are making silently}
 \begin{minipage}[t]{0.494\textwidth}
 \begin{icardaccent}
-\cardh{Target bisa diramalkan dari masukan}
-Bahwa hubungan itu memang ada.
+\cardh{Your targets can be predicted from your inputs}
+That the relationship exists at all.
 \end{icardaccent}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.494\textwidth}
 \begin{icardaccent}
-\cardh{Data yang ada cukup informatif}
-Untuk mempelajari hubungan antara masukan dan target itu.
+\cardh{Your data is sufficiently informative}
+That it is enough to learn that relationship.
 \end{icardaccent}
 \end{minipage}%
 \begin{iband}[rose]
-Sampai Anda punya model yang bekerja, keduanya \textbf{sekadar hipotesis} yang menunggu dibuktikan atau digugurkan. Menyusun contoh X dan target Y \hilite{tidak berarti X memuat cukup informasi untuk meramal Y}
+Until you have a working model these are \textbf{merely hypotheses}. Assembling examples of X and targets Y \hilite{does not mean X contains enough information to predict Y}
 \end{iband}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Contoh yang diberikan buku: meramalkan pergerakan saham dari riwayat harganya saja \textbf{tidak mungkin berhasil}, sebab riwayat harga tidak memuat banyak informasi yang meramalkan.\par}\vskip 4pt
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Kalau setelah mencoba beberapa arsitektur yang masuk akal Anda tetap tidak bisa mengalahkan tolok banding sederhana, besar kemungkinan \textbf{jawaban atas pertanyaan Anda memang tidak ada di dalam data masukannya}. Kembali ke papan gambar.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The book's example: predicting a stock's movement from its recent price history is \textbf{unlikely to succeed}, because price history does not contain much predictive information.\par}\vskip 4pt
 \end{frame}
-\note{Ini slide yang menyelamatkan waktu paling banyak. Uji dua hipotesis ini di rapat perumusan, bukan setelah tiga bulan pemodelan.}
+\note{Test both hypotheses in the framing meeting, not after three months of modelling. This is the single biggest time-saver in the chapter.}
 
-\framekicker{Bagian 6.1.1 $\cdot$ catatan etika}
-\begin{frame}[shrink=25]{Teknologi tidak pernah netral}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Buku ini menyisipkan satu catatan etika, dan letaknya sengaja di tahap perumusan -- bukan di akhir. Contohnya: \textit{"membangun AI yang menilai tingkat dapat-dipercayanya seseorang dari foto wajahnya"}.\par}\vskip 4pt
+\framekicker{Section 6.1.1 $\cdot$ ethics}
+\begin{frame}[shrink=25]{Technology is never neutral}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The book places its ethics note \textbf{in the framing stage}, not at the end. Its example: \textit{"building an AI that rates the trustworthiness of someone from a picture of their face"}.\par}\vskip 4pt
 \begin{isteps}
-\item \textbf{Kesahihannya sendiri meragukan} -- tidak jelas mengapa sifat dapat-dipercaya akan tercermin di wajah seseorang.
-\item Mengumpulkan datanya sama saja dengan \textbf{merekam bias dan prasangka orang-orang yang melabeli fotonya}.
-\item Model yang dilatih di atasnya hanya akan \textbf{menyandikan bias yang sama ke dalam algoritma kotak hitam} -- yang justru memberinya lapisan tipis keabsahan.
+\item \textbf{The validity is already in doubt} --- it is not clear why trustworthiness would be reflected in a face.
+\item Collecting a dataset would amount to \textbf{recording the biases and prejudices of the people labelling the pictures}.
+\item A model trained on it would merely \textbf{encode those same biases into a black-box algorithm} --- which gives them a thin veneer of legitimacy.
 \end{isteps}
+\end{frame}
+
+\framekicker{Section 6.1.1 $\cdot$ ethics}
+\begin{frame}[shrink=25]{Why the veneer is the dangerous part}
 \begin{iquote}
-\quotetext{Di masyarakat yang sebagian besar belum melek teknologi seperti kita, \textit{"algoritma AI mengatakan orang ini tidak bisa dipercaya"} anehnya terdengar lebih berbobot dan lebih objektif daripada \textit{"John Smith mengatakan orang ini tidak bisa dipercaya"} -- padahal yang pertama adalah hampiran terpelajar atas yang kedua.}\quotecite{Chollet \& Watson, bab 6.1.1}
+\quotetext{In a largely tech-illiterate society like ours, "The AI algorithm said this person cannot be trusted" strangely appears to carry more weight and objectivity than "John Smith said this person cannot be trusted" --- despite the former being a learned approximation of the latter.}\quotecite{Chollet \& Watson, section 6.1.1}
 \end{iquote}
 \begin{iband}[rose]
-\textbf{Teknologi tidak pernah netral.} Kalau pekerjaan Anda berdampak pada dunia, dampak itu punya arah moral: \hilite{pilihan teknis juga pilihan etis}. Selalu sengaja memilih nilai apa yang hendak didukung pekerjaan Anda.
+\textbf{Technical choices are also ethical choices.} If your work has any impact on the world, that impact has a moral direction --- so \hilite{be deliberate about the values your work supports}
 \end{iband}
 \end{frame}
-\note{Contoh yang mudah didekatkan ke peserta mana pun: penilaian kelayakan, penetapan harga, dan penandaan pelanggan --- semuanya bisa mencuci bias historis lalu memberinya wajah objektif.}
+\note{Easy to make concrete for any audience: eligibility scoring, pricing, and customer flagging can all launder historical bias and give it an objective face.}
 
-\framekicker{Bagian 6.1.2}
-\begin{frame}[shrink=25]{Mengumpulkan data -- bagian termahal, dan yang paling berimbal hasil}
+\framekicker{Section 6.1.2}
+\begin{frame}[shrink=25]{Collecting data is the expensive part --- and the highest-return one}
 \begin{iquote}
-\quotetext{Kalau Anda punya tambahan 50 jam untuk sebuah proyek, kemungkinan besar cara paling efektif membelanjakannya adalah \textbf{mengumpulkan lebih banyak data}, bukan mencari perbaikan pemodelan yang sedikit demi sedikit.}\quotecite{Chollet \& Watson, bab 6.1.2}
+\quotetext{If you get an extra 50 hours to spend on a project, chances are that the most effective way to allocate them is to collect more data, rather than search for incremental modeling improvements.}\quotecite{Chollet \& Watson, section 6.1.2}
 \end{iquote}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Titik bahwa \textbf{data lebih penting daripada algoritma} paling terkenal dikemukakan makalah peneliti Google tahun 2009, \textit{"The Unreasonable Effectiveness of Data"} -- judulnya memelesetkan buku Eugene Wigner 1960, \textit{The Unreasonable Effectiveness of Mathematics in the Natural Sciences}. Itu ditulis \textbf{sebelum} deep learning populer, dan naiknya deep learning \hilite{justru menambah} pentingnya data.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The point that data matters more than algorithms was made most famously in a 2009 Google paper, \textit{"The Unreasonable Effectiveness of Data"} --- itself a play on Eugene Wigner's 1960 title. That predates the popularity of deep learning, and the rise of deep learning has \hilite{only increased the importance of data}\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 6.1.2}
+\begin{frame}[shrink=25]{Who should do the annotating}
 \begin{itable}{>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.3384\textwidth}>{\raggedright\arraybackslash}p{0.3572\textwidth}}
-\thead{Pilihan anotasi} & \thead{Untungnya} & \thead{Risikonya} \\ \midrule
-\textbf{Anotasi sendiri} & Kendali penuh atas mutu. & Lambat dan mahal dalam waktu. \\
-\textbf{Urun daya} (mis. Mechanical Turk) & Murah dan berskala baik. & Anotasinya bisa \hilite{cukup berderau} \\
-\textbf{Perusahaan pelabelan khusus} & Menghemat waktu dan biaya. & Melepaskan kendali. \\
+\thead{Option} & \thead{Upside} & \thead{Risk} \\ \midrule
+\textbf{Annotate it yourself} & Full control over quality. & Slow and costly in time. \\
+\textbf{Crowdsourcing} (e.g. Mechanical Turk) & Inexpensive and scales well. & Annotations may end up \hilite{quite noisy} \\
+\textbf{A specialist labelling company} & Saves time and money. & Takes away control. \\
 \end{itable}
-\begin{ibullets}
-\item Apakah pelabelnya \textbf{harus ahli bidang}? Kucing vs anjing bisa siapa saja; ras anjing perlu pengetahuan khusus; CT scan patah tulang praktis menuntut gelar kedokteran.
-\item Kalau perlu keahlian, \textbf{bisakah orang dilatih} untuk itu? Kalau tidak, bagaimana Anda mengakses ahlinya?
-\item \textbf{Apakah Anda sendiri paham} bagaimana ahli itu sampai pada anotasinya? Kalau tidak, data Anda jadi kotak hitam dan rekayasa fitur manual tertutup -- tidak fatal, tetapi membatasi.
-\item Perangkat lunak anotasi yang produktif \textbf{menghemat sangat banyak waktu}; layak diinvestasikan sejak awal proyek.
-\end{ibullets}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Your annotation process determines the quality of your targets, which in turn determines the quality of your model. It deserves the same scrutiny as the architecture.\par}\vskip 4pt
 \end{frame}
 
-\framekicker{Bagian 6.1.2}
-\begin{frame}[shrink=25]{Data yang tidak mewakili -- dosa besar}
-\begin{minipage}[t]{0.485\textwidth}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Contoh dari buku.} Aplikasi pengenal masakan dari foto. Model dilatih dengan foto dari jejaring sosial berbagi gambar yang populer di kalangan penggemar kuliner. Akurasi uji jauh di atas 90\%.\par}\vskip 4pt
-\begin{iband}[rose]
-Setelah dirilis: \textbf{salah 8 dari 10 kali}. Foto unggahan pengguna -- masakan acak, restoran acak, ponsel acak -- \hilite{sama sekali tidak menyerupai} foto profesional yang pencahayaannya bagus dan menggugah selera itu.
+\framekicker{Section 6.1.2}
+\begin{frame}[shrink=25]{Three questions that decide which option}
+\begin{ibullets}
+\item \textbf{Do the labellers need to be subject-matter experts?} Cat versus dog can be done by anyone; dog breeds need specialised knowledge; annotating CT scans of fractures \hilite{pretty much requires a medical degree}.
+\item \textbf{If expertise is needed, can you train people?} If not, how will you get access to the relevant experts at all?
+\item \textbf{Do you yourself understand how the experts arrive at the annotations?} If not, your dataset becomes a black box and manual feature engineering is closed to you --- not fatal, but limiting.
+\end{ibullets}
+\begin{iband}[signal]
+And decide early what software will record the annotations. Productive annotation tooling \textbf{saves a great deal of time}, so it is worth investing in \hilite{at the start of a project, not the middle}
 \end{iband}
-
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.485\textwidth}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Aturannya}\par}\vskip 4pt
-\begin{ibullets}
-\item Bila mungkin, kumpulkan data \textbf{langsung dari lingkungan tempat model akan dipakai}.
-\item Model sentimen ulasan film dipakai pada ulasan IMDB baru -- bukan pada ulasan restoran Yelp, bukan pada status Twitter.
-\item Kalau melatih di data produksi tidak mungkin, \textbf{pahami betul bedanya} dan koreksi perbedaan itu secara aktif.
-\end{ibullets}
-
-\end{minipage}%
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Bias pencuplikan} adalah bentuknya yang paling licik: proses pengumpulan data berinteraksi dengan hal yang hendak Anda ramalkan. Contoh sejarahnya terkenal -- malam pemilu 1948, \textit{Chicago Tribune} memasang tajuk \textbf{"DEWEY DEFEATS TRUMAN"}. Paginya Truman yang menang. Redakturnya memercayai survei telepon; padahal pengguna telepon pada 1948 \hilite{bukan cuplikan acak yang mewakili pemilih} -- mereka cenderung lebih kaya dan konservatif.\par}\vskip 4pt
 \end{frame}
 
-\framekicker{Bagian 6.1.2}
-\begin{frame}[shrink=25]{Pergeseran konsep -- dan umur pakai model}
-\begin{center}
-\adjustbox{max width=\linewidth,max totalheight=0.52\textheight}{%
-
-\begin{tikzpicture}[font=\sffamily\tiny]
-  \node[text=ink2, anchor=east] at (0,1.4) {deteksi fraud kartu};
-  \node[draw=rose!75, fill=rosebr!22, rounded corners=2.5pt, minimum width=0.8cm,
-        minimum height=0.34cm, anchor=west] at (0.15,1.4) {};
-  \node[text=rose, anchor=west, font=\ttfamily\tiny] at (1.1,1.4) {hari};
-
-  \node[text=ink2, anchor=east] at (0,0.8) {perekomendasi musik};
-  \node[draw=amber!70, fill=amberbr!22, rounded corners=2.5pt, minimum width=1.9cm,
-        minimum height=0.34cm, anchor=west] at (0.15,0.8) {};
-  \node[text=amber, anchor=west, font=\ttfamily\tiny] at (2.2,0.8) {minggu};
-
-  \node[text=ink2, anchor=east] at (0,0.2) {mesin pencari citra};
-  \node[draw=lime!65, fill=limebr!20, rounded corners=2.5pt, minimum width=5.6cm,
-        minimum height=0.34cm, anchor=west] at (0.15,0.2) {};
-  \node[text=lime, anchor=west, font=\ttfamily\tiny] at (5.9,0.2) {beberapa tahun (paling baik)};
-
-  \draw[rule] (0.15,-0.2) -- (8.6,-0.2);
-  \node[text=ink3, anchor=north] at (4.4,-0.3) {umur pakai sebelum model harus dilatih ulang};
-  \node[text=amber, anchor=west, align=left] at (-2.4,-1.0)
-    {Pergeseran konsep paling tajam di konteks adversarial:\\pola kecurangan berubah nyaris tiap hari.};
-\end{tikzpicture}
-
-}
-\end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Angka-angka ini dari buku. Perhatikan bahwa deteksi fraud -- kasus yang paling adversarial -- adalah yang paling cepat basi.\par}
+\framekicker{Section 6.1.2}
+\begin{frame}[shrink=25]{Non-representative data --- the cardinal sin}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The book's example: an app that identifies a dish from a photo, trained on pictures from an image-sharing network popular with food enthusiasts. Test accuracy well over 90\%.\par}\vskip 4pt
+\begin{iband}[rose]
+After release: \textbf{wrong 8 times out of 10}. User photos --- random dishes, random restaurants, random phones --- \hilite{look nothing like} the professional, well-lit, appetising pictures it was trained on.
+\end{iband}
 \begin{ibullets}
-\item \textbf{Pergeseran konsep} terjadi saat sifat data produksi berubah seiring waktu, sehingga akurasi model merosot perlahan.
-\item Kumpulan IMDB dikumpulkan pada 2011; model yang dilatih di atasnya akan bekerja lebih buruk pada ulasan 2020 daripada ulasan 2012 -- kosakata, ungkapan, dan genre film berubah.
-\item Menangani pergeseran yang cepat menuntut \textbf{pengumpulan data, anotasi, dan pelatihan ulang yang terus-menerus}.
+\item Where possible, collect data \textbf{directly from the environment the model will be used in}.
+\item A review sentiment model belongs on new IMDB reviews --- not Yelp reviews, not tweets.
+\item If training on production data is impossible, \textbf{understand exactly how they differ} and correct for it actively.
 \end{ibullets}
+\end{frame}
+
+\framekicker{Section 6.1.2}
+\begin{frame}[shrink=25]{Sampling bias: DEWEY DEFEATS TRUMAN}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Sampling bias} is the subtlest form: your collection process interacts with the thing you are trying to predict.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}On election night in 1948 the \textit{Chicago Tribune} printed the headline \textbf{"DEWEY DEFEATS TRUMAN"}. By morning Truman had won. The editor had trusted a telephone survey --- but telephone users in 1948 \hilite{were not a representative sample of voters}. They were likelier to be richer, more conservative, and to vote for Dewey.\par}\vskip 4pt
 \begin{iband}[amber]
-Kalimat penutupnya keras: memakai machine learning yang dilatih atas data masa lalu untuk meramal masa depan berarti \textbf{mengandaikan masa depan akan berkelakuan seperti masa lalu}. \hilite{Sering kali tidak.}
+Every phone survey now accounts for this. That does not make sampling bias a thing of the past --- \hilite{only a thing pollsters are now aware of}
 \end{iband}
 \end{frame}
 
-\framekicker{Bagian 6.1.3}
-\begin{frame}[shrink=25]{Memahami data Anda -- daftar periksa sebelum melatih}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Memperlakukan kumpulan data sebagai kotak hitam adalah \textbf{praktik yang buruk}. Sebelum melatih apa pun, jelajahi dan gambarkan datanya.\par}\vskip 4pt
-\begin{isteps}
-\item Ada citra atau teks? \textbf{Lihat langsung} beberapa contohnya, berikut labelnya.
-\item Ada fitur numerik? \textbf{Gambar histogramnya} untuk merasakan rentang nilai dan seberapa sering tiap nilai muncul.
-\item Ada informasi lokasi? \textbf{Petakan}. Apakah ada pola yang muncul?
-\item Ada sampel yang \textbf{nilainya hilang}? Itu harus ditangani saat penyiapan.
-\item Tugas klasifikasi? \textbf{Cetak jumlah contoh tiap kelas.} Kalau tidak seimbang, ketidakseimbangan itu harus diperhitungkan.
-\item Periksa \textbf{kebocoran target}.
-\end{isteps}
+\framekicker{Section 6.1.2}
+\begin{frame}[shrink=25]{Concept drift, and how long a model lives}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch06-drift.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The book's own figures. The most adversarial problem is the one that goes stale fastest.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Concept drift} is when the properties of production data change over time, gradually degrading the model. The IMDB dataset was collected in 2011; a model trained on it does worse on 2020 reviews than on 2012 ones, because vocabulary, expressions, and genres move.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 6.1.2}
+\begin{frame}[shrink=25]{The assumption underneath every deployed model}
 \begin{iband}[rose]
-\textbf{Kebocoran target} -- adanya fitur yang memberi informasi tentang target tetapi \hilite{tidak akan tersedia di produksi}. Contoh buku: melatih model atas rekam medis untuk meramal apakah seseorang akan dirawat karena kanker, sementara rekamnya memuat fitur \textit{"orang ini telah didiagnosis kanker"}.
+Machine learning can only memorise patterns \textbf{present in the training data}. Using a model trained on the past to predict the future assumes \textbf{the future will behave like the past}. \hilite{Often it does not.}
 \end{iband}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Pertanyaan yang harus selalu Anda ajukan: \textbf{apakah setiap fitur dalam data saya akan tersedia dalam bentuk yang sama di produksi?}\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Handling fast drift requires continuous data collection, annotation, and retraining --- which is a staffing decision as much as a technical one.\par}\vskip 4pt
 \end{frame}
-\note{Bentuk yang paling sering: kolom yang diisi BELAKANGAN oleh petugas --- status penanganan, kode penutupan, catatan tindak lanjut. Semuanya belum ada saat model harus memutuskan.}
 
-\framekicker{Bagian 6.1.4}
-\begin{frame}[shrink=25]{Memilih ukuran keberhasilan}
+\framekicker{Section 6.1.3}
+\begin{frame}[shrink=25]{Understand your data before you model it}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Treating a dataset as a black box is \textbf{bad practice}. Before training anything, explore and visualise.\par}\vskip 4pt
+\begin{isteps}
+\item Images or text? \textbf{Look at a few samples directly}, with their labels.
+\item Numeric features? \textbf{Plot the histograms} to feel the ranges and frequencies.
+\item Location data? \textbf{Put it on a map.} Do patterns appear?
+\item Any \textbf{missing values}? They must be handled during preparation.
+\item A classification task? \textbf{Print the count per class.} If it is not balanced, that has to be accounted for.
+\item Check for \textbf{target leaks}.
+\end{isteps}
+\end{frame}
+
+\framekicker{Section 6.1.3}
+\begin{frame}[shrink=25]{Target leaking, and the one question that catches it}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch06-leakcheck.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Ask it of every column, not just the suspicious ones.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The book's example: training on medical records to predict whether someone will be treated for cancer, where the records include the feature \textit{"this person has been diagnosed with cancer"}.\par}\vskip 4pt
+\begin{iband}[amber]
+The common real-world shape: \textbf{fields filled in later by an operator} --- handling status, closure code, follow-up notes. None of them exist \hilite{at the moment the model has to decide}
+\end{iband}
+\end{frame}
+
+\framekicker{Section 6.1.4}
+\begin{frame}[shrink=25]{Choosing a measure of success}
 \begin{iquote}
-\quotetext{Untuk mengendalikan sesuatu, Anda harus bisa mengamatinya. Untuk berhasil dalam sebuah proyek, Anda harus lebih dulu menetapkan apa yang Anda maksud dengan berhasil.}\quotecite{Chollet \& Watson, bab 6.1.4}
+\quotetext{To control something, you need to be able to observe it. To achieve success on a project, you must first define what you mean by success.}\quotecite{Chollet \& Watson, section 6.1.4}
 \end{iquote}
 \begin{itable}{>{\raggedright\arraybackslash}p{0.376\textwidth}>{\raggedright\arraybackslash}p{0.564\textwidth}}
-\thead{Bentuk persoalan} & \thead{Metrik yang lazim} \\ \midrule
-Klasifikasi \textbf{seimbang} & Akurasi, dan \textbf{AUC} dari kurva ROC. \\
-Kelas \textbf{tidak seimbang}, perangkingan, multilabel & \textbf{Presisi dan recall}, atau metrik yang menghitung false positive / true positive / false negative / true negative. \\
-Bukan salah satu di atas & Tidak jarang Anda harus \textbf{menetapkan metrik sendiri}. \\
+\thead{Problem shape} & \thead{Common metrics} \\ \midrule
+\textbf{Balanced} classification & Accuracy, and \textbf{AUC} of the ROC curve. \\
+\textbf{Imbalanced}, ranking, multilabel & \textbf{Precision and recall}, or a metric counting false/true positives and negatives. \\
+Neither of the above & It is not unusual to have to \textbf{define your own metric}. \\
 \end{itable}
 \begin{iband}[signal]
-Metrik keberhasilan \textbf{menuntun semua pilihan teknis} sepanjang proyek. Ia harus selaras langsung dengan sasaran yang lebih tinggi -- yaitu \hilite{keberhasilan bisnis pelanggan Anda}.
+The metric guides \textbf{every technical decision} in the project, so it must align directly with the higher-level goal --- \hilite{the customer's business success}
 \end{iband}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Untuk merasakan keragaman metrik dan kaitannya dengan ranah persoalan, buku menyarankan menjelajahi kompetisi di \hlink{https://kaggle.com}{Kaggle}.\par}\vskip 4pt
 \end{frame}
 
-\coursesection{02}{Mengembangkan model}{Bagian yang paling banyak diajarkan tutorial -- dan bukan yang tersulit.}
+\coursesection{02}{Developing a model}{The part every tutorial covers --- and not the hardest one.}
 
-\framekicker{Bagian 6.2.1}
-\begin{frame}[shrink=25]{Menyiapkan data: vektorisasi, normalisasi, nilai hilang}
-\begin{minipage}[t]{0.485\textwidth}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Vektorisasi.} Semua masukan dan target harus berupa tensor bilangan titik-mengambang (atau, dalam kasus khusus, tensor bilangan bulat atau string). Suara, citra, teks -- semuanya diubah jadi tensor lebih dulu.\par}\vskip 4pt
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Normalisasi nilai.} Tidak aman menyuapkan data bernilai relatif besar (bilangan bulat berdigit banyak, jauh lebih besar dari nilai awal bobot jaringan) atau data yang \textbf{heterogen} (satu fitur di 0-1, yang lain di 100-200). Itu memicu pembaruan gradien besar yang \hilite{mencegah jaringan konvergen}\par}\vskip 4pt
+\framekicker{Section 6.2.1}
+\begin{frame}[shrink=25]{Vectorisation and normalisation}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Neural networks do not ingest raw data. Whatever you have --- sound, images, text --- must become float tensors first, and those tensors must have sane ranges.\par}\vskip 4pt
+\icode{python}{the two properties you want}{listings/ch06-01.py}
+\begin{iband}[signal]
+Feeding in large values (multi-digit integers) or heterogeneous ones (one feature 0--1, another 100--200) triggers \textbf{large gradient updates that prevent the network from converging}.
+\end{iband}
+\end{frame}
 
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.485\textwidth}
-\icode{python}{dua sifat yang diinginkan}{listings/ch06-01.py}
-
-\end{minipage}%
+\framekicker{Section 6.2.1}
+\begin{frame}[shrink=25]{Missing values: categorical and numerical differ}
 \begin{itable}{>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.6956\textwidth}}
-\thead{Nilai hilang pada fitur\ldots{}} & \thead{Yang dilakukan} \\ \midrule
-\textbf{Kategorik} & Aman membuat \textbf{kategori baru} yang berarti \textit{nilainya hilang}. Model akan belajar sendiri apa artinya terhadap target. \\
-\textbf{Numerik} & \textbf{Hindari mengisi nilai sembarang seperti 0} -- itu bisa menciptakan ketakbersinambungan pada ruang laten. Pakai \textbf{rerata atau median} fitur itu; atau latih model untuk menebak nilainya dari fitur lain. \\
+\thead{Missing value in a\ldots{}} & \thead{What to do} \\ \midrule
+\textbf{Categorical} feature & Safe to create a \textbf{new category meaning "missing"}. The model will learn what that implies about the target on its own. \\
+\textbf{Numerical} feature & \textbf{Avoid an arbitrary value such as 0} --- it can create a discontinuity in the latent space. Use the \textbf{mean or median}, or train a model to predict the value from the other features. \\
 \end{itable}
 \begin{iband}[amber]
-Jebakan yang halus: kalau Anda \textbf{mengharapkan} fitur kategorik hilang di data uji tetapi jaringan dilatih tanpa satu pun nilai hilang, jaringan \hilite{tidak pernah belajar mengabaikannya}. Obatnya: buat sampel latih buatan yang bolong -- salin beberapa sampel, lalu buang fitur yang diperkirakan akan hilang.
+A subtle trap: if you \textbf{expect} missing categorical values at test time but trained on complete data, the network \hilite{never learned to ignore them}. Fix it by generating training samples with holes --- duplicate some rows and drop the fields you expect to lose.
 \end{iband}
 \end{frame}
 
-\framekicker{Bagian 6.2.3 $\cdot$ tabel 6.1}
-\begin{frame}[shrink=25]{Kalahkan tolok banding: tiga hal yang perlu benar}
+\framekicker{Section 6.2.3 -- 6.2.5}
+\begin{frame}[shrink=25]{Model development is three stages, in order}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch06-stages.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Doing them out of order --- regularising before you can overfit --- wastes the most time.\par}
+\end{frame}
+
+\framekicker{Section 6.2.3}
+\begin{frame}[shrink=25]{Stage 1 --- beat a baseline}
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardaccent}
-\cardh{Rekayasa fitur}
-Saring fitur yang tidak informatif (seleksi fitur), dan pakai pengetahuan Anda tentang persoalan untuk membuat fitur baru.
+\cardh{Feature engineering}
+Filter out uninformative features, and use knowledge of the problem to build likely-useful new ones.
 \end{icardaccent}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardaccent}
-\cardh{Prior arsitektur yang benar}
-Jaringan padat? ConvNet? Rekuren? Transformer? Atau -- apakah deep learning memang pendekatan yang baik untuk tugas ini?
+\cardh{The right architecture priors}
+Densely connected? ConvNet? Recurrent? Transformer? Or is deep learning even the right approach here?
 \end{icardaccent}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardaccent}
-\cardh{Konfigurasi pelatihan yang cukup baik}
-Fungsi rugi apa? Ukuran batch dan learning rate berapa?
+\cardh{A good enough training configuration}
+Which loss function? What batch size and learning rate?
 \end{icardaccent}
 \end{minipage}%
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The goal at this stage is \textbf{statistical power}: a small model that beats a simple baseline. Nothing more.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 6.2.3 $\cdot$ table 6.1}
+\begin{frame}[shrink=25]{The reference table for that third choice}
 \begin{itable}{>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.1692\textwidth}>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.282\textwidth}}
-\thead{Tugas} & \thead{Aktivasi lapis akhir} & \thead{Fungsi rugi} & \thead{Metrik} \\ \midrule
-Klasifikasi biner & Sigmoid & Binary crossentropy & Binary accuracy, ROC AUC \\
-Multikelas, label tunggal & Softmax & Categorical crossentropy & Categorical accuracy, top-k, ROC AUC \\
-Multikelas, multilabel & Sigmoid & Binary crossentropy & Binary accuracy, ROC AUC \\
-Regresi & Tidak ada & Mean squared error & Mean absolute error \\
+\thead{Task} & \thead{Last-layer activation} & \thead{Loss function} & \thead{Metrics} \\ \midrule
+Binary classification & Sigmoid & Binary crossentropy & Binary accuracy, ROC AUC \\
+Multiclass, single-label & Softmax & Categorical crossentropy & Categorical accuracy, top-k, ROC AUC \\
+Multiclass, multi-label & Sigmoid & Binary crossentropy & Binary accuracy, ROC AUC \\
+Regression & None & Mean squared error & Mean absolute error \\
 \end{itable}
+\end{frame}
+
+\framekicker{Section 6.2.3}
+\begin{frame}[shrink=25]{Why you optimise a proxy instead of the metric you care about}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}A loss function must be computable from a single mini-batch --- ideally from a single data point --- and it must be \textbf{differentiable}, or backpropagation cannot run.\par}\vskip 4pt
 \begin{iband}[signal]
-\textbf{Mengapa metriknya tidak langsung dioptimalkan?} Fungsi rugi harus bisa dihitung hanya dari satu mini-batch (idealnya bahkan dari satu titik data) dan harus \textbf{terdiferensialkan}. ROC AUC tidak memenuhi keduanya, jadi yang dioptimalkan adalah \hilite{pengganti}-nya, biasanya crossentropy -- dengan harapan makin rendah crossentropy, makin tinggi ROC AUC.
+\textbf{ROC AUC satisfies neither}, so it cannot be optimised directly. In classification we optimise a proxy --- usually crossentropy --- \hilite{hoping that as crossentropy falls, ROC AUC rises}
+\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}For most problems there are existing templates. You are not the first person to build a spam detector or an image classifier, so \textbf{research the prior art} before inventing.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 6.2.4}
+\begin{frame}[shrink=25]{Stage 2 --- scale up until it overfits}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Statistical power is not enough. Is the model \textit{powerful enough}? A logistic regression has statistical power on MNIST but cannot solve it well.\par}\vskip 4pt
+\begin{ibullets}
+\item Add layers.
+\item Make the layers bigger.
+\item Train for more epochs.
+\end{ibullets}
+\begin{iband}[signal]
+The ideal model sits \textbf{exactly on the border} between underfitting and overfitting. \hilite{To find where the border is, you must cross it.}
 \end{iband}
 \end{frame}
 
-\framekicker{Bagian 6.2.4-6.2.5}
-\begin{frame}[shrink=25]{Besarkan, lalu regularisasi}
-\begin{minipage}[t]{0.485\textwidth}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{6.2.4 $\cdot$ Kembangkan model yang overfit}\par}\vskip 4pt
+\framekicker{Section 6.2.5}
+\begin{frame}[shrink=25]{Stage 3 --- regularise and tune}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}This phase takes the most time: modify, train, evaluate on \textbf{validation} data, modify again, and repeat until the model is as good as it will get.\par}\vskip 4pt
 \begin{ibullets}
-\item Tambah lapis.
-\item Perbesar lapisnya.
-\item Latih lebih banyak epoch.
+\item Try different architectures; add or remove layers.
+\item Add \textbf{dropout}.
+\item If the model is small, add \textbf{L1 or L2 regularisation}.
+\item Try different hyperparameters --- units per layer, learning rate.
+\item Optionally iterate on \textbf{data curation or feature engineering} again.
 \end{ibullets}
-\begin{iband}[signal]
-Model ideal berdiri \textbf{tepat di perbatasan} antara underfit dan overfit. Untuk tahu di mana perbatasannya, \hilite{Anda harus melewatinya lebih dulu.}
-\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Much of this can be automated with hyperparameter tuning software such as \textbf{KerasTuner} (chapter 18).\par}\vskip 4pt
+\end{frame}
 
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.485\textwidth}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{6.2.5 $\cdot$ Regularisasi dan setel} -- tahap yang makan waktu paling banyak\par}\vskip 4pt
-\begin{ibullets}
-\item Coba arsitektur berbeda; tambah atau kurangi lapis.
-\item Tambahkan \textbf{dropout}.
-\item Kalau modelnya kecil, tambahkan \textbf{regularisasi L1 atau L2}.
-\item Coba hiperparameter lain -- jumlah unit per lapis, learning rate.
-\item Bila perlu, ulangi \textbf{kurasi data atau rekayasa fitur}.
-\end{ibullets}
-
-\end{minipage}%
+\framekicker{Section 6.2.5}
+\begin{frame}[shrink=25]{The leak that comes back at the end}
 \begin{iband}[rose]
-Peringatan yang sama, sekali lagi: tiap kali Anda memakai umpan balik validasi untuk menyetel model, informasi bocor ke dalam model. Beberapa kali tidak apa-apa; \textbf{dilakukan sistematis selama banyak iterasi, model akan overfit terhadap proses validasi itu sendiri} -- walau tidak ada model yang dilatih langsung atas data validasi.
+Every time you use validation feedback to tune, information leaks into the model. A few times is harmless. Done \textbf{systematically over many iterations}, the model overfits \hilite{to the validation process itself} --- even though no model was ever trained on validation data.
 \end{iband}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Sebagian besar pekerjaan ini bisa diotomasi dengan perangkat penyetelan hiperparameter seperti \textbf{KerasTuner} (bab 18). Dan bila unjuk kerja di himpunan uji ternyata jauh lebih buruk daripada di validasi: prosedur validasi Anda tidak andal, atau Anda sudah overfit ke data validasi. \hilite{Pindah ke protokol yang lebih andal, misalnya K-lipat berulang.}\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}So if test performance turns out \textbf{significantly worse} than validation performance, either your validation procedure was not reliable, or you overfitted to it. The remedy is a more reliable protocol --- \textbf{iterated K-fold}.\par}\vskip 4pt
 \end{frame}
 
-\coursesection{03}{Menyerahkan model}{Proyek tidak berakhir di notebook Colab yang bisa menyimpan model terlatih.}
+\coursesection{03}{Deploying your model}{A project does not end at a notebook that saves a trained model.}
 
-\framekicker{Bagian 6.3.1}
-\begin{frame}[shrink=25]{Menetapkan harapan -- jangan bilang 'akurasi 98\%'}
+\framekicker{Section 6.3.1}
+\begin{frame}[shrink=25]{Do not say "98\% accurate"}
 \begin{ibullets}
-\item Harapan orang awam terhadap sistem AI sering \textbf{tidak realistis}: mereka mengira sistem \textit{memahami} tugasnya dan punya akal sehat seperti manusia.
-\item Obatnya: \textbf{tunjukkan contoh cara model itu gagal} -- terutama kesalahan klasifikasi yang terasa mengejutkan.
-\item Hindari pernyataan abstrak seperti \textit{"modelnya berakurasi 98\%"}, yang \hilite{oleh kebanyakan orang dibulatkan ke 100\%} dalam kepala mereka.
+\item Non-specialists often expect the system to \textbf{understand} its task and to exercise human-like common sense.
+\item The remedy: \textbf{show examples of how it fails} --- especially misclassifications that look surprising.
+\item Avoid abstract statements like \textit{"the model is 98\% accurate"}, which \hilite{most people mentally round up to 100\%}.
 \end{ibullets}
 \begin{iband}[signal]
-Bicaralah dalam \textbf{laju false-negative dan false-positive}, lalu terjemahkan ke angka harian yang bisa dibayangkan.
+Speak in \textbf{false-negative and false-positive rates}, then translate them into daily volumes that a person can picture.
 \end{iband}
+\end{frame}
+
+\framekicker{Section 6.3.1}
+\begin{frame}[shrink=25]{What that sounds like in practice}
 \begin{iquote}
-\quotetext{Dengan setelan ini, model deteksi fraud akan punya laju false-negative 5\% dan false-positive 2,5\%. Setiap hari, rata-rata 200 transaksi sah akan ditandai sebagai fraud dan dikirim ke pemeriksaan manual, dan rata-rata 14 transaksi fraud akan terlewat. Rata-rata 266 transaksi fraud akan tertangkap dengan benar.}\quotecite{Contoh penetapan harapan dari Chollet \& Watson, bab 6.3.1}
+\quotetext{With these settings, the fraud detection model would have a 5\% false-negative rate and a 2.5\% false-positive rate. Every day, an average of 200 valid transactions would be flagged as fraudulent and sent for manual review, and an average of 14 fraudulent transactions would be missed. An average of 266 fraudulent transactions would be correctly caught.}\quotecite{The book's own worked example, section 6.3.1}
 \end{iquote}
 \begin{iband}[amber]
-Bahas juga \textbf{pemilihan ambang} bersama pemangku kepentingan -- ambang peluang yang berbeda menghasilkan laju false-negative dan false-positive yang berbeda. Keputusan itu menyangkut pertukaran yang \hilite{hanya bisa ditangani dengan pemahaman mendalam atas konteks bisnisnya}
+Also discuss the \textbf{threshold} with stakeholders. Different thresholds give different error rates, and that trade-off \hilite{can only be resolved with deep knowledge of the business context}
 \end{iband}
 \end{frame}
-\note{Ini slide yang paling langsung bisa dipakai peserta besok pagi. Latihan kelas: tulis ulang satu klaim akurasi dari proyek Anda ke dalam bentuk kalimat di atas.}
+\note{The most directly usable slide in the chapter. Exercise: have each participant rewrite one accuracy claim from their own project in this form.}
 
-\framekicker{Bagian 6.3.2}
-\begin{frame}[shrink=25]{Tiga cara menyerahkan model}
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icardaccent}
-\cardh{REST API}
-Pakai bila: ada \textbf{akses internet andal}; \textbf{tidak ada kendala latensi ketat} (pulang-pergi sekitar \textbf{500 ms}); dan data masukannya \textbf{tidak sangat peka} -- sebab data harus tersedia dalam bentuk terdekripsi di server.
-\cardtag{pencari citra $\cdot$ perekomendasi $\cdot$ fraud $\cdot$ satelit}
-\end{icardaccent}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icardaccent}
-\cardh{Di perangkat}
-Pakai bila: \textbf{latensi ketat} atau \textbf{konektivitas rendah}; model bisa dibuat cukup kecil; akurasi tertinggi \textbf{bukan} hal kritis; dan data masukannya sangat peka sehingga tak boleh didekripsi di server jauh.
-\cardtag{spam terenkripsi $\cdot$ kue di pabrik}
-\end{icardaccent}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.3253\textwidth}
-\begin{icardaccent}
-\cardh{Di peramban}
-Pakai bila: ingin \textbf{memindahkan komputasi ke pengguna} (biaya server turun tajam); data harus tetap di perangkat pengguna; latensi ketat (hemat \textasciitilde{}100 ms pulang-pergi jaringan); atau aplikasi harus tetap jalan \textbf{tanpa koneksi}.
-\cardtag{versi web \& desktop aplikasi obrolan}
-\end{icardaccent}
-\end{minipage}%
+\framekicker{Section 6.3.2}
+\begin{frame}[shrink=25]{Three deployment routes}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch06-deploy.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The constraints choose the route, not the other way round.\par}
+\end{frame}
+
+\framekicker{Section 6.3.2}
+\begin{frame}[shrink=25]{When each route is the right one}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.1692\textwidth}>{\raggedright\arraybackslash}p{0.47\textwidth}>{\raggedright\arraybackslash}p{0.3008\textwidth}}
+\thead{Route} & \thead{Use it when} & \thead{Example from the book} \\ \midrule
+\textbf{REST API} & Reliable internet $\cdot$ no strict latency (round trip $\approx$ \textbf{500 ms}) $\cdot$ input data is not highly sensitive, since it must be decrypted on the server. & Image search, recommender, fraud detection, satellite imagery. \\
+\textbf{On device} & Strict latency or poor connectivity $\cdot$ the model can be made small enough $\cdot$ top accuracy is not mission-critical $\cdot$ input data must not be decryptable off-device. & Spam filter inside an end-to-end encrypted chat app; biscuit detection at the factory. \\
+\textbf{In the browser} & You want to move compute to the user (server costs drop sharply) $\cdot$ data must stay on their machine $\cdot$ latency matters $\cdot$ it must work offline after download. & The web and desktop versions of the chat app. \\
+\end{itable}
+\end{frame}
+
+\framekicker{Section 6.3.2}
+\begin{frame}[shrink=25]{One warning about the browser route}
 \begin{iband}[rose]
-Peringatan untuk penyerahan di peramban: seluruh model \textbf{diunduh ke perangkat pengguna}. Pastikan tidak ada bagian model yang harus dirahasiakan -- sebab dari model terlatih \hilite{biasanya masih mungkin memulihkan sebagian informasi tentang data pelatihannya}. Jangan publikasikan model yang dilatih atas data peka.
+The \textbf{entire model is downloaded to the user's device}. Make sure nothing about it needs to stay confidential --- because given a trained model it is usually possible to \hilite{recover some information about its training data}
 \end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Which means: do not publish a model that was trained on sensitive data, however convenient the deployment would be.\par}\vskip 4pt
 \end{frame}
 
-\framekicker{Bagian 6.3.2}
-\begin{frame}[shrink=25]{Mengekspor model: TensorFlow Serving dan ONNX}
+\framekicker{Section 6.3.2}
+\begin{frame}[shrink=25]{Exporting: TensorFlow Serving and ONNX}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Both work by lifting the weights and the computation graph \textbf{out of the Python program}, so the model can be served from a C++ server, a phone, or a browser.\par}\vskip 4pt
 \begin{minipage}[t]{0.485\textwidth}
 \icode{python}{TensorFlow SavedModel}{listings/ch06-02.py}
 
@@ -488,68 +494,74 @@ Peringatan untuk penyerahan di peramban: seluruh model \textbf{diunduh ke perang
 \icode{python}{ONNX}{listings/ch06-03.py}
 
 \end{minipage}%
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Keduanya bekerja dengan \textbf{mengangkat seluruh bobot model dan graf komputasinya keluar dari program Python}, sehingga bisa dilayani dari banyak lingkungan berbeda -- misalnya server C++. Kalau ini terdengar mirip mekanisme kompilasi di bab 3, \hilite{memang begitu}: TensorFlow Serving pada dasarnya pustaka untuk melayani graf \inlinecode{tf.function} dengan sehimpunan bobot tersimpan.\par}\vskip 4pt
-\begin{ibullets}
-\item \textbf{TensorFlow Lite} -- inferensi di perangkat: Android, iOS, CPU ARM, Raspberry Pi, dan sebagian mikrokontroler. Formatnya sama dengan TensorFlow Serving. Runtime ONNX juga bisa jalan di perangkat bergerak.
-\item \textbf{TensorFlow.js} -- menjalankan model di peramban; ia bahkan mengimplementasikan hampir seluruh API Keras (nama kerjanya dulu \textit{WebKeras}). ONNX punya runtime JavaScript sendiri.
-\item Pilihan lain: \textbf{layanan awan terkelola} seperti Cloud AI Platform, yang mengurus pem-batch-an prediksi, penyeimbangan beban, dan penskalaan.
-\end{ibullets}
-\end{frame}
-
-\framekicker{Bagian 6.3.2}
-\begin{frame}[shrink=25]{Mengoptimalkan model untuk inferensi}
-\begin{minipage}[t]{0.494\textwidth}
-\begin{icardaccent}
-\cardh{Pemangkasan bobot (weight pruning)}
-Tidak setiap koefisien pada tensor bobot menyumbang sama besar terhadap prediksi. Dengan hanya menyimpan yang paling berarti, jumlah parameter bisa \textbf{turun banyak} dengan ongkos kecil pada metrik. Seberapa banyak dipangkas = kendali Anda atas pertukaran ukuran lawan akurasi.
-\end{icardaccent}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.494\textwidth}
-\begin{icardaccent}
-\cardh{Kuantisasi bobot (weight quantization)}
-Model dilatih dengan bobot float32. Bobot itu bisa dikuantisasi ke \textbf{int8}, menghasilkan model khusus-inferensi yang \textbf{empat kali lebih kecil} tetapi tetap mendekati akurasi aslinya.
-\end{icardaccent}
-\end{minipage}%
-\icode{python}{API kuantisasi bawaan Keras}{listings/ch06-04.py}
 \begin{iband}[signal]
-Pengoptimalan ini \textbf{terutama penting} saat menyerahkan ke lingkungan dengan kendala daya dan memori ketat -- ponsel dan perangkat tertanam -- atau untuk aplikasi berlatensi rendah. Lakukan \hilite{sebelum} mengimpor ke TensorFlow.js atau mengekspor ke TensorFlow Lite.
+If that sounds like the compilation mechanism from chapter 3, it is: TensorFlow Serving is essentially \hilite{a library for serving \inlinecode{tf.function} graphs with a saved set of weights}
 \end{iband}
 \end{frame}
 
-\framekicker{Bagian 6.3.3-6.3.4}
-\begin{frame}[shrink=25]{Memantau dan merawat -- pekerjaan yang tak berujung}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Anda sudah mengekspor model inferensi, memasangkannya ke aplikasi, dan menjalankan uji coba di data produksi. \textbf{Bahkan ini belum akhirnya.}\par}\vskip 4pt
-\begin{isteps}
-\item \textbf{Uji A/B teracak.} Sebagian kasus lewat model baru, sebagian lagi -- kelompok kendali -- tetap lewat proses lama. Setelah cukup banyak kasus, selisih hasilnya \hilite{bisa dikaitkan ke modelnya}, bukan ke perubahan lain.
-\item \textbf{Audit manual berkala} atas prediksi di data produksi. Infrastruktur anotasi yang sama bisa dipakai ulang: kirim sebagian data produksi untuk dianotasi manual, lalu bandingkan.
-\item \textbf{Kalau audit manual mustahil}, cari jalur penilaian lain -- misalnya survei pengguna, untuk sistem penandaan spam dan konten kasar.
-\end{isteps}
-\begin{iband}[amber]
-\textbf{Begitu model diluncurkan, Anda harus sudah bersiap melatih generasi berikutnya yang akan menggantikannya.}
-\end{iband}
+\framekicker{Section 6.3.2}
+\begin{frame}[shrink=25]{Where those exports run}
 \begin{ibullets}
-\item Awasi \textbf{perubahan pada data produksi}. Apakah ada fitur baru? Apakah himpunan labelnya perlu diperluas atau diubah?
-\item Terus kumpulkan dan anotasi data, dan \textbf{perbaiki jalur anotasi} dari waktu ke waktu.
-\item Beri perhatian khusus pada \textbf{sampel yang tampak sulit diklasifikasikan} oleh model sekarang -- sampel itulah yang \hilite{paling mungkin memperbaiki unjuk kerja}.
+\item \textbf{TensorFlow Lite} --- on-device inference for Android and iOS, ARM CPUs, Raspberry Pi, and some microcontrollers. Same save format as TF Serving. The ONNX runtime also runs on mobile.
+\item \textbf{TensorFlow.js} --- runs in the browser and implements almost the whole Keras API (its working name was \textit{WebKeras}). ONNX has its own JavaScript runtime.
+\item \textbf{Managed cloud services} such as Cloud AI Platform handle batching, load balancing, and scaling for you.
 \end{ibullets}
 \end{frame}
 
-\framekicker{Ringkasan}
-\begin{frame}[shrink=25]{Yang wajib terbawa dari bab 6}
+\framekicker{Section 6.3.2}
+\begin{frame}[shrink=25]{Optimising for inference}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch06-optimise.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Both techniques trade a little accuracy for a lot of size and speed.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Pruning} drops the coefficients that contribute least; how much you prune is your lever on the size-versus-accuracy trade-off. \textbf{Quantization} converts float32 weights to int8, giving a model \textbf{four times smaller} that stays near the original accuracy.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 6.3.2}
+\begin{frame}[shrink=25]{Quantization is one line}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Keras exposes it directly on the model, so it can be applied just before export.\par}\vskip 4pt
+\icode{python}{the built-in quantize API}{listings/ch06-04.py}
+\begin{iband}[signal]
+Do this \textbf{before} importing into TensorFlow.js or exporting to TensorFlow Lite --- it matters most where power and memory are tight, \hilite{phones and embedded devices}
+\end{iband}
+\end{frame}
+
+\framekicker{Section 6.3.3}
+\begin{frame}[shrink=25]{Monitoring: pressing the button is not the end}
 \begin{isteps}
-\item \textbf{Tetapkan tugasnya dulu.} Pahami konteks, tujuan akhir, dan kendalanya; kumpulkan dan anotasi data; pilih cara mengukur keberhasilan.
-\item Anda selalu membuat \textbf{dua hipotesis}. Sampai ada model yang bekerja, keduanya belum terbukti.
-\item \textbf{Pilihan teknis juga pilihan etis.} Teknologi tidak pernah netral.
-\item \textbf{Data harus mewakili produksi.} Waspadai bias pencuplikan, kebocoran target, dan pergeseran konsep.
-\item \textbf{Kalahkan tolok banding $\rightarrow$ besarkan sampai overfit $\rightarrow$ regularisasi dan setel.} Dalam urutan itu.
-\item \textbf{Serahkan sesuai kendalanya}: REST API, di perangkat, atau di peramban -- lalu pangkas dan kuantisasi untuk inferensi.
-\item \textbf{Bicara dalam false-positive dan false-negative}, bukan persen akurasi.
-\item \textbf{Tidak ada model yang bertahan selamanya.} Pantau, audit, dan siapkan generasi berikutnya sejak hari peluncuran.
+\item \textbf{Randomised A/B testing.} Send a subset of cases through the new model and keep a control subset on the old process. Once enough cases have run, the difference \hilite{can be attributed to the model} rather than to everything else that changed.
+\item \textbf{Regular manual audits} of predictions on production data. Reuse the annotation infrastructure: send a fraction out for labelling and compare.
+\item \textbf{When manual audit is impossible}, use alternatives such as user surveys --- the book's suggestion for the spam and abuse flagging system.
+\end{isteps}
+\end{frame}
+
+\framekicker{Section 6.3.4}
+\begin{frame}[shrink=25]{Maintenance starts on launch day}
+\begin{iband}[amber]
+\textbf{As soon as your model has launched, you should be getting ready to train the next generation that will replace it.}
+\end{iband}
+\begin{ibullets}
+\item Watch for \textbf{changes in production data}. Are new features available? Should the label set be expanded or edited?
+\item Keep collecting and annotating, and \textbf{keep improving the annotation pipeline} over time.
+\item Pay special attention to samples the current model finds \textbf{difficult} --- those are \hilite{the ones most likely to improve performance}
+\end{ibullets}
+\end{frame}
+
+\framekicker{Summary}
+\begin{frame}[shrink=25]{What has to survive this chapter}
+\begin{isteps}
+\item \textbf{Define the task first.} Understand the context, the goal, and the constraints; collect and annotate data; choose how success is measured.
+\item You always make \textbf{two hypotheses}. Until a model works, neither is proven.
+\item \textbf{Technical choices are ethical choices.} Technology is never neutral.
+\item \textbf{Data must represent production.} Watch for sampling bias, target leaks, and concept drift.
+\item \textbf{Beat a baseline $\rightarrow$ scale up until it overfits $\rightarrow$ regularise and tune.} In that order.
+\item \textbf{Deploy according to the constraints} --- API, device, or browser --- then prune and quantize for inference.
+\item \textbf{Talk in false positives and false negatives}, not percentages of accuracy.
+\item \textbf{No model lasts forever.} Monitor, audit, and prepare the successor from launch day.
 \end{isteps}
 \vskip 4pt
-\reslink{NOTEBOOK}{03\_ekspor\_dan\_kuantisasi.ipynb}{../../course-slides/notebooks/ch06/03\_ekspor\_dan\_kuantisasi.ipynb}
-\reslink{BAB BERIKUT}{Bab 7 --- Menyelam ke Keras}{../ch07/index.html}
+\reslink{NOTEBOOK}{03\_export\_and\_quantize.ipynb}{../../course-slides/notebooks/ch06/03\_export\_and\_quantize.ipynb}
+\reslink{NEXT}{Chapter 7 --- A deep dive on Keras}{../ch07/index.html}
 \vskip 2pt
 \end{frame}
 

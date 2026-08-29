@@ -145,7 +145,7 @@ def validate(deck):
 
 # Blocks that count as explanation around a listing.
 PROSE_KINDS = {"p", "lead", "bullets", "steps", "band", "quote",
-               "table", "cards", "stats", "out", "fig"}
+               "table", "cards", "stats", "out", "fig", "mmd", "img"}
 
 # Rough visual weight of one block, in "lines of slide". Tuned against the
 # rendered decks: a slide over MAX_WEIGHT overflows or has to be shrunk so far

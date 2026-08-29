@@ -1,0 +1,14 @@
+
+flowchart TB
+  Q1{"Is the input data<br/>highly sensitive, or<br/>connectivity poor?"}
+  Q2{"Strict latency<br/>requirements?"}
+  Q3{"Do you want to move<br/>compute to the user?"}
+  API["REST API<br/><small>~500 ms round trip</small>"]
+  DEV["On device<br/><small>TF Lite, ONNX runtime</small>"]
+  BR["In the browser<br/><small>TensorFlow.js, ONNX JS</small>"]
+  Q1 -- yes --> DEV
+  Q1 -- no --> Q2
+  Q2 -- yes --> Q3
+  Q2 -- no --> API
+  Q3 -- yes --> BR
+  Q3 -- no --> API

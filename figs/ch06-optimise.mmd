@@ -1,0 +1,7 @@
+
+flowchart LR
+  M["Trained model<br/>float32"]
+  P["Weight pruning<br/><small>keep only the<br/>significant coefficients</small>"]
+  Q["Weight quantization<br/><small>float32 to int8</small>"]
+  S["4x smaller,<br/>near the original accuracy"]
+  M --> P --> Q --> S

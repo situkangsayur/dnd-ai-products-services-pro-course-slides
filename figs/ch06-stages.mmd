@@ -1,0 +1,7 @@
+
+flowchart LR
+  S1["<b>Stage 1</b><br/>Beat a baseline<br/><small>statistical power</small>"]
+  S2["<b>Stage 2</b><br/>Scale up<br/><small>until it overfits</small>"]
+  S3["<b>Stage 3</b><br/>Regularise and tune<br/><small>maximise generalisation</small>"]
+  S1 --> S2 --> S3
+  S3 -. "if test << validation,<br/>your protocol was not reliable" .-> S3

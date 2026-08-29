@@ -1,0 +1,11 @@
+
+flowchart TB
+  Q1{"Does built-in fit()<br/>do what you need?"}
+  Q2{"Do you still want callbacks,<br/>distribution, and speed?"}
+  FIT["fit() as-is"]
+  OVR["Override train_step()<br/><small>fit() still runs</small>"]
+  RAW["Write the whole loop<br/><small>full control, no callbacks</small>"]
+  Q1 -- yes --> FIT
+  Q1 -- no --> Q2
+  Q2 -- yes --> OVR
+  Q2 -- no --> RAW

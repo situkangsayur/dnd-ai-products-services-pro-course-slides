@@ -1,0 +1,9 @@
+
+flowchart TB
+  F["A feature in your training data"]
+  Q{"Will it exist, in the<br/>same form, at the moment<br/>the model must decide?"}
+  OK["Safe to use"]
+  BAD["<b>Target leak</b><br/>remove it"]
+  F --> Q
+  Q -- yes --> OK
+  Q -- no --> BAD

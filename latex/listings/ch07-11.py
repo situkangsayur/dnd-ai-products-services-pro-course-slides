@@ -1,12 +1,14 @@
-inputs = keras.Input(shape=(64,))
-outputs = layers.Dense(1, activation="sigmoid")(inputs)
-binary_classifier = keras.Model(inputs, outputs)
+def get_mnist_model():
+    inputs = keras.Input(shape=(28 * 28,))
+    features = layers.Dense(512, activation="relu")(inputs)
+    features = layers.Dropout(0.5)(features)
+    outputs = layers.Dense(10, activation="softmax")(features)
+    return keras.Model(inputs, outputs)
 
-class MyModel(keras.Model):
-    def __init__(self):
-        super().__init__()
-        self.dense = layers.Dense(64, activation="relu")
-        self.classifier = binary_classifier
-
-    def call(self, inputs):
-        return self.classifier(self.dense(inputs))
+model = get_mnist_model()
+model.compile(optimizer="adam", loss="sparse_categorical_crossentropy",
+              metrics=["accuracy"])
+model.fit(train_images, train_labels, epochs=3,
+          validation_data=(val_images, val_labels))
+test_metrics = model.evaluate(test_images, test_labels)
+predictions = model.predict(test_images)

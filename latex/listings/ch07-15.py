@@ -1,2 +1,5 @@
-model.save("my_checkpoint_path.keras")
-model = keras.models.load_model("checkpoint_path.keras")
+keras.callbacks.ModelCheckpoint
+keras.callbacks.EarlyStopping
+keras.callbacks.LearningRateScheduler
+keras.callbacks.ReduceLROnPlateau
+keras.callbacks.CSVLogger
