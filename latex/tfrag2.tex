@@ -1,0 +1,34 @@
+\documentclass[aspectratio=169,11pt,t]{beamer}
+\usepackage{itbpro}
+\begin{document}
+\begin{frame}{The five steps, and why the order is fixed}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch08-finetune.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Steps 1--3 are exactly the feature-extraction workflow. Fine-tuning is what you do afterwards.\par}
+\begin{iband}[rose]
+The base can only be fine-tuned \textbf{once the classifier on top is already trained}. Otherwise the error signal propagating back is too large, and \hilite{the representations being fine-tuned are destroyed}
+\end{iband}
+\end{frame}
+
+\framekicker{Section 8.3.2}
+\begin{frame}{Partial fine-tuning, and why the top layers}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}With large pretrained models it is common to unfreeze only the top few layers of the base.\par}\vskip 4pt
+\begin{minipage}[t]{0.485\textwidth}
+\begin{ibullets}
+\item Earlier layers encode \textbf{generic, reusable} features; higher ones encode \textbf{specialised} features.
+\item It is the specialised ones that need repurposing, so there are \hilite{fast-decreasing returns} to fine-tuning lower layers.
+\item The base has \textbf{15 million parameters} --- training all of them on 2,000 images risks overfitting.
+\end{ibullets}
+
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.485\textwidth}
+\icode{python}{unfreezing the top four}{listings/ch08-18.py}
+
+\end{minipage}%
+\begin{iband}[amber]
+One layer type to leave alone: \textbf{do not unfreeze \inlinecode{BatchNormalization} layers}. Chapter 9 explains why.
+\end{iband}
+\end{frame}
+\end{document}

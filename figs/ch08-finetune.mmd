@@ -1,0 +1,8 @@
+
+flowchart LR
+  S1["1. Add your classifier<br/>on top of a trained base"]
+  S2["2. Freeze the base"]
+  S3["3. Train the part<br/>you added"]
+  S4["4. Unfreeze the base<br/><small>or just its top layers</small>"]
+  S5["5. Train both jointly<br/><small>at a very low learning rate</small>"]
+  S1 --> S2 --> S3 --> S4 --> S5

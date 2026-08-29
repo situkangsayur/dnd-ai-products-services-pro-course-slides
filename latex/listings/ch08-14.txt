@@ -1,0 +1,3 @@
+validation accuracy: slightly over 98%
+test accuracy      : 0.981
+(an epoch takes under 1 second, even on CPU)

@@ -112,7 +112,7 @@ This makes ConvNets \textbf{data efficient} on images, because the visual world 
 \end{frame}
 
 \framekicker{Section 8.1.1}
-\begin{frame}[shrink=25]{Property 2 --- spatial hierarchies}
+\begin{frame}{Property 2 --- spatial hierarchies}
 \begin{center}
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch08-hierarchy.tex.pdf}
 \end{center}
@@ -121,7 +121,7 @@ This makes ConvNets \textbf{data efficient} on images, because the visual world 
 \end{frame}
 
 \framekicker{Section 8.1.1}
-\begin{frame}[shrink=25]{Feature maps, filters, and response maps}
+\begin{frame}{Feature maps, filters, and response maps}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Convolutions operate over rank-3 tensors called \textbf{feature maps}: two spatial axes plus a depth axis. For an RGB image the depth is 3; for grayscale it is 1.\par}\vskip 4pt
 \begin{ibullets}
 \item The output's depth is \textbf{a parameter of the layer}, and its channels no longer stand for colours --- they stand for \textbf{filters}.
@@ -162,7 +162,7 @@ Effect on size & Shrinks slightly (no padding). & \textbf{Halves} each spatial d
 \end{frame}
 
 \framekicker{Section 8.1.2 $\cdot$ listing 8.5}
-\begin{frame}[shrink=25]{What happens without it}
+\begin{frame}{What happens without it}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The book builds the broken version deliberately: the same network with every pooling layer removed.\par}\vskip 4pt
 \icode{python}{listing 8.5 --- an incorrectly structured ConvNet}{listings/ch08-06.py}
 \begin{iband}[rose]
@@ -215,7 +215,7 @@ A classifier trained on a large dataset can be reused on a significantly differe
 \end{frame}
 
 \framekicker{Section 8.2.3}
-\begin{frame}[shrink=25]{The pattern you will see in almost every ConvNet}
+\begin{frame}{The pattern you will see in almost every ConvNet}
 \begin{center}
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch08-shapes.tex.pdf}
 \end{center}
@@ -393,7 +393,7 @@ Only the two \inlinecode{Dense} layers train --- four weight tensors in total. A
 \coursesection{05}{Fine-tuning}{Unfreezing the top of the base --- carefully, and last.}
 
 \framekicker{Section 8.3.2}
-\begin{frame}[shrink=25]{The five steps, and why the order is fixed}
+\begin{frame}{The five steps, and why the order is fixed}
 \begin{center}
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch08-finetune.tex.pdf}
 \end{center}
@@ -404,7 +404,7 @@ The base can only be fine-tuned \textbf{once the classifier on top is already tr
 \end{frame}
 
 \framekicker{Section 8.3.2}
-\begin{frame}[shrink=25]{Partial fine-tuning, and why the top layers}
+\begin{frame}{Partial fine-tuning, and why the top layers}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}With large pretrained models it is common to unfreeze only the top few layers of the base.\par}\vskip 4pt
 \begin{minipage}[t]{0.485\textwidth}
 \begin{ibullets}
@@ -434,24 +434,12 @@ Updates that are too large \hilite{harm the representations you are trying to ke
 \end{frame}
 
 \framekicker{Section 8.3.2}
-\begin{frame}[shrink=25]{The final number, in context}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}The checkpoint callback kept the best version, so the model that gets evaluated is the best one seen during the run rather than the last one.\par}\vskip 4pt
+\begin{frame}{The final number, in context}
 \icode{python}{evaluating the fine-tuned model}{listings/ch08-20.py}
 \ioutput{listings/ch08-21.txt}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}In the original Kaggle competition this \textbf{would have been among the top results} --- though not a fair comparison, since the pretrained features already carried prior knowledge about cats and dogs that competitors could not use.\par}\vskip 4pt
 \begin{iband}[signal]
 The fairer point: this was reached using \textbf{about 10\% of the training data} available in that competition. \hilite{There is a huge difference between training on 20,000 samples and on 2,000.}
 \end{iband}
-\end{frame}
-
-\framekicker{Summary}
-\begin{frame}[shrink=25]{What has to survive this chapter}
-\begin{isteps}
-\item \textbf{Convolutions learn local patterns}, which buys translation invariance and spatial hierarchies --- and makes ConvNets data efficient on images.
-\item \textbf{Depth rises as spatial size falls.} That shape is nearly universal in classification ConvNets.
-\item \textbf{Max pooling is not optional}: without it, deep layers still only see a tiny window of the original image.
-\item \textbf{\inlinecode{image\_dataset\_from\_directory} + \inlinecode{tf.data}} turns a folder of JPEGs into a parallel, prefetching pipeline.
-\item \textbf{Augmentation remixes information; it cannot create it.} Worth about four points here.
-\end{isteps}
 \end{frame}
 \end{document}

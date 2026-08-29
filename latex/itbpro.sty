@@ -169,13 +169,31 @@
 % =============================================================================
 %  Footline — brand · deck title, progress rule, page number
 % =============================================================================
+\newcount\itb@pct
 \setbeamertemplate{footline}{%
   \ifitb@progress
+    % Draw the bar from an integer percentage rather than by dividing the page
+    % width by the frame count. Dividing directly raises "Dimension too large"
+    % on the final frame -- \inserttotalframenumber is not reliably a plain
+    % number at that point, so the guarded division still blows up. Percentages
+    % keep every intermediate value small and bounded.
+    \itb@pct=0\relax
+    \begingroup
+      \@tempcnta=\inserttotalframenumber\relax
+      \ifnum\@tempcnta>0\relax
+        \@tempcntb=\insertframenumber\relax
+        \multiply\@tempcntb by 100\relax
+        \divide\@tempcntb by \@tempcnta\relax
+        \ifnum\@tempcntb>100\relax \@tempcntb=100\relax \fi
+        \global\itb@pct=\@tempcntb
+      \fi
+    \endgroup
     \begin{tikzpicture}[remember picture,overlay]
-      \fill[rule] (current page.south west) rectangle
-        ++(\paperwidth, 1.6pt);
-      \fill[itbblue] (current page.south west) rectangle
-        ++(\the\dimexpr\insertframenumber\dimexpr\paperwidth/\inserttotalframenumber\relax\relax, 1.6pt);
+      \fill[rule] (current page.south west) rectangle ++(\paperwidth, 1.6pt);
+      \ifnum\itb@pct>0\relax
+        \fill[itbblue] (current page.south west) rectangle
+          ++(\the\dimexpr\itb@pct\dimexpr\paperwidth/100\relax\relax, 1.6pt);
+      \fi
     \end{tikzpicture}%
   \fi
   \hbox{%
@@ -413,7 +431,7 @@
 % in turn is incompatible with [shrink]. Reading from a file sidesteps both, and
 % the emitted files are runnable on their own.
 \newtcolorbox{icodebox}[2][python]{
-  enhanced, breakable, sharp corners=all, rounded corners, arc=3.2pt,
+  enhanced, sharp corners=all, rounded corners, arc=3.2pt,
   boxrule=0.5pt, colback=codebg, colframe=rule,
   left=6pt, right=6pt, top=5pt, bottom=5pt,
   before skip=5pt, after skip=5pt,
@@ -435,7 +453,7 @@
   showstringspaces=false, upquote=true,
 }
 \newtcolorbox{ioutputbox}{
-  enhanced, breakable, sharp corners, rounded corners, arc=3pt,
+  enhanced, sharp corners, rounded corners, arc=3pt,
   boxrule=0.5pt, leftrule=2.2pt,
   colback=limebr!7, colframe=lime!45,
   left=7pt, right=7pt, top=13pt, bottom=6pt,

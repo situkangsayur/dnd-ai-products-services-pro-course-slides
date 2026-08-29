@@ -1069,10 +1069,25 @@ regularizers.l1_l2(l1=0.001, l2=0.001)     # both at once"""},
                     "always keep a completely untouched test set.",
                     "**Set a common-sense baseline first.** If you cannot beat it, the problem "
                     "may not be a machine learning problem.",
-                    "To fit: **learning rate and batch size → architecture priors → capacity**, "
-                    "until it can overfit.",
-                    "To generalise: **better data → better features → early stopping → less "
-                    "capacity → L1/L2 → dropout**, in that order.",
+                ]},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Summary",
+            "title": "…and the two orders worth memorising",
+            "blocks": [
+                {"t": "p", "md": "Both are sequences, not menus. Working through them in "
+                                 "order is what keeps you from tuning something that was "
+                                 "never the bottleneck."},
+                {"t": "cards", "cols": 2, "items": [
+                    {"ico": "🔧", "h": "To make it fit",
+                     "p": "**Learning rate and batch size → architecture priors → capacity**, "
+                          "until the model can overfit.", "style": "accent"},
+                    {"ico": "🛡", "h": "To make it generalise",
+                     "p": "**Better data → better features → early stopping → less capacity → "
+                          "L1/L2 → dropout.**", "style": "accent"},
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "02_shuffled_labels_and_manifolds.ipynb",

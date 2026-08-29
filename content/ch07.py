@@ -526,10 +526,31 @@ class RootMeanSquaredError(keras.metrics.Metric):
     def reset_state(self):
         self.mse_sum.assign(0.)
         self.total_samples.assign(0.)"""},
+                {"t": "p", "md": "The next slide names what each of those three methods is "
+                                 "responsible for."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 7.3.1",
+            "title": "The three methods that form the contract",
+            "blocks": [
+                {"t": "cards", "cols": 3, "items": [
+                    {"ico": "➕", "h": "update_state()",
+                     "p": "Called once per batch with the targets and predictions. This is "
+                          "where the accumulation happens.", "style": "accent"},
+                    {"ico": "📤", "h": "result()",
+                     "p": "Returns the metric's current value from that accumulated state.",
+                     "style": "accent"},
+                    {"ico": "🧹", "h": "reset_state()",
+                     "p": "Clears the state without rebuilding the object, so the same "
+                          "instance serves every epoch and both training and evaluation.",
+                     "style": "accent"},
+                ]},
                 {"t": "band",
-                 "md": "Three methods are the contract: **`update_state()`** accumulates, "
-                       "**`result()`** reports, **`reset_state()`** clears so the same object "
-                       "can be reused across epochs and across training and evaluation."},
+                 "md": "Unlike a layer, none of this state is touched by backpropagation — "
+                       "==you own the update logic entirely=="},
             ],
         },
 

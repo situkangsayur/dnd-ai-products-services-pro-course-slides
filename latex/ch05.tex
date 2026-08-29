@@ -612,9 +612,25 @@ One condition governs all of them: \textbf{regularisation must be guided by an a
 \item The fundamental problem is the \textbf{optimisation vs generalisation tension}. Every best practice in the book manages it.
 \item \textbf{Measure before you improve.} Hold-out, K-fold, iterated K-fold --- and always keep a completely untouched test set.
 \item \textbf{Set a common-sense baseline first.} If you cannot beat it, the problem may not be a machine learning problem.
-\item To fit: \textbf{learning rate and batch size $\rightarrow$ architecture priors $\rightarrow$ capacity}, until it can overfit.
-\item To generalise: \textbf{better data $\rightarrow$ better features $\rightarrow$ early stopping $\rightarrow$ less capacity $\rightarrow$ L1/L2 $\rightarrow$ dropout}, in that order.
 \end{isteps}
+\end{frame}
+
+\framekicker{Summary}
+\begin{frame}[shrink=25]{\ldots{}and the two orders worth memorising}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Both are sequences, not menus. Working through them in order is what keeps you from tuning something that was never the bottleneck.\par}\vskip 4pt
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardaccent}
+\cardh{To make it fit}
+\textbf{Learning rate and batch size $\rightarrow$ architecture priors $\rightarrow$ capacity}, until the model can overfit.
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardaccent}
+\cardh{To make it generalise}
+\textbf{Better data $\rightarrow$ better features $\rightarrow$ early stopping $\rightarrow$ less capacity $\rightarrow$ L1/L2 $\rightarrow$ dropout.}
+\end{icardaccent}
+\end{minipage}%
 \vskip 4pt
 \reslink{NOTEBOOK}{02\_shuffled\_labels\_and\_manifolds.ipynb}{../../course-slides/notebooks/ch05/02\_shuffled\_labels\_and\_manifolds.ipynb}
 \reslink{NEXT}{Chapter 6 --- The universal workflow}{../ch06/index.html}

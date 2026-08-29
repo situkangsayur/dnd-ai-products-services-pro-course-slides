@@ -212,8 +212,33 @@ Every example in the rest of the book uses the \textbf{Functional API} --- but w
 \begin{frame}[shrink=25]{Writing your own metric}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}A metric subclasses \inlinecode{keras.metrics.Metric}. Like a layer it holds state in Keras variables --- but that state is \hilite{not updated by backpropagation}, so you write the update logic yourself.\par}\vskip 4pt
 \icode{python}{listing 7.18 --- RMSE as a custom metric}{listings/ch07-12.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The next slide names what each of those three methods is responsible for.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 7.3.1}
+\begin{frame}[shrink=25]{The three methods that form the contract}
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{update\_state()}
+Called once per batch with the targets and predictions. This is where the accumulation happens.
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{result()}
+Returns the metric's current value from that accumulated state.
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{reset\_state()}
+Clears the state without rebuilding the object, so the same instance serves every epoch and both training and evaluation.
+\end{icardaccent}
+\end{minipage}%
 \begin{iband}[signal]
-Three methods are the contract: \textbf{\inlinecode{update\_state()}} accumulates, \textbf{\inlinecode{result()}} reports, \textbf{\inlinecode{reset\_state()}} clears so the same object can be reused across epochs and across training and evaluation.
+Unlike a layer, none of this state is touched by backpropagation --- \hilite{you own the update logic entirely}
 \end{iband}
 \end{frame}
 

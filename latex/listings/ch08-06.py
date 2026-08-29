@@ -1,0 +1,7 @@
+inputs = keras.Input(shape=(28, 28, 1))
+x = layers.Conv2D(filters=64, kernel_size=3, activation="relu")(inputs)
+x = layers.Conv2D(filters=128, kernel_size=3, activation="relu")(x)
+x = layers.Conv2D(filters=256, kernel_size=3, activation="relu")(x)
+x = layers.GlobalAveragePooling2D()(x)
+outputs = layers.Dense(10, activation="softmax")(x)
+model_no_max_pool = keras.Model(inputs=inputs, outputs=outputs)

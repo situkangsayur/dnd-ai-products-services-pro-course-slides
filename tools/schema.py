@@ -185,18 +185,29 @@ def _weight(blocks):
             total += WEIGHT["code"] * (b.get("src", "").count("\n") + 3)
         elif t == "out":
             total += WEIGHT["out"] * (b.get("src", "").count("\n") + 3)
-        elif t == "bullets":
-            total += WEIGHT["bullets"] * len(b.get("items", []))
-        elif t == "steps":
-            total += WEIGHT["steps"] * len(b.get("items", []))
+        elif t in ("bullets", "steps"):
+            # Long items wrap. Counting each item as one line badly
+            # underestimates a summary slide of seven full sentences, which is
+            # exactly the shape that overflows.
+            per = WEIGHT[t]
+            for item in b.get("items", []):
+                lines = max(1, -(-len(str(item)) // 88))
+                total += per * lines
         elif t == "table":
-            total += WEIGHT["table"] * (len(b.get("rows", [])) + 1.6)
+            rows = b.get("rows", [])
+            total += WEIGHT["table"] * 1.6
+            for row in rows:
+                longest = max((len(str(c)) for c in row), default=0)
+                total += WEIGHT["table"] * max(1, -(-longest // 60))
         elif t == "cards":
             rows = -(-len(b.get("items", [])) // (b.get("cols") or 3))
             total += WEIGHT["cards"] * rows
         elif t == "stats":
             rows = -(-len(b.get("items", [])) // (b.get("cols") or 4))
             total += WEIGHT["stats"] * rows
+        elif t in ("p", "lead", "band", "quote"):
+            lines = max(1, -(-len(str(b.get("md", ""))) // 95))
+            total += WEIGHT[t] * (0.5 + 0.5 * lines)
         else:
             total += WEIGHT.get(t, 2.0)
     return total

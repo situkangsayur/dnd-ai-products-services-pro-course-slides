@@ -41,5 +41,11 @@
  "ch07-loopchoice": "e3bde90352280882",
  "ch07-reuse": "0bba2a0a75b7ab74",
  "ch07-ticket": "4d25840524f77a55",
- "ch07-trainstep": "ab8fe354aca3c806"
+ "ch07-trainstep": "ab8fe354aca3c806",
+ "ch08-finetune": "24e5917e51db2b0c",
+ "ch08-hierarchy": "a315f66cddc7813b",
+ "ch08-localglobal": "9b5a99cd69cd25fb",
+ "ch08-shapes": "7a783128f167d8f5",
+ "ch08-transfer": "3b1f6320711eb263",
+ "ch08-twoways": "deef4209a3973604"
 }

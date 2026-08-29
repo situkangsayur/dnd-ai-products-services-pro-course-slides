@@ -1,0 +1,15 @@
+
+flowchart TB
+  subgraph A["Original model"]
+    direction TB
+    A1["Trained convolutional base"] --> A2["Trained classifier"]
+  end
+  subgraph B["Feature extraction"]
+    direction TB
+    B1["Trained convolutional base<br/><b>FROZEN</b>"] --> B2["New classifier<br/>randomly initialised"]
+  end
+  subgraph C["Fine-tuning"]
+    direction TB
+    C1["Convolutional base<br/><b>top layers unfrozen</b>"] --> C2["Classifier<br/>already trained"]
+  end
+  A ~~~ B ~~~ C

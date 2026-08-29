@@ -43,7 +43,7 @@
 \end{frame}
 
 \framekicker{Roadmap}
-\begin{frame}{One problem, three strategies, four numbers}
+\begin{frame}[shrink=25]{One problem, three strategies, four numbers}
 \begin{minipage}[t]{0.241\textwidth}
 \istat{$\approx$80\%}{small ConvNet from scratch, no regularisation}
 \end{minipage}%
@@ -96,7 +96,7 @@
 \end{frame}
 
 \framekicker{Section 8.1.1}
-\begin{frame}{The fundamental difference: global versus local}
+\begin{frame}[shrink=25]{The fundamental difference: global versus local}
 \begin{center}
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch08-localglobal.tex.pdf}
 \end{center}
@@ -104,7 +104,7 @@
 \end{frame}
 
 \framekicker{Section 8.1.1}
-\begin{frame}{Property 1 --- translation invariance}
+\begin{frame}[shrink=25]{Property 1 --- translation invariance}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Having learned a pattern in the lower-right corner, a ConvNet can recognise it \textbf{anywhere} --- upper-left included. A dense network would have to learn it again for the new position.\par}\vskip 4pt
 \begin{iband}[signal]
 This makes ConvNets \textbf{data efficient} on images, because the visual world is fundamentally translation invariant. They \hilite{need fewer training samples} to learn representations that generalise.
@@ -132,7 +132,7 @@ This makes ConvNets \textbf{data efficient} on images, because the visual world 
 \end{frame}
 
 \framekicker{Section 8.1.1}
-\begin{frame}{How the convolution actually runs}
+\begin{frame}[shrink=25]{How the convolution actually runs}
 \begin{center}
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/book/figure-8-4.png}
 \end{center}
@@ -151,7 +151,7 @@ This makes ConvNets \textbf{data efficient} on images, because the visual world 
 \end{frame}
 
 \framekicker{Section 8.1.2}
-\begin{frame}{Max pooling: downsample, aggressively}
+\begin{frame}[shrink=25]{Max pooling: downsample, aggressively}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}After each \inlinecode{MaxPooling2D} the feature map halves: 26$\times$26 becomes 13$\times$13. It extracts windows and outputs the maximum value of each channel.\par}\vskip 4pt
 \begin{itable}{>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.3478\textwidth}>{\raggedright\arraybackslash}p{0.3478\textwidth}}
 \thead{} & \thead{Convolution} & \thead{Max pooling} \\ \midrule
@@ -173,7 +173,7 @@ Effect on size & Shrinks slightly (no padding). & \textbf{Halves} each spatial d
 \coursesection{02}{Training from scratch on a small dataset}{2,000 pictures of cats and dogs. A situation you will actually meet.}
 
 \framekicker{Section 8.2}
-\begin{frame}{The setup, and why it is realistic}
+\begin{frame}[shrink=25]{The setup, and why it is realistic}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Having to train an image classifier on very little data is \textbf{a common situation} in professional computer vision. A "few" samples can mean a few hundred to a few tens of thousands.\par}\vskip 4pt
 \begin{minipage}[t]{0.3253\textwidth}
 \istat{2,000}{training images}
@@ -190,7 +190,7 @@ Effect on size & Shrinks slightly (no padding). & \textbf{Halves} each spatial d
 \end{frame}
 
 \framekicker{Section 8.2.1}
-\begin{frame}{Why deep learning still applies with little data}
+\begin{frame}[shrink=25]{Why deep learning still applies with little data}
 \begin{minipage}[t]{0.494\textwidth}
 \begin{icardgood}
 \cardh{ConvNets are data efficient}
@@ -226,7 +226,7 @@ A classifier trained on a large dataset can be reused on a significantly differe
 \end{frame}
 
 \framekicker{Section 8.2.4}
-\begin{frame}{From JPEG files to batched tensors}
+\begin{frame}[shrink=25]{From JPEG files to batched tensors}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The data sits on disk as JPEGs. Five steps are needed to make it model-ready, and Keras does all of them in one call.\par}\vskip 4pt
 \begin{isteps}
 \item Read the picture files.
@@ -245,7 +245,7 @@ A classifier trained on a large dataset can be reused on a significantly differe
 \end{frame}
 
 \framekicker{Section 8.2.4}
-\begin{frame}{What a \inlinecode{tf.data.Dataset} buys you}
+\begin{frame}[shrink=25]{What a \inlinecode{tf.data.Dataset} buys you}
 \begin{ibullets}
 \item It works with \textbf{any backend} --- JAX and PyTorch included --- not only TensorFlow.
 \item It is an \textbf{iterator}: usable in a \inlinecode{for} loop, and passable straight to \inlinecode{fit()}.
@@ -260,7 +260,7 @@ Those last two are the difference between a GPU that is busy and a GPU that spen
 \coursesection{03}{Data augmentation}{Making more training data out of the training data you have.}
 
 \framekicker{Section 8.2.5}
-\begin{frame}{The idea, and where the layers go}
+\begin{frame}[shrink=25]{The idea, and where the layers go}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Overfitting comes from having too few samples. Augmentation generates more of them by applying \textbf{random but believable} transformations, so the model \hilite{never sees exactly the same picture twice}\par}\vskip 4pt
 \begin{itable}{>{\raggedright\arraybackslash}p{0.282\textwidth}>{\raggedright\arraybackslash}p{0.188\textwidth}>{\raggedright\arraybackslash}p{0.47\textwidth}}
 \thead{Where you put the layers} & \thead{Runs on} & \thead{Trade-off} \\ \midrule
@@ -281,7 +281,7 @@ Those last two are the difference between a GPU that is busy and a GPU that spen
 \end{frame}
 
 \framekicker{Section 8.2.5}
-\begin{frame}{What augmentation cannot do}
+\begin{frame}[shrink=25]{What augmentation cannot do}
 \begin{iband}[amber]
 The model will never see the same input twice --- but the inputs it does see are \textbf{still heavily intercorrelated}, because they come from a small number of originals. \hilite{You cannot produce new information; you can only remix existing information.}
 \end{iband}
@@ -298,7 +298,7 @@ The model will never see the same input twice --- but the inputs it does see are
 \coursesection{04}{Using a pretrained model}{Where the remaining fourteen points come from.}
 
 \framekicker{Section 8.3}
-\begin{frame}{Why features transfer between problems}
+\begin{frame}[shrink=25]{Why features transfer between problems}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}A model trained on a large, general dataset learns a spatial hierarchy of features that acts as \textbf{a generic model of the visual world} --- useful even for classes it never saw.\par}\vskip 4pt
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The book uses \textbf{Xception} trained on ImageNet: 1.4 million labelled images across 1,000 classes. ImageNet contains many cat and dog breeds, so it should transfer well here.\par}\vskip 4pt
 \begin{iband}[signal]
@@ -307,7 +307,7 @@ Such portability across problems is \textbf{a key advantage of deep learning ove
 \end{frame}
 
 \framekicker{Section 8.3}
-\begin{frame}{Two ways to reuse it}
+\begin{frame}[shrink=25]{Two ways to reuse it}
 \begin{center}
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch08-transfer.tex.pdf}
 \end{center}
@@ -315,7 +315,7 @@ Such portability across problems is \textbf{a key advantage of deep learning ove
 \end{frame}
 
 \framekicker{Section 8.3.1}
-\begin{frame}{Why only the convolutional base is reused}
+\begin{frame}[shrink=25]{Why only the convolutional base is reused}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}A ConvNet has two parts: a \textbf{convolutional base} (the pooling and convolution layers, also called the \textit{backbone}) and a densely connected classifier. Only the first is worth keeping.\par}\vskip 4pt
 \begin{ibullets}
 \item The base produces \textbf{presence maps of generic concepts} --- useful regardless of the vision problem.
@@ -325,7 +325,7 @@ Such portability across problems is \textbf{a key advantage of deep learning ove
 \end{frame}
 
 \framekicker{Section 8.3.1}
-\begin{frame}{How much of the base to reuse}
+\begin{frame}[shrink=25]{How much of the base to reuse}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Generality depends on depth. \textbf{Earlier layers extract local, highly generic feature maps} --- edges, colours, textures. \textbf{Higher layers extract abstract concepts} such as \textit{cat ear} or \textit{dog eye}.\par}\vskip 4pt
 \begin{iband}[amber]
 So if your new dataset differs a lot from the original, you may be better off using \hilite{only the first few layers} for feature extraction rather than the entire base.
@@ -344,7 +344,7 @@ So if your new dataset differs a lot from the original, you may be better off us
 \end{frame}
 
 \framekicker{Section 8.3.1}
-\begin{frame}{Fast, or augmentable --- pick one}
+\begin{frame}[shrink=25]{Fast, or augmentable --- pick one}
 \begin{center}
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch08-twoways.tex.pdf}
 \end{center}
@@ -366,7 +366,7 @@ So if your new dataset differs a lot from the original, you may be better off us
 \end{frame}
 
 \framekicker{Section 8.3.1}
-\begin{frame}{Read that result carefully}
+\begin{frame}[shrink=25]{Read that result carefully}
 \begin{iband}[amber]
 It is \textbf{a slightly unfair comparison}: ImageNet contains many dog and cat instances, so the pretrained model already holds \hilite{the exact knowledge this task needs}. That will not always be true.
 \end{iband}
@@ -454,4 +454,29 @@ The fairer point: this was reached using \textbf{about 10\% of the training data
 \item \textbf{Augmentation remixes information; it cannot create it.} Worth about four points here.
 \end{isteps}
 \end{frame}
+
+\framekicker{Summary}
+\begin{frame}[shrink=25]{\ldots{}and the part that changes how you plan a project}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardgood}
+\cardh{Reuse beats tuning}
+Feature extraction from a pretrained base took the same 2,000 images from \textbf{84\% to 98.1\%} --- more than anything you could do to a small model of your own.
+\end{icardgood}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardaccent}
+\cardh{Fine-tune last, and gently}
+Only after the new classifier is trained, at a \textbf{very low learning rate}, and with \inlinecode{BatchNormalization} left frozen.
+\end{icardaccent}
+\end{minipage}%
+\begin{iband}[signal]
+Which is why the first question on a new vision problem is not \textit{what architecture?} but \hilite{\textit{whose features can I start from?}}
+\end{iband}
+\vskip 4pt
+\reslink{NOTEBOOK}{04\_feature\_extraction\_and\_finetuning.ipynb}{../../course-slides/notebooks/ch08/04\_feature\_extraction\_and\_finetuning.ipynb}
+\reslink{NEXT}{Chapter 9 --- ConvNet architecture patterns}{../ch09/index.html}
+\vskip 2pt
+\end{frame}
+
 \end{document}

@@ -1,0 +1,13 @@
+
+flowchart TB
+  subgraph D["Dense layer"]
+    direction TB
+    D1["Sees ALL pixels at once"] --> D2["Learns <b>global</b> patterns"]
+    D2 --> D3["A pattern learned in one corner<br/>must be relearned in another"]
+  end
+  subgraph C["Convolution layer"]
+    direction TB
+    C1["Sees a small window<br/>3 x 3 or 5 x 5"] --> C2["Learns <b>local</b> patterns"]
+    C2 --> C3["Translation invariant:<br/>learn once, recognise anywhere"]
+  end
+  D ~~~ C

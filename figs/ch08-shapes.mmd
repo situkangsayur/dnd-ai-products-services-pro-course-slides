@@ -1,0 +1,9 @@
+
+flowchart LR
+  A["Input<br/><code>180 x 180 x 3</code>"] --> B["Conv + Pool<br/><code>89 x 89 x 32</code>"]
+  B --> C["Conv + Pool<br/><code>43 x 43 x 64</code>"]
+  C --> D["Conv + Pool<br/><code>20 x 20 x 128</code>"]
+  D --> E["Conv + Pool<br/><code>9 x 9 x 256</code>"]
+  E --> F["Conv<br/><code>7 x 7 x 512</code>"]
+  F --> G["GlobalAvgPool<br/><code>512</code>"]
+  G --> H["Dense 1<br/>sigmoid"]

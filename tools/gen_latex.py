@@ -6,6 +6,7 @@ Pairs with latex/itbpro.sty. Run through tools/build.py rather than directly.
 import os
 
 import figures
+import schema
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 from inline import tex as it, esc_tex, tex_url
@@ -242,8 +243,14 @@ def _frame(s):
     if s.get("notes"):
         note = "\n\\note{%s}" % it(s["notes"])
     flags = list(s.get("opts", "").split(",")) if s.get("opts") else []
+    # Every content frame may shrink to fit. (The "Dimension too large" failures
+    # this once seemed to cause were really the footline progress bar dividing
+    # by the frame count; see itbpro.sty.)
     flags.append("shrink=25")
-    opts = "[" + ",".join(f for f in flags if f) + "]"
+    flags = [f for f in flags if f]
+    # An empty option list -- `\begin{frame}[]` -- makes beamer fail while
+    # scanning the frame's arguments, so omit the brackets entirely.
+    opts = ("[" + ",".join(flags) + "]") if flags else ""
     return (f"{kicker}\n\\begin{{frame}}{opts}{{{it(s['title'])}}}\n{body}"
             f"\\end{{frame}}{note}\n\n")
 
