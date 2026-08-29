@@ -60,5 +60,13 @@
  "ch10-four": "88842f3b32f07e95",
  "ch10-gradcam": "eceb5319eb77f120",
  "ch10-latent": "20fd85c0e6e68dc2",
- "ch10-pipeline": "465387056c0b427f"
+ "ch10-pipeline": "465387056c0b427f",
+ "ch11-encdec": "d73692fe234d55f7",
+ "ch11-flavours": "e200fe644d83ff93",
+ "ch11-iou": "5b919641f86f9420",
+ "ch11-mask": "17ed425211d29e7e",
+ "ch11-poolvstride": "e7b2de04023f64d6",
+ "ch11-sam": "40d622921ce3b47e",
+ "ch11-samloop": "ea4c9a7637fb3635",
+ "ch11-tasks": "44db03210648b6de"
 }

@@ -1,0 +1,7 @@
+
+flowchart LR
+  H["Human experts segment<br/>a small dataset"] --> M0["Train an initial model"]
+  M0 --> A["Model pre-segments<br/>new images"]
+  A --> C["Humans correct<br/>and add annotations"]
+  C --> M1["Retrain on more data"]
+  M1 -. "repeat, with less<br/>human effort each round" .-> A

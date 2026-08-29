@@ -1,0 +1,13 @@
+
+flowchart TB
+  subgraph MP["Max pooling — fine for classification"]
+    direction TB
+    M1["Take a 2 x 2 window"] --> M2["Return one value"]
+    M2 --> M3["<b>Which of the four positions<br/>it came from is destroyed</b>"]
+  end
+  subgraph ST["Strided convolution — needed for segmentation"]
+    direction TB
+    S1["Slide the kernel<br/>with stride 2"] --> S2["Downsample by learning"]
+    S2 --> S3["<b>Location information<br/>is retained</b>"]
+  end
+  MP ~~~ ST

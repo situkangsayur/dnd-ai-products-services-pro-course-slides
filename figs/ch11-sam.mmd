@@ -1,0 +1,9 @@
+
+flowchart LR
+  IMG["Image"] --> IE["Image encoder<br/><small>like Xception:<br/>a small image embedding</small>"]
+  PR["Prompt<br/><small>a point, or a box</small>"] --> PE["Prompt encoder<br/><small>to an embedded vector</small>"]
+  IE --> MD["Mask decoder"]
+  PE --> MD
+  MD --> M1["mask + score"]
+  MD --> M2["mask + score"]
+  MD --> M3["mask + score"]

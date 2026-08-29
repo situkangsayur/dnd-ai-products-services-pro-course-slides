@@ -1,0 +1,8 @@
+
+flowchart LR
+  A["Predicted mask"] --> I["Intersection<br/><small>where they overlap</small>"]
+  B["Ground truth mask"] --> I
+  A --> U["Union<br/><small>everything covered by either</small>"]
+  B --> U
+  I --> R["IoU = intersection / union<br/><small>1 = perfect, 0 = complete miss</small>"]
+  U --> R

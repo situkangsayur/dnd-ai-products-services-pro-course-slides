@@ -1,0 +1,11 @@
+
+flowchart LR
+  I["Input image<br/><code>Abyssinian_1.jpg</code><br/><small>RGB, 3 channels</small>"]
+  M["Segmentation mask<br/><code>Abyssinian_1.png</code><br/><small>1 channel, integer per pixel</small>"]
+  L1["1 = foreground"]
+  L2["2 = background"]
+  L3["3 = contour"]
+  I -. "same size,<br/>same name" .-> M
+  M --> L1
+  M --> L2
+  M --> L3

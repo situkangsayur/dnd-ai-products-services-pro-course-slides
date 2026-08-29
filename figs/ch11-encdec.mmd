@@ -1,0 +1,11 @@
+
+flowchart LR
+  IN["Input<br/><code>200 x 200 x 3</code>"]
+  E1["Conv stride 2<br/><code>100 x 100 x 64</code>"]
+  E2["Conv stride 2<br/><code>50 x 50 x 128</code>"]
+  E3["Conv stride 2<br/><code>25 x 25 x 256</code>"]
+  D1["ConvTranspose<br/><code>50 x 50 x 256</code>"]
+  D2["ConvTranspose<br/><code>100 x 100 x 128</code>"]
+  D3["ConvTranspose<br/><code>200 x 200 x 64</code>"]
+  OUT["Conv softmax<br/><code>200 x 200 x 3</code>"]
+  IN --> E1 --> E2 --> E3 --> D1 --> D2 --> D3 --> OUT
