@@ -43,6 +43,7 @@
 \RequirePackage{array}
 \RequirePackage{adjustbox}
 \RequirePackage{ragged2e}
+\RequirePackage{textcase}
 \RequirePackage{inter}
 \RequirePackage[scaled=0.86]{FiraMono}
 \RequirePackage[T1]{fontenc}
@@ -286,10 +287,10 @@
 %  Inline helpers used by the generator
 % =============================================================================
 \newcommand{\hlink}[2]{\href{#1}{\color{itbblue}\underline{#2}}}
-\newcommand{\inlinecode}[1]{%
+\newcommand{\inlinecode}[1]{\NoCaseChange{%
   \tikz[baseline=(x.base)]{\node[inner xsep=2.2pt,inner ysep=1pt,rounded corners=2pt,
     fill=signal!10,draw=signal!28,line width=0.3pt] (x)
-    {\ttfamily\footnotesize\textcolor{itbnavy}{#1}};}}
+    {\ttfamily\footnotesize\textcolor{itbnavy}{#1}};}}}
 \newcommand{\hilite}[1]{{\color{signal}\bfseries#1}}
 
 % Lead paragraph
@@ -446,7 +447,11 @@
 % =============================================================================
 %  Tables
 % =============================================================================
-\newcommand{\thead}[1]{{\color{signal}\fontsize{7.4}{9}\selectfont\bfseries\MakeUppercase{#1}}}
+% Header cells may contain \inlinecode, which is a tikzpicture. \MakeUppercase
+% expands its argument and mangles the picture's terminating semicolon, so the
+% uppercasing is done by \MakeTextUppercase, which leaves such boxes alone.
+\newcommand{\thead}[1]{{\color{signal}\fontsize{7.4}{9}\selectfont\bfseries
+  \MakeTextUppercase{#1}}}
 \newenvironment{itable}[1]
   {\vskip 3pt\begingroup
    \renewcommand{\arraystretch}{1.28}

@@ -1,0 +1,6 @@
+on_epoch_begin(epoch, logs)
+on_epoch_end(epoch, logs)
+on_batch_begin(batch, logs)
+on_batch_end(batch, logs)
+on_train_begin(logs)
+on_train_end(logs)
