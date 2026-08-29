@@ -1,9 +1,8 @@
-@tf.function
-def gradient_ascent_step(image, filter_index, learning_rate):
-    with tf.GradientTape() as tape:
-        tape.watch(image)                     # the image is not a Variable, so watch it
-        loss = compute_loss(image, filter_index)
-    grads = tape.gradient(loss, image)        # gradient w.r.t. the IMAGE
-    grads = ops.normalize(grads)              # the "gradient normalization trick"
-    image += learning_rate * grads            # PLUS: we are ascending, not descending
-    return image
+layer_name = "block3_sepconv1"
+layer = model.get_layer(name=layer_name)
+feature_extractor = keras.Model(inputs=model.input, outputs=layer.output)
+
+def compute_loss(image, filter_index):
+    activation = feature_extractor(image)
+    filter_activation = activation[:, 2:-2, 2:-2, filter_index]   # trim the border
+    return ops.mean(filter_activation)

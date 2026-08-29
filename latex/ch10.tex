@@ -120,6 +120,19 @@ Try drawing a generic bicycle from memory right now. You have seen thousands, an
 \end{frame}
 \note{Actually do this in the room --- 60 seconds, everyone draws a bicycle. It lands the point better than any slide can.}
 
+\framekicker{Section 10.1 $\cdot$ listing 10.6}
+\begin{frame}[shrink=25]{Stitching every channel into one grid}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Plotting one channel is a spot check. To see the whole picture, every channel of every layer is tiled into a single canvas, layer by layer.\par}\vskip 4pt
+\icode{python}{listing 10.6 --- the display loop}{listings/ch10-04.py}
+\end{frame}
+
+\framekicker{Section 10.1 $\cdot$ listing 10.6}
+\begin{frame}[shrink=25]{Why each channel is standardised first}
+\begin{iband}[signal]
+The per-channel standardisation matters: without it the faint channels are invisible next to the strong ones, and \hilite{the rising sparsity is exactly what you came to see}
+\end{iband}
+\end{frame}
+
 \coursesection{02}{Visualising ConvNet filters}{Gradient ascent in input space.}
 
 \framekicker{Section 10.2}
@@ -134,22 +147,22 @@ Try drawing a generic bicycle from memory right now. You have seen thousands, an
 \framekicker{Section 10.2 $\cdot$ listing 10.7--10.8}
 \begin{frame}[shrink=25]{Setting up: a pretrained model, and its layer names}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The same Xception backbone as chapter 8. First, find out what the convolution layers are called, so their outputs can be retrieved.\par}\vskip 4pt
-\icode{python}{listing 10.7--10.8 --- model and layer names}{listings/ch10-04.py}
-\ioutput{listings/ch10-05.txt}
+\icode{python}{listing 10.7--10.8 --- model and layer names}{listings/ch10-05.py}
+\ioutput{listings/ch10-06.txt}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The names follow Xception's block structure from chapter 9, which makes it easy to sample \textbf{shallow, middle, and deep} layers for comparison.\par}\vskip 4pt
 \end{frame}
 
 \framekicker{Section 10.2}
 \begin{frame}[shrink=25]{The loss: one filter's mean activation}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Build a feature extractor that stops at the chosen layer, then define a loss that is simply the mean activation of one filter --- with the borders trimmed to avoid edge artefacts.\par}\vskip 4pt
-\icode{python}{the loss to maximise}{listings/ch10-06.py}
+\icode{python}{the loss to maximise}{listings/ch10-07.py}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Note what this loss is a function of: \textbf{the image}. That is the whole trick.\par}\vskip 4pt
 \end{frame}
 
 \framekicker{Section 10.2.1 $\cdot$ listing 10.11}
 \begin{frame}[shrink=25]{One ascent step, in TensorFlow}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}This is the book's second low-level gradient loop --- the first was chapter 2. Two details differ from a training step.\par}\vskip 4pt
-\icode{python}{listing 10.11 --- gradient ascent step}{listings/ch10-07.py}
+\icode{python}{listing 10.11 --- gradient ascent step}{listings/ch10-08.py}
 \begin{iband}[signal]
 \inlinecode{tape.watch(image)} is required because only \inlinecode{Variable}s are watched automatically --- exactly the rule chapter 3 gave. And the \inlinecode{+=} is what makes it \hilite{ascent rather than descent}
 \end{iband}
@@ -170,7 +183,7 @@ Try drawing a generic bicycle from memory right now. You have seen thousands, an
 \framekicker{Section 10.2.4 $\cdot$ listing 10.14}
 \begin{frame}[shrink=25]{The loop that produces one filter's pattern}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Start from uniform noise centred on 0.5 --- Xception expects inputs in [0, 1] --- and take thirty large steps.\par}\vskip 4pt
-\icode{python}{listing 10.14 --- generating a pattern}{listings/ch10-08.py}
+\icode{python}{listing 10.14 --- generating a pattern}{listings/ch10-09.py}
 \begin{iband}[signal]
 A learning rate of \textbf{10.0} would be absurd for training weights. Here it is fine, because \hilite{we are not trying to converge to a minimum} --- only to move the image somewhere the filter likes.
 \end{iband}
@@ -179,7 +192,7 @@ A learning rate of \textbf{10.0} would be absurd for training weights. Here it i
 \framekicker{Section 10.2.4 $\cdot$ listing 10.15}
 \begin{frame}[shrink=25]{\ldots{}and turning the result back into an image}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The output is a float array whose values are not in [0, 255], so it has to be standardised and clipped before it can be displayed.\par}\vskip 4pt
-\icode{python}{listing 10.15 --- deprocess\_image}{listings/ch10-09.py}
+\icode{python}{listing 10.15 --- deprocess\_image}{listings/ch10-10.py}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The final crop removes the edge artefacts that gradient ascent tends to accumulate at the borders.\par}\vskip 4pt
 \end{frame}
 
@@ -194,6 +207,22 @@ A learning rate of \textbf{10.0} would be absurd for training weights. Here it i
 \begin{iband}[signal]
 Chollet's analogy: each layer learns a \textbf{filter bank} such that its inputs can be expressed as a combination of those filters --- \hilite{similar to how a Fourier transform decomposes a signal onto cosines}
 \end{iband}
+\end{frame}
+
+\framekicker{Section 10.2.2 $\cdot$ listing 10.12}
+\begin{frame}[shrink=25]{The PyTorch version, written out}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Worth seeing in full, because the image has to be marked as requiring a gradient --- which is not something you normally do to an input.\par}\vskip 4pt
+\icode{python}{listing 10.12 --- ascent step in PyTorch}{listings/ch10-11.py}
+\begin{iband}[signal]
+\inlinecode{requires\_grad\_(True)} on an \textbf{input tensor} is the PyTorch equivalent of \inlinecode{tape.watch(image)} --- both say \textit{differentiate with respect to this, even though it is not a parameter}.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 10.2.3 $\cdot$ listing 10.13}
+\begin{frame}[shrink=25]{\ldots{}and the JAX version}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}In JAX the loss function is transformed, so the thing being differentiated is simply whichever argument comes first.\par}\vskip 4pt
+\icode{python}{listing 10.13 --- ascent step in JAX}{listings/ch10-12.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Because \inlinecode{compute\_loss(image, filter\_index)} takes the image first, \inlinecode{jax.grad} differentiates with respect to it \hilite{without any extra ceremony at all}\par}\vskip 4pt
 \end{frame}
 
 \coursesection{03}{Class activation heatmaps}{Which part of this picture made the model say that?}
@@ -229,21 +258,21 @@ The heatmap tells you \textbf{where} in the frame the evidence was.
 \framekicker{Section 10.3 $\cdot$ listing 10.17}
 \begin{frame}[shrink=25]{The worked example: two African elephants}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The book uses a photograph of an adult elephant and a calf, fed to a pretrained Xception classifier.\par}\vskip 4pt
-\icode{python}{listing 10.17 --- preparing the image}{listings/ch10-10.py}
+\icode{python}{listing 10.17 --- preparing the image}{listings/ch10-13.py}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Everything that follows asks the same question of this picture: \textbf{which pixels made it say \textit{African elephant}?}\par}\vskip 4pt
 \end{frame}
 
 \framekicker{Section 10.3.1 -- 10.3.3}
 \begin{frame}[shrink=25]{Getting the gradient of the top class}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Two things are needed: the output of the last convolution layer, and the gradient of the winning class score with respect to that output.\par}\vskip 4pt
-\icode{python}{the TensorFlow version}{listings/ch10-11.py}
+\icode{python}{the TensorFlow version}{listings/ch10-14.py}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}PyTorch and JAX versions differ only in the gradient idiom, exactly as in the filter visualisation.\par}\vskip 4pt
 \end{frame}
 
 \framekicker{Section 10.3.4 $\cdot$ listing 10.23}
 \begin{frame}[shrink=25]{Pooling and weighting to get the heatmap}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Average the gradient over space to get one importance number per channel, scale each channel by it, then average across channels.\par}\vskip 4pt
-\icode{python}{listing 10.23 --- building the heatmap}{listings/ch10-12.py}
+\icode{python}{listing 10.23 --- building the heatmap}{listings/ch10-15.py}
 \begin{iband}[signal]
 Three lines of arithmetic and no new machinery --- Grad-CAM is \hilite{a weighted average, not a new model}
 \end{iband}
@@ -252,7 +281,7 @@ Three lines of arithmetic and no new machinery --- Grad-CAM is \hilite{a weighte
 \framekicker{Section 10.3.4 $\cdot$ listing 10.24--10.25}
 \begin{frame}[shrink=25]{Normalising and superimposing it}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Clip the negatives, scale to [0, 1], recolour with a colormap, and lay it over the original at 40\% opacity.\par}\vskip 4pt
-\icode{python}{listing 10.24--10.25 --- display}{listings/ch10-13.py}
+\icode{python}{listing 10.24--10.25 --- display}{listings/ch10-16.py}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The result is the picture with the evidence highlighted --- the artefact you would actually show a domain expert.\par}\vskip 4pt
 \end{frame}
 
@@ -318,6 +347,36 @@ Both findings feed straight back into \textbf{cleaning the training set and refi
 \begin{iband}[signal]
 Which makes this the technique that closes the loop: it is an interpretation tool whose output is \hilite{a concrete list of samples to go and look at}
 \end{iband}
+\end{frame}
+
+\framekicker{Section 10.4}
+\begin{frame}[shrink=25]{Projecting it, in practice}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The activations are high-dimensional, so a dimensionality reduction step is needed before anything can be plotted.\par}\vskip 4pt
+\icode{python}{recording and projecting activations}{listings/ch10-17.py}
+\begin{iband}[signal]
+Colour the points by their \textbf{label}, not by the prediction. A point whose colour disagrees with its neighbourhood is \hilite{either mislabelled or genuinely hard} --- and both are worth knowing.
+\end{iband}
+\end{frame}
+
+\framekicker{Practice}
+\begin{frame}[shrink=25]{Interpretation is a loop, not a report}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch10-pipeline.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The output of every technique here is meant to change something.\par}
+\begin{iband}[amber]
+A heatmap that nobody acts on is decoration. The value is in the third and fourth boxes: \textbf{a finding, and a decision} --- even when the decision is to accept the behaviour and write it down.
+\end{iband}
+\end{frame}
+
+\framekicker{Practice}
+\begin{frame}[shrink=25]{And what these techniques do not give you}
+\begin{ibullets}
+\item They explain \textbf{this model on this input}. They are not a general statement about the model's behaviour on data it has not seen.
+\item A convincing heatmap is \textbf{not proof of a correct decision} --- a model can look at the right region and still be wrong.
+\item None of them turn the model into a set of rules you can audit line by line. They make it \hilite{inspectable, not transparent}.
+\end{ibullets}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Which is worth saying plainly when a stakeholder asks whether the model can be "explained": these techniques answer a narrower question than the one usually being asked.\par}\vskip 4pt
 \end{frame}
 
 \framekicker{Summary}

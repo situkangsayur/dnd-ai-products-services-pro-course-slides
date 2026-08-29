@@ -1,8 +1,9 @@
-with tf.GradientTape() as tape:
-    last_conv_layer_output = last_conv_layer_model(preprocessed_image)
-    tape.watch(last_conv_layer_output)
-    preds = classifier_model(last_conv_layer_output)
-    top_pred_index = ops.argmax(preds[0])
-    top_class_channel = preds[:, top_pred_index]
+import torch
 
-grads = tape.gradient(top_class_channel, last_conv_layer_output)
+def gradient_ascent_step(image, filter_index, learning_rate):
+    image = image.clone().detach().requires_grad_(True)   # the image needs a gradient
+    loss = compute_loss(image, filter_index)
+    loss.backward()
+    grads = image.grad
+    grads = ops.normalize(grads)
+    return image + learning_rate * grads

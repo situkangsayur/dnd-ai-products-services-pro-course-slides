@@ -1,8 +1,9 @@
-# one number per channel: how important that channel is to the top class
-pooled_grads = np.mean(grads, axis=(0, 1, 2))
+import jax
 
-last_conv_layer_output = last_conv_layer_output[0].copy()
-for i in range(pooled_grads.shape[-1]):
-    last_conv_layer_output[:, :, i] *= pooled_grads[i]      # weight each channel
+grad_fn = jax.grad(compute_loss)          # differentiates w.r.t. its first argument
 
-heatmap = np.mean(last_conv_layer_output, axis=-1)          # average across channels
+@jax.jit
+def gradient_ascent_step(image, filter_index, learning_rate):
+    grads = grad_fn(image, filter_index)
+    grads = ops.normalize(grads)
+    return image + learning_rate * grads

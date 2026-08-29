@@ -59,5 +59,6 @@
  "ch10-distill": "a5a2d2600731cfca",
  "ch10-four": "88842f3b32f07e95",
  "ch10-gradcam": "eceb5319eb77f120",
- "ch10-latent": "20fd85c0e6e68dc2"
+ "ch10-latent": "20fd85c0e6e68dc2",
+ "ch10-pipeline": "465387056c0b427f"
 }

@@ -1,7 +1,7 @@
-img_path = keras.utils.get_file(
-    fname="elephant.jpg",
-    origin="https://img-datasets.s3.amazonaws.com/elephant.jpg",
-)
-
-img = keras.utils.load_img(img_path)           # a PIL image
-img_array = np.expand_dims(img, axis=0)        # to NumPy, plus a batch axis
+def deprocess_image(image):
+    image -= ops.mean(image)
+    image /= ops.std(image)
+    image *= 64
+    image += 128
+    image = ops.clip(image, 0, 255).astype("uint8")
+    return image[25:-25, 25:-25, :]     # crop the border artefacts

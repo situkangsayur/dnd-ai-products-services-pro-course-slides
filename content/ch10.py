@@ -79,6 +79,15 @@ flowchart TB
 """
 
 
+MMD_PIPELINE = """
+flowchart LR
+  Q["A question about<br/>the model"] --> T["Pick the technique"]
+  T --> R["Run it on<br/>specific inputs"]
+  R --> F["A finding:<br/>spurious feature,<br/>bad label, ambiguity"]
+  F --> A["Act: fix the data,<br/>change the model,<br/>or accept and document"]
+  A -. "next question" .-> Q
+"""
+
 NB = ["01_intermediate_activations.ipynb", "02_filter_visualisation.ipynb",
       "03_grad_cam.ipynb", "04_latent_space.ipynb"]
 
@@ -274,6 +283,50 @@ plt.matshow(first_layer_activation[0, :, :, 5], cmap="viridis")   # the sixth ch
                      "It lands the point better than any slide can.",
         },
 
+        {
+            "type": "slide",
+            "kicker": "Section 10.1 · listing 10.6",
+            "title": "Stitching every channel into one grid",
+            "blocks": [
+                {"t": "p", "md": "Plotting one channel is a spot check. To see the whole "
+                                 "picture, every channel of every layer is tiled into a single "
+                                 "canvas, layer by layer."},
+                {"t": "code", "lang": "python", "file": "listing 10.6 — the display loop",
+                 "src": """images_per_row = 16
+
+for layer_name, layer_activation in zip(layer_names, activations):
+    n_features = layer_activation.shape[-1]
+    size = layer_activation.shape[1]
+    n_cols = n_features // images_per_row
+    display_grid = np.zeros(((size + 1) * n_cols - 1,
+                             images_per_row * (size + 1) - 1))
+    for col in range(n_cols):
+        for row in range(images_per_row):
+            channel_image = layer_activation[0, :, :, col * images_per_row + row].copy()
+            # standardise so faint channels are still visible
+            if channel_image.sum() != 0:
+                channel_image -= channel_image.mean()
+                channel_image /= channel_image.std()
+                channel_image *= 64
+                channel_image += 128
+            channel_image = np.clip(channel_image, 0, 255).astype("uint8")
+            display_grid[col * (size + 1): (col + 1) * size + col,
+                         row * (size + 1): (row + 1) * size + row] = channel_image"""},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 10.1 · listing 10.6",
+            "title": "Why each channel is standardised first",
+            "blocks": [
+                {"t": "band",
+                 "md": "The per-channel standardisation matters: without it the faint "
+                       "channels are invisible next to the strong ones, and ==the rising "
+                       "sparsity is exactly what you came to see=="},
+            ],
+        },
+
         {"type": "section", "num": "02", "title": "Visualising ConvNet filters",
          "lead": "Gradient ascent in input space."},
 
@@ -452,6 +505,54 @@ def generate_filter_pattern(filter_index):
                  "md": "Chollet's analogy: each layer learns a **filter bank** such that its "
                        "inputs can be expressed as a combination of those filters — ==similar "
                        "to how a Fourier transform decomposes a signal onto cosines=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 10.2.2 · listing 10.12",
+            "title": "The PyTorch version, written out",
+            "blocks": [
+                {"t": "p", "md": "Worth seeing in full, because the image has to be marked as "
+                                 "requiring a gradient — which is not something you normally "
+                                 "do to an input."},
+                {"t": "code", "lang": "python", "file": "listing 10.12 — ascent step in PyTorch",
+                 "src": """import torch
+
+def gradient_ascent_step(image, filter_index, learning_rate):
+    image = image.clone().detach().requires_grad_(True)   # the image needs a gradient
+    loss = compute_loss(image, filter_index)
+    loss.backward()
+    grads = image.grad
+    grads = ops.normalize(grads)
+    return image + learning_rate * grads"""},
+                {"t": "band",
+                 "md": "`requires_grad_(True)` on an **input tensor** is the PyTorch "
+                       "equivalent of `tape.watch(image)` — both say *differentiate with "
+                       "respect to this, even though it is not a parameter*."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 10.2.3 · listing 10.13",
+            "title": "…and the JAX version",
+            "blocks": [
+                {"t": "p", "md": "In JAX the loss function is transformed, so the thing being "
+                                 "differentiated is simply whichever argument comes first."},
+                {"t": "code", "lang": "python", "file": "listing 10.13 — ascent step in JAX",
+                 "src": """import jax
+
+grad_fn = jax.grad(compute_loss)          # differentiates w.r.t. its first argument
+
+@jax.jit
+def gradient_ascent_step(image, filter_index, learning_rate):
+    grads = grad_fn(image, filter_index)
+    grads = ops.normalize(grads)
+    return image + learning_rate * grads"""},
+                {"t": "p", "md": "Because `compute_loss(image, filter_index)` takes the image "
+                                 "first, `jax.grad` differentiates with respect to it "
+                                 "==without any extra ceremony at all=="},
             ],
         },
 
@@ -657,6 +758,62 @@ keras.utils.array_to_img(superimposed_img).save("elephant_cam.jpg")"""},
                  "md": "Which makes this the technique that closes the loop: it is an "
                        "interpretation tool whose output is ==a concrete list of samples to "
                        "go and look at=="},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 10.4",
+            "title": "Projecting it, in practice",
+            "blocks": [
+                {"t": "p", "md": "The activations are high-dimensional, so a dimensionality "
+                                 "reduction step is needed before anything can be plotted."},
+                {"t": "code", "lang": "python", "file": "recording and projecting activations",
+                 "src": """embedding_model = keras.Model(inputs=model.input,
+                              outputs=model.layers[-2].output)   # before the classifier
+embeddings = embedding_model.predict(dataset)
+
+from sklearn.manifold import TSNE
+projected = TSNE(n_components=2, init="pca").fit_transform(embeddings)
+
+plt.scatter(projected[:, 0], projected[:, 1], c=labels, s=4, cmap="coolwarm")"""},
+                {"t": "band",
+                 "md": "Colour the points by their **label**, not by the prediction. A point "
+                       "whose colour disagrees with its neighbourhood is ==either mislabelled "
+                       "or genuinely hard== — and both are worth knowing."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Practice",
+            "title": "Interpretation is a loop, not a report",
+            "blocks": [
+                {"t": "mmd", "id": "ch10-pipeline", "src": MMD_PIPELINE,
+                 "cap": "The output of every technique here is meant to change something."},
+                {"t": "band", "style": "amber",
+                 "md": "A heatmap that nobody acts on is decoration. The value is in the third "
+                       "and fourth boxes: **a finding, and a decision** — even when the "
+                       "decision is to accept the behaviour and write it down."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Practice",
+            "title": "And what these techniques do not give you",
+            "blocks": [
+                {"t": "bullets", "items": [
+                    "They explain **this model on this input**. They are not a general "
+                    "statement about the model's behaviour on data it has not seen.",
+                    "A convincing heatmap is **not proof of a correct decision** — a model can "
+                    "look at the right region and still be wrong.",
+                    "None of them turn the model into a set of rules you can audit line by "
+                    "line. They make it ==inspectable, not transparent==.",
+                ]},
+                {"t": "p", "md": "Which is worth saying plainly when a stakeholder asks "
+                                 "whether the model can be \"explained\": these techniques "
+                                 "answer a narrower question than the one usually being asked."},
             ],
         },
 

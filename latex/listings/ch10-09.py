@@ -1,7 +1,10 @@
-def deprocess_image(image):
-    image -= ops.mean(image)
-    image /= ops.std(image)
-    image *= 64
-    image += 128
-    image = ops.clip(image, 0, 255).astype("uint8")
-    return image[25:-25, 25:-25, :]     # crop the border artefacts
+img_width = img_height = 200
+
+def generate_filter_pattern(filter_index):
+    iterations = 30
+    learning_rate = 10.0
+    image = keras.random.uniform(
+        minval=0.4, maxval=0.6, shape=(1, img_width, img_height, 3))
+    for i in range(iterations):
+        image = gradient_ascent_step(image, filter_index, learning_rate)
+    return image[0]

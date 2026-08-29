@@ -1,0 +1,7 @@
+
+flowchart LR
+  Q["A question about<br/>the model"] --> T["Pick the technique"]
+  T --> R["Run it on<br/>specific inputs"]
+  R --> F["A finding:<br/>spurious feature,<br/>bad label, ambiguity"]
+  F --> A["Act: fix the data,<br/>change the model,<br/>or accept and document"]
+  A -. "next question" .-> Q
