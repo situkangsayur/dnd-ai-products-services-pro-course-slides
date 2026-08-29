@@ -125,7 +125,11 @@
 \newcommand{\itb@duration}{}   \newcommand{\courseduration}[1]{\renewcommand{\itb@duration}{#1}}
 \newcommand{\itb@pname}{}\newcommand{\itb@prole}{}
 \newcommand{\coursepresenter}[2]{\renewcommand{\itb@pname}{#1}\renewcommand{\itb@prole}{#2}}
-\newcommand{\itb@brand}{AI for Professional \textperiodcentered\ ITB \texttimes\ BRI}
+\newcommand{\itb@brand}{AI for Professional \textperiodcentered\ ITB}
+% Cohort partner, named only on decks that declare one. The book-chapter
+% decks are reused across cohorts, so they carry no partner branding.
+\newcommand{\itb@partner}{}
+\newcommand{\coursepartner}[1]{\renewcommand{\itb@partner}{#1}}
 \newcommand{\coursebrand}[1]{\renewcommand{\itb@brand}{#1}}
 \newcommand{\itb@logo}{itb-logo.png}
 \newcommand{\courselogo}[1]{\renewcommand{\itb@logo}{#1}}
@@ -225,7 +229,9 @@
   \begin{minipage}[b]{0.60\paperwidth}
     {\fontsize{7.4}{9.4}\selectfont\color{dink}\textbf{Institut Teknologi Bandung}}\par
     {\fontsize{6.6}{8.4}\selectfont\color{dink3}Direktorat Pendidikan Profesional Berkelanjutan}\par
-    {\fontsize{6.6}{8.4}\selectfont\color{dink3}\texttimes\ PT Bank Rakyat Indonesia (Persero) Tbk}\par
+    \ifx\itb@partner\@empty\else
+      {\fontsize{6.6}{8.4}\selectfont\color{dink3}\texttimes\ \itb@partner}\par
+    \fi
   \end{minipage}
 
   \vskip 11pt

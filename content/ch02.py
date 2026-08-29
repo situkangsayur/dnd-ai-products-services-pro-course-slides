@@ -499,8 +499,8 @@ batch = train_images[128 * n : 128 * (n + 1)]"""},
                     ],
                 ]},
             ],
-            "notes": "Untuk BRI: data transaksi umumnya masuk kolom pertama (vektor) atau "
-                     "kedua (deret waktu). Minta mereka menaksir shape datanya sendiri.",
+            "notes": "Data tabular dan data transaksi umumnya masuk baris pertama (vektor) "
+                     "atau kedua (deret waktu). Minta peserta menaksir shape datanya sendiri.",
         },
 
         {"type": "section", "num": "03", "title": "Gigi-giginya: operasi tensor",

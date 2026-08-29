@@ -425,7 +425,7 @@ DECK = {
                        "kita tuliskan: aturannya."},
             ],
             "notes": "Kutipan Lovelace dipakai Chollet sejak edisi pertama sebagai pembuka. "
-                     "Untuk audiens perbankan, sambungkan ke pertanyaan auditor: kalau "
+                     "Sambungkan ke pertanyaan yang akan diajukan auditor mana pun: kalau "
                      "aturannya tidak kita tulis, siapa yang bertanggung jawab atas aturan itu?",
         },
 
@@ -488,7 +488,7 @@ DECK = {
                       "secara teknis."],
                  ]},
             ],
-            "notes": "Untuk BRI: minta peserta memikirkan satu use case di divisinya, lalu "
+            "notes": "Minta peserta memikirkan satu kasus pemakaian dari pekerjaannya sendiri, lalu "
                      "uji ketiga bahan itu. Yang paling sering hilang adalah bahan ketiga -- "
                      "kesepakatan tentang apa yang disebut 'benar'.",
         },
@@ -531,6 +531,46 @@ DECK = {
                      "Peraga fisik ini jauh lebih nempel daripada slide.",
         },
 
+        {
+            "type": "slide",
+            "kicker": "Bagian 1.4",
+            "title": "Ruang hipotesis -- dan mengapa aturan tulis-tangan runtuh",
+            "blocks": [
+                {"t": "p", "md": "Perubahan sumbu tadi kita rancang **dengan tangan**. Itu "
+                                 "sanggup untuk persoalan sesederhana itu. Tetapi bisakah "
+                                 "Anda menuliskan transformasi citra yang menjelaskan beda "
+                                 "6 dan 8, atau 1 dan 7, ==untuk segala macam tulisan tangan==?"},
+                {"t": "cards", "cols": 2, "items": [
+                    {"ico": "✍", "h": "Bisa -- sampai batas tertentu",
+                     "p": "Aturan seperti *menghitung banyaknya gelung tertutup*, atau "
+                          "histogram piksel tegak dan mendatar, lumayan membedakan angka "
+                          "tulisan tangan.", "style": "warn"},
+                    {"ico": "💥", "h": "Tetapi rapuh dan menyiksa",
+                     "p": "Tiap kali muncul contoh tulisan baru yang mematahkan aturan yang "
+                          "sudah disusun rapi, Anda harus menambah transformasi dan aturan "
+                          "baru -- **sambil memperhitungkan interaksinya dengan semua aturan "
+                          "sebelumnya**.", "style": "bad"},
+                ]},
+                {"t": "band",
+                 "md": "Algoritma machine learning **tidak kreatif** dalam menemukan "
+                       "transformasi ini. Ia sekadar menelusuri sehimpunan operasi yang "
+                       "sudah ditetapkan lebih dulu -- himpunan itulah yang disebut "
+                       "==ruang hipotesis (hypothesis space)==. Pada contoh 2D tadi, ruang "
+                       "hipotesisnya adalah ruang semua perubahan sumbu yang mungkin."},
+                {"t": "quote",
+                 "md": "Itulah machine learning, secara ringkas: **mencari representasi dan "
+                       "aturan yang berguna atas suatu data masukan, di dalam ruang "
+                       "kemungkinan yang sudah ditetapkan, dengan tuntunan sebuah sinyal "
+                       "umpan balik.**",
+                 "cite": "Chollet & Watson, bab 1.4"},
+                {"t": "p", "md": "Gagasan sesederhana itu menyelesaikan rentang tugas "
+                                 "intelektual yang luar biasa lebar -- dari kemudi otonom "
+                                 "sampai penjawaban pertanyaan dalam bahasa alami."},
+            ],
+            "notes": "Istilah 'ruang hipotesis' akan kembali di bab 3 saat topologi model "
+                     "dibahas: memilih arsitektur = mempersempit ruang hipotesis.",
+        },
+
         # --------------------------------------------------------- section ---
         {"type": "section", "num": "03", "title": "Yang 'dalam' pada deep learning",
          "lead": "Bukan pemahaman yang lebih dalam. Hanya lapisan yang lebih banyak."},
@@ -555,6 +595,9 @@ DECK = {
                     "Lawannya, **shallow learning**, hanya satu atau dua lapis representasi.",
                     "Semua lapis dipelajari ==sekaligus, otomatis== dari data pelatihan -- "
                     "bukan dirancang satu per satu oleh manusia.",
+                    "Chollet menyebut nama yang sebenarnya lebih tepat untuk bidang ini: "
+                    "*layered representations learning* atau *hierarchical representations "
+                    "learning*. Istilah **deep** menang karena sejarah, bukan karena akurasi.",
                 ]},
             ],
             "notes": "Koreksi salah paham yang paling umum di ruangan: 'deep' sering "
@@ -693,7 +736,7 @@ selesai    loss 0.00251  W +1.994  b +1.000"""},
             ],
             "notes": "Sambungkan ke topik kepatuhan yang akan dibahas di sesi lain: "
                      "keterjelasan model bukan sekadar keinginan akademik di sektor "
-                     "perbankan, ia persyaratan.",
+                     "diatur ketat, ia persyaratan.",
         },
 
         {
@@ -757,13 +800,60 @@ selesai    loss 0.00251  W +1.994  b +1.000"""},
                     {"ico": "♟", "h": "Melampaui manusia", "p": "Go, catur, poker."},
                     {"ico": "🧬", "h": "Struktur protein", "p": "AlphaFold."},
                 ]},
-                {"t": "p", "md": "Ditambah: pendampingan pembacaan citra medis, dan "
-                                 "pendigitalan naskah kuno. Daftar ini ==bukan janji==; "
-                                 "semuanya sudah berjalan."},
+                {"t": "cards", "cols": 3, "items": [
+                    {"ico": "📺", "h": "Sistem perekomendasi",
+                     "p": "YouTube, Netflix, Spotify -- yang paling banyak dipakai orang "
+                          "setiap hari tanpa menyadarinya."},
+                    {"ico": "📜", "h": "Naskah kuno",
+                     "p": "Puluhan ribu manuskrip di **Vatican Secret Archive** "
+                          "ditranskripsi otomatis."},
+                    {"ico": "🌱", "h": "Penyakit tanaman",
+                     "p": "Dideteksi dan digolongkan langsung di lahan, cukup dengan "
+                          "ponsel biasa."},
+                    {"ico": "🩺", "h": "Citra medis",
+                     "p": "Mendampingi onkolog dan radiolog menafsirkan hasil pencitraan."},
+                    {"ico": "🌊", "h": "Bencana alam",
+                     "p": "Meramalkan banjir, badai, bahkan gempa bumi."},
+                    {"ico": "🧬", "h": "Struktur protein",
+                     "p": "AlphaFold, dengan ketepatan yang belum pernah ada sebelumnya."},
+                ]},
+                {"t": "band",
+                 "md": "Daftar ini ==bukan janji==; semuanya sudah berjalan. Itulah yang "
+                       "membedakannya dari slide berikutnya."},
             ],
             "notes": "Sengaja ditaruh sebelum slide gembar-gembor. Urutannya penting: "
                      "akui dulu capaiannya, baru kritik taksirannya. Kalau dibalik, "
                      "terdengar seperti penyangkalan.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Bagian 1.9",
+            "title": "Tiga gelombang dalam satu dasawarsa",
+            "blocks": [
+                {"t": "cards", "cols": 3, "items": [
+                    {"ico": "👁", "h": "2013 – 2017 · persepsi",
+                     "p": "Hasil yang mencengangkan pada tugas persepsi: klasifikasi citra, "
+                          "transkripsi suara, pengenalan tulisan tangan.", "style": "accent"},
+                    {"ico": "💬", "h": "2017 – 2022 · bahasa",
+                     "p": "Kemajuan cepat pada pemrosesan bahasa alami. Transformer terbit "
+                          "2017 -- bab 15 membongkarnya.", "style": "accent"},
+                    {"ico": "🎨", "h": "2022 – kini · generatif",
+                     "p": "Gelombang aplikasi AI generatif yang mengubah cara orang bekerja "
+                          "sehari-hari.", "style": "accent"},
+                ]},
+                {"t": "p", "md": "Urutan ini penting untuk perencanaan: kemampuan yang "
+                                 "matang lebih dulu -- persepsi -- adalah yang **paling "
+                                 "murah dan paling andal** dipakai hari ini. Yang paling "
+                                 "baru justru yang paling mahal dan paling belum stabil."},
+                {"t": "band", "style": "amber",
+                 "md": "Di lapangan, banyak kasus pemakaian yang benar-benar mendesak "
+                       "sebetulnya jatuh di gelombang **pertama dan kedua** -- OCR dokumen, "
+                       "klasifikasi keluhan, deteksi anomali. ==Tidak semuanya menuntut "
+                       "model generatif.=="},
+            ],
+            "notes": "Slide ini sering mengubah arah diskusi anggaran. Tanyakan: kasus Anda "
+                     "sebetulnya butuh gelombang yang mana?",
         },
 
         {
@@ -779,19 +869,25 @@ selesai    loss 0.00251  W +1.994  b +1.000"""},
                             "**10x-100x** -- yang belum terjadi.",
                             "Narasi AGI dan superintelijensi yang menyeret jadwal jadi "
                             "tidak masuk akal.",
-                            "Investasi AI 2023-2024 di atas **$100 miliar**, berhadapan "
-                            "dengan pendapatan di kisaran **$10 miliar**.",
+                            "Investasi AI -- terutama pusat data dan GPU -- melampaui "
+                            "**$200 miliar per tahun**, sementara pendapatannya jauh "
+                            "tertinggal di kisaran **$30 miliar**.",
                         ]},
                     ],
                     [
                         {"t": "p", "md": "**Dua musim dingin sebelumnya**"},
                         {"t": "bullets", "items": [
-                            "**Pertama** -- harapan symbolic AI pada 1960-an tidak terpenuhi; "
-                            "pendanaan runtuh pada 1970-an.",
-                            "**Kedua** -- *expert system* digembar-gemborkan pada 1980-an; "
-                            "pada 1990-an biaya perawatan dan batas skalanya terungkap.",
-                            "**Sekarang** -- masih di fase optimisme. Koreksi mungkin terjadi, "
-                            "tetapi ==tidak harus separah dua yang lalu==.",
+                            "**Pertama** -- Minsky, 1967: *\"Dalam satu generasi... persoalan "
+                            "menciptakan kecerdasan buatan pada dasarnya akan terpecahkan.\"* "
+                            "Pendanaan runtuh pada 1970-an.",
+                            "**Kedua** -- *expert system* pada 1980-an; sekitar 1985 "
+                            "perusahaan membelanjakan **lebih dari $1 miliar setahun**. "
+                            "Pada awal 1990-an terbukti mahal dirawat, sulit diskalakan, "
+                            "dan sempit cakupannya.",
+                            "**Sekarang** -- masih di fase optimisme. Menurut Chollet, "
+                            "kemunduran sebesar 1990-an ==tidak mungkin terulang== -- AI "
+                            "sudah membuktikan nilainya. Kalau ada musim dingin, mestinya "
+                            "sangat ringan.",
                         ]},
                     ],
                 ]},
@@ -801,9 +897,40 @@ selesai    loss 0.00251  W +1.994  b +1.000"""},
                        "defined requirements.",
                  "cite": "Chollet & Watson, bab 1"},
             ],
-            "notes": "Untuk peserta BRI ini slide yang paling berguna dalam rapat anggaran. "
+            "notes": "Ini slide yang paling berguna saat peserta duduk di rapat anggaran. "
                      "Pesannya bukan 'jangan investasi', melainkan 'taksir sesuai apa yang "
                      "terbukti, bukan sesuai apa yang dijanjikan'.",
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Bagian 1.10",
+            "title": "Urutannya terbalik dari yang dikira orang",
+            "blocks": [
+                {"t": "lead", "md": "Mudah mengira bahwa keberhasilan praktis AI generatif-lah "
+                                    "yang melahirkan keyakinan akan AGI dalam waktu dekat. "
+                                    "Menurut Chollet, ==yang terjadi justru sebaliknya=="},
+                {"t": "steps", "items": [
+                    "**2013** -- di kalangan elite teknologi sudah muncul kekhawatiran bahwa "
+                    "AGI akan tiba dalam beberapa tahun. Saat itu yang dianggap di jalur "
+                    "menuju ke sana adalah **DeepMind**, startup riset AI London yang "
+                    "kemudian diakuisisi Google.",
+                    "**2015** -- keyakinan itulah yang mendorong berdirinya **OpenAI**, yang "
+                    "semula bermaksud menjadi penyeimbang sumber terbuka bagi DeepMind.",
+                    "**2016** -- ajakan rekrutmen OpenAI menjanjikan **AGI tercapai pada 2020**. "
+                    "Adil untuk dicatat: hanya sebagian kecil orang di industri yang percaya "
+                    "jadwal seoptimistis itu waktu itu.",
+                    "**Awal 2023** -- sebagian besar insinyur di San Francisco Bay Area tampak "
+                    "yakin AGI akan tiba dalam satu-dua tahun berikutnya.",
+                ]},
+                {"t": "band", "style": "amber",
+                 "md": "OpenAI berperan penting menyalakan AI generatif. Jadi dalam pelintiran "
+                       "yang ganjil, **keyakinan akan AGI-lah yang menaikkan AI generatif**, "
+                       "bukan sebaliknya."},
+            ],
+            "notes": "Ini konteks yang jarang diketahui peserta dan sangat menolong saat "
+                     "membaca berita AI: banyak klaim yang beredar adalah keturunan dari "
+                     "keyakinan 2013, bukan simpulan dari bukti 2025.",
         },
 
         {
@@ -827,11 +954,33 @@ selesai    loss 0.00251  W +1.994  b +1.000"""},
                      ["Saat menemui hal baru", "Menurun diam-diam, sering tanpa memberi tanda",
                       "Belajar dari situasi itu lalu memperbaiki diri"],
                  ]},
+                {"t": "cols", "ratio": "1-1", "cols": [
+                    [
+                        {"t": "p", "md": "Metafora Chollet: **AI itu seperti tokoh kartun, "
+                                         "kecerdasan seperti makhluk hidup.** Kartun, "
+                                         "sebagus apa pun gambarnya, hanya bisa memainkan "
+                                         "adegan yang untuknya ia digambar. Makhluk hidup "
+                                         "bisa menyesuaikan diri dengan yang tak terduga."},
+                    ],
+                    [
+                        {"t": "p", "md": "*\"Kalau kartunnya digambar cukup realistis dan "
+                                         "mencakup cukup banyak adegan, apa bedanya?\"* "
+                                         "Bedanya adalah **keluwesan menyesuaikan diri** -- "
+                                         "dan itulah sebabnya membangun otomasi yang kukuh "
+                                         "begitu sulit: ia menuntut Anda memperhitungkan "
+                                         "==setiap skenario yang mungkin=="},
+                    ],
+                ]},
                 {"t": "band", "style": "rose",
                  "md": "Pembedaan ini punya akibat langsung di produksi: kalau sistem hanya "
                        "sanggup menangani apa yang pernah dilatihkan, maka ==pemantauan "
                        "pergeseran data bukan fitur tambahan==, melainkan syarat agar sistem "
                        "tetap layak dipakai. Bab 18 kembali ke sini."},
+                {"t": "p", "md": "Karena itu Chollet menutup bagian ini dengan tenang: "
+                                 "jangan cemas AI tiba-tiba sadar diri lalu mengambil alih "
+                                 "kemanusiaan. Teknologi hari ini tidak menuju ke sana. "
+                                 "*\"Seperti mengharapkan jam yang lebih baik akan melahirkan "
+                                 "perjalanan waktu -- keduanya hal yang sama sekali berbeda.\"*"},
             ],
             "notes": "Ini jembatan ke seluruh sisa kursus. Kalimat kuncinya: model yang "
                      "bagus di laboratorium bisa jadi berbahaya di produksi, dan bedanya "
@@ -847,12 +996,25 @@ selesai    loss 0.00251  W +1.994  b +1.000"""},
                                  "yang sebagian besar sudah terpenuhi pada 2025 -- dipakai "
                                  "bukan untuk menyombong, melainkan untuk menunjukkan bentuk "
                                  "taksiran yang benar: **arahnya tepat, jadwalnya yang meleset**."},
-                {"t": "bullets", "items": [
-                    "AI sebagai asisten harian bagi puluhan juta orang.",
-                    "Pendampingan belajar dan pekerjaan rumah jadi hal biasa.",
-                    "Kemudi otonom terpasang dalam skala nyata.",
-                    "Penemuan ilmiah dipercepat -- pelipatan protein, dan matematika.",
-                ]},
+                {"t": "table",
+                 "head": ["Ramalan 2017", "Keadaannya pada 2025"],
+                 "widths": [40, 60],
+                 "rows": [
+                     ["AI jadi asisten, bahkan teman",
+                      "**Puluhan juta orang** memakai ChatGPT, Gemini, Claude sebagai asisten "
+                      "harian. Ratusan ribu berinteraksi dengan \"teman\" AI di aplikasi "
+                      "seperti Character.ai."],
+                     ["Menjawab pertanyaan, membantu mendidik anak",
+                      "Ternyata **penjawaban pertanyaan dan bantuan pekerjaan rumah** justru "
+                      "menjadi pemakaian nomor satu chatbot ini."],
+                     ["Mengantar Anda dari A ke B",
+                      "Kemudi otonom penuh sudah terpasang dalam skala nyata di Phoenix, "
+                      "San Francisco, Los Angeles, dan Austin."],
+                     ["Membantu ilmuwan menemukan terobosan",
+                      "**AlphaFold** membantu biolog meramal struktur protein. Matematikawan "
+                      "**Terence Tao** memperkirakan AI bisa menjadi ko-penulis yang andal "
+                      "dalam riset matematika sekitar 2026."],
+                 ]},
                 {"t": "band",
                  "md": "Kesimpulan bab: ==gembar-gembor jangka pendek akan kempis, "
                        "perubahan jangka panjang tetap datang==. Dua-duanya benar sekaligus, "

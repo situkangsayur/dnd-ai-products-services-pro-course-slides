@@ -279,8 +279,8 @@ def dense(inputs, W, b):
                           "PyTorch.", "style": "bad"},
                 ]},
             ],
-            "notes": "Untuk BRI yang perlu deployment on-premise, ekosistem produksi TF "
-                     "ini justru argumen yang paling relevan.",
+            "notes": "Untuk organisasi yang harus men-deploy on-premise, ekosistem produksi "
+                     "TF inilah argumen yang paling relevan.",
         },
 
         {"type": "section", "num": "02", "title": "PyTorch",

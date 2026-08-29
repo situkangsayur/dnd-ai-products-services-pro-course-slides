@@ -9,7 +9,7 @@
 \coursesource{Chollet \& Watson, Deep Learning with Python 3e -- bab 1}
 \courseduration{90 menit}
 \coursepresenter{Prof. Bambang Riyanto Trilaksono}{Pengajar Utama}
-\coursebrand{AI for Professional \textperiodcentered\ ITB \texttimes\ BRI \textperiodcentered\ Ch 1}
+\coursebrand{AI for Professional \textperiodcentered\ ITB \textperiodcentered\ Ch 1}
 
 \title{Apa Itu Deep Learning?}
 \author{Prof. Bambang Riyanto Trilaksono}
@@ -129,7 +129,7 @@ Untuk kelas ini bab 1 punya beban tambahan: ia yang menetapkan \textbf{kosakata 
 Dua kutipan ini berselisih 113 tahun dan berselisih pendapat. Pertanyaan Lovelace -- \textit{bisakah mesin melampaui perintah kita?} -- belum tuntas sampai hari ini; \hilite{machine learning adalah jawaban parsialnya}, sebab mesin memang menghasilkan sesuatu yang tidak kita tuliskan: aturannya.
 \end{iband}
 \end{frame}
-\note{Kutipan Lovelace dipakai Chollet sejak edisi pertama sebagai pembuka. Untuk audiens perbankan, sambungkan ke pertanyaan auditor: kalau aturannya tidak kita tulis, siapa yang bertanggung jawab atas aturan itu?}
+\note{Kutipan Lovelace dipakai Chollet sejak edisi pertama sebagai pembuka. Sambungkan ke pertanyaan yang akan diajukan auditor mana pun: kalau aturannya tidak kita tulis, siapa yang bertanggung jawab atas aturan itu?}
 
 \coursesection{02}{Pembalikan paradigma}{Yang tadinya keluaran, kini menjadi masukan.}
 
@@ -205,7 +205,7 @@ Ukuran mutu & Data dan label, tanpa metrik yang disepakati & Model bisa dilatih 
 Data masukan yang mewakili & Contoh yang tidak menyerupai kondisi produksi & Model berhasil di laptop, gagal saat dipakai. Bab 5 dan 6 menamainya secara teknis. \\
 \end{itable}
 \end{frame}
-\note{Untuk BRI: minta peserta memikirkan satu use case di divisinya, lalu uji ketiga bahan itu. Yang paling sering hilang adalah bahan ketiga -- kesepakatan tentang apa yang disebut 'benar'.}
+\note{Minta peserta memikirkan satu kasus pemakaian dari pekerjaannya sendiri, lalu uji ketiga bahan itu. Yang paling sering hilang adalah bahan ketiga -- kesepakatan tentang apa yang disebut 'benar'.}
 
 \framekicker{Bagian 1.1.3}
 \begin{frame}[shrink=25]{Representasi: gagasan yang menyatukan seluruh buku}
@@ -232,6 +232,32 @@ Tidak ada model yang jadi lebih pintar. Yang berubah hanya representasinya. Inil
 \end{minipage}%
 \end{frame}
 \note{Kalau ada waktu, gambar manual di papan: sebar titik, lalu putar sumbu. Peraga fisik ini jauh lebih nempel daripada slide.}
+
+\framekicker{Bagian 1.4}
+\begin{frame}[shrink=25]{Ruang hipotesis -- dan mengapa aturan tulis-tangan runtuh}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Perubahan sumbu tadi kita rancang \textbf{dengan tangan}. Itu sanggup untuk persoalan sesederhana itu. Tetapi bisakah Anda menuliskan transformasi citra yang menjelaskan beda 6 dan 8, atau 1 dan 7, \hilite{untuk segala macam tulisan tangan}?\par}\vskip 4pt
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardwarn}
+\cardh{Bisa -- sampai batas tertentu}
+Aturan seperti \textit{menghitung banyaknya gelung tertutup}, atau histogram piksel tegak dan mendatar, lumayan membedakan angka tulisan tangan.
+\end{icardwarn}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardbad}
+\cardh{Tetapi rapuh dan menyiksa}
+Tiap kali muncul contoh tulisan baru yang mematahkan aturan yang sudah disusun rapi, Anda harus menambah transformasi dan aturan baru -- \textbf{sambil memperhitungkan interaksinya dengan semua aturan sebelumnya}.
+\end{icardbad}
+\end{minipage}%
+\begin{iband}[signal]
+Algoritma machine learning \textbf{tidak kreatif} dalam menemukan transformasi ini. Ia sekadar menelusuri sehimpunan operasi yang sudah ditetapkan lebih dulu -- himpunan itulah yang disebut \hilite{ruang hipotesis (hypothesis space)}. Pada contoh 2D tadi, ruang hipotesisnya adalah ruang semua perubahan sumbu yang mungkin.
+\end{iband}
+\begin{iquote}
+\quotetext{Itulah machine learning, secara ringkas: \textbf{mencari representasi dan aturan yang berguna atas suatu data masukan, di dalam ruang kemungkinan yang sudah ditetapkan, dengan tuntunan sebuah sinyal umpan balik.}}\quotecite{Chollet \& Watson, bab 1.4}
+\end{iquote}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Gagasan sesederhana itu menyelesaikan rentang tugas intelektual yang luar biasa lebar -- dari kemudi otonom sampai penjawaban pertanyaan dalam bahasa alami.\par}\vskip 4pt
+\end{frame}
+\note{Istilah 'ruang hipotesis' akan kembali di bab 3 saat topologi model dibahas: memilih arsitektur = mempersempit ruang hipotesis.}
 
 \coursesection{03}{Yang 'dalam' pada deep learning}{Bukan pemahaman yang lebih dalam. Hanya lapisan yang lebih banyak.}
 
@@ -269,6 +295,7 @@ Tidak ada model yang jadi lebih pintar. Yang berubah hanya representasinya. Inil
 \item Banyaknya lapis = \textbf{kedalaman} model. Jaringan modern punya puluhan sampai ratusan lapis.
 \item Lawannya, \textbf{shallow learning}, hanya satu atau dua lapis representasi.
 \item Semua lapis dipelajari \hilite{sekaligus, otomatis} dari data pelatihan -- bukan dirancang satu per satu oleh manusia.
+\item Chollet menyebut nama yang sebenarnya lebih tepat untuk bidang ini: \textit{layered representations learning} atau \textit{hierarchical representations learning}. Istilah \textbf{deep} menang karena sejarah, bukan karena akurasi.
 \end{ibullets}
 \end{frame}
 \note{Koreksi salah paham yang paling umum di ruangan: 'deep' sering dikira berarti mesin memahami lebih dalam. Bukan. Ia sekadar keterangan arsitektur.}
@@ -374,7 +401,7 @@ Model bisa dilatih lanjut dengan data baru tanpa mulai dari nol; \textit{foundat
 Ini juga sumber keluhan auditor: yang membuatnya kuat -- representasi yang ditemukan sendiri -- persis yang membuatnya sulit diterangkan. Bab 10 kembali ke soal ini untuk kasus citra.
 \end{iband}
 \end{frame}
-\note{Sambungkan ke topik kepatuhan yang akan dibahas di sesi lain: keterjelasan model bukan sekadar keinginan akademik di sektor perbankan, ia persyaratan.}
+\note{Sambungkan ke topik kepatuhan yang akan dibahas di sesi lain: keterjelasan model bukan sekadar keinginan akademik di sektor diatur ketat, ia persyaratan.}
 
 \framekicker{Bagian 1.2}
 \begin{frame}[shrink=25]{Zaman AI generatif}
@@ -477,9 +504,84 @@ Go, catur, poker.
 AlphaFold.
 \end{icard}
 \end{minipage}%
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Ditambah: pendampingan pembacaan citra medis, dan pendigitalan naskah kuno. Daftar ini \hilite{bukan janji}; semuanya sudah berjalan.\par}\vskip 4pt
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icard}
+\cardh{Sistem perekomendasi}
+YouTube, Netflix, Spotify -- yang paling banyak dipakai orang setiap hari tanpa menyadarinya.
+\end{icard}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icard}
+\cardh{Naskah kuno}
+Puluhan ribu manuskrip di \textbf{Vatican Secret Archive} ditranskripsi otomatis.
+\end{icard}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icard}
+\cardh{Penyakit tanaman}
+Dideteksi dan digolongkan langsung di lahan, cukup dengan ponsel biasa.
+\end{icard}
+\end{minipage}%
+
+
+\vskip 4pt
+
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icard}
+\cardh{Citra medis}
+Mendampingi onkolog dan radiolog menafsirkan hasil pencitraan.
+\end{icard}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icard}
+\cardh{Bencana alam}
+Meramalkan banjir, badai, bahkan gempa bumi.
+\end{icard}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icard}
+\cardh{Struktur protein}
+AlphaFold, dengan ketepatan yang belum pernah ada sebelumnya.
+\end{icard}
+\end{minipage}%
+\begin{iband}[signal]
+Daftar ini \hilite{bukan janji}; semuanya sudah berjalan. Itulah yang membedakannya dari slide berikutnya.
+\end{iband}
 \end{frame}
 \note{Sengaja ditaruh sebelum slide gembar-gembor. Urutannya penting: akui dulu capaiannya, baru kritik taksirannya. Kalau dibalik, terdengar seperti penyangkalan.}
+
+\framekicker{Bagian 1.9}
+\begin{frame}[shrink=25]{Tiga gelombang dalam satu dasawarsa}
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{2013 -- 2017 $\cdot$ persepsi}
+Hasil yang mencengangkan pada tugas persepsi: klasifikasi citra, transkripsi suara, pengenalan tulisan tangan.
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{2017 -- 2022 $\cdot$ bahasa}
+Kemajuan cepat pada pemrosesan bahasa alami. Transformer terbit 2017 -- bab 15 membongkarnya.
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{2022 -- kini $\cdot$ generatif}
+Gelombang aplikasi AI generatif yang mengubah cara orang bekerja sehari-hari.
+\end{icardaccent}
+\end{minipage}%
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Urutan ini penting untuk perencanaan: kemampuan yang matang lebih dulu -- persepsi -- adalah yang \textbf{paling murah dan paling andal} dipakai hari ini. Yang paling baru justru yang paling mahal dan paling belum stabil.\par}\vskip 4pt
+\begin{iband}[amber]
+Di lapangan, banyak kasus pemakaian yang benar-benar mendesak sebetulnya jatuh di gelombang \textbf{pertama dan kedua} -- OCR dokumen, klasifikasi keluhan, deteksi anomali. \hilite{Tidak semuanya menuntut model generatif.}
+\end{iband}
+\end{frame}
+\note{Slide ini sering mengubah arah diskusi anggaran. Tanyakan: kasus Anda sebetulnya butuh gelombang yang mana?}
 
 \framekicker{Bagian 1.4 -- 1.5}
 \begin{frame}[shrink=25]{Waspadai gembar-gembor jangka pendek}
@@ -488,7 +590,7 @@ AlphaFold.
 \begin{ibullets}
 \item Ramalan pengangguran massal dan lonjakan produktivitas \textbf{10x-100x} -- yang belum terjadi.
 \item Narasi AGI dan superintelijensi yang menyeret jadwal jadi tidak masuk akal.
-\item Investasi AI 2023-2024 di atas \textbf{\$100 miliar}, berhadapan dengan pendapatan di kisaran \textbf{\$10 miliar}.
+\item Investasi AI -- terutama pusat data dan GPU -- melampaui \textbf{\$200 miliar per tahun}, sementara pendapatannya jauh tertinggal di kisaran \textbf{\$30 miliar}.
 \end{ibullets}
 
 \end{minipage}%
@@ -496,9 +598,9 @@ AlphaFold.
 \begin{minipage}[t]{0.485\textwidth}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Dua musim dingin sebelumnya}\par}\vskip 4pt
 \begin{ibullets}
-\item \textbf{Pertama} -- harapan symbolic AI pada 1960-an tidak terpenuhi; pendanaan runtuh pada 1970-an.
-\item \textbf{Kedua} -- \textit{expert system} digembar-gemborkan pada 1980-an; pada 1990-an biaya perawatan dan batas skalanya terungkap.
-\item \textbf{Sekarang} -- masih di fase optimisme. Koreksi mungkin terjadi, tetapi \hilite{tidak harus separah dua yang lalu}.
+\item \textbf{Pertama} -- Minsky, 1967: \textit{"Dalam satu generasi... persoalan menciptakan kecerdasan buatan pada dasarnya akan terpecahkan."} Pendanaan runtuh pada 1970-an.
+\item \textbf{Kedua} -- \textit{expert system} pada 1980-an; sekitar 1985 perusahaan membelanjakan \textbf{lebih dari \$1 miliar setahun}. Pada awal 1990-an terbukti mahal dirawat, sulit diskalakan, dan sempit cakupannya.
+\item \textbf{Sekarang} -- masih di fase optimisme. Menurut Chollet, kemunduran sebesar 1990-an \hilite{tidak mungkin terulang} -- AI sudah membuktikan nilainya. Kalau ada musim dingin, mestinya sangat ringan.
 \end{ibullets}
 
 \end{minipage}%
@@ -506,7 +608,22 @@ AlphaFold.
 \quotetext{Today's "artificial intelligence" is more accurately described as "cognitive automation." AI excels at solving problems with narrowly defined requirements.}\quotecite{Chollet \& Watson, bab 1}
 \end{iquote}
 \end{frame}
-\note{Untuk peserta BRI ini slide yang paling berguna dalam rapat anggaran. Pesannya bukan 'jangan investasi', melainkan 'taksir sesuai apa yang terbukti, bukan sesuai apa yang dijanjikan'.}
+\note{Ini slide yang paling berguna saat peserta duduk di rapat anggaran. Pesannya bukan 'jangan investasi', melainkan 'taksir sesuai apa yang terbukti, bukan sesuai apa yang dijanjikan'.}
+
+\framekicker{Bagian 1.10}
+\begin{frame}[shrink=25]{Urutannya terbalik dari yang dikira orang}
+\leadpar{Mudah mengira bahwa keberhasilan praktis AI generatif-lah yang melahirkan keyakinan akan AGI dalam waktu dekat. Menurut Chollet, \hilite{yang terjadi justru sebaliknya}}
+\begin{isteps}
+\item \textbf{2013} -- di kalangan elite teknologi sudah muncul kekhawatiran bahwa AGI akan tiba dalam beberapa tahun. Saat itu yang dianggap di jalur menuju ke sana adalah \textbf{DeepMind}, startup riset AI London yang kemudian diakuisisi Google.
+\item \textbf{2015} -- keyakinan itulah yang mendorong berdirinya \textbf{OpenAI}, yang semula bermaksud menjadi penyeimbang sumber terbuka bagi DeepMind.
+\item \textbf{2016} -- ajakan rekrutmen OpenAI menjanjikan \textbf{AGI tercapai pada 2020}. Adil untuk dicatat: hanya sebagian kecil orang di industri yang percaya jadwal seoptimistis itu waktu itu.
+\item \textbf{Awal 2023} -- sebagian besar insinyur di San Francisco Bay Area tampak yakin AGI akan tiba dalam satu-dua tahun berikutnya.
+\end{isteps}
+\begin{iband}[amber]
+OpenAI berperan penting menyalakan AI generatif. Jadi dalam pelintiran yang ganjil, \textbf{keyakinan akan AGI-lah yang menaikkan AI generatif}, bukan sebaliknya.
+\end{iband}
+\end{frame}
+\note{Ini konteks yang jarang diketahui peserta dan sangat menolong saat membaca berita AI: banyak klaim yang beredar adalah keturunan dari keyakinan 2013, bukan simpulan dari bukti 2025.}
 
 \framekicker{Bagian 1.5}
 \begin{frame}[shrink=25]{Otomasi kognitif bukan kecerdasan}
@@ -519,21 +636,32 @@ Cakupan & Persoalan dengan syarat yang sempit dan jelas & Persoalan yang belum p
 Sumber kemampuan & Contoh dalam data pelatihan & Penyesuaian saat berhadapan dengan yang tak dikenal \\
 Saat menemui hal baru & Menurun diam-diam, sering tanpa memberi tanda & Belajar dari situasi itu lalu memperbaiki diri \\
 \end{itable}
+\begin{minipage}[t]{0.485\textwidth}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Metafora Chollet: \textbf{AI itu seperti tokoh kartun, kecerdasan seperti makhluk hidup.} Kartun, sebagus apa pun gambarnya, hanya bisa memainkan adegan yang untuknya ia digambar. Makhluk hidup bisa menyesuaikan diri dengan yang tak terduga.\par}\vskip 4pt
+
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.485\textwidth}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textit{"Kalau kartunnya digambar cukup realistis dan mencakup cukup banyak adegan, apa bedanya?"} Bedanya adalah \textbf{keluwesan menyesuaikan diri} -- dan itulah sebabnya membangun otomasi yang kukuh begitu sulit: ia menuntut Anda memperhitungkan \hilite{setiap skenario yang mungkin}\par}\vskip 4pt
+
+\end{minipage}%
 \begin{iband}[rose]
 Pembedaan ini punya akibat langsung di produksi: kalau sistem hanya sanggup menangani apa yang pernah dilatihkan, maka \hilite{pemantauan pergeseran data bukan fitur tambahan}, melainkan syarat agar sistem tetap layak dipakai. Bab 18 kembali ke sini.
 \end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Karena itu Chollet menutup bagian ini dengan tenang: jangan cemas AI tiba-tiba sadar diri lalu mengambil alih kemanusiaan. Teknologi hari ini tidak menuju ke sana. \textit{"Seperti mengharapkan jam yang lebih baik akan melahirkan perjalanan waktu -- keduanya hal yang sama sekali berbeda."}\par}\vskip 4pt
 \end{frame}
 \note{Ini jembatan ke seluruh sisa kursus. Kalimat kuncinya: model yang bagus di laboratorium bisa jadi berbahaya di produksi, dan bedanya ada pada apa yang tidak pernah ia lihat.}
 
 \framekicker{Bagian 1.6}
 \begin{frame}[shrink=25]{Janji jangka panjang}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Chollet menutup bab ini dengan ramalannya sendiri dari 2017, yang sebagian besar sudah terpenuhi pada 2025 -- dipakai bukan untuk menyombong, melainkan untuk menunjukkan bentuk taksiran yang benar: \textbf{arahnya tepat, jadwalnya yang meleset}.\par}\vskip 4pt
-\begin{ibullets}
-\item AI sebagai asisten harian bagi puluhan juta orang.
-\item Pendampingan belajar dan pekerjaan rumah jadi hal biasa.
-\item Kemudi otonom terpasang dalam skala nyata.
-\item Penemuan ilmiah dipercepat -- pelipatan protein, dan matematika.
-\end{ibullets}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.376\textwidth}>{\raggedright\arraybackslash}p{0.564\textwidth}}
+\thead{Ramalan 2017} & \thead{Keadaannya pada 2025} \\ \midrule
+AI jadi asisten, bahkan teman & \textbf{Puluhan juta orang} memakai ChatGPT, Gemini, Claude sebagai asisten harian. Ratusan ribu berinteraksi dengan "teman" AI di aplikasi seperti Character.ai. \\
+Menjawab pertanyaan, membantu mendidik anak & Ternyata \textbf{penjawaban pertanyaan dan bantuan pekerjaan rumah} justru menjadi pemakaian nomor satu chatbot ini. \\
+Mengantar Anda dari A ke B & Kemudi otonom penuh sudah terpasang dalam skala nyata di Phoenix, San Francisco, Los Angeles, dan Austin. \\
+Membantu ilmuwan menemukan terobosan & \textbf{AlphaFold} membantu biolog meramal struktur protein. Matematikawan \textbf{Terence Tao} memperkirakan AI bisa menjadi ko-penulis yang andal dalam riset matematika sekitar 2026. \\
+\end{itable}
 \begin{iband}[signal]
 Kesimpulan bab: \hilite{gembar-gembor jangka pendek akan kempis, perubahan jangka panjang tetap datang}. Dua-duanya benar sekaligus, dan itulah yang membuat perencanaan jadi sulit.
 \end{iband}

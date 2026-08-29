@@ -158,8 +158,13 @@ def _title_slide(deck):
             '<div class="cobrand">'
             '<img src="../_engine/assets/itb-logo.png" alt="ITB">'
             '<div class="co-txt"><b>Institut Teknologi Bandung</b><br>'
-            'Direktorat Pendidikan Profesional Berkelanjutan<br>'
-            '<span style="opacity:.7">×  PT Bank Rakyat Indonesia (Persero) Tbk</span></div>'
+            'Direktorat Pendidikan Profesional Berkelanjutan'
+            # The cohort partner is named only on decks that declare one. The
+            # book chapters are reused across cohorts and institutions, so they
+            # deliberately carry no partner branding.
+            + (f'<br><span style="opacity:.7">× {esc_html(d["partner"])}</span>'
+               if d.get("partner") else "")
+            + "</div>"
             "</div>"
             f'<div class="kicker">{esc_html(kicker)}</div>'
             f'<h1>{ih(d["title"])}</h1>'
@@ -264,8 +269,9 @@ def write(deck, outdir):
     os.makedirs(outdir, exist_ok=True)
 
     brand = deck.get("brand") or (
-        f"AI for Professional · ITB × BRI · "
-        + (f"Ch {deck['number']} — {deck['title']}" if deck.get("number") else deck["title"]))
+        "AI for Professional · ITB"
+        + (f" · Ch {deck['number']} — {deck['title']}" if deck.get("number")
+           else f" · {deck['title']}"))
 
     meta = {
         "id": deck["id"],

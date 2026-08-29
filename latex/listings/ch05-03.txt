@@ -1,0 +1,2 @@
+rugi latih  : turun terus, mulus
+akurasi validasi: bertahan di ~10%  (= tolok banding acak untuk 10 kelas)
