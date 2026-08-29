@@ -1,0 +1,11 @@
+
+flowchart TB
+  LIB["<b>Global library of<br/>abstract subroutines</b><br/><small>geometric and algorithmic</small>"]
+  META["<b>Perpetual meta-learner</b><br/><small>grows a task-level model<br/>across a variety of tasks</small>"]
+  PROG["<b>Modular task-level program</b><br/><small>learned on the fly for<br/>one specific task</small>"]
+  TASK["A task"]
+  LIB -- "fetch relevant subroutines" --> META
+  META -- "design choices" --> PROG
+  PROG -- "actions" --> TASK
+  TASK -- "data and feedback" --> PROG
+  META -- "push reusable subroutines" --> LIB

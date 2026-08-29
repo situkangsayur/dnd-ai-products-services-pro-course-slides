@@ -1,0 +1,10 @@
+
+flowchart LR
+  T["<b>Training time</b><br/><small>parameters determined<br/>by gradient descent</small>"]
+  F["<b>Frozen</b><br/><small>the database is static</small>"]
+  I["<b>Inference time</b><br/><small>information retrieval only</small>"]
+  G["Excellent at patterns<br/><b>similar to training data</b>"]
+  B["Inherently poor at<br/><b>adaptation</b><br/><small>backward-looking</small>"]
+  T --> F --> I
+  I --> G
+  I --> B

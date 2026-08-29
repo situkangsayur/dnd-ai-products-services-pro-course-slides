@@ -1,0 +1,9 @@
+
+flowchart LR
+  D["Training data"]
+  L["<b>Layers</b><br/><small>parameterized by weights</small>"]
+  P["Predictions"]
+  LOSS["<b>Loss function</b><br/><small>measures how wrong</small>"]
+  G["<b>Gradient descent</b><br/><small>the chain is differentiable</small>"]
+  D --> L --> P --> LOSS --> G
+  G -- "update the weights" --> L

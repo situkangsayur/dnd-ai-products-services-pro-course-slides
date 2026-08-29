@@ -1,0 +1,11 @@
+
+flowchart TB
+  A["<b>1. Define the problem</b><br/><small>what data, what prediction?</small>"]
+  B["<b>2. Choose a measure of success</b><br/><small>often domain-specific</small>"]
+  C["<b>3. Prepare the validation process</b><br/><small>train / validation / test,<br/>with no label leakage</small>"]
+  D["<b>4. Vectorize and preprocess</b>"]
+  E["<b>5. Beat a common-sense baseline</b><br/><small>this may not be possible</small>"]
+  F["<b>6. Overfit, then regularize</b><br/><small>tune on validation only</small>"]
+  G["<b>7. Deploy and monitor</b><br/><small>findings feed the next iteration</small>"]
+  A --> B --> C --> D --> E --> F --> G
+  G -. "refine" .-> A

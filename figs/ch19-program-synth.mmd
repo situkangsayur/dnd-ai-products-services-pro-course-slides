@@ -1,0 +1,11 @@
+
+flowchart TB
+  SPEC["<b>Specification</b><br/><small>input-output pairs</small>"]
+  VOC["<b>Vocabulary of<br/>building blocks</b><br/><small>if, for, +=, ==, ...</small>"]
+  SEARCH["<b>Discrete search</b><br/><small>genetic search, enumeration</small>"]
+  CAND["Candidate programs"]
+  TEST["Test against<br/>the specification"]
+  OK["A valid program"]
+  SPEC --> SEARCH
+  VOC --> SEARCH --> CAND --> TEST --> OK
+  TEST -. "no match: keep searching" .-> SEARCH

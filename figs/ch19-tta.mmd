@@ -1,0 +1,9 @@
+
+flowchart TB
+  P["<b>Classic deep learning</b><br/><small>parameters frozen<br/>after training</small>"]
+  T["<b>Test-time adaptation</b><br/><small>active reasoning or learning<br/>during the test itself</small>"]
+  TT["<b>Test-time training</b><br/><small>adjust parameters from the<br/>examples in the task,<br/>via gradient descent</small>"]
+  SE["<b>Search methods</b><br/><small>chain-of-thought synthesis,<br/>or symbolic program synthesis</small>"]
+  P -- "the missing component" --> T
+  T --> TT
+  T --> SE

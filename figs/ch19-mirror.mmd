@@ -1,0 +1,11 @@
+
+flowchart LR
+  R["Real world"]
+  H["<b>Embodied human<br/>experience</b>"]
+  C["Abstract concepts<br/>in the human mind"]
+  D["Labelled data<br/>exemplifying<br/>those concepts"]
+  M["<b>Machine learning model</b><br/><small>f(x)</small>"]
+  R --> H --> C --> D --> M
+  M -. "matches the training data" .-> D
+  M -. "does NOT match the human<br/>mental model it came from" .-> C
+  M -. "may not transfer to<br/>the real world" .-> R

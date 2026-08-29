@@ -1,0 +1,6 @@
+inputs = keras.Input(shape=(num_input_features,))
+x = layers.Dense(32, activation="relu")(inputs)
+x = layers.Dense(32, activation="relu")(x)
+outputs = layers.Dense(1, activation="sigmoid")(x)
+model = keras.Model(inputs, outputs)
+model.compile(optimizer="rmsprop", loss="binary_crossentropy")
