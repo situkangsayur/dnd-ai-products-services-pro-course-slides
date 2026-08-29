@@ -337,6 +337,18 @@ And the standing warning: \textbf{always evaluate on the validation set}, then c
 \end{iband}
 \end{frame}
 
+\framekicker{Practice}
+\begin{frame}[shrink=25]{What this chapter changes about how you start}
+\begin{isteps}
+\item \textbf{Compute the baseline before writing any model.} It is cheap, and here it would have saved two failed attempts.
+\item \textbf{State the architecture prior out loud.} \textit{Convolution assumes translation invariance} --- is that true of your data, at the timescale you care about?
+\item \textbf{Check whether order matters.} If it does, any layer that pools or flattens is throwing away the signal.
+\end{isteps}
+\begin{iband}[signal]
+For transactional or operational data these three questions usually settle the architecture before a single experiment runs --- which is \hilite{the cheapest hour in the whole project}
+\end{iband}
+\end{frame}
+
 \framekicker{Summary}
 \begin{frame}[shrink=25]{What has to survive this chapter}
 \begin{isteps}

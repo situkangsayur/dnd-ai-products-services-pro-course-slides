@@ -724,6 +724,27 @@ outputs = layers.Dense(1)(x)"""},
 
         {
             "type": "slide",
+            "kicker": "Practice",
+            "title": "What this chapter changes about how you start",
+            "blocks": [
+                {"t": "steps", "items": [
+                    "**Compute the baseline before writing any model.** It is cheap, and here "
+                    "it would have saved two failed attempts.",
+                    "**State the architecture prior out loud.** *Convolution assumes "
+                    "translation invariance* — is that true of your data, at the timescale "
+                    "you care about?",
+                    "**Check whether order matters.** If it does, any layer that pools or "
+                    "flattens is throwing away the signal.",
+                ]},
+                {"t": "band",
+                 "md": "For transactional or operational data these three questions usually "
+                       "settle the architecture before a single experiment runs — which is "
+                       "==the cheapest hour in the whole project=="},
+            ],
+        },
+
+        {
+            "type": "slide",
             "kicker": "Summary",
             "title": "What has to survive this chapter",
             "blocks": [
