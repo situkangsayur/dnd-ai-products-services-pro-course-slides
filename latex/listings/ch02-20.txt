@@ -1,0 +1,7 @@
+Epoch 0
+  loss at batch 0: 6.19
+  loss at batch 400: 2.21
+Epoch 9
+  loss at batch 0: 0.36
+  loss at batch 400: 0.34
+accuracy: 0.90

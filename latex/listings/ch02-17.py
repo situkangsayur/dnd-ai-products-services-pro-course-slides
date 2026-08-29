@@ -1,0 +1,30 @@
+import keras
+from keras import ops
+
+class NaiveDense:
+    def __init__(self, input_size, output_size, activation=None):
+        self.activation = activation
+        self.W = keras.Variable(shape=(input_size, output_size), initializer="uniform")
+        self.b = keras.Variable(shape=(output_size,), initializer="zeros")
+
+    def __call__(self, inputs):
+        x = ops.matmul(inputs, self.W) + self.b
+        return self.activation(x) if self.activation is not None else x
+
+    @property
+    def weights(self):
+        return [self.W, self.b]
+
+class NaiveSequential:
+    def __init__(self, layers):
+        self.layers = layers
+
+    def __call__(self, inputs):
+        x = inputs
+        for layer in self.layers:
+            x = layer(x)
+        return x
+
+    @property
+    def weights(self):
+        return [w for layer in self.layers for w in layer.weights]

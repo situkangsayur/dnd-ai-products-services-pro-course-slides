@@ -1,0 +1,26 @@
+\documentclass[aspectratio=169,11pt,t]{beamer}
+\usepackage{itbpro}
+\lstdefinestyle{probe}{
+  language=Python,
+  basicstyle=\ttfamily\fontsize{7.2}{8.9}\selectfont\color{ink},
+  keywordstyle=\color{codekw}\bfseries,
+  stringstyle=\color{codestr},
+  commentstyle=\color{codecom}\itshape,
+  emphstyle=\color{codefn},
+  numberstyle=\ttfamily\tiny\color{ink3},
+  showstringspaces=false,
+  breaklines=true,
+  breakatwhitespace=false,
+  breakindent=10pt,
+  postbreak=\mbox{\textcolor{signal}{$\hookrightarrow$}\space},
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true,
+  upquote=true}
+\begin{document}
+\begin{frame}[fragile]{x}
+\begin{lstlisting}[style=probe]
+import numpy as np
+\end{lstlisting}
+\end{frame}
+\end{document}

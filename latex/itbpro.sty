@@ -1,0 +1,487 @@
+% =============================================================================
+%  itbpro.sty  —  Beamer theme for
+%  "Designing and Building AI Products and Services: AI for Professional"
+%  Institut Teknologi Bandung · Direktorat Pendidikan Profesional Berkelanjutan
+%
+%  Deliberately not a stock Beamer theme. All default chrome (navigation
+%  symbols, shadowed blocks, the sidebar) is removed and rebuilt: a dark
+%  ITB-blue cover and section divider, light content frames that survive both a
+%  bright training room and a black-and-white handout printer, a thin progress
+%  rule in the footer, and tcolorbox-based cards / code / output panels that
+%  mirror the web deck one-for-one.
+%
+%  Engine: pdflatex (Inter + Fira Mono, both from TeX Live — no fontspec, so it
+%  compiles on a plain texlive-full box with no system font hunting).
+%
+%  Options
+%    dark      dark content frames as well as cover (default: light content)
+%    noprogress   drop the footer progress rule
+%
+%  Usage
+%    \documentclass[aspectratio=169,11pt]{beamer}
+%    \usepackage{itbpro}
+%    \coursetitle{...}\coursesubtitle{...}\coursekicker{Chapter 1}
+%    \coursepresenter{Name}{Role}\coursesource{...}\courseduration{90 menit}
+%    \begin{document}\covertitle ... \end{document}
+% =============================================================================
+
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{itbpro}[2026/08/29 v1.0 ITB professional course beamer theme]
+
+\RequirePackage{xkeyval}
+\newif\ifitb@dark      \itb@darkfalse
+\newif\ifitb@progress  \itb@progresstrue
+\DeclareOptionX{dark}{\itb@darktrue}
+\DeclareOptionX{noprogress}{\itb@progressfalse}
+\ProcessOptionsX\relax
+
+\RequirePackage{tikz}
+\RequirePackage{xcolor}
+\RequirePackage{tcolorbox}
+\RequirePackage{listings}
+\RequirePackage{booktabs}
+\RequirePackage{array}
+\RequirePackage{adjustbox}
+\RequirePackage{ragged2e}
+\RequirePackage{inter}
+\RequirePackage[scaled=0.86]{FiraMono}
+\RequirePackage[T1]{fontenc}
+\RequirePackage[utf8]{inputenc}
+\RequirePackage{hyperref}
+
+\usetikzlibrary{calc,positioning,arrows.meta,shapes.geometric,fit,backgrounds,
+                decorations.pathreplacing,shadows.blur}
+\tcbuselibrary{skins,breakable,listings}
+
+\renewcommand{\familydefault}{\sfdefault}
+
+% =============================================================================
+%  Palette — the same values the web deck uses, so the two never drift
+% =============================================================================
+\definecolor{itbblue}   {HTML}{0050A0}   % sampled from the official ITB mark
+\definecolor{itbbluelt} {HTML}{2C7BD4}
+\definecolor{itbnavy}   {HTML}{041B3D}
+\definecolor{itbnavy2}  {HTML}{072752}
+\definecolor{signal}    {HTML}{0E8FA8}   % cyan, darkened for ink on white
+\definecolor{signalbr}  {HTML}{22D3EE}   % the bright web cyan, for dark frames
+\definecolor{amber}     {HTML}{B67A00}
+\definecolor{amberbr}   {HTML}{F5B301}
+\definecolor{lime}      {HTML}{4A8B26}
+\definecolor{limebr}    {HTML}{7BD949}
+\definecolor{rose}      {HTML}{D14257}
+\definecolor{rosebr}    {HTML}{FB7185}
+\definecolor{violet}    {HTML}{7C5CD6}
+\definecolor{violetbr}  {HTML}{A78BFA}
+
+\definecolor{ink}       {HTML}{10203A}
+\definecolor{ink2}      {HTML}{40536F}
+\definecolor{ink3}      {HTML}{7387A3}
+\definecolor{paper}     {HTML}{FFFFFF}
+\definecolor{papertint} {HTML}{F4F8FD}
+\definecolor{rule}      {HTML}{D9E4F2}
+
+\definecolor{dink}      {HTML}{EAF2FF}
+\definecolor{dink2}     {HTML}{B6C9E4}
+\definecolor{dink3}     {HTML}{7E93B4}
+
+% Active roles — flipped by \itbdarkframe / the [dark] option
+\ifitb@dark
+  \colorlet{fg}{dink}\colorlet{fg2}{dink2}\colorlet{fg3}{dink3}
+  \colorlet{bg}{itbnavy}\colorlet{accent}{signalbr}
+\else
+  \colorlet{fg}{ink}\colorlet{fg2}{ink2}\colorlet{fg3}{ink3}
+  \colorlet{bg}{paper}\colorlet{accent}{signal}
+\fi
+
+% =============================================================================
+%  Strip Beamer's furniture
+% =============================================================================
+\usetheme{default}
+\usecolortheme{default}
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{blocks}[default]
+\setbeamertemplate{itemize items}{}
+\setbeamertemplate{enumerate items}{}
+\setbeamercovered{transparent=15}
+\beamertemplatenavigationsymbolsempty
+
+\setbeamercolor{normal text}{fg=fg,bg=bg}
+\setbeamercolor{structure}{fg=itbblue}
+\setbeamercolor{alerted text}{fg=rose}
+\setbeamercolor{background canvas}{bg=bg}
+\usebeamercolor[fg]{normal text}
+
+\setbeamerfont{frametitle}{size=\Large,series=\bfseries}
+\setbeamerfont{title}{size=\Huge,series=\bfseries}
+\setbeamerfont{footline}{size=\tiny}
+
+% =============================================================================
+%  Deck metadata
+% =============================================================================
+\newcommand{\itb@title}{}      \newcommand{\coursetitle}[1]{\renewcommand{\itb@title}{#1}}
+\newcommand{\itb@subtitle}{}   \newcommand{\coursesubtitle}[1]{\renewcommand{\itb@subtitle}{#1}}
+\newcommand{\itb@kicker}{}     \newcommand{\coursekicker}[1]{\renewcommand{\itb@kicker}{#1}}
+\newcommand{\itb@source}{}     \newcommand{\coursesource}[1]{\renewcommand{\itb@source}{#1}}
+\newcommand{\itb@duration}{}   \newcommand{\courseduration}[1]{\renewcommand{\itb@duration}{#1}}
+\newcommand{\itb@pname}{}\newcommand{\itb@prole}{}
+\newcommand{\coursepresenter}[2]{\renewcommand{\itb@pname}{#1}\renewcommand{\itb@prole}{#2}}
+\newcommand{\itb@brand}{AI for Professional \textperiodcentered\ ITB \texttimes\ BRI}
+\newcommand{\coursebrand}[1]{\renewcommand{\itb@brand}{#1}}
+\newcommand{\itb@logo}{itb-logo.png}
+\newcommand{\courselogo}[1]{\renewcommand{\itb@logo}{#1}}
+
+% =============================================================================
+%  Frame title — thin accent rule, title, optional kicker on the right
+% =============================================================================
+\newcommand{\itb@kickernow}{}
+\newcommand{\framekicker}[1]{\renewcommand{\itb@kickernow}{#1}}
+
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip
+  \begin{beamercolorbox}[wd=\paperwidth,sep=0pt]{frametitle}%
+    \vskip 12pt
+    \hspace*{0.055\paperwidth}%
+    \begin{minipage}{0.89\paperwidth}
+      \ifx\itb@kickernow\@empty\else
+        {\fontsize{6.6}{8}\selectfont\bfseries\color{accent}%
+         \MakeUppercase{\itb@kickernow}\par}\vskip 2pt
+      \fi
+      \global\let\itb@kickernow\@empty
+      {\color{fg}\fontsize{15.5}{18.5}\selectfont\bfseries
+       \raggedright\insertframetitle\par}
+      \vskip 5pt
+      {\color{accent}\rule{34pt}{1.6pt}}%
+      {\color{rule}\rule{0.86\paperwidth}{0.6pt}}%
+    \end{minipage}
+    \vskip 9pt
+  \end{beamercolorbox}%
+}
+
+% =============================================================================
+%  Footline — brand · deck title, progress rule, page number
+% =============================================================================
+\setbeamertemplate{footline}{%
+  \ifitb@progress
+    \begin{tikzpicture}[remember picture,overlay]
+      \fill[rule] (current page.south west) rectangle
+        ++(\paperwidth, 1.6pt);
+      \fill[itbblue] (current page.south west) rectangle
+        ++(\the\dimexpr\insertframenumber\dimexpr\paperwidth/\inserttotalframenumber\relax\relax, 1.6pt);
+    \end{tikzpicture}%
+  \fi
+  \hbox{%
+    \hspace*{0.055\paperwidth}%
+    \parbox[b]{0.62\paperwidth}{\raggedright
+      {\fontsize{6.2}{7.4}\selectfont\color{fg3}\itb@brand}\par\vskip 5pt}%
+    \hfill
+    \parbox[b]{0.28\paperwidth}{\raggedleft
+      {\fontsize{6.6}{7.4}\selectfont\color{fg3}\ttfamily
+       \insertframenumber\,/\,\inserttotalframenumber}\par\vskip 5pt}%
+    \hspace*{0.055\paperwidth}%
+  }%
+}
+
+% Content frames get generous, consistent side margins.
+\setbeamersize{text margin left=0.055\paperwidth, text margin right=0.055\paperwidth}
+
+% =============================================================================
+%  Cover
+% =============================================================================
+\newcommand{\itb@chip}[2]{%
+  \tikz[baseline=(n.base)]{
+    \node[inner xsep=7pt,inner ysep=4pt,rounded corners=7pt,
+          draw=signalbr!35,fill=white!8,text=dink2,
+          font=\fontsize{6.6}{8}\selectfont] (n)
+      {\textcolor{signalbr}{\textbf{#1}}~~#2};}%
+}
+
+\newcommand{\covertitle}{%
+{%
+\setbeamercolor{background canvas}{bg=itbnavy}
+\begin{frame}[plain,noframenumbering]
+\begin{tikzpicture}[remember picture,overlay]
+  % ambient wash, matching the web cover
+  \fill[itbblue,opacity=0.30] ($(current page.north west)+(-2,1)$)
+    ellipse [x radius=7.2cm, y radius=4.6cm];
+  \fill[signalbr,opacity=0.10] ($(current page.north east)+(0.4,-0.6)$)
+    ellipse [x radius=5.4cm, y radius=3.6cm];
+  \fill[violetbr,opacity=0.09] ($(current page.south east)+(-1.4,0.2)$)
+    ellipse [x radius=5.0cm, y radius=3.2cm];
+  % faint technical grid
+  \begin{scope}
+    \clip (current page.south west) rectangle (current page.north east);
+    \foreach \x in {0,1.1,...,17} {
+      \draw[dink,opacity=0.045,line width=0.4pt]
+        ($(current page.south west)+(\x,0)$) -- ($(current page.north west)+(\x,0)$);}
+    \foreach \y in {0,1.1,...,10} {
+      \draw[dink,opacity=0.045,line width=0.4pt]
+        ($(current page.south west)+(0,\y)$) -- ($(current page.south east)+(0,\y)$);}
+  \end{scope}
+\end{tikzpicture}%
+\vspace*{0.045\paperheight}
+\hspace*{0.055\paperwidth}%
+\begin{minipage}[t]{0.86\paperwidth}
+  \IfFileExists{\itb@logo}{\raisebox{-3.4mm}{\includegraphics[height=11mm]{\itb@logo}}\hspace{4mm}}{}%
+  \begin{minipage}[b]{0.60\paperwidth}
+    {\fontsize{7.4}{9.4}\selectfont\color{dink}\textbf{Institut Teknologi Bandung}}\par
+    {\fontsize{6.6}{8.4}\selectfont\color{dink3}Direktorat Pendidikan Profesional Berkelanjutan}\par
+    {\fontsize{6.6}{8.4}\selectfont\color{dink3}\texttimes\ PT Bank Rakyat Indonesia (Persero) Tbk}\par
+  \end{minipage}
+
+  \vskip 11pt
+  \ifx\itb@kicker\@empty\else
+    {\fontsize{7.2}{9}\selectfont\bfseries\color{signalbr}%
+     \MakeUppercase{\itb@kicker}\par}\vskip 4pt
+    {\color{signalbr}\rule{26pt}{1.4pt}}\par\vskip 7pt
+  \fi
+  {\color{dink}\fontsize{24}{27.5}\selectfont\bfseries\raggedright\itb@title\par}
+  \ifx\itb@subtitle\@empty\else
+    \vskip 7pt
+    {\color{dink2}\fontsize{9.4}{12.6}\selectfont\raggedright\itb@subtitle\par}
+  \fi
+  \vskip 11pt
+  \ifx\itb@duration\@empty\else\itb@chip{Durasi}{\itb@duration}\hspace{3pt}\fi
+  \ifx\itb@pname\@empty\else\itb@chip{Pengajar}{\itb@pname}\fi
+  % The source line is long enough to run off the plate beside the others, so
+  % it gets its own row rather than being truncated at the right margin.
+  \ifx\itb@source\@empty\else\par\vskip 5pt\itb@chip{Sumber}{\itb@source}\fi
+\end{minipage}
+\end{frame}
+}%
+}
+
+% =============================================================================
+%  Section divider
+% =============================================================================
+\newcommand{\coursesection}[3]{%
+{%
+\setbeamercolor{background canvas}{bg=itbnavy2}
+\begin{frame}[plain,noframenumbering]
+\begin{tikzpicture}[remember picture,overlay]
+  \fill[signalbr,opacity=0.11] ($(current page.east)+(-1.0,0.4)$)
+    ellipse [x radius=6.4cm, y radius=4.2cm];
+  \fill[itbblue,opacity=0.26] ($(current page.south west)+(0.5,-0.5)$)
+    ellipse [x radius=6.0cm, y radius=3.6cm];
+\end{tikzpicture}%
+\vspace*{0.20\paperheight}
+\hspace*{0.055\paperwidth}%
+\begin{minipage}{0.84\paperwidth}
+  {\fontsize{40}{44}\selectfont\ttfamily\bfseries\color{signalbr!45}#1}\\[4pt]
+  {\color{dink}\fontsize{20}{24}\selectfont\bfseries\raggedright#2\par}
+  \ifx\relax#3\relax\else
+    \vskip 7pt {\color{dink2}\fontsize{9.5}{13}\selectfont\raggedright#3\par}
+  \fi
+\end{minipage}
+\end{frame}
+}%
+}
+
+% =============================================================================
+%  Inline helpers used by the generator
+% =============================================================================
+\newcommand{\hlink}[2]{\href{#1}{\color{itbblue}\underline{#2}}}
+\newcommand{\inlinecode}[1]{%
+  \tikz[baseline=(x.base)]{\node[inner xsep=2.2pt,inner ysep=1pt,rounded corners=2pt,
+    fill=signal!10,draw=signal!28,line width=0.3pt] (x)
+    {\ttfamily\footnotesize\textcolor{itbnavy}{#1}};}}
+\newcommand{\hilite}[1]{{\color{signal}\bfseries#1}}
+
+% Lead paragraph
+\newcommand{\leadpar}[1]{{\fontsize{10.5}{14.5}\selectfont\color{fg2}\raggedright#1\par}\vskip 5pt}
+
+% =============================================================================
+%  Lists — square bullets in the accent colour, boxed numerals
+% =============================================================================
+\newenvironment{ibullets}
+  {\begin{list}{\raisebox{1.6pt}{\tikz{\fill[accent,rotate=45] (0,0) rectangle (2.6pt,2.6pt);}}}%
+     {\setlength{\leftmargin}{14pt}\setlength{\itemindent}{0pt}
+      \setlength{\labelsep}{7pt}\setlength{\itemsep}{4.5pt}
+      \setlength{\parsep}{0pt}\setlength{\topsep}{2pt}}%
+   \color{fg2}\fontsize{9.4}{12.6}\selectfont}
+  {\end{list}}
+
+\newcounter{istep}
+\newenvironment{isteps}
+  {\setcounter{istep}{0}%
+   \begin{list}{\stepcounter{istep}%
+     \tikz[baseline=(n.base)]{\node[inner xsep=3.4pt,inner ysep=1.4pt,rounded corners=3pt,
+       fill=accent!12,draw=accent!40,line width=0.4pt,text=accent] (n)
+       {\ttfamily\fontsize{6.8}{8}\selectfont\bfseries\theistep};}}%
+     {\setlength{\leftmargin}{17pt}\setlength{\labelsep}{7pt}
+      \setlength{\itemsep}{4.5pt}\setlength{\parsep}{0pt}\setlength{\topsep}{2pt}}%
+   \color{fg2}\fontsize{9.4}{12.6}\selectfont}
+  {\end{list}}
+
+% =============================================================================
+%  Cards
+% =============================================================================
+\tcbset{itbcard/.style={
+  enhanced, sharp corners=all, rounded corners, arc=3.2pt,
+  boxrule=0.5pt, left=7pt, right=7pt, top=6pt, bottom=6pt,
+  colback=papertint, colframe=rule, coltext=ink2,
+  fontupper=\fontsize{8.6}{11.4}\selectfont,
+  before skip=3pt, after skip=3pt}}
+
+\newtcolorbox{icard}[1][]{itbcard,#1}
+\newtcolorbox{icardaccent}[1][]{itbcard,colback=signal!7,colframe=signal!35,#1}
+\newtcolorbox{icardwarn}[1][]{itbcard,colback=amberbr!9,colframe=amber!40,#1}
+\newtcolorbox{icardgood}[1][]{itbcard,colback=limebr!10,colframe=lime!40,#1}
+\newtcolorbox{icardbad}[1][]{itbcard,colback=rosebr!9,colframe=rose!38,#1}
+
+\newcommand{\cardh}[1]{{\color{ink}\fontsize{9.4}{11.6}\selectfont\bfseries#1\par}\vskip 2.5pt}
+\newcommand{\cardtag}[1]{\vskip 4pt
+  \tikz[baseline]{\node[inner xsep=4pt,inner ysep=1.6pt,rounded corners=2.6pt,
+    fill=signal!12,draw=signal!34,line width=0.35pt,text=signal,
+    font=\fontsize{5.8}{7}\selectfont\bfseries] {\MakeUppercase{#1}};}}
+
+% Stat tile
+\newcommand{\istat}[2]{%
+  \begin{icard}
+    {\color{itbblue}\fontsize{20}{22}\selectfont\bfseries#1\par}\vskip 3pt
+    {\color{ink3}\fontsize{7.4}{9.4}\selectfont#2\par}
+  \end{icard}}
+
+% =============================================================================
+%  Callout band / quote
+% =============================================================================
+\newtcolorbox{iband}[1][signal]{
+  enhanced, sharp corners, boxrule=0pt, leftrule=2.2pt,
+  colback=#1!7, colframe=#1, coltext=ink,
+  left=9pt, right=9pt, top=6pt, bottom=6pt,
+  fontupper=\fontsize{9.4}{12.4}\selectfont,
+  before skip=6pt, after skip=4pt}
+
+\newtcolorbox{iquote}{
+  enhanced, sharp corners, boxrule=0pt, leftrule=2.2pt,
+  colback=violet!5, colframe=violet, coltext=ink,
+  left=11pt, right=9pt, top=7pt, bottom=7pt,
+  before skip=6pt, after skip=4pt}
+\newcommand{\quotetext}[1]{{\fontsize{12}{15.6}\selectfont\itshape#1\par}}
+\newcommand{\quotecite}[1]{\vskip 5pt{\color{ink3}\fontsize{7.6}{9.6}\selectfont\upshape#1\par}}
+
+% =============================================================================
+%  Code + program output
+% =============================================================================
+\definecolor{codebg}   {HTML}{F7FAFE}
+\definecolor{codekw}   {HTML}{8B39B8}
+\definecolor{codestr}  {HTML}{2E7D32}
+\definecolor{codecom}  {HTML}{7387A3}
+\definecolor{codenum}  {HTML}{C2571A}
+\definecolor{codefn}   {HTML}{1B5FB8}
+
+\lstdefinestyle{itbpy}{
+  language=Python,
+  basicstyle=\ttfamily\fontsize{7.2}{8.9}\selectfont\color{ink},
+  keywordstyle=\color{codekw}\bfseries,
+  stringstyle=\color{codestr},
+  commentstyle=\color{codecom}\itshape,
+  emphstyle=\color{codefn},
+  numberstyle=\ttfamily\tiny\color{ink3},
+  showstringspaces=false,
+  breaklines=true,
+  breakatwhitespace=false,
+  breakindent=10pt,
+  % No \textcolor here: listings measures the postbreak box while it is
+  % still expanding, and a colour command in it derails that measurement.
+  postbreak=\mbox{$\hookrightarrow$\space},
+  tabsize=4,
+  columns=fullflexible,
+  keepspaces=true,
+  upquote=true,
+  literate=%
+    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+    {—}{{---}}1 {–}{{--}}1 {“}{{``}}1 {”}{{''}}1 {’}{{'}}1 {…}{{\ldots}}1
+    {×}{{x}}1 {→}{{->}}2 {≈}{{~}}1 {≤}{{<=}}2 {≥}{{>=}}2,
+}
+
+% A code panel with a small header strip naming the listing and the language.
+%
+% The body is pulled from a file with \lstinputlisting rather than typed inline
+% as verbatim. That is what keeps these frames out of [fragile]: beamer reads a
+% frame body as an argument, which inline verbatim cannot survive, and [fragile]
+% in turn is incompatible with [shrink]. Reading from a file sidesteps both, and
+% the emitted files are runnable on their own.
+\newtcolorbox{icodebox}[2][python]{
+  enhanced, breakable, sharp corners=all, rounded corners, arc=3.2pt,
+  boxrule=0.5pt, colback=codebg, colframe=rule,
+  left=6pt, right=6pt, top=5pt, bottom=5pt,
+  before skip=5pt, after skip=5pt,
+  title={\hbox to \linewidth{%
+    \color{ink3}\ttfamily\fontsize{6.2}{7.6}\selectfont #2\hfill
+    \color{signal}\ttfamily\fontsize{5.8}{7}\selectfont\bfseries\MakeUppercase{#1}}},
+  fonttitle=\normalfont, coltitle=ink3,
+  colbacktitle=papertint, titlerule=0.4pt,
+  attach boxed title to top, boxed title style={empty, boxrule=0pt},
+}
+% \icode{lang}{label}{file}
+\newcommand{\icode}[3]{%
+  \begin{icodebox}[#1]{#2}\lstinputlisting[style=itbpy]{#3}\end{icodebox}}
+
+% Verbatim program output -- visibly a result, not source.
+\lstdefinestyle{itbout}{
+  basicstyle=\ttfamily\fontsize{7}{8.8}\selectfont\color{ink},
+  breaklines=true, columns=fullflexible, keepspaces=true,
+  showstringspaces=false, upquote=true,
+}
+\newtcolorbox{ioutputbox}{
+  enhanced, breakable, sharp corners, rounded corners, arc=3pt,
+  boxrule=0.5pt, leftrule=2.2pt,
+  colback=limebr!7, colframe=lime!45,
+  left=7pt, right=7pt, top=13pt, bottom=6pt,
+  before skip=5pt, after skip=5pt,
+  overlay={\node[anchor=north west,text=lime,
+                 font=\fontsize{5.6}{7}\selectfont\bfseries,
+                 inner sep=0pt] at ([shift={(7pt,-4.5pt)}]frame.north west) {OUTPUT};},
+}
+% \ioutput{file}
+\newcommand{\ioutput}[1]{%
+  \begin{ioutputbox}\lstinputlisting[style=itbout]{#1}\end{ioutputbox}}
+
+% =============================================================================
+%  Tables
+% =============================================================================
+\newcommand{\thead}[1]{{\color{signal}\fontsize{7.4}{9}\selectfont\bfseries\MakeUppercase{#1}}}
+\newenvironment{itable}[1]
+  {\vskip 3pt\begingroup
+   \renewcommand{\arraystretch}{1.28}
+   \fontsize{8.2}{10.6}\selectfont\color{ink2}
+   \setlength{\tabcolsep}{6pt}
+   \begin{tabular}{#1}\toprule}
+  {\bottomrule\end{tabular}\endgroup\vskip 3pt}
+
+% =============================================================================
+%  Resource link row (notebook / repo / chapter)
+% =============================================================================
+\newcommand{\reslink}[3]{%
+  \tikz[baseline=(n.base)]{\node[inner xsep=6pt,inner ysep=3.4pt,rounded corners=4pt,
+    draw=rule,fill=papertint,line width=0.5pt,align=left] (n)
+    {\begin{tabular}{@{}l@{}}
+       {\color{ink3}\ttfamily\fontsize{5.6}{6.8}\selectfont\MakeUppercase{#1}}\\[1pt]
+       {\color{ink}\fontsize{7.6}{9}\selectfont\hlink{#3}{#2}}
+     \end{tabular}};}\hspace{3pt}}
+
+% =============================================================================
+%  Dark content frame — for the few slides that want the web deck's look
+% =============================================================================
+\newenvironment{darkframe}[1][]
+  {\begingroup
+   \setbeamercolor{background canvas}{bg=itbnavy}
+   \colorlet{fg}{dink}\colorlet{fg2}{dink2}\colorlet{fg3}{dink3}
+   \colorlet{accent}{signalbr}
+   \setbeamercolor{normal text}{fg=dink,bg=itbnavy}\usebeamercolor[fg]{normal text}
+   \begin{frame}[#1]}
+  {\end{frame}\endgroup}
+
+% =============================================================================
+%  Objectives frame — used once per deck, right after the cover
+% =============================================================================
+\newcommand{\itb@objtitle}{Setelah sesi ini, peserta dapat}
+\newenvironment{objectives}
+  {\begin{frame}{Tujuan Sesi}\framekicker{Learning outcomes}%
+   \leadpar{\itb@objtitle:}\begin{isteps}}
+  {\end{isteps}\end{frame}}
+
+\hypersetup{colorlinks=true, linkcolor=itbblue, urlcolor=itbblue,
+            pdfborder={0 0 0}}
+
+\endinput

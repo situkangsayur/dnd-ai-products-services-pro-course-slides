@@ -1,0 +1,20 @@
+# LaTeX build artefacts — the PDFs are committed, the intermediates are not.
+latex/*.aux
+latex/*.log
+latex/*.nav
+latex/*.out
+latex/*.snm
+latex/*.toc
+latex/*.fls
+latex/*.fdb_latexmk
+latex/*.synctex.gz
+latex/*.vrb
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Notebook scratch
+.ipynb_checkpoints/
