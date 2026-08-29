@@ -483,6 +483,30 @@ model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"]
             ],
         },
 
+        {
+            "type": "slide",
+            "kicker": "Section 14.4.1",
+            "title": "Counts, or presence? A third output mode",
+            "blocks": [
+                {"t": "p", "md": "`multi_hot` records only whether a word appeared. "
+                                 "`TextVectorization` offers two alternatives that weight it."},
+                {"t": "table",
+                 "head": ["`output_mode`", "What each position holds"],
+                 "widths": [24, 76],
+                 "rows": [
+                     ["`\"multi_hot\"`", "**1 if the word appears**, 0 otherwise."],
+                     ["`\"count\"`", "**How many times** it appears."],
+                     ["`\"tf_idf\"`", "Its count, **discounted by how common the word is "
+                      "across the whole corpus** — so *the* contributes almost nothing and a "
+                      "distinctive word contributes a lot."],
+                 ]},
+                {"t": "band",
+                 "md": "TF-IDF is decades older than deep learning and still competitive on "
+                       "short texts. It is worth trying before ==anything with a recurrent "
+                       "layer in it=="},
+            ],
+        },
+
         {"type": "section", "num": "04", "title": "Sequence models",
          "lead": "Stop engineering order. Show the model the raw sequence."},
 

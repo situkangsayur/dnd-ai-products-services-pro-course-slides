@@ -208,6 +208,20 @@ One argument, and the model improves: \textit{"not good"} is now a token in its 
 \end{iband}
 \end{frame}
 
+\framekicker{Section 14.4.1}
+\begin{frame}[shrink=25]{Counts, or presence? A third output mode}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\inlinecode{multi\_hot} records only whether a word appeared. \inlinecode{TextVectorization} offers two alternatives that weight it.\par}\vskip 4pt
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2256\textwidth}>{\raggedright\arraybackslash}p{0.7144\textwidth}}
+\thead{\inlinecode{output\_mode}} & \thead{What each position holds} \\ \midrule
+\inlinecode{"multi\_hot"} & \textbf{1 if the word appears}, 0 otherwise. \\
+\inlinecode{"count"} & \textbf{How many times} it appears. \\
+\inlinecode{"tf\_idf"} & Its count, \textbf{discounted by how common the word is across the whole corpus} --- so \textit{the} contributes almost nothing and a distinctive word contributes a lot. \\
+\end{itable}
+\begin{iband}[signal]
+TF-IDF is decades older than deep learning and still competitive on short texts. It is worth trying before \hilite{anything with a recurrent layer in it}
+\end{iband}
+\end{frame}
+
 \coursesection{04}{Sequence models}{Stop engineering order. Show the model the raw sequence.}
 
 \framekicker{Section 14.5}
