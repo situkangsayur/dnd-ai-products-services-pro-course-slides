@@ -54,5 +54,10 @@
  "ch09-separable": "cec9125465f9a61a",
  "ch09-vanish": "5432e341909ca819",
  "ch09-vit": "e1579d74b7e4f6cc",
- "ch09-xception": "b284c2984af81f21"
+ "ch09-xception": "b284c2984af81f21",
+ "ch10-descent-ascent": "e19b434f02214090",
+ "ch10-distill": "a5a2d2600731cfca",
+ "ch10-four": "88842f3b32f07e95",
+ "ch10-gradcam": "eceb5319eb77f120",
+ "ch10-latent": "20fd85c0e6e68dc2"
 }

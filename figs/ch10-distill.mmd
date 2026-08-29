@@ -1,0 +1,8 @@
+
+flowchart LR
+  IN["Raw RGB pixels"]
+  L1["Early layers<br/><small>edge detectors,<br/>almost all information retained</small>"]
+  L2["Middle layers<br/><small>textures, parts;<br/>more filters blank</small>"]
+  L3["Late layers<br/><small>abstract concepts;<br/>most filters blank</small>"]
+  OUT["Class<br/><small>cat or dog</small>"]
+  IN --> L1 --> L2 --> L3 --> OUT

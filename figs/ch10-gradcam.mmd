@@ -1,0 +1,9 @@
+
+flowchart TB
+  FM["Feature map of the<br/>last convolution layer<br/><small>how strongly each channel<br/>fires, at each location</small>"]
+  GR["Gradient of the class score<br/>with respect to each channel<br/><small>how important each<br/>channel is to the class</small>"]
+  W["Weight every channel<br/>by its importance"]
+  HM["Heatmap<br/><small>how strongly the image<br/>activates the class, per location</small>"]
+  FM --> W
+  GR --> W
+  W --> HM

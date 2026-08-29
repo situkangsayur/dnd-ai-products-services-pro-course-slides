@@ -1,0 +1,6 @@
+
+flowchart LR
+  I["Images"] --> M["Model, up to the layer<br/>before the classifier"]
+  M --> A["Activation vectors<br/><small>coordinates on the manifold</small>"]
+  A --> T["t-SNE / UMAP<br/><small>project to 2D</small>"]
+  T --> P["A plot you can read:<br/>clusters, outliers,<br/>ambiguous samples"]

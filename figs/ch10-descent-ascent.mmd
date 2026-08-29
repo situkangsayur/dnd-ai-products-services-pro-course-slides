@@ -1,0 +1,11 @@
+
+flowchart TB
+  subgraph T["Ordinary training"]
+    direction TB
+    T1["Image is FIXED"] --> T2["Adjust the WEIGHTS"] --> T3["Lower the loss"]
+  end
+  subgraph V["Filter visualisation"]
+    direction TB
+    V1["Weights are FIXED"] --> V2["Adjust the IMAGE"] --> V3["Raise the activation"]
+  end
+  T ~~~ V
