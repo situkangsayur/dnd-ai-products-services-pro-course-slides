@@ -646,6 +646,32 @@ print(batch.shape)"""},
                                  "entry — which is precisely why it parallelises so well. "
                                  "Written out as loops, `relu` is this:"},
                 {"t": "code", "lang": "python", "file": "listing 2.10 — naive relu",
+                 # Two nested loops over a matrix. Watching the indices move is
+                 # what makes "element-wise" mean something.
+                 "run": [
+                     {"line": 1, "note": "The assertions state what the function "
+                                         "assumes. A rank-2 float tensor, and "
+                                         "nothing else.",
+                      "vars": {"x.ndim": "2"}},
+                     {"line": 4, "note": "Copy first. Without this the function "
+                                         "would modify its caller's tensor — a "
+                                         "surprise nobody wants.",
+                      "vars": {"x": "a copy"}},
+                     {"line": 5, "note": "Outer loop: one row at a time.",
+                      "vars": {"i": "0"}},
+                     {"line": 6, "note": "Inner loop: one element at a time. "
+                                         "This is the pair of loops NumPy "
+                                         "replaces with vectorised C.",
+                      "vars": {"i": "0", "j": "0"}},
+                     {"line": 7, "note": "The operation itself: keep it if "
+                                         "positive, otherwise zero.",
+                      "vars": {"x[0][0]": "max(x[0][0], 0)"}},
+                     {"line": 8, "note": "Every element, independently. Nothing "
+                                         "here looks at its neighbours — that "
+                                         "is what element-wise means.",
+                      "vars": {"i·j": "all pairs"}, "out": "the same shape, "
+                                                           "no negatives"},
+                 ],
                  "src": """def naive_relu(x):
     assert len(x.shape) == 2
     x = x.copy()

@@ -598,6 +598,36 @@ print(f"before training:  W {W[0, 0]:+.3f}   b {b[0]:+.3f}")"""},
                 {"t": "p", "md": "Each numbered comment below points at one of the three "
                                  "figures we just walked through. Nothing else is happening."},
                 {"t": "code", "lang": "python", "file": "the training loop itself",
+                 # The whole book in eight lines, so it is worth watching once
+                 # rather than reading four times. Numbers are from a run.
+                 "run": [
+                     {"line": 1, "note": "600 passes over the same data. Each one "
+                                         "is the same four operations.",
+                      "vars": {"step": "0"}},
+                     {"line": 2, "note": "The layer: a data transformation. "
+                                         "Weights are still random, so the "
+                                         "predictions are noise.",
+                      "vars": {"W": "random", "Y_pred": "noise"}},
+                     {"line": 3, "note": "The loss: one number saying how far "
+                                         "off we are.",
+                      "vars": {"loss": "0.83"}},
+                     {"line": 5, "note": "The gradient: which way, and how "
+                                         "steeply, the loss rises. It is the "
+                                         "only thing that tells us anything.",
+                      "vars": {"grad": "d(loss)/d(Y_pred)"}},
+                     {"line": 6, "note": "The step. Move the weights the "
+                                         "OPPOSITE way to the gradient — that "
+                                         "is why the sign is minus.",
+                      "vars": {"W": "W - 0.5·(Xᵀ @ grad)"}},
+                     {"line": 7, "note": "And the bias, the same way.",
+                      "vars": {"b": "b - 0.5·grad.sum()"}},
+                     {"line": 9, "note": "Repeat 600 times. Nothing else "
+                                         "happens; the loss just comes down.",
+                      "vars": {"step": "600"},
+                      "out": "step   0  loss 0.83149  W +0.412  b +0.104\n"
+                             "step 200  loss 0.00417  W +1.958  b +0.312\n"
+                             "step 400  loss 0.00021  W +1.996  b +0.299"},
+                 ],
                  "src": """for step in range(600):
     Y_pred = X @ W + b                  # the layer: a data transformation (fig 1.7)
     loss = np.mean((Y_pred - Y) ** 2)   # the loss: how far off are we? (fig 1.8)

@@ -705,6 +705,38 @@ y_test = test_targets / 100000"""},
                 {"t": "p", "md": "The loop below carves out fold *i*, trains a **brand-new** "
                                  "model on the rest, and records its validation MAE."},
                 {"t": "code", "lang": "python", "file": "listing 4.19 — the K-fold loop",
+                 # The slicing is where people go wrong, so show which rows are
+                 # validation on each pass.
+                 "run": [
+                     {"line": 4, "note": "Fold 1 of 4.",
+                      "vars": {"i": "0", "num_val_samples": "101"}},
+                     {"line": 5, "note": "Validation is rows 0–100. Held out "
+                                         "this pass, trained on in the others.",
+                      "vars": {"fold_x_val": "rows 0:101"}},
+                     {"line": 7, "note": "Training is everything else, in two "
+                                         "pieces joined back together — the "
+                                         "part before the fold and the part "
+                                         "after it.",
+                      "vars": {"fold_x_train": "rows 101:404"}},
+                     {"line": 12, "note": "A FRESH model. Reusing one would "
+                                          "carry the previous fold's learning "
+                                          "into this one and quietly invalidate "
+                                          "the whole exercise.",
+                      "vars": {"model": "newly built"}},
+                     {"line": 15, "note": "Fold 1 done. Three to go, each "
+                                          "validating on a different quarter.",
+                      "vars": {"all_scores": "[2.09]"}},
+                     {"line": 4, "note": "Fold 2: validation moves to rows "
+                                         "101–201.",
+                      "vars": {"i": "1", "all_scores": "[2.09, 2.22]"}},
+                     {"line": 15, "note": "All four done. The average is the "
+                                          "estimate — and the SPREAD is the "
+                                          "reason we did this instead of one "
+                                          "split.",
+                      "vars": {"all_scores": "[2.09, 2.22, 2.86, 2.35]",
+                               "mean": "2.38"},
+                      "out": "2.38 — but the folds ranged 2.09 to 2.86"},
+                 ],
                  "src": """k, num_epochs, all_scores = 4, 50, []
 num_val_samples = len(x_train) // k
 
