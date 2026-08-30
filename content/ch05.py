@@ -13,6 +13,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from diagrams import dropout_net  # noqa: E402
 
 
 MMD_TENSION = """
@@ -979,9 +980,10 @@ regularizers.l1_l2(l1=0.001, l2=0.001)     # both at once"""},
             "kicker": "Section 5.4.4 · listing 5.15",
             "title": "Regularisation 3 — dropout",
             "blocks": [
-                {"t": "mmd", "id": "ch05-dropout", "src": MMD_DROPOUT,
-                 "cap": "Figure 5.21 — the rescaling is done during training so that test "
-                        "time needs no adjustment at all."},
+                dropout_net(
+                    "ch05-dropout-net", rate=0.5,
+                    cap="Two training passes over the same network. The crossed-out "
+                        "units are the ones dropped that pass."),
                 {"t": "p", "md": "The **dropout rate** is the fraction zeroed out, usually "
                                  "between **0.2 and 0.5**."},
             ],

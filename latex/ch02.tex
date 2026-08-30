@@ -151,6 +151,35 @@ Two things changed: the shape went from \inlinecode{(60000, 28, 28)} to \inlinec
 \end{frame}
 
 \framekicker{Section 2.1}
+\begin{frame}[shrink=25]{The same network, drawn as what it is}
+\begin{center}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch02-mnist-net.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont 784 units, then 512, then 10. Six are drawn per layer and the rest are the ellipsis --- the counts underneath are the real ones.\par}
+\end{frame}
+
+\framekicker{Section 2.1}
+\begin{frame}[shrink=25]{One forward pass, with the arithmetic}
+\begin{center}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch02-forward.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont A four-input toy of the same shape, small enough that every number fits on the slide. Press play.\par}
+\end{frame}
+
+\framekicker{Section 2.1}
+\begin{frame}[shrink=25]{Reading the forward pass}
+\begin{isteps}
+\item \textbf{Every edge is a weight, and the drawing shows it.} Warm means positive, rose means negative, and thickness is magnitude. A trained network is exactly this picture with different numbers on the edges --- nothing else changes.
+\item \textbf{Each unit sums what reaches it, adds a bias, then applies relu.} The sum for the top hidden unit is printed under the figure so you can check it against the inputs and weights shown.
+\item \textbf{A unit reading \inlinecode{0} is not broken --- it is \inlinecode{relu} doing its job.} Its sum came out negative and \inlinecode{max(0, z)} clipped it. That unit contributes nothing to this input, and \hilite{a different input would wake it up}.
+\item \textbf{The output layer uses softmax}, so its three numbers are positive and sum to 1 --- which is what makes them readable as probabilities.
+\end{isteps}
+\begin{iband}[signal]
+Scale this to 784 inputs, 512 hidden units and 10 outputs and you have the MNIST model from listing 2.2 --- \textbf{401,920 weights on the first layer alone}, every one doing what the four here are doing.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 2.1}
 \begin{frame}[shrink=25]{The whole first example, as a shape pipeline}
 \begin{center}
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch02-pipeline.tex.pdf}

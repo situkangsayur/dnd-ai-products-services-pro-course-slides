@@ -12,6 +12,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from diagrams import feature_maps  # noqa: E402
 
 
 MMD_TASKS = """
@@ -295,8 +296,18 @@ display_target(img)"""},
             "kicker": "Section 11.2.2",
             "title": "The shape of the problem",
             "blocks": [
-                {"t": "mmd", "id": "ch11-encdec", "src": MMD_ENCDEC,
-                 "cap": "Down three times by a factor of two, then back up three times."},
+                feature_maps(
+                    "ch11-encdec-shapes",
+                    [("Input", 200, 200, 3),
+                     ("Conv stride 2", 100, 100, 64),
+                     ("Conv stride 2", 50, 50, 128),
+                     ("Conv stride 2", 25, 25, 256),
+                     ("ConvTranspose", 50, 50, 256),
+                     ("ConvTranspose", 100, 100, 128),
+                     ("ConvTranspose", 200, 200, 64),
+                     ("Conv softmax", 200, 200, 3)],
+                    cap="Height is the spatial size, thickness is the channel count — "
+                        "both to scale. The hourglass is the architecture."),
                 {"t": "p", "md": "The first half is an ordinary classification-style ConvNet: "
                                  "it **compresses** the image into a small feature map where "
                                  "each location carries information about a large chunk of the "

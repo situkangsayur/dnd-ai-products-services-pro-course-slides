@@ -13,6 +13,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from diagrams import conv_compute  # noqa: E402
 
 
 MMD_LOCALGLOBAL = """
@@ -294,6 +295,54 @@ print(f"Test accuracy: {test_acc:.3f}")"""},
                  "cap": "Figure 8.4 — a window slides over the input, each 3D patch is turned "
                         "into a vector by the same learned kernel, and the vectors are "
                         "reassembled into an output map."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 8.1.1",
+            "title": "One position of that window, computed",
+            "blocks": [
+                conv_compute(
+                    "ch08-conv-compute",
+                    image=[[3, 1, 0, 2, 4],
+                           [1, 5, 2, 0, 1],
+                           [0, 2, 7, 3, 2],
+                           [4, 1, 3, 6, 0],
+                           [2, 0, 1, 2, 5]],
+                    kernel=[[1, 0, -1],
+                            [2, 0, -2],
+                            [1, 0, -1]],
+                    at=(1, 1),
+                    cap="A 3×3 kernel over one 3×3 patch. This kernel is a Sobel filter, "
+                        "which responds to vertical edges."),
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 8.1.1",
+            "title": "Reading the arithmetic: three things it settles",
+            "blocks": [
+                {"t": "steps", "items": [
+                    "**A convolution is multiply-and-add, and nothing else.** Nine "
+                    "products and a sum give one output cell. Slide the window to the "
+                    "next position and do it again — that is the whole operation.",
+                    "**The kernel is what gets learned.** Its nine numbers are "
+                    "`1, 0, -1 / 2, 0, -2 / 1, 0, -1` here because a person chose a Sobel "
+                    "filter. In a ConvNet ==those nine numbers are parameters==, found by "
+                    "gradient descent, and nobody chooses what they end up detecting.",
+                    "**The same nine numbers are reused at every position.** That is "
+                    "weight sharing: it is why a ConvNet has so few parameters compared "
+                    "with a `Dense` layer over the same image, and why a pattern learned "
+                    "in one corner is recognised in the other.",
+                ]},
+                {"t": "band", "md": "Why this kernel finds vertical edges: the left column "
+                                    "is positive and the right column is negative, so the "
+                                    "sum is large wherever **the left side is brighter than "
+                                    "the right**, and near zero on flat ground. Run it on a "
+                                    "patch where every cell is equal and the answer is "
+                                    "exactly 0."},
             ],
         },
 

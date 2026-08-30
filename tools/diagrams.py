@@ -681,3 +681,575 @@ def bag_of_words(fig_id, sentence, *, cap="", note="", width=1000, height=400,
                    "".join(out), pal=p)
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ========================================================== feature-map stacks --
+
+def feature_maps(fig_id, stages, *, cap="", note="", width=1080, height=440,
+                 full=False, animate=True, title_gap=False):
+    """Feature maps drawn at their real relative size.
+
+    ``stages`` is a list of ``(label, h, w, channels)``. A convolutional stack
+    is a story about **shape** -- the map gets smaller while it gets deeper --
+    and a row of equal rectangles labelled `50 x 50 x 128` tells that story only
+    to somebody who already knows it. Here the slab's height is the spatial
+    size and its depth is the channel count, both to scale, so the trade is
+    visible: the picture narrows and thickens.
+
+    Used for encoder/decoder stacks especially, where the hourglass shape *is*
+    the architecture.
+    """
+    norm = [(s[0], float(s[1]), float(s[2]), int(s[3])) for s in stages]
+    max_sp = max(max(h, w) for _, h, w, _ in norm)
+    max_ch = max(c for *_, c in norm)
+
+    def build(p):
+        out = []
+        n = len(norm)
+        pad = 74
+        slot = (width - 2 * pad) / n
+        mid = height / 2 - 6
+        max_h = height * 0.44          # pixels for the largest spatial side
+        max_d = 54                     # pixels for the deepest channel count
+
+        for i, (lbl, h, w, c) in enumerate(norm):
+            cx = pad + slot * (i + 0.5)
+            sh = max_h * (h / max_sp)
+            # Depth on a square root: channels run 3 -> 256 and a linear scale
+            # makes the first slab a hairline nobody can see.
+            dep = 10 + (max_d - 10) * (c / max_ch) ** 0.5
+            x, y = cx - dep / 2 - 14, mid - sh / 2
+            st = i + 1
+
+            # Back face and the connecting edges, drawn first: an isometric
+            # slab reads as a volume, a rectangle reads as an image.
+            out.append(rect(x + dep, y - dep * 0.55, 30, sh, r=3, pal=p,
+                            fill=p.fill2, stroke=p.faint, sw=1, opacity=0.75,
+                            step=st))
+            for (ax, ay, bx, by) in (
+                    (x, y, x + dep, y - dep * 0.55),
+                    (x + 30, y, x + dep + 30, y - dep * 0.55),
+                    (x, y + sh, x + dep, y + sh - dep * 0.55),
+                    (x + 30, y + sh, x + dep + 30, y + sh - dep * 0.55)):
+                out.append(line(ax, ay, bx, by, pal=p, stroke=p.faint, sw=0.9,
+                                opacity=0.75, step=st))
+            out.append(rect(x, y, 30, sh, r=3, pal=p, fill=p.accent_fill,
+                            stroke=p.accent, sw=1.5, step=st))
+
+            out.append(txt(cx, mid + max_h / 2 + 34, lbl, size=12.5,
+                           weight=600, pal=p, fill=p.ink, step=st))
+            out.append(txt(cx, mid + max_h / 2 + 54,
+                           f"{int(h)}×{int(w)}×{c}", size=12, mono=True, pal=p,
+                           fill=p.accent, step=st))
+
+            if i < n - 1:
+                nx = pad + slot * (i + 1.5)
+                out.append(arrow(cx + 34, mid, nx - 38, mid, pal=p,
+                                 stroke=p.line, sw=1.4, opacity=0.8,
+                                 step=st + 1))
+
+        # A ruler for the two quantities that are trading against each other.
+        out.append(txt(30, mid, "spatial", size=11.5, pal=p, fill=p.ink3,
+                       anchor="start", italic=True))
+        out.append(txt(30, mid + 16, "size ↕", size=11.5, pal=p, fill=p.ink3,
+                       anchor="start", italic=True))
+        out.append(txt(width - 30, mid, "channels", size=11.5, pal=p,
+                       fill=p.ink3, anchor="end", italic=True))
+        out.append(txt(width - 30, mid + 16, "= depth", size=11.5, pal=p,
+                       fill=p.ink3, anchor="end", italic=True))
+        return svg(width, height, "".join(out), pal=p,
+                   steps=n if animate else 0, sim_label="stage")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+def conv_compute(fig_id, *, image, kernel, cap="", note="", full=False,
+                 at=(0, 0), width=1020, height=430):
+    """One convolution, computed cell by cell, with the sum written out.
+
+    The operation is nine multiplications and an addition. Said that way it is
+    obvious; drawn as a box labelled "Conv2D" it is magic. This puts the kernel
+    on the image, highlights the nine cells it covers, and shows the products
+    and their total -- so a reader can check the arithmetic and then never have
+    to take a convolution on faith again.
+    """
+    ih, iw = len(image), len(image[0])
+    kh, kw = len(kernel), len(kernel[0])
+    r0, c0 = at
+
+    def build(p):
+        out = []
+        cell = 40
+        gap = 3
+        x0, y0 = 60, 108
+
+        out.append(txt(x0, 62, "input", size=13.5, weight=600, pal=p,
+                       anchor="start", fill=p.ink3))
+        for i in range(ih):
+            for j in range(iw):
+                x, y = x0 + j * (cell + gap), y0 + i * (cell + gap)
+                hot = r0 <= i < r0 + kh and c0 <= j < c0 + kw
+                out.append(rect(x, y, cell, cell, r=4, pal=p,
+                                fill=p.accent_fill if hot else p.fill,
+                                stroke=p.accent if hot else p.faint,
+                                sw=1.6 if hot else 1,
+                                step=1 if hot else 0))
+                out.append(txt(x + cell / 2, y + cell / 2, fmt(image[i][j]),
+                               size=12.5, mono=True, pal=p,
+                               fill=p.accent if hot else p.ink2))
+
+        kx = x0 + iw * (cell + gap) + 68
+        out.append(txt(kx, 62, "kernel", size=13.5, weight=600, pal=p,
+                       anchor="start", fill=p.ink3))
+        for i in range(kh):
+            for j in range(kw):
+                x, y = kx + j * (cell + gap), y0 + i * (cell + gap)
+                out.append(rect(x, y, cell, cell, r=4, pal=p, fill=p.warm_fill,
+                                stroke=p.warm, sw=1.4, step=2))
+                out.append(txt(x + cell / 2, y + cell / 2, fmt(kernel[i][j]),
+                               size=12.5, mono=True, pal=p, fill=p.warm,
+                               step=2))
+
+        # the arithmetic
+        terms, total = [], 0.0
+        for i in range(kh):
+            for j in range(kw):
+                a, b = image[r0 + i][c0 + j], kernel[i][j]
+                total += a * b
+                if b:
+                    terms.append(f"{fmt(a)}×{fmt(b)}")
+        sx = x0
+        sy = y0 + ih * (cell + gap) + 46
+        out.append(txt(sx, sy, " + ".join(terms) + f"  =  {fmt(total)}",
+                       size=14, mono=True, pal=p, anchor="start", fill=p.ink,
+                       step=3))
+        out.append(txt(sx, sy + 26,
+                       "Nine multiplications and an addition. That is the whole "
+                       "operation; everything else is where you slide it to next.",
+                       size=12.5, pal=p, anchor="start", fill=p.ink2, step=4))
+
+        ox = kx + kw * (cell + gap) + 74
+        out.append(txt(ox, 62, "output", size=13.5, weight=600, pal=p,
+                       anchor="start", fill=p.ink3))
+        out.append(rect(ox, y0, cell + 16, cell + 16, r=5, pal=p,
+                        fill=p.accent_fill, stroke=p.accent, sw=1.8, step=3))
+        out.append(txt(ox + (cell + 16) / 2, y0 + (cell + 16) / 2, fmt(total),
+                       size=16, weight=600, mono=True, pal=p, fill=p.ink,
+                       step=3))
+        out.append(txt(ox, y0 + cell + 44, "one cell of the", size=11.5, pal=p,
+                       anchor="start", fill=p.ink3, step=3))
+        out.append(txt(ox, y0 + cell + 62, "feature map", size=11.5, pal=p,
+                       anchor="start", fill=p.ink3, step=3))
+        return svg(width, height, "".join(out), pal=p, steps=4,
+                   sim_label="stage")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ============================================================= forward pass --
+
+def forward_pass(fig_id, *, inputs, layers, cap="", note="", width=1120,
+                 height=520, full=False, seed=2, labels=None, out_labels=None,
+                 softmax=True):
+    """A network computing, with the numbers it actually computes.
+
+    This is the figure the rest of the deck kept gesturing at. ``layers`` is a
+    list of widths, e.g. ``[5, 3]`` for one hidden layer of five units and an
+    output of three. Weights are drawn from a seeded generator, so the picture
+    is reproducible and the arithmetic in it is real: every activation shown
+    was computed from the inputs and weights on screen.
+
+    What is drawn, and why each part is there:
+
+    * **Edges carry their weight.** Colour is the sign -- warm for positive,
+      rose for negative -- and thickness is the magnitude. A network is a
+      picture of numbers, and a diagram in one uniform grey hides the only
+      thing that varies.
+    * **Signals move.** A dot travels each edge, so the direction of a forward
+      pass is something you watch rather than infer from arrowheads. Pure SMIL,
+      so it works in any browser with no script.
+    * **Neurons hold their activation**, printed and shown as a fill level. A
+      relu unit that came out at zero is visibly empty, which is the fastest
+      way to see what "dead unit" means.
+    * **It steps.** Input, then the first set of edges, then the activations
+      they produce, and so on -- the order the arithmetic happens in.
+    """
+    import math
+    import random
+
+    rng = random.Random(seed)
+    sizes = [len(inputs)] + list(layers)
+    W, B = [], []
+    for a, b in zip(sizes, sizes[1:]):
+        W.append([[round(rng.uniform(-1.2, 1.2), 2) for _ in range(a)]
+                  for _ in range(b)])
+        B.append([round(rng.uniform(-0.4, 0.4), 2) for _ in range(b)])
+
+    acts = [list(inputs)]
+    for li, (w, bs) in enumerate(zip(W, B)):
+        prev = acts[-1]
+        last = li == len(W) - 1
+        z = [sum(wi * x for wi, x in zip(row, prev)) + bb
+             for row, bb in zip(w, bs)]
+        if last and softmax:
+            m = max(z)
+            e = [math.exp(v - m) for v in z]
+            tot = sum(e)
+            acts.append([v / tot for v in e])
+        else:
+            acts.append([max(0.0, v) for v in z])
+
+    def build(p):
+        out = []
+        pad_x, top, bot = 130, 168, 118
+        n_layers = len(sizes)
+        step_x = (width - 2 * pad_x) / max(n_layers - 1, 1)
+        xs = [pad_x + i * step_x for i in range(n_layers)]
+        span = height - top - bot
+        R = 21
+
+        ys = []
+        for k in sizes:
+            ys.append([top + span * (j + 0.5) / k for j in range(k)])
+
+        amax = max(max(abs(v) for v in a) for a in acts) or 1.0
+
+        # --- edges, per layer -------------------------------------------------
+        for li in range(n_layers - 1):
+            st = li * 2 + 2
+            for j, y1 in enumerate(ys[li + 1]):
+                for i, y0 in enumerate(ys[li]):
+                    wgt = W[li][j][i]
+                    x0, x1 = xs[li] + R, xs[li + 1] - R
+                    col = p.warm if wgt >= 0 else p.bad
+                    out.append(line(x0, y0, x1, y1, pal=p, stroke=col,
+                                    sw=0.5 + 2.4 * abs(wgt) / 1.2,
+                                    opacity=0.22 + 0.5 * abs(wgt) / 1.2,
+                                    step=st))
+                    # A signal travelling the edge. Duration varies a little
+                    # per edge so the dots do not march in lockstep, which
+                    # reads as a machine rather than a flow.
+                    if p.name == "web":
+                        dur = 1.5 + ((i * 7 + j * 13) % 9) * 0.11
+                        out.append(
+                            f'<circle r="3" fill="{col}" opacity="0.9"'
+                            f' data-step="{st}">'
+                            f'<animateMotion dur="{dur:.2f}s" repeatCount="indefinite"'
+                            f' path="M{x0:.1f},{y0:.1f} L{x1:.1f},{y1:.1f}"/>'
+                            f'</circle>')
+
+        # --- units ------------------------------------------------------------
+        for li, (k, yy) in enumerate(zip(sizes, ys)):
+            st = li * 2 + 1
+            name = (labels[li] if labels and li < len(labels)
+                    else ("input" if li == 0
+                          else "output" if li == n_layers - 1
+                          else f"hidden {li}"))
+            act_name = ("" if li == 0
+                        else ("softmax" if (li == n_layers - 1 and softmax)
+                              else "relu"))
+            out.append(txt(xs[li], top - 56, name, size=15, weight=600, pal=p,
+                           fill=p.ink, step=st))
+            if act_name:
+                out.append(txt(xs[li], top - 34, act_name, size=12, mono=True,
+                               pal=p, fill=p.ink3, step=st))
+
+            for j, y in enumerate(yy):
+                v = acts[li][j]
+                frac = min(1.0, abs(v) / amax)
+                # Fill level = how strongly this unit fired. An empty circle is
+                # a unit that output zero, and that is worth seeing.
+                out.append(circle(xs[li], y, R, pal=p, fill=p.fill,
+                                  stroke=p.line, sw=1.4, step=st))
+                if frac > 0.02:
+                    out.append(circle(xs[li], y, R * (0.35 + 0.65 * frac),
+                                      pal=p, fill=p.accent_fill,
+                                      stroke=p.accent, sw=1.6, step=st))
+                out.append(txt(xs[li], y, fmt(v, 2), size=11.5, mono=True,
+                               pal=p, fill=p.ink, step=st))
+
+            if li == n_layers - 1 and out_labels:
+                for j, y in enumerate(yy):
+                    if j < len(out_labels):
+                        out.append(txt(xs[li] + R + 14, y, out_labels[j],
+                                       size=12.5, pal=p, fill=p.ink2,
+                                       anchor="start", step=st))
+
+        # --- the sum for one unit, written out --------------------------------
+        if n_layers > 1 and sizes[1] > 0:
+            terms = " + ".join(f"{fmt(x, 2)}·{fmt(w, 2)}"
+                               for x, w in zip(acts[0], W[0][0]))
+            z0 = sum(x * w for x, w in zip(acts[0], W[0][0])) + B[0][0]
+            out.append(txt(width / 2, height - 62,
+                           f"top hidden unit:  z = {terms} + {fmt(B[0][0], 2)}"
+                           f" = {fmt(z0, 3)}",
+                           size=13, mono=True, pal=p, fill=p.ink2, step=2))
+            out.append(txt(width / 2, height - 40,
+                           f"relu(z) = max(0, {fmt(z0, 3)}) = "
+                           f"{fmt(max(0.0, z0), 3)}",
+                           size=13, mono=True, pal=p, fill=p.accent, step=3))
+
+        # Direction, said out loud. "Which way does it go" is the first question
+        # anyone asks of a network diagram, and arrowheads on 20 crossing edges
+        # do not answer it.
+        band_y = top - 92
+        out.append(line(xs[0], band_y, xs[-1], band_y, pal=p,
+                        stroke=p.faint, sw=1, dash="5 6"))
+        out.append(arrow(width / 2 - 62, band_y, width / 2 + 62, band_y, pal=p,
+                         stroke=p.accent, sw=1.6))
+        out.append(txt(xs[0], band_y - 17, "INPUT enters here", size=12,
+                       weight=600, pal=p, fill=p.accent))
+        out.append(txt(xs[-1], band_y - 17, "OUTPUT leaves here",
+                       size=12, weight=600, pal=p, fill=p.accent))
+        out.append(txt(width / 2, band_y - 17, "forward pass", size=11.5,
+                       pal=p, fill=p.ink3, italic=True))
+
+        out.append(txt(width / 2, height - 16,
+                       "Warm edges are positive weights, rose are negative; "
+                       "thickness is magnitude. A hollow neuron output zero.",
+                       size=12, pal=p, fill=p.ink3))
+        return svg(width, height, "".join(out), pal=p,
+                   steps=(n_layers - 1) * 2 + 1, sim_label="stage")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ================================================== attention: Q, K, V, in full --
+
+def attention_qkv(fig_id, tokens, *, focus=2, cap="", note="", width=1180,
+                  height=620, full=False, seed=11, d=4):
+    """Self-attention computed on real tokens, one query at a time.
+
+    The question this answers is the one nobody's box diagram answers: *what
+    actually happens to my sentence inside an attention head?* So it walks the
+    arithmetic for a single query token, with real vectors:
+
+      1. every token becomes an embedding;
+      2. three learned matrices turn each embedding into a **query**, a **key**
+         and a **value**;
+      3. the focus token's query is dotted against **every** key, giving a raw
+         score per token;
+      4. softmax turns the scores into weights that sum to 1;
+      5. the output is the value vectors, mixed in those proportions.
+
+    Step 5 is the punchline and the reason attention is worth the trouble: the
+    new vector for "it" is literally built out of the other words in the
+    sentence, in proportions the model chose.
+    """
+    import math
+    import random
+
+    rng = random.Random(seed)
+    n = len(tokens)
+    emb = [[round(rng.uniform(-1, 1), 2) for _ in range(d)] for _ in range(n)]
+    Wq = [[round(rng.uniform(-0.9, 0.9), 2) for _ in range(d)] for _ in range(d)]
+    Wk = [[round(rng.uniform(-0.9, 0.9), 2) for _ in range(d)] for _ in range(d)]
+    Wv = [[round(rng.uniform(-0.9, 0.9), 2) for _ in range(d)] for _ in range(d)]
+
+    def mat(v, M):
+        return [round(sum(v[k] * M[r][k] for k in range(d)), 2) for r in range(d)]
+
+    Q = [mat(e, Wq) for e in emb]
+    K = [mat(e, Wk) for e in emb]
+    V = [mat(e, Wv) for e in emb]
+
+    q = Q[focus]
+    raw = [sum(a * b for a, b in zip(q, k)) / math.sqrt(d) for k in K]
+    m = max(raw)
+    ex = [math.exp(r - m) for r in raw]
+    tot = sum(ex)
+    att = [e / tot for e in ex]
+    outv = [round(sum(att[i] * V[i][j] for i in range(n)), 3) for j in range(d)]
+
+    def build(p):
+        out = []
+        # The row labels on the left are the widest thing in the figure and
+        # they set the margin. Sizing the columns first and discovering that
+        # afterwards is how "= Wq · x" ends up half off the page.
+        left = 176
+        col_w = (width - left - 40) / n
+        x_of = lambda i: left + col_w * (i + 0.5)
+        y_tok, y_qkv, y_score, y_bar, y_out = 76, 150, 330, 386, 512
+
+        # --- tokens -----------------------------------------------------------
+        for i, t in enumerate(tokens):
+            hot = i == focus
+            x = x_of(i)
+            out.append(rect(x - col_w / 2 + 8, y_tok - 18, col_w - 16, 36, r=7,
+                            pal=p, fill=p.accent_fill if hot else p.fill,
+                            stroke=p.accent if hot else p.faint,
+                            sw=1.8 if hot else 1, step=1))
+            out.append(txt(x, y_tok, t, size=14,
+                           weight=600 if hot else 400, pal=p,
+                           fill=p.accent if hot else p.ink, step=1))
+        out.append(txt(left - 22, y_tok, "tokens", size=12.5, pal=p, fill=p.ink3,
+                       anchor="end", step=1))
+
+        # --- q / k / v --------------------------------------------------------
+        rows = (("q", Q, p.accent), ("k", K, p.warm), ("v", V, p.good))
+        for r, (nm, M, col) in enumerate(rows):
+            yy = y_qkv + r * 46
+            out.append(txt(left - 22, yy, f"{nm} = W{nm} · x", size=12.5, mono=True,
+                           pal=p, fill=col, anchor="end", step=2))
+            for i in range(n):
+                x = x_of(i)
+                hot = (nm == "q" and i == focus)
+                out.append(rect(x - col_w / 2 + 8, yy - 15, col_w - 16, 30,
+                                r=5, pal=p,
+                                fill=p.accent_fill if hot else p.fill,
+                                stroke=col if hot else p.faint,
+                                sw=1.6 if hot else 0.9, step=2))
+                out.append(txt(x, yy, "[" + " ".join(fmt(z, 1) for z in M[i])
+                               + "]", size=10.5, mono=True, pal=p,
+                               fill=p.ink2, step=2))
+
+        # --- scores -----------------------------------------------------------
+        qx = x_of(focus)
+        out.append(txt(left - 22, y_score,
+                       f"q(“{tokens[focus]}”) · k", size=12.5,
+                       mono=True, pal=p, fill=p.ink3, anchor="end", step=3))
+        for i in range(n):
+            x = x_of(i)
+            out.append(arrow(qx, y_qkv + 15, x, y_score - 20, pal=p,
+                             stroke=p.accent, sw=1.1, opacity=0.5, step=3))
+            out.append(txt(x, y_score, fmt(raw[i], 2), size=12.5, mono=True,
+                           pal=p, fill=p.ink, step=3))
+
+        # --- softmax weights, as bars ----------------------------------------
+        out.append(txt(left - 22, y_bar + 22, "softmax", size=12.5, mono=True, pal=p,
+                       fill=p.ink3, anchor="end", step=4))
+        bar_h = 74
+        for i in range(n):
+            x = x_of(i)
+            h = max(2.0, bar_h * att[i])
+            out.append(rect(x - 26, y_bar + 46 - h, 52, h, r=4, pal=p,
+                            fill=p.accent_fill, stroke=p.accent, sw=1.5,
+                            step=4))
+            out.append(txt(x, y_bar + 60, f"{att[i]*100:.0f}%", size=12,
+                           weight=600, mono=True, pal=p, fill=p.accent,
+                           step=4))
+        out.append(txt(width - 60, y_bar + 60, "sums to 100%", size=11.5,
+                       pal=p, fill=p.ink3, anchor="end", step=4))
+
+        # --- the mix ----------------------------------------------------------
+        out.append(txt(left - 22, y_out, "output", size=12.5, mono=True, pal=p,
+                       fill=p.good, anchor="end", step=5))
+        for i in range(n):
+            out.append(arrow(x_of(i), y_bar + 72, width / 2, y_out - 22, pal=p,
+                             stroke=p.good, sw=0.6 + 2.6 * att[i],
+                             opacity=0.30 + 0.6 * att[i], step=5))
+        out.append(rect(width / 2 - 128, y_out - 18, 256, 36, r=8, pal=p,
+                        fill=p.accent_fill, stroke=p.accent, sw=1.8, step=5))
+        out.append(txt(width / 2, y_out, "[" + "  ".join(fmt(z, 2) for z in outv)
+                       + "]", size=12.5, mono=True, pal=p, fill=p.ink, step=5))
+        mixed = " + ".join(f"{att[i]*100:.0f}%·v({tokens[i]})"
+                           for i in sorted(range(n), key=lambda i: -att[i])[:3])
+        out.append(txt(width / 2, y_out + 34,
+                       f"new vector for “{tokens[focus]}” = {mixed} + …",
+                       size=12.5, pal=p, fill=p.ink2, step=5))
+        out.append(txt(width / 2, y_out + 58,
+                       "The word's new meaning is built out of the other words, "
+                       "in proportions the model chose.",
+                       size=12.5, pal=p, fill=p.accent, step=5))
+        return svg(width, height, "".join(out), pal=p, steps=5,
+                   sim_label="stage")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+def dropout_net(fig_id, *, rate=0.5, cap="", note="", width=1060, height=470,
+                full=False, seed=5, sizes=(5, 6, 6, 3)):
+    """Dropout, applied to a network you can see it happening to.
+
+    Two passes side by side: the same network, the same weights, different
+    units switched off. A row of boxes describing dropout is accurate and
+    forgettable; two networks with different holes in them makes the point in
+    one look -- and makes the *reason* visible too, because the surviving paths
+    are different each time, so no single unit can be relied on.
+    """
+    import random
+
+    rng = random.Random(seed)
+    keeps = []
+    for pass_i in range(2):
+        pk = []
+        for li, k in enumerate(sizes):
+            if li == 0 or li == len(sizes) - 1:
+                pk.append([True] * k)          # never drop input or output
+            else:
+                row = [rng.random() > rate for _ in range(k)]
+                if not any(row):
+                    row[rng.randrange(k)] = True
+                pk.append(row)
+        keeps.append(pk)
+
+    def build(p):
+        out = []
+        half = width / 2
+        R = 12
+        top, bot = 106, 92
+        span = height - top - bot
+
+        for pass_i in range(2):
+            ox = pass_i * half
+            keep = keeps[pass_i]
+            xs = [ox + 86 + (half - 172) * i / (len(sizes) - 1)
+                  for i in range(len(sizes))]
+            ys = [[top + span * (j + 0.5) / k for j in range(k)]
+                  for k in sizes]
+            st = pass_i + 1
+
+            out.append(txt(ox + half / 2, 44,
+                           f"Training pass {pass_i + 1}", size=15, weight=600,
+                           pal=p, fill=p.ink, step=st))
+            out.append(txt(ox + half / 2, 66,
+                           f"rate = {rate} — half the hidden units are off",
+                           size=12, pal=p, fill=p.ink3, step=st))
+
+            for li in range(len(sizes) - 1):
+                for i, y0 in enumerate(ys[li]):
+                    for j, y1 in enumerate(ys[li + 1]):
+                        live = keep[li][i] and keep[li + 1][j]
+                        out.append(line(xs[li] + R, y0, xs[li + 1] - R, y1,
+                                        pal=p,
+                                        stroke=p.line if live else p.faint,
+                                        sw=0.8 if live else 0.5,
+                                        opacity=0.5 if live else 0.10,
+                                        step=st))
+            for li, k in enumerate(sizes):
+                for j, y in enumerate(ys[li]):
+                    on = keep[li][j]
+                    out.append(circle(xs[li], y, R, pal=p,
+                                      fill=p.accent_fill if on else "none",
+                                      stroke=p.accent if on else p.faint,
+                                      sw=1.5 if on else 1,
+                                      opacity=1 if on else 0.35, step=st))
+                    if not on:
+                        # A full cross, not a slash: at projector distance a
+                        # single stroke reads as an edge passing behind the
+                        # unit rather than as the unit being off.
+                        out.append(line(xs[li] - 7, y - 7, xs[li] + 7, y + 7,
+                                        pal=p, stroke=p.bad, sw=1.6,
+                                        opacity=0.9, step=st))
+                        out.append(line(xs[li] + 7, y - 7, xs[li] - 7, y + 7,
+                                        pal=p, stroke=p.bad, sw=1.6,
+                                        opacity=0.9, step=st))
+
+        out.append(line(half, 88, half, height - 76, pal=p, stroke=p.faint,
+                        sw=1, dash="4 6"))
+
+        out.append(txt(width / 2, height - 52,
+                       "Same network, same weights — different units switched "
+                       "off each pass.", size=13.5, pal=p, fill=p.ink2))
+        out.append(txt(width / 2, height - 28,
+                       "So no unit can rely on any particular other one being "
+                       "there. That is the whole mechanism.",
+                       size=13, pal=p, fill=p.accent))
+        out.append(txt(width / 2, height - 6,
+                       "At test time nothing is dropped; the activations were "
+                       "already scaled up by 1/(1−rate) during training.",
+                       size=12, pal=p, fill=p.ink3))
+        return svg(width, height, "".join(out), pal=p, steps=2,
+                   sim_label="pass")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

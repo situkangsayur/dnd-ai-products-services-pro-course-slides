@@ -13,7 +13,8 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
-from diagrams import geometric_ops, sgd_descent, tensor_ranks  # noqa: E402
+from diagrams import (forward_pass, geometric_ops, neural_net,  # noqa: E402
+                      sgd_descent, tensor_ranks)
 
 
 MMD_RANKS = """
@@ -284,6 +285,66 @@ print(train_images.shape, train_images.dtype, train_images.min(), train_images.m
                  "md": "Two things changed: the shape went from `(60000, 28, 28)` to "
                        "`(60000, 784)`, and the values went from `0..255` integers to "
                        "==`0..1` floats==. Chapter 6 explains why the second matters so much."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.1",
+            "title": "The same network, drawn as what it is",
+            "blocks": [
+                neural_net(
+                    "ch02-mnist-net",
+                    [("Input", 784, "one per pixel"),
+                     ("Dense · relu", 512),
+                     ("Dense · softmax", 10, "one per digit")],
+                    highlight=(1, 2),
+                    cap="784 units, then 512, then 10. Six are drawn per layer and the "
+                        "rest are the ellipsis — the counts underneath are the real "
+                        "ones."),
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.1",
+            "title": "One forward pass, with the arithmetic",
+            "blocks": [
+                forward_pass(
+                    "ch02-forward",
+                    inputs=[0.9, 0.2, 0.7, 0.4],
+                    layers=[5, 3],
+                    out_labels=["cat", "dog", "bird"],
+                    cap="A four-input toy of the same shape, small enough that every "
+                        "number fits on the slide. Press play."),
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.1",
+            "title": "Reading the forward pass",
+            "blocks": [
+                {"t": "steps", "items": [
+                    "**Every edge is a weight, and the drawing shows it.** Warm means "
+                    "positive, rose means negative, and thickness is magnitude. A "
+                    "trained network is exactly this picture with different numbers on "
+                    "the edges — nothing else changes.",
+                    "**Each unit sums what reaches it, adds a bias, then applies relu.** "
+                    "The sum for the top hidden unit is printed under the figure so you "
+                    "can check it against the inputs and weights shown.",
+                    "**A unit reading `0` is not broken — it is `relu` doing its job.** "
+                    "Its sum came out negative and `max(0, z)` clipped it. That unit "
+                    "contributes nothing to this input, and ==a different input would "
+                    "wake it up==.",
+                    "**The output layer uses softmax**, so its three numbers are "
+                    "positive and sum to 1 — which is what makes them readable as "
+                    "probabilities.",
+                ]},
+                {"t": "band", "md": "Scale this to 784 inputs, 512 hidden units and 10 "
+                                    "outputs and you have the MNIST model from listing "
+                                    "2.2 — **401,920 weights on the first layer alone**, "
+                                    "every one doing what the four here are doing."},
             ],
         },
 

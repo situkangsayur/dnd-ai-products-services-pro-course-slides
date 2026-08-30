@@ -177,9 +177,9 @@ Unlike the steps of a timeseries, \textbf{words in a sentence have no natural, c
 \framekicker{Section 14.4}
 \begin{frame}[shrink=25]{Bag of words, in one picture}
 \begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch14-bow.tex.pdf}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch14-bow-run.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Tokenize, discard order, multi-hot encode.\par}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Tokenize, count, and let the order go.\par}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The idea is simply to \textbf{assign a weight to every word}. \textit{terrible} probably indicates a bad review; \textit{riveting} probably indicates a good one.\par}\vskip 4pt
 \end{frame}
 
@@ -202,6 +202,10 @@ Unlike the steps of a timeseries, \textbf{words in a sentence have no natural, c
 \framekicker{Section 14.4.2}
 \begin{frame}[shrink=25]{Bigrams: putting a little order back by hand}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}A bigram is a pair of adjacent words treated as one token. It restores \textbf{local} order without any change to the model.\par}\vskip 4pt
+\begin{center}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch14-bigram-window.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Every adjacent pair becomes a token of its own --- and each pair shares a word with the next.\par}
 \icode{python}{listing --- bigram encoding}{listings/ch14-09.py}
 \begin{iband}[signal]
 One argument, and the model improves: \textit{"not good"} is now a token in its own right. But the approach \hilite{only scales to a local ordering of a few words}, and it is feature engineering done by hand.

@@ -140,6 +140,26 @@ This makes ConvNets \textbf{data efficient} on images, because the visual world 
 \end{frame}
 
 \framekicker{Section 8.1.1}
+\begin{frame}[shrink=25]{One position of that window, computed}
+\begin{center}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch08-conv-compute.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont A 3$\times$3 kernel over one 3$\times$3 patch. This kernel is a Sobel filter, which responds to vertical edges.\par}
+\end{frame}
+
+\framekicker{Section 8.1.1}
+\begin{frame}[shrink=25]{Reading the arithmetic: three things it settles}
+\begin{isteps}
+\item \textbf{A convolution is multiply-and-add, and nothing else.} Nine products and a sum give one output cell. Slide the window to the next position and do it again --- that is the whole operation.
+\item \textbf{The kernel is what gets learned.} Its nine numbers are \inlinecode{1, 0, -1 / 2, 0, -2 / 1, 0, -1} here because a person chose a Sobel filter. In a ConvNet \hilite{those nine numbers are parameters}, found by gradient descent, and nobody chooses what they end up detecting.
+\item \textbf{The same nine numbers are reused at every position.} That is weight sharing: it is why a ConvNet has so few parameters compared with a \inlinecode{Dense} layer over the same image, and why a pattern learned in one corner is recognised in the other.
+\end{isteps}
+\begin{iband}[signal]
+Why this kernel finds vertical edges: the left column is positive and the right column is negative, so the sum is large wherever \textbf{the left side is brighter than the right}, and near zero on flat ground. Run it on a patch where every cell is equal and the answer is exactly 0.
+\end{iband}
+\end{frame}
+
+\framekicker{Section 8.1.1}
 \begin{frame}[shrink=25]{The two parameters that define a convolution}
 \begin{itable}{>{\raggedright\arraybackslash}p{0.282\textwidth}>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.4512\textwidth}}
 \thead{Parameter} & \thead{Typical value} & \thead{What it controls} \\ \midrule

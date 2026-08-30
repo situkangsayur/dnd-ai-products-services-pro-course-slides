@@ -13,6 +13,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from diagrams import bag_of_words, sliding_window  # noqa: E402
 
 
 MMD_HISTORY = """
@@ -408,8 +409,9 @@ aclImdb/test/neg"""},
             "kicker": "Section 14.4",
             "title": "Bag of words, in one picture",
             "blocks": [
-                {"t": "mmd", "id": "ch14-bow", "src": MMD_BOW,
-                 "cap": "Tokenize, discard order, multi-hot encode."},
+                bag_of_words(
+                    "ch14-bow-run", "the cat sat on the mat",
+                    cap="Tokenize, count, and let the order go."),
                 {"t": "p", "md": "The idea is simply to **assign a weight to every word**. "
                                  "*terrible* probably indicates a bad review; *riveting* "
                                  "probably indicates a good one."},
@@ -473,6 +475,11 @@ model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"]
             "blocks": [
                 {"t": "p", "md": "A bigram is a pair of adjacent words treated as one token. "
                                  "It restores **local** order without any change to the model."},
+                sliding_window(
+                    "ch14-bigram-window", ["the", "cat", "sat", "on", "the", "mat"],
+                    n=2, label="bigram",
+                    cap="Every adjacent pair becomes a token of its own — and each pair "
+                        "shares a word with the next."),
                 {"t": "code", "lang": "python", "file": "listing — bigram encoding",
                  "src": """text_vectorization = layers.TextVectorization(
     ngrams=2,                   # unigrams AND bigrams
