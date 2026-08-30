@@ -89,7 +89,10 @@ DECK = {
     "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 6",
     "source_url": chapter_url(6),
     "duration": "3 hours (2 sessions)",
-    "presenter": {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    "presenter": [
+        {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+        {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+    ],
     "resources": chapter_resources(6, local_notebooks=NB),
     "objectives": [
         "Frame a business problem as the right **kind of machine learning task** — "

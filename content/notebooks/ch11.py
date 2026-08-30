@@ -10,7 +10,7 @@ NOTEBOOKS = [
         "lede": "Classifying every pixel rather than the image. Same ConvNet ideas, one "
                 "decisive change: strides instead of pooling, because now position "
                 "matters.",
-        "needs": "GPU recommended — about 25 minutes on CPU",
+        "needs": "GPU recommended — about 25 minutes on CPU · needs the Oxford-IIIT Pets download",
         "section": "01 — Image segmentation",
         "cells": [
             ("h2", "The data"),
@@ -413,17 +413,21 @@ plt.tight_layout(); plt.show()"""),
              "confidently wrong — a pattern worth borrowing."),
 
             ("h2", "Prompting with a box"),
-            ("py", """box = np.array([[[300.0, 200.0], [900.0, 800.0]]])   # two corners
+            ("py", """# (batch, num_boxes, 2 corners, xy) -- keras-hub also wants every prompt key
+# present, so the point prompts are passed as empty arrays rather than omitted.
+box = np.array([[[[300.0, 200.0], [900.0, 800.0]]]])
 
 outputs = model.predict({
     "images": image[np.newaxis, ...].astype("float32"),
     "boxes": box,
+    "points": np.zeros((1, 0, 2), "float32"),
+    "labels": np.zeros((1, 0), "float32"),
 }, verbose=0)
 
 fig, ax = plt.subplots(figsize=(7, 7))
 ax.imshow(image)
 show_mask(outputs["masks"][0][0] > 0.0, ax)
-x0, y0 = box[0, 0]; x1, y1 = box[0, 1]
+x0, y0 = box[0, 0, 0]; x1, y1 = box[0, 0, 1]
 ax.add_patch(plt.Rectangle((x0, y0), x1 - x0, y1 - y0,
                            fill=False, edgecolor="yellow", lw=2))
 ax.axis("off"); ax.set_title("Box prompt — far less ambiguous")

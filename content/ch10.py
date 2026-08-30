@@ -101,7 +101,10 @@ DECK = {
     "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 10",
     "source_url": chapter_url(10),
     "duration": "2.5 hours",
-    "presenter": {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    "presenter": [
+        {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+        {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+    ],
     "resources": chapter_resources(10, local_notebooks=NB),
     "objectives": [
         "Build a **multi-output model** that returns intermediate activations, and "

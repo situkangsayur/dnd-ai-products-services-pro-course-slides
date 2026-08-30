@@ -183,7 +183,10 @@ DECK = {
     "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 19",
     "source_url": chapter_url(19),
     "duration": "2.5 hours (2 sessions)",
-    "presenter": {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    "presenter": [
+        {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+        {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+    ],
     "resources": chapter_resources(19),
     "objectives": [
         "State the **four structural limitations** of deep learning, and give a "

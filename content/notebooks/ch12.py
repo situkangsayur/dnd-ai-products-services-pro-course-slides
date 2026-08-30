@@ -421,7 +421,7 @@ def draw(image, boxes, classes, scores, threshold=0.5, ax=None):
     return ax
 
 boxes = np.array(preds["boxes"][0])
-classes = np.array(preds["classes"][0])
+classes = np.array(preds["labels"][0])      # keras-hub returns "labels", not "classes"
 scores = np.array(preds["confidence"][0])
 draw(image, boxes, classes, scores, 0.5)
 plt.show()"""),

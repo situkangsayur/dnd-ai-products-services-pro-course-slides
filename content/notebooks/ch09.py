@@ -327,7 +327,7 @@ for sep in [False, True]:
         "title": "Putting the patterns together: a mini-Xception",
         "lede": "Residual connections, batch normalization, and separable convolutions "
                 "in one architecture — the model the rest of the vision chapters build on.",
-        "needs": "GPU recommended — about 15 minutes on CPU",
+        "needs": "GPU recommended — about 15 minutes on CPU · needs the Kaggle cats-vs-dogs archive",
         "section": "05 — Putting it together",
         "cells": [
             ("h2", "The three patterns, assembled"),

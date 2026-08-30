@@ -9,6 +9,7 @@ import figures
 import schema
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from course import presenter_names, presenter_roles
 from inline import tex as it, esc_tex, tex_url
 
 RES_LABEL = {
@@ -179,6 +180,15 @@ def render_block(b, depth=0):
         # No TikZ authored for this figure: keep the caption so the frame still
         # says what the audience is meant to be looking at.
         return "\\begin{iband}[signal]\n%s\n\\end{iband}\n" % it(b.get("cap", ""))
+    if t == "draw":
+        _, pdf = figures.render_drawn(b["id"], b["svg"], b["print"])
+        cap = (r"\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont %s\par}" % it(b["cap"])
+               if b.get("cap") else "")
+        h = "0.74" if b.get("full") else "0.56"
+        return ("\\begin{center}\n"
+                f"\\includegraphics[width=0.97\\linewidth,"
+                f"height={h}\\textheight,keepaspectratio]{{{pdf}}}\n"
+                "\\end{center}\n" + cap + "\n")
     if t == "mmd":
         _, pdf = figures.render(b["id"], b["src"])
         cap = (r"\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont %s\par}" % it(b["cap"])
@@ -282,8 +292,8 @@ def build(deck, listings_dir=None):
         source=it(d.get("source", "")),
         duration=esc_tex(d.get("duration", "")),
         partner=("\\coursepartner{%s}\n" % esc_tex(d["partner"])) if d.get("partner") else "",
-        pname=esc_tex(d.get("presenter", {}).get("name", "")),
-        prole=esc_tex(d.get("presenter", {}).get("role", "")),
+        pname=esc_tex(presenter_names(d)),
+        prole=esc_tex(presenter_roles(d)),
         brand=brand,
     )]
 

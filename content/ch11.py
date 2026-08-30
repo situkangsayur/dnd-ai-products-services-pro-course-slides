@@ -115,7 +115,10 @@ DECK = {
     "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 11",
     "source_url": chapter_url(11),
     "duration": "2.5 hours",
-    "presenter": {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+    "presenter": [
+        {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+        {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    ],
     "resources": chapter_resources(11, local_notebooks=NB),
     "objectives": [
         "Place **classification, segmentation, and detection** — the three tasks "

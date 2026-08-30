@@ -143,7 +143,7 @@ plt.tight_layout(); plt.show()"""),
         "title": "2,000 images, from scratch",
         "lede": "The realistic case: a few thousand images, a model that overfits within "
                 "five epochs, and a baseline to improve on in the next two notebooks.",
-        "needs": "GPU recommended — about 10 minutes on CPU",
+        "needs": "GPU recommended — about 10 minutes on CPU · needs the Kaggle cats-vs-dogs archive",
         "section": "02 — Training a convnet from scratch on a small dataset",
         "cells": [
             ("h2", "Getting the data"),
@@ -285,7 +285,7 @@ print(f"test accuracy: {test_acc:.3f}")"""),
         "title": "Data augmentation, and what it can and cannot fix",
         "lede": "Random flips, rotations, and zooms buy ten points here. Understanding "
                 "why it is not twenty is the more useful half.",
-        "needs": "GPU recommended — about 15 minutes on CPU",
+        "needs": "GPU recommended — about 15 minutes on CPU · needs the Kaggle cats-vs-dogs archive",
         "section": "03 — Using data augmentation",
         "cells": [
             ("h2", "Augmentation as layers"),
@@ -440,7 +440,7 @@ plt.show()"""),
         "lede": "The same 2,000 images, and 97% — because the model has already seen "
                 "1.4 million others. This is the most valuable technique in the "
                 "chapter and the one with the strictest procedure.",
-        "needs": "GPU recommended — about 20 minutes on CPU",
+        "needs": "GPU recommended — about 20 minutes on CPU · needs the Kaggle cats-vs-dogs archive",
         "section": "04 — Using a pretrained model",
         "cells": [
             ("h2", "Loading a backbone without its head"),

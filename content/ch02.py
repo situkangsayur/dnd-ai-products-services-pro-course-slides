@@ -13,6 +13,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from diagrams import geometric_ops, tensor_ranks  # noqa: E402
 
 
 MMD_RANKS = """
@@ -105,7 +106,10 @@ DECK = {
     "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 2",
     "source_url": chapter_url(2),
     "duration": "3 hours (2 sessions)",
-    "presenter": {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+    "presenter": [
+        {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+        {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    ],
     "resources": chapter_resources(2, local_notebooks=NB),
     "objectives": [
         "Run the first MNIST example end to end and name the role of **layers, "
@@ -351,12 +355,44 @@ print(test_labels[0])               # what was the truth?"""},
             "kicker": "Section 2.2",
             "title": "Rank, shape, dtype",
             "blocks": [
-                {"t": "mmd", "id": "ch02-ranks", "src": MMD_RANKS,
-                 "cap": "Tensors generalise matrices to any number of axes. TensorFlow is "
-                        "named after this object."},
+                tensor_ranks(
+                    "ch02-tensor-ranks",
+                    cap="The same four numbers 7, 2, 9, 4 appear at every rank. What "
+                        "changes is how many indices it takes to reach one of them."),
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.2",
+            "title": "Reading the drawing: what each rank actually is",
+            "blocks": [
                 {"t": "p", "md": "Every tensor has exactly three defining attributes: its "
                                  "**number of axes** (rank), its **shape**, and its "
                                  "**dtype**. Everything else follows from those."},
+                {"t": "table",
+                 "head": ["Rank", "Name", "Shape", "To reach one number", "Example"],
+                 "widths": [10, 16, 16, 26, 32],
+                 "rows": [
+                     ["0", "scalar", "`()`", "`t`",
+                      "a loss value — one number per batch"],
+                     ["1", "vector", "`(4,)`", "`t[i]`",
+                      "one MNIST image after flattening is `(784,)`"],
+                     ["2", "matrix", "`(3, 4)`", "`t[i][j]`",
+                      "a batch of flattened images, `(128, 784)`"],
+                     ["3", "tensor", "`(2, 3, 4)`", "`t[i][j][k]`",
+                      "a batch of images before flattening, `(128, 28, 28)`"],
+                 ]},
+                {"t": "p", "md": "**Rank is a count of axes, not a size.** A `(60000, 28, "
+                                 "28)` tensor and a `(2, 3, 4)` tensor are both rank 3, "
+                                 "and every rule you learn about one applies to the other. "
+                                 "==That is the whole reason the abstraction is worth "
+                                 "having.=="},
+                {"t": "band", "md": "The word *dimension* is used for two different things "
+                                    "and causes real confusion: a rank-3 tensor has **3 "
+                                    "axes**, while a `(784,)` vector is often called "
+                                    "*784-dimensional*. Say **rank** for axes and **shape** "
+                                    "for sizes, and the ambiguity disappears."},
             ],
         },
 
@@ -634,9 +670,44 @@ print(np.transpose(np.zeros((300, 20))).shape)   # rows and columns exchanged"""
             "kicker": "Section 2.3.5",
             "title": "Every tensor operation is a geometric one",
             "blocks": [
-                {"t": "mmd", "id": "ch02-geom", "src": MMD_GEOM,
-                 "cap": "Tensor contents are coordinates; operations on them are movements "
-                        "in space."},
+                geometric_ops(
+                    "ch02-geom-ops",
+                    cap="One shape, four operations. The dashed outline is where it "
+                        "started."),
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.3.5",
+            "title": "Reading the drawing: what moved, and what did it",
+            "blocks": [
+                {"t": "p", "md": "Treat the numbers in a tensor as **coordinates**. Then "
+                                 "every operation in the previous slide is a movement, and "
+                                 "the matrix is the instruction for the movement."},
+                {"t": "table",
+                 "head": ["Operation", "What it does to the shape", "Written as"],
+                 "widths": [22, 46, 32],
+                 "rows": [
+                     ["**Translation**",
+                      "Slides it. Every point moves by the same vector; nothing turns "
+                      "or stretches.", "`y = x + b`"],
+                     ["**Rotation**",
+                      "Turns it about the origin. Lengths and angles survive — the shape "
+                      "is the same shape, pointing elsewhere.", "`y = R @ x`"],
+                     ["**Scaling**",
+                      "Stretches each axis by its own factor. Here x by 1.5 and y by 0.6, "
+                      "which is why it comes out squat.", "`y = D @ x`"],
+                     ["**Affine**",
+                      "Any matrix, then a vector. Straight lines stay straight and "
+                      "parallel lines stay parallel — but angles do not survive.",
+                      "`y = W @ x + b`"],
+                 ]},
+                {"t": "band", "md": "**A `Dense` layer is the fourth row.** `W @ x + b` is "
+                                    "an affine transform, and nothing else. A stack of "
+                                    "them with no activation between is still one affine "
+                                    "transform — which is the next slide, and the reason "
+                                    "activations exist."},
             ],
         },
 

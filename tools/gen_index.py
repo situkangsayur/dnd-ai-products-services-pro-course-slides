@@ -17,7 +17,7 @@ import json
 import os
 
 from inline import html as ih, esc_html
-from course import COURSE, TEAM
+from course import COURSE, TEAM, presenter_names
 
 MANIFEST = "decks.json"
 
@@ -68,7 +68,7 @@ def _sort_key(d):
 def _card(d):
     num = d.get("number")
     label = f"Chapter {num}" if num is not None else "Module"
-    who = (d.get("presenter") or {}).get("name", "")
+    who = presenter_names(d)
     secs = d.get("sections") or []
     sec_html = ""
     if secs:

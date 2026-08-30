@@ -230,7 +230,10 @@ DECK = {
     "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 15",
     "source_url": chapter_url(15),
     "duration": "4 hours (3 sessions)",
-    "presenter": {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    "presenter": [
+        {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+        {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+    ],
     "resources": chapter_resources(15, local_notebooks=NB),
     "objectives": [
         "Define a **language model** as p(token | past tokens), and explain why "

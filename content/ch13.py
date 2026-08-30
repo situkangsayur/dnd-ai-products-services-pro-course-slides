@@ -124,7 +124,10 @@ DECK = {
     "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 13",
     "source_url": chapter_url(13),
     "duration": "3 hours (2 sessions)",
-    "presenter": {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    "presenter": [
+        {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+        {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+    ],
     "resources": chapter_resources(13, local_notebooks=NB),
     "objectives": [
         "Name the four common timeseries tasks and say which are supervised.",

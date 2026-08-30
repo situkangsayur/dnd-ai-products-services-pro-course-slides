@@ -166,7 +166,10 @@ DECK = {
     "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 17",
     "source_url": chapter_url(17),
     "duration": "3.5 hours (3 sessions)",
-    "presenter": {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+    "presenter": [
+        {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+        {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    ],
     "resources": chapter_resources(17, local_notebooks=NB),
     "objectives": [
         "Explain what a **latent space of images** is, and why sampling from one "

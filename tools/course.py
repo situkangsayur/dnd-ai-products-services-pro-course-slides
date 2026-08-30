@@ -137,3 +137,32 @@ def chapter_resources(n, local_notebooks=()):
     if up:
         res.append({"kind": "github", "label": "Author's official notebook", "href": up})
     return res
+
+
+def presenters(deck):
+    """The people delivering a deck, always as a list.
+
+    A chapter can be taught by two people, and the cover has to say so. Older
+    decks carry a single dict; both shapes are accepted here rather than
+    migrated, because the content files are the source of truth and churning
+    twenty of them to change a data shape is churn for its own sake.
+    """
+    p = deck.get("presenter")
+    if not p:
+        return []
+    return list(p) if isinstance(p, list) else [p]
+
+
+def presenter_names(deck, sep=" \u00b7 "):
+    return sep.join(x.get("name", "") for x in presenters(deck) if x.get("name"))
+
+
+def presenter_roles(deck):
+    """Distinct roles, in order of appearance."""
+    seen, out = set(), []
+    for x in presenters(deck):
+        r = x.get("role", "")
+        if r and r not in seen:
+            seen.add(r)
+            out.append(r)
+    return " \u00b7 ".join(out)

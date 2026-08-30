@@ -9,16 +9,25 @@ NOTEBOOKS = [
         "title": "Visualizing intermediate activations",
         "lede": "What a ConvNet sees at each depth, on one photograph — from edges at "
                 "the bottom to abstractions with no visual meaning at the top.",
-        "needs": "CPU — about 2 minutes",
+        "needs": "CPU — about 2 minutes · needs the convnet from ch08/03",
         "section": "01 — Visualizing intermediate activations",
         "cells": [
             ("h2", "A model, and an image it has never seen"),
             ("py", """import keras
 import numpy as np
 import matplotlib.pyplot as plt
+import pathlib
 
-# Use the model trained in chapter 8, or any convnet you have.
-model = keras.models.load_model("convnet_from_scratch_with_augmentation.keras")
+# The augmented convnet from chapter 8, notebook 03. It is saved in THAT notebook's
+# folder, so the path is relative to this one -- or point model_path at any convnet.
+model_path = pathlib.Path("../ch08/convnet_with_augmentation.keras")
+if not model_path.exists():
+    raise FileNotFoundError(
+        f"{model_path} not found. Run ch08/03_data_augmentation.ipynb first "
+        "(it needs the Kaggle cats-vs-dogs archive), or set model_path to a convnet "
+        "you already have.")
+
+model = keras.models.load_model(model_path)
 model.summary()"""),
             ("py", """img_path = keras.utils.get_file(
     fname="cat.jpg",
@@ -362,13 +371,14 @@ heatmap /= np.max(heatmap)
 plt.matshow(heatmap); plt.title("Raw heatmap (10x10)"); plt.show()"""),
 
             ("h2", "Superimposed"),
-            ("py", """import matplotlib.cm as cm
+            ("py", """import matplotlib
 
 img = keras.utils.load_img(img_path)
 img = keras.utils.img_to_array(img)
 
 hm = np.uint8(255 * heatmap)
-jet = cm.get_cmap("jet")
+# matplotlib.cm.get_cmap was removed in matplotlib 3.9; this is the replacement.
+jet = matplotlib.colormaps["jet"]
 jet_colors = jet(np.arange(256))[:, :3]
 jet_heatmap = jet_colors[hm]
 

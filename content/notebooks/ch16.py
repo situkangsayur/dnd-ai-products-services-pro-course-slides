@@ -123,7 +123,9 @@ print("fast CPU, so the number is hardcoded above.")"""),
             ("py", """for x, y in train_ds.take(1):
     sample = x[0].numpy()
     print("decoded first sample:\\n")
-    print(tokenizer.detokenize(sample).numpy().decode()[:600])
+    text = tokenizer.detokenize(sample)
+    text = text.numpy().decode() if hasattr(text, "numpy") else str(text)
+    print(text[:600])
     print("\\n---")
     print("does it contain a document boundary?",
           bool((sample == eot).any()))
@@ -148,7 +150,7 @@ print("fast CPU, so the number is hardcoded above.")"""),
         "title": "Forty-one million parameters, and the tricks that make them train",
         "lede": "Decoder-only blocks, tied embeddings, warmup, and a logits-based loss — "
                 "the most compute-intensive run in the whole course.",
-        "needs": "GPU required — ~6 hours on a Colab T4, ~1 hour on an A100",
+        "needs": "GPU required — ~6 hours on a Colab T4, ~1 hour on an A100 · continues from notebook 01 (same kernel)",
         "section": "01 — Training a mini-GPT",
         "cells": [
             ("h2", "The decoder block, minus cross-attention"),

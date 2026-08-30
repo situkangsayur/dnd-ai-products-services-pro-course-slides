@@ -575,7 +575,7 @@ print("  feedforward -> mixes features, HAS the nonlinearity")"""),
         "title": "The Transformer, and the experiment that reveals positional embeddings",
         "lede": "Encoder and decoder blocks built from scratch, trained — and failing — "
                 "then fixed with two changed lines. The failure is the point.",
-        "needs": "GPU recommended — about 45 minutes on CPU",
+        "needs": "GPU recommended — about 45 minutes on CPU · continues from notebook 02 (same kernel)",
         "section": "03 — The Transformer architecture",
         "cells": [
             ("h2", "The encoder block"),
@@ -951,7 +951,9 @@ print("of compute. Whether that is worth it is chapter 18's question,")
 print("and it does not have a universal answer.")"""),
 
             ("h2", "Try the ablation that matters"),
-            ("py", """# Freeze the backbone entirely: train only the head.
+            ("py", """import numpy as np
+
+# Freeze the backbone entirely: train only the head.
 backbone.trainable = False
 frozen = keras.Model(inputs, outputs)
 frozen.compile(optimizer=keras.optimizers.Adam(1e-3),

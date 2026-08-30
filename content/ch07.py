@@ -100,7 +100,10 @@ DECK = {
     "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 7",
     "source_url": chapter_url(7),
     "duration": "3 hours (2 sessions)",
-    "presenter": {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+    "presenter": [
+        {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+        {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    ],
     "resources": chapter_resources(7, local_notebooks=NB),
     "objectives": [
         "Explain **progressive disclosure of complexity**, and place yourself on "

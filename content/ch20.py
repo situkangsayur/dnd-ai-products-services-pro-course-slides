@@ -119,7 +119,10 @@ DECK = {
     "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 20",
     "source_url": chapter_url(20),
     "duration": "2 hours (1 session)",
-    "presenter": {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    "presenter": [
+        {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+        {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+    ],
     "resources": chapter_resources(20),
     "objectives": [
         "Place **AI, machine learning, deep learning, and generative AI** correctly "

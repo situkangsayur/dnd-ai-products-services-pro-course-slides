@@ -89,7 +89,10 @@ DECK = {
     "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 4",
     "source_url": chapter_url(4),
     "duration": "3 hours (2 sessions)",
-    "presenter": {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+    "presenter": [
+        {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+        {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    ],
     "resources": chapter_resources(4, local_notebooks=NB),
     "objectives": [
         "Choose the correct **output activation and loss function** for binary, "

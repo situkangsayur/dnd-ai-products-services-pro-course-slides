@@ -159,7 +159,10 @@ DECK = {
     "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 18",
     "source_url": chapter_url(18),
     "duration": "3 hours (2 sessions)",
-    "presenter": {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+    "presenter": [
+        {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+        {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    ],
     "resources": chapter_resources(18, local_notebooks=NB),
     "objectives": [
         "Distinguish **hyperparameters from parameters**, and say why hyperparameter "

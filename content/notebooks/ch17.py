@@ -51,9 +51,12 @@ plt.show()
 
 # Decode a grid of points and see what is between the clusters.
 dec_in = keras.Input(shape=(2,))
-h = plain_ae.get_layer(index=6)(dec_in)
-for i in range(7, len(plain_ae.layers)):
-    h = plain_ae.layers[i](h)
+# Start just after the code layer -- by NAME, because layer indices shift between
+# Keras versions (Keras 3 counts the InputLayer, Keras 2 did not).
+start = plain_ae.layers.index(plain_ae.get_layer("code")) + 1
+h = dec_in
+for layer in plain_ae.layers[start:]:
+    h = layer(h)
 plain_decoder = keras.Model(dec_in, h)
 
 grid = np.array([[x, y] for y in np.linspace(codes[:,1].max(), codes[:,1].min(), 8)
@@ -542,7 +545,7 @@ print("notebook is a subtraction rather than a reconstruction.")"""),
         "title": "Training a diffusion model on Oxford Flowers",
         "lede": "The training step in five operations, the generation loop that re-noises "
                 "on purpose, and 8,189 photographs turned into flowers that do not exist.",
-        "needs": "GPU required — about 90 minutes on a Colab T4",
+        "needs": "GPU required — about 90 minutes on a Colab T4 · continues from notebook 03 (same kernel)",
         "section": "02 — Diffusion models",
         "cells": [
             ("h2", "The dataset"),

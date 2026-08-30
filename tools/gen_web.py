@@ -9,6 +9,7 @@ import os
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 import figures
+from course import presenter_names
 from inline import html as ih, esc_html
 
 RATIO_CLS = {"1-1": "g2", "2-1": "g21", "1-2": "g12", "3-2": "g32"}
@@ -120,6 +121,14 @@ def render_block(b):
         if not svg:
             return f'<div class="band"><p>{ih(b.get("cap", ""))}</p></div>'
         return f'<figure class="fig">{svg}{cap}</figure>'
+    if t == "draw":
+        markup, _ = figures.render_drawn(b["id"], b["svg"], b["print"])
+        cap = f'<figcaption>{ih(b["cap"])}</figcaption>' if b.get("cap") else ""
+        # A figure marked `full` owns the slide. Shrinking a tall diagram to
+        # share a slide is how a diagram becomes unreadable, and the deck has
+        # no page budget -- if it needs the room, give it the room.
+        klass = "fig fig-draw" + (" fig-full" if b.get("full") else "")
+        return f'<figure class="{klass}">{b["svg"]}{cap}</figure>'
     if t == "mmd":
         markup, _ = figures.render(b["id"], b["src"])
         cap = f'<figcaption>{ih(b["cap"])}</figcaption>' if b.get("cap") else ""
@@ -151,12 +160,13 @@ def render_block(b):
 
 def _title_slide(deck):
     d = deck
-    people = d.get("presenter")
+    who = presenter_names(d)
     meta = []
     if d.get("duration"):
         meta.append(f'<span class="chip"><b>Duration</b> {esc_html(d["duration"])}</span>')
-    if people:
-        meta.append(f'<span class="chip"><b>Instructor</b> {esc_html(people["name"])}</span>')
+    if who:
+        label = "Instructors" if " \u00b7 " in who else "Instructor"
+        meta.append(f'<span class="chip"><b>{label}</b> {esc_html(who)}</span>')
     if d.get("source"):
         meta.append(f'<span class="chip"><b>Source</b> {esc_html(d["source"])}</span>')
 

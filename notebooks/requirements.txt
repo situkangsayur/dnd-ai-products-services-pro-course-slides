@@ -26,6 +26,11 @@ keras-tuner>=1.4          # chapter 18
 jupyterlab>=4.1
 ipywidgets>=8.1           # progress bars in long training cells
 
+# keras.utils.plot_model, chapter 7. Needs the graphviz BINARY too, which pip cannot
+# install: apt install graphviz (or brew install graphviz). Without both, the cell that
+# draws the functional model raises ImportError.
+pydot>=2.0
+
 # Chapter-specific, and large. Uncomment when you reach them.
 # kagglehub>=0.3          # chapter 8 and 16: pretrained weights behind a login
 # sentencepiece>=0.2      # chapter 16: the tokenizer, if not pulled in by keras-hub

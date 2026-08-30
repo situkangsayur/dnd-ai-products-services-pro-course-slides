@@ -7,11 +7,13 @@
  "ch01-waves": "aa67787d6ce33951",
  "ch02-broadcast": "658cb8ca3f63fbb8",
  "ch02-geom": "dd075a73985dced1",
+ "ch02-geom-ops": "bf073c8e1244b0ea",
  "ch02-graph": "441843dfbb107845",
  "ch02-loop4": "74ca82c1c8c62ca6",
  "ch02-pipeline": "4610b50c9ed16317",
  "ch02-ranks": "03caa8bff982ea04",
  "ch02-scratch": "cf73b924c67f7992",
+ "ch02-tensor-ranks": "88aa3cedbfaec245",
  "ch03-choose": "63ea1ee6486cdd5e",
  "ch03-gradstyle": "ce56f54970a53a2e",
  "ch03-layerlife": "53115ba4ffcf59dd",
@@ -194,6 +196,9 @@
  "hendri-where": "d9312370656a3813",
  "hendri-who": "abd672e4aeb3753b",
  "hendri-who-decides": "49e706628c807b8f",
+ "test-geom": "bf073c8e1244b0ea",
+ "test-nn": "f6fbc5f624ba798a",
+ "test-tensor-ranks": "88aa3cedbfaec245",
  "viny-arc": "d937135f8e111aee",
  "viny-rag": "6b1c291832dd2636"
 }

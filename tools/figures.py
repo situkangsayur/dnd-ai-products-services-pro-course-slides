@@ -214,3 +214,72 @@ def render(fig_id, src, force=False):
     markup = re.sub(r"^\s*<\?xml[^>]*\?>\s*", "", markup)
     markup = re.sub(r"^\s*<!DOCTYPE[^>]*>\s*", "", markup)
     return markup, f"figs/{fig_id}.tex.pdf"
+
+
+# ------------------------------------------------- hand-drawn figures (SVG) --
+#
+# Diagrams from tools/diagrams.py are authored as SVG directly, in two
+# palettes. The dark one is inlined into the web deck as-is; the light one has
+# to become a PDF for Beamer, and Chrome is already a build dependency (mmdc
+# drives it), so it does the conversion rather than adding cairosvg or
+# librsvg to the list of things that must be installed before the deck builds.
+
+CHROME = os.environ.get("CHROME_BIN", "/usr/bin/google-chrome")
+
+_VIEWBOX = re.compile(r'viewBox="0 0 ([\d.]+) ([\d.]+)"')
+
+
+def _svg_to_pdf(svg_text, out_path):
+    """Print one SVG to a PDF page cut exactly to the drawing.
+
+    The page is sized from the viewBox rather than left at A4, so the figure
+    arrives in LaTeX with no border to fight and ``includegraphics`` can scale
+    it like any other image.
+    """
+    m = _VIEWBOX.search(svg_text)
+    w, h = (float(m.group(1)), float(m.group(2))) if m else (1000.0, 600.0)
+    win, hin = w / 96.0, h / 96.0
+
+    html = (
+        "<!doctype html><meta charset='utf-8'><style>"
+        f"@page{{size:{win:.4f}in {hin:.4f}in;margin:0}}"
+        "html,body{margin:0;padding:0;background:transparent}"
+        f"svg{{display:block;width:{win:.4f}in;height:{hin:.4f}in}}"
+        "</style>" + svg_text
+    )
+    with tempfile.TemporaryDirectory() as td:
+        src = os.path.join(td, "f.html")
+        with open(src, "w", encoding="utf-8") as f:
+            f.write(html)
+        r = subprocess.run(
+            [CHROME, "--headless=new", "--disable-gpu", "--no-sandbox",
+             "--no-pdf-header-footer", f"--print-to-pdf={out_path}",
+             "file://" + src],
+            capture_output=True, text=True, timeout=180)
+    if not os.path.exists(out_path):
+        raise RuntimeError(f"chrome could not print {os.path.basename(out_path)}:\n"
+                           f"{(r.stderr or r.stdout or '')[-800:]}")
+
+
+def render_drawn(fig_id, web_svg, print_svg, force=False):
+    """Cache a hand-drawn figure; return (web markup, tex pdf relpath).
+
+    Same contract and same hash-skip as :func:`render`, so a build that changes
+    no diagram never starts a browser.
+    """
+    os.makedirs(FIGS, exist_ok=True)
+    digest = hashlib.sha256((web_svg + print_svg).encode("utf-8")).hexdigest()[:16]
+    svg_path = os.path.join(FIGS, f"{fig_id}.web.svg")
+    pdf_path = os.path.join(FIGS, f"{fig_id}.tex.pdf")
+
+    manifest = _load_manifest()
+    fresh = (manifest.get(fig_id) == digest
+             and os.path.exists(svg_path) and os.path.exists(pdf_path))
+    if force or not fresh:
+        with open(svg_path, "w", encoding="utf-8") as f:
+            f.write(web_svg)
+        _svg_to_pdf(print_svg, pdf_path)
+        manifest[fig_id] = digest
+        _save_manifest(manifest)
+
+    return web_svg, f"figs/{fig_id}.tex.pdf"

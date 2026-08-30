@@ -99,7 +99,10 @@ DECK = {
     "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 14",
     "source_url": chapter_url(14),
     "duration": "3 hours (2 sessions)",
-    "presenter": {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+    "presenter": [
+        {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+        {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    ],
     "resources": chapter_resources(14, local_notebooks=NB),
     "objectives": [
         "Explain why natural language is **messy in a way machine languages are not**, "

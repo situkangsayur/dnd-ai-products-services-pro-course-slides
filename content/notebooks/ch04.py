@@ -235,7 +235,7 @@ plt.show()"""),
             ("py", """import copy
 test_labels_copy = copy.copy(test_labels)
 np.random.shuffle(test_labels_copy)
-random_baseline = float(np.array(test_labels) == np.array(test_labels_copy)).mean()
+random_baseline = float((np.array(test_labels) == np.array(test_labels_copy)).mean())
 majority = np.bincount(train_labels).max() / len(train_labels)
 
 model.fit(x_train, y_train_int, epochs=9, batch_size=512, verbose=0)

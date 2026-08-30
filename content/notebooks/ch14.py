@@ -369,7 +369,7 @@ for i in order[::-1][:12]:
         "title": "Sequence models, and the trap of one-hot inputs",
         "lede": "A bidirectional LSTM that loses to bag-of-words, the diagnosis, and "
                 "the embedding layer that fixes it.",
-        "needs": "GPU recommended — about 30 minutes on CPU",
+        "needs": "GPU recommended — about 30 minutes on CPU · continues from notebook 02 (same kernel)",
         "section": "03 — Sequences: the sequence model approach",
         "cells": [
             ("h2", "Integer sequences, not multi-hot"),

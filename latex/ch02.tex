@@ -8,11 +8,11 @@
 \coursekicker{Chapter 2}
 \coursesource{Chollet \& Watson, Deep Learning with Python 3e --- chapter 2}
 \courseduration{3 hours (2 sessions)}
-\coursepresenter{Rahman Indra Kesuma, S.Kom., M.Cs.}{Teaching Assistant}
+\coursepresenter{Rahman Indra Kesuma, S.Kom., M.Cs. $\cdot$ Prof. Bambang Riyanto Trilaksono}{Teaching Assistant $\cdot$ Lead Instructor}
 \coursebrand{AI for Professional \textperiodcentered\ ITB \textperiodcentered\ Ch 2}
 
 \title{The Mathematical Building Blocks of Neural Networks}
-\author{Rahman Indra Kesuma, S.Kom., M.Cs.}
+\author{Rahman Indra Kesuma, S.Kom., M.Cs. $\cdot$ Prof. Bambang Riyanto Trilaksono}
 \date{}
 
 \begin{document}
@@ -182,10 +182,25 @@ Two things changed: the shape went from \inlinecode{(60000, 28, 28)} to \inlinec
 \framekicker{Section 2.2}
 \begin{frame}[shrink=25]{Rank, shape, dtype}
 \begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch02-ranks.tex.pdf}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch02-tensor-ranks.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Tensors generalise matrices to any number of axes. TensorFlow is named after this object.\par}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The same four numbers 7, 2, 9, 4 appear at every rank. What changes is how many indices it takes to reach one of them.\par}
+\end{frame}
+
+\framekicker{Section 2.2}
+\begin{frame}[shrink=25]{Reading the drawing: what each rank actually is}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Every tensor has exactly three defining attributes: its \textbf{number of axes} (rank), its \textbf{shape}, and its \textbf{dtype}. Everything else follows from those.\par}\vskip 4pt
+\begin{itable}{>{\raggedright\arraybackslash}p{0.094\textwidth}>{\raggedright\arraybackslash}p{0.1504\textwidth}>{\raggedright\arraybackslash}p{0.1504\textwidth}>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.3008\textwidth}}
+\thead{Rank} & \thead{Name} & \thead{Shape} & \thead{To reach one number} & \thead{Example} \\ \midrule
+0 & scalar & \inlinecode{()} & \inlinecode{t} & a loss value --- one number per batch \\
+1 & vector & \inlinecode{(4,)} & \inlinecode{t[i]} & one MNIST image after flattening is \inlinecode{(784,)} \\
+2 & matrix & \inlinecode{(3, 4)} & \inlinecode{t[i][j]} & a batch of flattened images, \inlinecode{(128, 784)} \\
+3 & tensor & \inlinecode{(2, 3, 4)} & \inlinecode{t[i][j][k]} & a batch of images before flattening, \inlinecode{(128, 28, 28)} \\
+\end{itable}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Rank is a count of axes, not a size.} A \inlinecode{(60000, 28, 28)} tensor and a \inlinecode{(2, 3, 4)} tensor are both rank 3, and every rule you learn about one applies to the other. \hilite{That is the whole reason the abstraction is worth having.}\par}\vskip 4pt
+\begin{iband}[signal]
+The word \textit{dimension} is used for two different things and causes real confusion: a rank-3 tensor has \textbf{3 axes}, while a \inlinecode{(784,)} vector is often called \textit{784-dimensional}. Say \textbf{rank} for axes and \textbf{shape} for sizes, and the ambiguity disappears.
+\end{iband}
 \end{frame}
 
 \framekicker{Section 2.2}
@@ -328,9 +343,24 @@ This is exactly what \inlinecode{train\_images.reshape((60000, 784))} did in the
 \framekicker{Section 2.3.5}
 \begin{frame}[shrink=25]{Every tensor operation is a geometric one}
 \begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch02-geom.tex.pdf}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch02-geom-ops.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Tensor contents are coordinates; operations on them are movements in space.\par}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont One shape, four operations. The dashed outline is where it started.\par}
+\end{frame}
+
+\framekicker{Section 2.3.5}
+\begin{frame}[shrink=25]{Reading the drawing: what moved, and what did it}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Treat the numbers in a tensor as \textbf{coordinates}. Then every operation in the previous slide is a movement, and the matrix is the instruction for the movement.\par}\vskip 4pt
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.4324\textwidth}>{\raggedright\arraybackslash}p{0.3008\textwidth}}
+\thead{Operation} & \thead{What it does to the shape} & \thead{Written as} \\ \midrule
+\textbf{Translation} & Slides it. Every point moves by the same vector; nothing turns or stretches. & \inlinecode{y = x + b} \\
+\textbf{Rotation} & Turns it about the origin. Lengths and angles survive --- the shape is the same shape, pointing elsewhere. & \inlinecode{y = R @ x} \\
+\textbf{Scaling} & Stretches each axis by its own factor. Here x by 1.5 and y by 0.6, which is why it comes out squat. & \inlinecode{y = D @ x} \\
+\textbf{Affine} & Any matrix, then a vector. Straight lines stay straight and parallel lines stay parallel --- but angles do not survive. & \inlinecode{y = W @ x + b} \\
+\end{itable}
+\begin{iband}[signal]
+\textbf{A \inlinecode{Dense} layer is the fourth row.} \inlinecode{W @ x + b} is an affine transform, and nothing else. A stack of them with no activation between is still one affine transform --- which is the next slide, and the reason activations exist.
+\end{iband}
 \end{frame}
 
 \framekicker{Section 2.3.5}

@@ -122,7 +122,10 @@ DECK = {
     "source": "Chollet & Watson, Deep Learning with Python 3e — chapter 12",
     "source_url": chapter_url(12),
     "duration": "2.5 hours",
-    "presenter": {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+    "presenter": [
+        {"name": "Rahman Indra Kesuma, S.Kom., M.Cs.", "role": "Teaching Assistant"},
+        {"name": "Prof. Bambang Riyanto Trilaksono", "role": "Lead Instructor"},
+    ],
     "resources": chapter_resources(12, local_notebooks=NB),
     "objectives": [
         "Say when to use **detection rather than segmentation**, on both compute and "

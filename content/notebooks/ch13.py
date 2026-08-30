@@ -169,7 +169,7 @@ plt.show()"""),
         "title": "Two architectures that fail, and why each one fails",
         "lede": "A dense model and a 1D convnet on the same problem. Both lose to the "
                 "baseline, for two different and instructive reasons.",
-        "needs": "CPU — about 10 minutes",
+        "needs": "CPU — about 10 minutes · continues from notebook 01 (same kernel)",
         "section": "02 — Trying machine learning",
         "cells": [
             ("h2", "Setup"),
@@ -291,7 +291,7 @@ h_recent, mae_recent = train(recent_model, "recent")"""),
         "title": "Recurrent layers, and the first model that beats the baseline",
         "lede": "A single LSTM layer with 16 units — fewer parameters than the dense "
                 "model that failed, and the first thing in this chapter that works.",
-        "needs": "CPU — about 15 minutes (GPU: 3 minutes)",
+        "needs": "CPU — about 15 minutes (GPU: 3 minutes) · continues from notebook 01 (same kernel)",
         "section": "03 — Recurrent neural networks",
         "cells": [
             ("h2", "A recurrent layer, written out"),
@@ -436,7 +436,7 @@ for L in [24, 48, 120, 240]:
         "title": "Recurrent dropout, stacking, and the one that does not work",
         "lede": "Three standard refinements. Two help; the third fails, and its failure "
                 "says something specific about the problem.",
-        "needs": "CPU — about 25 minutes (GPU: 5 minutes)",
+        "needs": "CPU — about 25 minutes (GPU: 5 minutes) · continues from notebook 01 (same kernel)",
         "section": "04 — Advanced use of recurrent neural networks",
         "cells": [
             ("h2", "Recurrent dropout"),
