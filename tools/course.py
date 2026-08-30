@@ -18,9 +18,8 @@ COURSE = {
     # convention -- is the wrong word for this directorate's name, and it is on
     # every deck cover and every notebook footer, so it is worth getting right.
     "unit": "Directorate of Sustainable Professional Education",
-    "partner": "PT Bank Rakyat Indonesia (Persero) Tbk",
     "format": "Microcredential · hybrid · paid",
-    # From BRI-diskusi-20-08-2026: 6 sks, 1 sks = 45 jam, dipecah
+    # 6 sks, 1 sks = 45 jam, dipecah
     # 15 jam kuliah + 15 jam exercise + 15 jam independent study per sks.
     "credits": "6 credits (equivalent to two master's-level courses)",
     "hours": "1 credit = 45 hours · 15 h lecture + 15 h exercise + 15 h independent study",

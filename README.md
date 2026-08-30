@@ -4,7 +4,6 @@ Repositori **sumber tunggal** untuk kelas
 
 > **Designing and Building AI Products and Services: AI for Professional**
 > ITB Team · Direktorat Pendidikan Profesional Berkelanjutan
-> × PT Bank Rakyat Indonesia (Persero) Tbk
 
 Setiap dek slide ditulis **satu kali** sebagai modul Python di `content/`, lalu
 dirender ke dua bentuk sekaligus:
@@ -99,6 +98,21 @@ membuktikan apa pun; `0.0089` di sebelah `5.21` membuktikannya.
 Teksnya `<text>` SVG asli, jadi tidak bisa terpotong seperti label mermaid.
 Dua palet dari satu builder: gelap untuk web, terang dicetak jadi PDF lewat
 Chrome (sudah jadi dependensi build lewat `mmdc`).
+
+## Web dan PDF harus sama persis
+
+Satu isi, dua perender, dan **jumlah halamannya harus cocok dek per dek**:
+
+```bash
+python3 tools/build.py --pdf        # .tex + latex/*.pdf + course-web-slides/pdf/*.pdf
+```
+
+Dulu tidak cocok. Setiap PDF punya SATU halaman lebih banyak daripada dek
+webnya, karena perender LaTeX memasang halaman *Session Objectives* sesudah
+sampul dan perender web tidak. Selisih yang seragam di 22 dek itu tandanya
+struktural, bukan isi — dan sekarang keduanya memasangnya. Pemeriksaannya satu
+baris `pdfinfo` per dek; kalau ada yang meleset, yang salah biasanya blok yang
+cuma dikenali salah satu perender.
 
 ## Mengukur dek di peramban
 

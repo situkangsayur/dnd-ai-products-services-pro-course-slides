@@ -1,4 +1,4 @@
-"""Slide content schema for the ITB × BRI course decks.
+"""Slide content schema for the AI for Professional course decks.
 
 One deck is authored ONCE, as a Python module under ``content/`` exporting a
 ``DECK`` dict. Two renderers consume it:

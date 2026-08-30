@@ -9,8 +9,10 @@ python3 tools/small.py http://127.0.0.1:5053
 python3 tools/audit.py http://127.0.0.1:5053
 ```
 
-Keadaan per 30 Agustus 2026: **1.142 slide, 22 dek.** Tata letak bersih —
-0 label terpotong, 0 figur tampil di bawah 55%, 0 slide bertindihan.
+Keadaan per 30 Agustus 2026: **1.167 slide, 22 dek.** Tata letak bersih —
+0 label terpotong, 0 figur tampil di bawah 55%, 0 slide terpotong atau
+bertindihan. **Web dan PDF sekarang sama persis**: 1.167 slide web,
+1.167 halaman PDF, dek per dek.
 
 ---
 

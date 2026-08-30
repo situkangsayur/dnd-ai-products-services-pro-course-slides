@@ -209,11 +209,8 @@ def _title_slide(deck):
             '<img src="../_engine/assets/itb-logo.png" alt="ITB">'
             '<div class="co-txt"><b>Institut Teknologi Bandung</b><br>'
             'Directorate of Sustainable Professional Education'
-            # The cohort partner is named only on decks that declare one. The
-            # book chapters are reused across cohorts and institutions, so they
-            # deliberately carry no partner branding.
-            + (f'<br><span style="opacity:.7">in partnership with {esc_html(d["partner"])}</span>'
-               if d.get("partner") else "")
+            # No partner line: the course mixes three sources and is reused
+            # across cohorts. Removed on request, and the LaTeX cover matches.
             + "</div>"
             "</div>"
             f'<div class="kicker">{esc_html(kicker)}</div>'
@@ -251,11 +248,33 @@ def _content_slide(s):
     }
 
 
+def _objectives_slide(deck):
+    """The learning outcomes, as their own slide.
+
+    LaTeX has always emitted this page straight after the cover; the web
+    renderer did not, so every deck's PDF had exactly one page more than the
+    web deck and the two could not be read side by side. Same source, same
+    slide, in both.
+    """
+    items = "".join(f"<li>{ih(o)}</li>" for o in deck["objectives"])
+    return {
+        "title": "Session Objectives",
+        "cls": "",
+        "html": ('<div class="kicker">Learning outcomes</div>'
+                 '<h2>Session Objectives</h2>'
+                 '<p class="sub">By the end of this session, '
+                 'participants can:</p>'
+                 f'<ol>{items}</ol>'),
+    }
+
+
 def build_slides(deck):
     out = []
     for s in deck["slides"]:
         if s["type"] == "title":
             out.append(_title_slide(deck))
+            if deck.get("objectives"):
+                out.append(_objectives_slide(deck))
         elif s["type"] == "section":
             out.append(_section_slide(s))
         else:
