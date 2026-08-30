@@ -102,7 +102,7 @@ Generator yang ada: `neural_net` · `forward_pass` · `neuron_math` ·
 `residual` · `depth_vs_width` · `conv_compute` · `feature_maps` ·
 `tensor_ranks` · `tensor_grid` · `geometric_ops` · `sgd_descent` ·
 `sliding_window` · `bag_of_words` · `pixel_mask` · `coord_change` ·
-`agent_loop` · `latent_space` · `output_heads`.
+`agent_loop` · `latent_space` · `output_heads` · `reuse_curve`.
 
 Aturan pertama: **kalau isinya aritmetika, hitungkan.** `backprop` dan
 `residual` sama-sama menampilkan angkanya sendiri — `residual` mengalikan lima
@@ -118,7 +118,14 @@ memang tidak ada. `latent_space` berjalan dari A ke B dan memperlihatkan
 keluaran dekodernya berubah mulus, lalu satu titik di luar manifold yang
 keluarannya kacau.
 
-Aturan ketiga: **kalau gambarnya mengklaim sesuatu, jangan biarkan gambarnya
+Aturan ketiga: **kalau tidak ada yang bisa diukur, hitung konsekuensinya dan
+cetak asumsinya di gambar.** `reuse_curve` menggambar klaim Chollet soal
+pustaka global — sistem yang belum ada, jadi tidak ada yang bisa diukur. Yang
+ada adalah akibatnya: kalau satu tugas butuh enam subrutin dari ruang empat
+puluh primitif, tugas ke-20 mensintesis 0,27 subrutin baru. Asumsinya dicetak
+di atas kurvanya, sebab asumsi itulah yang mengerjakan seluruh pekerjaannya.
+
+Aturan keempat: **kalau gambarnya mengklaim sesuatu, jangan biarkan gambarnya
 membantah klaimnya.** Pita data di `latent_space` sengaja dibuat hampir lurus:
 kalau melengkung, tali busur antara dua titiknya keluar dari pita di tengah —
 dan cerita rapi "berjalan dari A ke B, tiap langkah sah" jadi salah persis di

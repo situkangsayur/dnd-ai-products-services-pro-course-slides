@@ -338,7 +338,43 @@ DECK = {
 #   "es" + "t" -> "est"      n e w est    w i d est
 #   "l" + "o"  -> "lo"       lo w e r
 
-# stop when the vocabulary reaches the target size"""},
+# stop when the vocabulary reaches the target size""",
+                 "run": [
+                     {"line": 2, "note": "A corpus of four words, with counts: "
+                                         "`low` 5, `lower` 2, `newest` 6, "
+                                         "`widest` 3. Every character is its own "
+                                         "token, plus an end-of-word marker.",
+                      "vars": {"vocabulary": "characters only",
+                               "merges so far": "0"}},
+                     {"line": 5, "note": "Count every adjacent pair. Three tie at "
+                                         "9 — `e+s`, `s+t`, `t+</w>` — and the tie "
+                                         "goes to the first one seen. **The rule "
+                                         "is frequency, and nothing else**: no "
+                                         "linguistics, no morpheme list.",
+                      "vars": {"e+s": "9", "s+t": "9", "t+</w>": "9", "w+e": "8"}},
+                     {"line": 6, "note": "`newest` and `widest` now end in `es t`, "
+                                         "so `es+t` is still 9. Merging pairs of "
+                                         "pairs is how multi-character tokens "
+                                         "appear.",
+                      "vars": {"es+t": "9", "t+</w>": "9", "l+o": "7"}},
+                     {"line": 6, "note": "…and `est+</w>` is 9 too. The suffix "
+                                         "**-est** has just been discovered — by "
+                                         "counting, not by being told it is a "
+                                         "suffix.",
+                      "vars": {"est+</w>": "9", "l+o": "7", "n+e": "6"}},
+                     {"line": 7, "note": "The 9s are exhausted; `l+o` at 7 is next, "
+                                         "then `lo+w`, also 7. `low` becomes one "
+                                         "token because it is common.",
+                      "vars": {"l+o": "7", "lo+w": "7", "vocabulary": "+5 tokens"}},
+                     {"line": 9, "note": "Stop here and `newest` is two tokens "
+                                         "(`ne` + `est</w>`), `low` is one, and a "
+                                         "word never seen before still splits into "
+                                         "pieces that exist. ==Nothing is ever "
+                                         "`[UNK]`==, because characters are always "
+                                         "available underneath.",
+                      "vars": {"low": "1 token", "newest": "2 tokens",
+                               "unseen word": "always representable"}},
+                 ]},
                 {"t": "band",
                  "md": "Common words end up as **single tokens**; rare words decompose into "
                        "**familiar pieces**. Nothing is ever `[UNK]`, because ==the character "

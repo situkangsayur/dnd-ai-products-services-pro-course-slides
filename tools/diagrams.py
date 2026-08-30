@@ -2209,3 +2209,97 @@ def output_heads(fig_id, *, cap="", note="", width=1330, height=414, full=False)
                    sim_label="head")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ================================================ solve it once, reuse it after --
+
+def reuse_curve(fig_id, *, cap="", note="", width=1290, height=430, full=False,
+                pool=40, per_task=6, tasks=20):
+    """What "any single problem would only need to be solved once" implies.
+
+    This is a claim about a system nobody has built, so there is nothing to
+    measure. What there is, is a consequence: if a task needs ``per_task``
+    subroutines drawn from a space of ``pool`` abstract primitives, and the
+    library keeps everything ever synthesised, then the work a new task needs
+    is whatever is not in the library yet.
+
+    That is computable, and the figure computes it rather than asserting it.
+    The assumptions are printed ON the drawing, because they are doing all the
+    work: change ``pool`` and the curve changes, which is the honest way to
+    show a claim about a future architecture.
+    """
+    # Expected library size after t tasks, each drawing per_task of pool
+    # primitives uniformly: pool * (1 - (1 - per_task/pool)^t).
+    q = 1.0 - per_task / pool
+    lib = [pool * (1.0 - q ** t) for t in range(tasks + 1)]
+    new = [lib[t] - lib[t - 1] for t in range(1, tasks + 1)]
+
+    def build(p):
+        out = []
+        bx, by, bw, bh = 82.0, 96.0, 900.0, 236.0
+        step_x = bw / tasks
+        unit = bh / per_task
+
+        out.append(txt(bx, 52, "work per task, as the library fills", size=13.5,
+                       weight=600, pal=p, fill=p.ink, anchor="start", step=1))
+        out.append(txt(bx + 330, 52,
+                       f"assumption: each task needs {per_task} subroutines, "
+                       f"drawn from {pool} abstract primitives",
+                       size=11.5, pal=p, fill=p.ink3, anchor="start", step=1))
+
+        out.append(line(bx, by + bh, bx + bw, by + bh, pal=p, stroke=p.line,
+                        sw=1.2, step=1))
+        out.append(line(bx, by, bx, by + bh, pal=p, stroke=p.line, sw=1.2,
+                        step=1))
+        for k in range(per_task + 1):
+            y = by + bh - k * unit
+            out.append(txt(bx - 10, y + 4, str(k), size=10.5, mono=True, pal=p,
+                           fill=p.ink3, anchor="end", step=1))
+            if k:
+                out.append(line(bx, y, bx + bw, y, pal=p, stroke=p.faint,
+                                sw=0.7, dash="2 5", step=1))
+
+        for t in range(tasks):
+            x = bx + t * step_x + 3
+            w = step_x - 6
+            st = 1 if t == 0 else (2 if t < 5 else 3)
+            n = new[t]
+            r = per_task - n
+            out.append(rect(x, by + bh - r * unit, w, r * unit, r=2, pal=p,
+                            fill=p.good, stroke="none", sw=0, step=st))
+            out.append(rect(x, by + bh - per_task * unit, w, n * unit, r=2,
+                            pal=p, fill=p.warm, stroke="none", sw=0, step=st))
+            if t in (0, 4, 9, 19):
+                out.append(txt(x + w / 2, by + bh + 18, f"task {t + 1}",
+                               size=10.5, pal=p, fill=p.ink3, step=st))
+
+        # Legend, and the number the whole slide is about.
+        ly = by + bh + 46
+        for i, (col, lbl) in enumerate(((p.warm, "newly synthesised"),
+                                        (p.good, "fetched from the library"))):
+            out.append(rect(bx + i * 240, ly - 9, 14, 14, r=3, pal=p, fill=col,
+                            stroke="none", sw=0, step=1))
+            out.append(txt(bx + i * 240 + 22, ly, lbl, size=12, pal=p,
+                           fill=p.ink2, anchor="start", step=1))
+
+        rx = bx + bw + 42
+        out.append(txt(rx, by + 26, "task 1", size=12, pal=p, fill=p.ink3,
+                       anchor="start", step=1))
+        out.append(txt(rx, by + 52, f"{new[0]:.1f} new", size=20, weight=600,
+                       pal=p, fill=p.warm, anchor="start", step=1))
+        out.append(txt(rx, by + 108, f"task {tasks}", size=12, pal=p,
+                       fill=p.ink3, anchor="start", step=3))
+        out.append(txt(rx, by + 134, f"{new[-1]:.2f} new", size=20, weight=600,
+                       pal=p, fill=p.good, anchor="start", step=3))
+        out.append(txt(rx, by + 176,
+                       f"library: {lib[-1]:.0f} of {pool}", size=12.5, mono=True,
+                       pal=p, fill=p.ink2, anchor="start", step=3))
+        out.append(txt(bx, height - 18,
+                       "The curve is the claim. It is also entirely a consequence "
+                       "of the assumption printed above it — change the size of "
+                       "the primitive space and it changes.",
+                       size=12.5, pal=p, fill=p.accent, anchor="start", step=3))
+        return svg(width, height, "".join(out), pal=p, steps=3,
+                   sim_label="tasks")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

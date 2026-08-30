@@ -652,6 +652,15 @@ Remember the low accuracy on adding large integers? \hilite{You would not want t
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Think of software development: once an engineer solves HTTP queries in Python, they package it as a reusable library accessible to anyone on the planet. \textbf{Any single problem encountered would only need to be solved once} --- making such systems constantly self-improving.\par}\vskip 4pt
 \end{frame}
 
+\framekicker{Section 19.4}
+\begin{frame}[shrink=25]{\ldots{}and what that would actually buy you}
+\begin{center}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch19-reuse.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Not a measurement --- nobody has built this. It is the arithmetic the claim implies, under one stated assumption. Step through: the first task, the first five, then twenty.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The first task synthesises all six of its subroutines. The twentieth synthesises \textbf{0.27} of one, and fetches the rest. That is what \textit{solve it once} means quantitatively, and it is also the whole difficulty: the primitives have to be \hilite{abstract enough to be fetched by a task nobody had in mind when they were written}, which is exactly what section 19.4 said LLMs cannot yet do.\par}\vskip 4pt
+\end{frame}
+
 \framekicker{Section 19.4.7}
 \begin{frame}[shrink=25]{The long-term vision, in four points}
 \begin{isteps}

@@ -14,6 +14,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from diagrams import reuse_curve  # noqa: E402
 
 
 MMD_STATIC_DB = """
@@ -1269,6 +1270,30 @@ DECK = {
                                  "accessible to anyone on the planet. **Any single problem "
                                  "encountered would only need to be solved once** — making such "
                                  "systems constantly self-improving."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 19.4",
+            "title": "…and what that would actually buy you",
+            "blocks": [
+                reuse_curve("ch19-reuse",
+                            cap="Not a measurement — nobody has built this. It is the "
+                                "arithmetic the claim implies, under one stated "
+                                "assumption. Step through: the first task, the first "
+                                "five, then twenty.",
+                            note="A task needs six subroutines drawn from a space of "
+                                 "forty abstract primitives; the library keeps "
+                                 "everything ever synthesised. New work per task is "
+                                 "whatever is not in the library yet."),
+                {"t": "p", "md": "The first task synthesises all six of its subroutines. The "
+                                 "twentieth synthesises **0.27** of one, and fetches the "
+                                 "rest. That is what *solve it once* means quantitatively, "
+                                 "and it is also the whole difficulty: the primitives have "
+                                 "to be ==abstract enough to be fetched by a task nobody "
+                                 "had in mind when they were written==, which is exactly "
+                                 "what section 19.4 said LLMs cannot yet do."},
             ],
         },
 
