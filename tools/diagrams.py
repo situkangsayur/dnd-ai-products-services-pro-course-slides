@@ -1444,3 +1444,87 @@ def positional_encoding(fig_id, *, positions=12, dims=16, cap="", note="",
                    sim_label="stage")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# =============================================== depth against width, drawn --
+
+def depth_vs_width(fig_id, *, broad=(64, 512, 10), deep=(64, 96, 96, 96, 96, 10),
+                   cap="", note="", width=1100, height=500, full=False):
+    """Two networks with a similar parameter budget, spent differently.
+
+    The claim — *deep and narrow beats broad and shallow* — is about the number
+    of **successive** transformations, and a pair of cards cannot show that
+    because the thing being compared is a shape. Drawn side by side with the
+    parameter counts computed underneath, the argument makes itself: the broad
+    network has one place where representation can change, the deep one has
+    four, and they cost about the same.
+    """
+    def params(sizes):
+        return sum(a * b + b for a, b in zip(sizes, sizes[1:]))
+
+    def build(p):
+        out = []
+        half = width / 2
+        top, bot = 118, 128
+        span = height - top - bot
+        R = 9
+
+        for k, (sizes, title, blurb) in enumerate((
+                (broad, "Broad and shallow",
+                 "one hidden layer — one place where the representation changes"),
+                (deep, "Deep and narrow",
+                 f"{len(deep) - 2} hidden layers — a hierarchy, each built on the last"))):
+            ox = k * half
+            n = len(sizes)
+            xs = [ox + 78 + (half - 156) * i / (n - 1) for i in range(n)]
+            drawn = [min(s, 7) for s in sizes]
+            ys = [[top + span * (j + 0.5) / d for j in range(d)] for d in drawn]
+            st = k + 1
+
+            out.append(txt(ox + half / 2, 46, title, size=16, weight=600, pal=p,
+                           fill=p.ink, step=st))
+            out.append(txt(ox + half / 2, 70, blurb, size=12, pal=p,
+                           fill=p.ink3, step=st))
+
+            for i in range(n - 1):
+                for y0 in ys[i]:
+                    for y1 in ys[i + 1]:
+                        out.append(line(xs[i] + R, y0, xs[i + 1] - R, y1,
+                                        pal=p, stroke=p.faint, sw=0.55,
+                                        opacity=0.5, step=st))
+            for i, (d, yy) in enumerate(zip(drawn, ys)):
+                hidden = 0 < i < n - 1
+                for y in yy:
+                    out.append(circle(xs[i], y, R, pal=p,
+                                      fill=p.accent_fill if hidden else p.fill,
+                                      stroke=p.accent if hidden else p.line,
+                                      sw=1.3, step=st))
+                if sizes[i] > d:
+                    mid = (yy[len(yy) // 2 - 1] + yy[len(yy) // 2]) / 2
+                    for off in (-7, 0, 7):
+                        out.append(circle(xs[i], mid + off, 1.6, pal=p,
+                                          fill=p.ink3, stroke="none", sw=0,
+                                          step=st))
+                out.append(txt(xs[i], height - bot + 26, str(sizes[i]),
+                               size=12, mono=True, pal=p, fill=p.ink2, step=st))
+
+            # The point of the figure: the same budget, spent differently.
+            out.append(txt(ox + half / 2, height - bot + 58,
+                           f"{params(sizes):,} parameters".replace(",", " "),
+                           size=15, weight=600, mono=True, pal=p, fill=p.accent,
+                           step=st))
+            levels = len(sizes) - 2
+            out.append(txt(ox + half / 2, height - bot + 82,
+                           f"{levels} level{'s' if levels != 1 else ''} of "
+                           f"representation", size=12.5, pal=p,
+                           fill=p.warm if levels > 1 else p.ink3, step=st))
+
+        out.append(line(half, 36, half, height - 40, pal=p, stroke=p.faint,
+                        sw=1, dash="4 6"))
+        out.append(txt(width / 2, height - 14,
+                       "Roughly the same cost. The one on the right can build a "
+                       "representation on top of a representation, four times over.",
+                       size=13, pal=p, fill=p.ink2, step=2))
+        return svg(width, height, "".join(out), pal=p, steps=2, sim_label="net")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

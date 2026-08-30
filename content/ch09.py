@@ -13,6 +13,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from diagrams import depth_vs_width  # noqa: E402
 
 
 MMD_MHR = """
@@ -385,6 +386,18 @@ x = layers.add([x, residual])"""},
                  "md": "So the rule is a pair: **`padding=\"same\"` inside the block, "
                        "`strides` on the projection** to match whatever downsampling the "
                        "block performs."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 9.3.2",
+            "title": "The same budget, spent two ways",
+            "blocks": [
+                depth_vs_width(
+                    "ch09-depth-width",
+                    cap="Parameter counts are computed from the layer sizes shown, not "
+                        "chosen to make the point."),
             ],
         },
 

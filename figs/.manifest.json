@@ -53,6 +53,7 @@
  "ch08-transfer": "3b1f6320711eb263",
  "ch08-twoways": "deef4209a3973604",
  "ch09-block": "f236dfa0f989c419",
+ "ch09-depth-width": "0f717d5851a743c6",
  "ch09-mhr": "7659fbdd465308da",
  "ch09-residual": "9cdcec52670d8f0a",
  "ch09-separable": "cec9125465f9a61a",
@@ -198,6 +199,7 @@
  "hendri-wf": "7f45bd5feb134e69",
  "hendri-where": "d9312370656a3813",
  "hendri-who": "abd672e4aeb3753b",
+ "test-dw": "0f717d5851a743c6",
  "test-pe": "c03e15eaf9df5ff7",
  "viny-arc": "d937135f8e111aee",
  "viny-rag": "6b1c291832dd2636"
