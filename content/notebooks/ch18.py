@@ -767,7 +767,9 @@ int_kernel, kernel_scale = abs_max_quantize(kernel)
 
 print("x as int8:     ", ops.convert_to_numpy(int_x))
 print("kernel as int8:", ops.convert_to_numpy(int_kernel))
-print(f"scales: {float(x_scale):.2f}, {float(kernel_scale):.2f}")"""),
+sx = ops.convert_to_numpy(x_scale).item()
+sk = ops.convert_to_numpy(kernel_scale).item()
+print(f"scales: {sx:.2f}, {sk:.2f}")"""),
             ("md",
              "The tensor is spread across the full **[-127, 127]** range before "
              "casting. `+ 1e-7` avoids dividing by zero, and **rounding and "
