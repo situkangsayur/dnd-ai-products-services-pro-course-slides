@@ -522,6 +522,15 @@ This is one \textbf{head}. Multi-head attention runs several of these in paralle
 \end{iband}
 \end{frame}
 
+\framekicker{Section 15.3.1}
+\begin{frame}[shrink=25]{Now read the actual weights, and be disappointed}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The five stages ran on \textbf{random} matrices, because nothing in that figure was trained. So look at what the softmax returned: 21\%, 25\%, 20\%, 22\%, 12\%. Almost flat.\par}\vskip 4pt
+\begin{iband}[signal]
+An attention head at initialisation attends to \hilite{everything, about equally}. It is not picking out the referent of \textit{it}; it is barely picking out anything. \textbf{Selectivity is learned} --- it is what the training loop buys, and it is not a property of the mechanism.
+\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Worth sitting with, because every paper shows a \textbf{trained} head with a sharp diagonal, and it is easy to conclude the arithmetic does that on its own. It does not. The arithmetic gives you a weighted average that \hilite{can be steered}; gradient descent does the steering, and a head that never learns anything useful stays exactly this flat.\par}\vskip 4pt
+\end{frame}
+
 \framekicker{Section 15.3.1 $\cdot$ figure 15.7}
 \begin{frame}[shrink=25]{Multi-head attention, written out}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Every projection becomes a \textbf{list} of projections, one per head, and the per-head outputs are concatenated at the end.\par}\vskip 4pt

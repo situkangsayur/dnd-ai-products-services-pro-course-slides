@@ -7,7 +7,7 @@ only happen when a browser lays the page out:
 |---|---|---|
 | `clip.py` | mermaid labels cut off inside their box | mermaid fixes the box size at render time; the page then re-flows the text inside it |
 | `small.py` | figures rendering below 55% of drawn size | a tall figure is scaled to fit and letterboxed — the SVG is valid and the slide does not overflow |
-| `audit.py` | slides whose content is truncated or overlapping | the fit pass runs in the browser |
+| `audit.py` | slides whose content is truncated or overlapping, **at their last step** | the fit pass runs in the browser |
 
 ```bash
 python3 -m http.server 5053 --directory ../course-web/site &   # or the systemd unit
@@ -54,6 +54,14 @@ build with 1 169 slides, and the line `MEASUREMENT FAILED for: ch01` under it.
 Without that line the missing 56 slides would have been invisible — the totals
 looked perfect. Read the failure list before the totals, and check that the
 slide count is the one you expect.
+
+**A stepped slide has more than one layout.** `audit.py` used to measure every
+slide at step 0, which is the state a stepped figure or a code trace is in
+before anything happens. Both grow: a run-trace panel can add four lines of
+note, and the last step is where the slide is tallest. A trace whose final step
+pushed the closing paragraph over the footer measured as clean for as long as
+nobody pressed play. The sweep now drives every `.sim-bar` to its end before
+measuring, and `deck.js` re-fits the slide on each step.
 
 And one flake worth knowing: **wait for the webfonts.** Measuring before they
 land reports phantom clipping — the fallback face is wider, every label

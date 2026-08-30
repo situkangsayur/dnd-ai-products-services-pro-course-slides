@@ -1136,7 +1136,35 @@ I think they're happy.
     scores = softmax(scores, axis=-1)
     return np.einsum("bts,bsd->btd", scores, source)
 
-dot_product_attention(target, source)"""},
+dot_product_attention(target, source)""",
+                 "run": [
+                     {"line": 6, "note": "The same five tokens as the figure two "
+                                         "sections ago, and the query is “it”. "
+                                         "No Wq, no Wk — the vectors go in raw.",
+                      "vars": {"source": "the · cat · sat · on · it",
+                               "target": "“it” = [0.96, 0.93, 0.31, 0.23]"}},
+                     {"line": 2, "note": "One dot product per source token. "
+                                         "`btd,bsd->bts` contracts the embedding "
+                                         "axis and keeps target × source.",
+                      "vars": {"scores": "[0.26, −0.01, 0.46, −0.30, 1.94]"}},
+                     {"line": 3, "note": "Softmax over the source axis. Now look "
+                                         "at the last one.",
+                      "vars": {"weights": "11% · 9% · 14% · 6% · **60%**"}},
+                     {"line": 3, "note": "**“It” spends 60% of its attention on "
+                                         "itself** — and it had to. A dot product "
+                                         "is largest between a vector and itself, "
+                                         "so raw attention is mostly "
+                                         "self-similarity. That is the whole "
+                                         "argument for projecting queries and "
+                                         "keys separately: Wq and Wk let a token "
+                                         "ask a question its own embedding does "
+                                         "not already answer.",
+                      "vars": {"argmax": "itself, every time"}},
+                     {"line": 4, "note": "The output is the source vectors mixed "
+                                         "in those proportions — so with these "
+                                         "weights, mostly a copy of the input.",
+                      "vars": {"output": "[0.55, 0.71, 0.14, 0.02]"}},
+                 ]},
                 {"t": "p", "md": "The `einsum` subscripts spell out the shapes: `b`atch, "
                                  "`t`arget length, `s`ource length, `d`imension. The first "
                                  "contraction produces a **(batch, target, source) score "
@@ -1318,6 +1346,28 @@ parameterized_attention(query=target, key=source, value=source)"""},
                                     "`Wk`, `Wv`, so each can specialise — one on syntax, "
                                     "another on which noun a pronoun refers to — and "
                                     "concatenates the results."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 15.3.1",
+            "title": "Now read the actual weights, and be disappointed",
+            "blocks": [
+                {"t": "p", "md": "The five stages ran on **random** matrices, because "
+                                 "nothing in that figure was trained. So look at what the "
+                                 "softmax returned: 21%, 25%, 20%, 22%, 12%. Almost flat."},
+                {"t": "band",
+                 "md": "An attention head at initialisation attends to ==everything, about "
+                       "equally==. It is not picking out the referent of *it*; it is barely "
+                       "picking out anything. **Selectivity is learned** — it is what the "
+                       "training loop buys, and it is not a property of the mechanism."},
+                {"t": "p", "md": "Worth sitting with, because every paper shows a **trained** "
+                                 "head with a sharp diagonal, and it is easy to conclude the "
+                                 "arithmetic does that on its own. It does not. The "
+                                 "arithmetic gives you a weighted average that ==can be "
+                                 "steered==; gradient descent does the steering, and a head "
+                                 "that never learns anything useful stays exactly this flat."},
             ],
         },
 

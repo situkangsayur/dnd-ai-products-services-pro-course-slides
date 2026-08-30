@@ -171,6 +171,12 @@ kotak. Dua mekanisme, keduanya memakai bilah kendali yang sama:
   berisi nomor baris, catatan, variabel, dan keluaran. Barisnya disorot dan
   keadaannya muncul di panel bawahnya.
 
+Catatan yang mahal dipelajari: **slide bertahap punya lebih dari satu tata
+letak.** Panel jejak `run` bertambah tinggi tiap langkah, jadi slide yang muat
+di langkah 0 bisa melewati batas bawah di langkah terakhir. `deck.js`
+memasang-ulang tiap langkah, dan `audit.py` menjalankan tiap bilah kendali
+sampai habis sebelum mengukur.
+
 Satu syarat mutlak: **diamnya harus tetap terbaca utuh.** PDF tidak punya
 JavaScript, jadi makna yang hanya ada di gerakan adalah makna yang separuh
 audiens tidak pernah terima. Jejak `run` juga ditulis tangan di sumber dek,

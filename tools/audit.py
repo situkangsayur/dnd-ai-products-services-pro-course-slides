@@ -120,6 +120,25 @@ MEASURE = r"""
       slides[i].classList.add('active');
     }
     const s = slides[i];
+
+    /* Advance every simulator and run trace to its LAST step before measuring.
+       A stepped figure and a code trace both change the slide's height as they
+       run -- a run-trace panel can add four lines of note -- and a sweep that
+       only ever sees step 0 reports a slide as fitting when its final step
+       pushes the last line past the bottom edge. Found by stepping one slide
+       by hand; the harness had said it was clean.
+
+       Measured at the END rather than at every step because that is where the
+       content is tallest: the reveal is cumulative, and the run panel is
+       re-rendered rather than appended to, so the last step is the worst case
+       for the figure and very nearly always for the panel too. */
+    s.querySelectorAll('.sim-bar').forEach(bar => {
+      const btns = [...bar.querySelectorAll('button')];
+      const next = btns[btns.length - 1];
+      if (!next) return;
+      for (let k = 0; k < 24; k++) next.click();
+    });
+
     const box = s.getBoundingClientRect();
     const cs = getComputedStyle(s);
     const padT = parseFloat(cs.paddingTop), padB = parseFloat(cs.paddingBottom);

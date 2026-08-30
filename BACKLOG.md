@@ -49,14 +49,14 @@ Kandidat berikutnya, berurutan:
 - [ ] `ch04` — pembagian latih/uji dan pengacakan batch, keduanya aritmetika
 - [ ] `viny-llm` — ada `attention_qkv` di `ch15` yang bisa dipakai ulang
 
-## 2 · Kode yang belum bisa dijalankan di slide — 289 dari 298
+## 2 · Kode yang belum bisa dijalankan di slide — 288 dari 298
 
 Blok `code` boleh membawa `run`: daftar langkah berisi nomor baris, catatan,
-dan keadaan variabel. Baru **9 dari 298** yang punya.
+dan keadaan variabel. Baru **10 dari 298** yang punya.
 
 Sudah: `ch01` gelung latih · `ch02` listing 2.1 + relu · `ch03` GradientTape +
 langkah latih utuh · `ch04` K-fold · `ch11` Conv2DTranspose · `ch12` IoU ·
-`ch15` normalisasi lapis.
+`ch15` normalisasi lapis + perhatian hasil-kali-titik.
 
 Prioritaskan listing yang **aritmetika**, bukan yang pemanggilan pustaka. Jejak
 `run` ditulis tangan; angkanya harus benar, jadi hitung dulu.
@@ -66,7 +66,6 @@ Prioritaskan listing yang **aritmetika**, bukan yang pemanggilan pustaka. Jejak
       **variansi**, bukan akarnya, jadi keluarannya berpusat tapi variansinya
       0,53. Keras membagi dengan √(variansi + ε). Jejaknya menghitung keduanya.
 - [ ] `ch14` n-gram dan pemotongan teks (chunking)
-- [ ] `ch15` perhitungan perhatian (attention) satu kepala
 - [ ] `ch16`/`ch17` penyusunan batch
 
 ## 3 · Slide kartu tanpa peraga — 128
