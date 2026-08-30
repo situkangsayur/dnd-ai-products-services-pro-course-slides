@@ -79,9 +79,21 @@ def esc(s) -> str:
     return escape(str(s), quote=True)
 
 
+def step_attr(step):
+    """``data-step="N"`` — the hook the deck's simulator drives.
+
+    An element carrying a step is hidden until the simulation reaches it. The
+    numbering starts at 1; step 0, or no attribute at all, means "always
+    visible" -- the axes, the curve, the labels. Static renders (the PDF) ignore
+    the attribute entirely and show the finished picture, which is why every
+    animated figure has to be legible with every step revealed at once.
+    """
+    return "" if not step else f' data-step="{int(step)}"'
+
+
 def txt(x, y, s, *, size=13, fill=None, anchor="middle", weight=400,
         mono=False, pal=None, opacity=None, cls="", baseline="middle",
-        italic=False):
+        italic=False, step=0):
     """One line of SVG text.
 
     Native ``<text>``, never HTML in a foreignObject. That choice is the whole
@@ -97,59 +109,59 @@ def txt(x, y, s, *, size=13, fill=None, anchor="middle", weight=400,
     klass = f' class="{cls}"' if cls else ""
     return (f'<text x="{x:.1f}" y="{y:.1f}" text-anchor="{anchor}" '
             f'dominant-baseline="{baseline}" fill="{fill or p.ink}" '
-            f'style="{style}"{extra}{klass}>{esc(s)}</text>')
+            f'style="{style}"{extra}{klass}{step_attr(step)}>{esc(s)}</text>')
 
 
 def rect(x, y, w, h, *, r=6, fill="none", stroke=None, sw=1.2, pal=None,
-         dash=None, cls="", opacity=None):
+         dash=None, cls="", opacity=None, step=0):
     p = pal or WEB
     d = f' stroke-dasharray="{dash}"' if dash else ""
     o = f' opacity="{opacity}"' if opacity is not None else ""
     k = f' class="{cls}"' if cls else ""
     return (f'<rect x="{x:.1f}" y="{y:.1f}" width="{w:.1f}" height="{h:.1f}" '
             f'rx="{r}" fill="{fill}" stroke="{stroke or p.faint}" '
-            f'stroke-width="{sw}"{d}{o}{k}/>')
+            f'stroke-width="{sw}"{d}{o}{k}{step_attr(step)}/>')
 
 
 def line(x1, y1, x2, y2, *, stroke=None, sw=1.2, pal=None, dash=None,
-         opacity=None, cls="", cap="round"):
+         opacity=None, cls="", cap="round", step=0):
     p = pal or WEB
     d = f' stroke-dasharray="{dash}"' if dash else ""
     o = f' opacity="{opacity}"' if opacity is not None else ""
     k = f' class="{cls}"' if cls else ""
     return (f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
             f'stroke="{stroke or p.faint}" stroke-width="{sw}" '
-            f'stroke-linecap="{cap}"{d}{o}{k}/>')
+            f'stroke-linecap="{cap}"{d}{o}{k}{step_attr(step)}/>')
 
 
 def circle(cx, cy, r, *, fill=None, stroke=None, sw=1.4, pal=None, cls="",
-           opacity=None):
+           opacity=None, step=0):
     p = pal or WEB
     o = f' opacity="{opacity}"' if opacity is not None else ""
     k = f' class="{cls}"' if cls else ""
     return (f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="{r:.1f}" '
             f'fill="{fill or p.fill}" stroke="{stroke or p.line}" '
-            f'stroke-width="{sw}"{o}{k}/>')
+            f'stroke-width="{sw}"{o}{k}{step_attr(step)}/>')
 
 
 def path(d, *, fill="none", stroke=None, sw=1.4, pal=None, dash=None,
-         cls="", opacity=None, marker=False):
+         cls="", opacity=None, marker=False, step=0):
     p = pal or PALETTES[0]
     ds = f' stroke-dasharray="{dash}"' if dash else ""
     o = f' opacity="{opacity}"' if opacity is not None else ""
     k = f' class="{cls}"' if cls else ""
     m = f' marker-end="url(#arw-{p.name})"' if marker else ""
     return (f'<path d="{d}" fill="{fill}" stroke="{stroke or p.line}" '
-            f'stroke-width="{sw}"{ds}{o}{k}{m}/>')
+            f'stroke-width="{sw}"{ds}{o}{k}{m}{step_attr(step)}/>')
 
 
 def arrow(x1, y1, x2, y2, *, stroke=None, sw=1.6, pal=None, dash=None,
-          opacity=None, cls=""):
+          opacity=None, cls="", step=0):
     """A straight arrow with a head. The head is a marker defined in `defs`."""
     p = pal or WEB
     return path(f"M{x1:.1f},{y1:.1f} L{x2:.1f},{y2:.1f}",
                 stroke=stroke or p.line, sw=sw, pal=p, dash=dash,
-                opacity=opacity, cls=cls, marker=True)
+                opacity=opacity, cls=cls, marker=True, step=step)
 
 
 def defs(pal, extra=""):
@@ -162,11 +174,19 @@ def defs(pal, extra=""):
     )
 
 
-def svg(w, h, body, *, pal=None, style="", cls="dfig"):
-    """Wrap a body in a viewBox'd SVG that scales to its container."""
+def svg(w, h, body, *, pal=None, style="", cls="dfig", steps=0, sim_label=""):
+    """Wrap a body in a viewBox'd SVG that scales to its container.
+
+    ``steps`` marks the figure as a simulation: the deck gives it a control bar
+    and reveals the ``data-step`` elements one at a time. The PDF has no
+    JavaScript and simply shows all of them, so a stepped figure must still read
+    correctly fully revealed.
+    """
     p = pal or WEB
+    sim = (f' data-sim="{int(steps)}"' if steps else "")
+    lab = f' data-sim-label="{esc(sim_label)}"' if sim_label else ""
     return (f'<svg class="{cls}" viewBox="0 0 {w:.0f} {h:.0f}" '
-            f'preserveAspectRatio="xMidYMid meet" role="img" '
+            f'preserveAspectRatio="xMidYMid meet" role="img"{sim}{lab} '
             f'xmlns="http://www.w3.org/2000/svg">'
             f'{defs(p)}<style>{style}</style>{body}</svg>')
 

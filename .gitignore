@@ -22,3 +22,20 @@ venv/
 # Book figures are derived from a copyrighted PDF that is not in this repo.
 # Re-extract with:  python3 tools/bookfigs.py --pdf <book.pdf> --all-in <ch>
 figs/book/
+
+# Artefacts that RUNNING the notebooks leaves behind, next to the notebook that made
+# them: saved models, checkpoints, TensorBoard logs, keras-tuner trials, exported
+# figures, and the datasets people download into the chapter folders. None of it is
+# source. (Some of these were committed before this rule existed -- untrack with
+# `git rm -r --cached notebooks/**/*.keras notebooks/ch07/tb_logs notebooks/ch18/mnist_kt_test`.)
+notebooks/**/*.keras
+notebooks/**/*.h5
+notebooks/**/*.weights.h5
+notebooks/**/tb_logs/
+notebooks/**/*_kt_test/
+notebooks/**/*.png
+notebooks/ch03/_backend_check.py
+notebooks/**/cats_vs_dogs_small/
+notebooks/**/aclImdb/
+notebooks/**/images/
+notebooks/**/annotations/

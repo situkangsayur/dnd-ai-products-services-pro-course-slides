@@ -13,7 +13,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
-from diagrams import geometric_ops, tensor_ranks  # noqa: E402
+from diagrams import geometric_ops, sgd_descent, tensor_ranks  # noqa: E402
 
 
 MMD_RANKS = """
@@ -834,6 +834,44 @@ loss_value = loss(y_pred, y_true)
                 ]},
                 {"t": "p", "md": "Repeat. Each step lowers the loss a little; enough steps "
                                  "and the model fits."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.4.3",
+            "title": "Seven steps of it, on a real curve",
+            "blocks": [
+                sgd_descent(
+                    "ch02-sgd-walk",
+                    cap="Cyan: the slope measured at that point. Amber: the step taken "
+                        "because of it."),
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.4.3",
+            "title": "Reading the walk: three things to notice",
+            "blocks": [
+                {"t": "steps", "items": [
+                    "**The step is the slope, scaled.** Nothing decides how far to move "
+                    "except `learning_rate × gradient`. Where the curve is steep the step "
+                    "is long; where it flattens the step shortens ==on its own==. No "
+                    "schedule does that — it falls out of the rule.",
+                    "**It never lands exactly on the minimum,** and it does not need to. "
+                    "Training stops when the loss stops improving, not when the gradient "
+                    "reaches zero.",
+                    "**Only the local slope is known.** At every point the walk sees the "
+                    "tangent and nothing else — not the shape of the curve, not where the "
+                    "minimum is. That is why a bad learning rate is fatal: the step is "
+                    "taken blind.",
+                ]},
+                {"t": "p", "md": "The arithmetic beside the curve is the whole algorithm. "
+                                 "`w ← w − lr · dL/dw`, five times, with real numbers you "
+                                 "can check on paper. **Everything else in this chapter is "
+                                 "about computing that one derivative efficiently** for "
+                                 "millions of parameters at once."},
             ],
         },
 

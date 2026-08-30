@@ -438,6 +438,24 @@ Because for a network with millions of parameters that is \hilite{analytically i
 \end{frame}
 
 \framekicker{Section 2.4.3}
+\begin{frame}[shrink=25]{Seven steps of it, on a real curve}
+\begin{center}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch02-sgd-walk.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Cyan: the slope measured at that point. Amber: the step taken because of it.\par}
+\end{frame}
+
+\framekicker{Section 2.4.3}
+\begin{frame}[shrink=25]{Reading the walk: three things to notice}
+\begin{isteps}
+\item \textbf{The step is the slope, scaled.} Nothing decides how far to move except \inlinecode{learning\_rate $\times$ gradient}. Where the curve is steep the step is long; where it flattens the step shortens \hilite{on its own}. No schedule does that --- it falls out of the rule.
+\item \textbf{It never lands exactly on the minimum,} and it does not need to. Training stops when the loss stops improving, not when the gradient reaches zero.
+\item \textbf{Only the local slope is known.} At every point the walk sees the tangent and nothing else --- not the shape of the curve, not where the minimum is. That is why a bad learning rate is fatal: the step is taken blind.
+\end{isteps}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The arithmetic beside the curve is the whole algorithm. \inlinecode{w $\leftarrow$ w $-$ lr $\cdot$ dL/dw}, five times, with real numbers you can check on paper. \textbf{Everything else in this chapter is about computing that one derivative efficiently} for millions of parameters at once.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Section 2.4.3}
 \begin{frame}[shrink=25]{Learning rate: the one number that decides whether it works}
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardwarn}

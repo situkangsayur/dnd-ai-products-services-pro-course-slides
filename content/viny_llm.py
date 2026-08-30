@@ -63,7 +63,8 @@ DECK = {
     "source": "Module material for " + COURSE["title"],
     "source_url": "https://scholar.google.com/citations?user=hayqUI0AAAAJ&hl=en",
     "duration": "3 hours (2 sessions)",
-    "presenter": {"name": "Viny", "role": "Teaching Assistant"},
+    "presenter": {"name": "Viny Christanti Mawardi, S.Kom., M.Kom.",
+                  "role": "Teaching Assistant"},
     "resources": RESOURCES,
     "objectives": [
         "*Objectives pending — to be written by the module owner.*",

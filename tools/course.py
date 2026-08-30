@@ -25,7 +25,19 @@ COURSE = {
 # ---------------------------------------------------------------- the team ---
 # Prof. Bambang: https://stei.itb.ac.id/en/dosen/bambang-riyanto-trilaksono/
 # Rahman:        https://if.itera.ac.id/dosen-rahman-indra-kesuma/
+# Viny:          https://untar.ac.id/en/leaders/study-programs/viny-christanti/
+#                https://scholar.google.com/citations?user=hayqUI0AAAAJ
 # Hendri:        https://hendrikarisma.my.id
+#
+# Two corrections made 2026-08-30, both from the person concerned:
+#   * Viny's full name and affiliation were confirmed and are no longer pending.
+#     Untar's own leadership page writes her as "Viny Christanti Mawardi,
+#     S.Kom., M.Kom." and lists her as head of the Informatics Engineering
+#     study programme in the Faculty of Information Technology.
+#   * Hendri is a doctoral STUDENT, not a doctoral candidate. The two are not
+#     interchangeable: "candidate" means the qualifying stage has been passed.
+#     Getting somebody's own standing wrong on their own course page is exactly
+#     the kind of small error an audience notices.
 TEAM = [
     {
         "key": "bambang",
@@ -48,21 +60,19 @@ TEAM = [
     },
     {
         "key": "viny",
-        "name": "Viny",
+        "name": "Viny Christanti Mawardi, S.Kom., M.Kom.",
         "role": "Teaching Assistant",
-        "aff": "Doctoral candidate · research focus on large language models, "
-               "fine-tuning, RAG, re-rankers, and guardrails",
-        "url": "https://scholar.google.com/citations?user=hayqUI0AAAAJ&hl=en",
+        "aff": "Head of the Informatics Engineering study programme, Faculty of "
+               "Information Technology, Universitas Tarumanagara (Untar) · "
+               "information retrieval and natural language processing",
+        "url": "https://untar.ac.id/en/leaders/study-programs/viny-christanti/",
         "topics": "Topic 4 — LLMs, fine-tuning, and RAG",
-        # Full name not yet confirmed; the Scholar profile blocks automated
-        # fetching. Flagged so it is not read as a verified fact.
-        "name_pending": True,
     },
     {
         "key": "hendri",
         "name": "Hendri Karisma, M.T.",
         "role": "Teaching Assistant",
-        "aff": "VP of Engineering, Jejakin · Doctoral candidate, STEI ITB",
+        "aff": "VP of Engineering, Jejakin · Doctoral student, STEI ITB",
         "url": "https://hendrikarisma.my.id",
         "topics": "Topic 6 — Agentic AI",
     },
