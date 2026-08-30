@@ -2303,3 +2303,144 @@ def reuse_curve(fig_id, *, cap="", note="", width=1290, height=430, full=False,
                    sim_label="tasks")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ============================================== five screens, and a missing one --
+
+def phone_flow(fig_id, screens, *, cap="", note="", width=1300, height=452,
+               full=False):
+    """A mobile flow drawn as phones, not as a row of emoji.
+
+    ``screens`` is a list of ``(kind, title, caption)``. ``kind`` picks what is
+    sketched inside the frame -- ``list``, ``detail``, ``progress``,
+    ``result``, ``stamp``, or ``absent``. The last one draws a dashed frame
+    with a strike through it, because "the screen that does not exist" is a
+    claim about the product and deserves to be visible as a gap rather than
+    stated in a caption.
+
+    The sketches are schematic and say so. What they carry that six icons do
+    not is the SHAPE of each screen -- a list is a list, a result is one big
+    number with its sources under it -- and the fact that they are a sequence.
+    """
+    n = len(screens)
+
+    def build(p):
+        out = []
+        pw, ph, gap = 168.0, 292.0, 22.0
+        total = n * pw + (n - 1) * gap
+        x0 = (width - total) / 2
+        top = 76.0
+
+        for i, (kind, title, sub) in enumerate(screens):
+            st = i + 1
+            x = x0 + i * (pw + gap)
+            absent = kind == "absent"
+            col = p.bad if absent else (p.accent if kind in ("result", "stamp")
+                                        else p.line)
+            out.append(rect(x, top, pw, ph, r=16, pal=p,
+                            fill="none" if absent else p.fill, stroke=col,
+                            sw=1.6 if absent else 1.2,
+                            dash="6 5" if absent else None, step=st))
+            # the notch, so it reads as a phone rather than a card
+            if not absent:
+                out.append(rect(x + pw / 2 - 22, top + 7, 44, 7, r=3.5, pal=p,
+                                fill=p.line, stroke="none", sw=0, step=st))
+            iy = top + 30
+            ix, iw = x + 14, pw - 28
+
+            def bar(y, w, h=11, c=None, r=3):
+                out.append(rect(ix, y, w, h, r=r, pal=p, fill=c or p.line,
+                                stroke="none", sw=0, step=st))
+
+            if kind == "list":
+                for k in range(4):
+                    y = iy + 8 + k * 40
+                    out.append(rect(ix, y, iw, 32, r=6, pal=p, fill=p.fill2,
+                                    stroke=p.faint, sw=1, step=st))
+                    bar(y + 8, iw * 0.62, 8, p.ink3)
+                    bar(y + 20, iw * 0.34, 6, p.faint)
+            elif kind == "detail":
+                bar(iy + 10, iw * 0.7, 12, p.ink3)
+                bar(iy + 30, iw * 0.45, 8, p.faint)
+                out.append(rect(ix, iy + 52, iw, 96, r=8, pal=p, fill=p.fill2,
+                                stroke=p.faint, sw=1, step=st))
+                out.append(circle(x + pw / 2, iy + 100, 20, pal=p, fill="none",
+                                  stroke=p.ink3, sw=1.6, step=st))
+                out.append(circle(x + pw / 2, iy + 100, 8, pal=p, fill="none",
+                                  stroke=p.ink3, sw=1.2, step=st))
+                for k in range(3):
+                    bar(iy + 164 + k * 16, iw * (0.9 - 0.18 * k), 7, p.faint)
+            elif kind == "progress":
+                bar(iy + 12, iw * 0.55, 9, p.ink3)
+                out.append(rect(ix, iy + 34, iw, 12, r=6, pal=p, fill=p.fill2,
+                                stroke=p.faint, sw=1, step=st))
+                out.append(rect(ix, iy + 34, iw * 0.62, 12, r=6, pal=p,
+                                fill=p.accent, stroke="none", sw=0, step=st))
+                for k, w in enumerate((0.8, 0.66, 0.5)):
+                    bar(iy + 62 + k * 20, iw * w, 7,
+                        p.accent if k == 0 else p.faint)
+                out.append(txt(x + pw / 2, iy + 150, "score_credit", size=10.5,
+                               mono=True, pal=p, fill=p.accent, step=st))
+                out.append(txt(x + pw / 2, iy + 168, "step 4 of 6", size=10,
+                               pal=p, fill=p.ink3, step=st))
+            elif kind == "result":
+                out.append(rect(ix, iy + 8, iw, 58, r=8, pal=p,
+                                fill=p.accent_fill, stroke=p.accent, sw=1.2,
+                                step=st))
+                out.append(txt(x + pw / 2, iy + 32, "pd = 0.693", size=16,
+                               mono=True, weight=600, pal=p, fill=p.accent,
+                               step=st))
+                out.append(txt(x + pw / 2, iy + 52, "decline", size=11, pal=p,
+                               fill=p.ink3, step=st))
+                for k, lbl in enumerate(("CP-04", "CP-05", "CP-06")):
+                    out.append(rect(ix, iy + 80 + k * 26, iw * 0.62, 19, r=5,
+                                    pal=p, fill=p.fill2, stroke=p.faint, sw=1,
+                                    step=st))
+                    out.append(txt(ix + 8, iy + 93 + k * 26, lbl, size=10,
+                                   mono=True, pal=p, fill=p.ink3,
+                                   anchor="start", step=st))
+                out.append(txt(ix, iy + 176, "view trace →", size=10.5, pal=p,
+                               fill=p.accent, anchor="start", step=st))
+            elif kind == "stamp":
+                out.append(rect(ix, iy + 10, iw, 44, r=8, pal=p, fill=p.fill2,
+                                stroke=p.good, sw=1.3, step=st))
+                out.append(txt(x + pw / 2, iy + 32, "decided", size=13,
+                               weight=600, pal=p, fill=p.good, step=st))
+                out.append(txt(ix, iy + 74, "officer", size=10, pal=p,
+                               fill=p.ink3, anchor="start", step=st))
+                out.append(txt(ix, iy + 90, "OFF-114", size=11, mono=True,
+                               pal=p, fill=p.ink2, anchor="start", step=st))
+                out.append(txt(ix, iy + 116, "reason — required", size=10,
+                               pal=p, fill=p.ink3, anchor="start", step=st))
+                for k in range(3):
+                    bar(iy + 128 + k * 15, iw * (0.95 - 0.2 * k), 7, p.faint)
+            elif kind == "absent":
+                # The strike stops short of the middle so the words sit in a
+                # gap rather than on top of the lines.
+                for y0, y1 in ((top + 34, top + ph / 2 - 30),
+                               (top + ph / 2 + 30, top + ph - 34)):
+                    out.append(line(x + 22, y0, x + pw - 22, y1, pal=p,
+                                    stroke=p.bad, sw=1.6, step=st))
+                    out.append(line(x + pw - 22, y0, x + 22, y1, pal=p,
+                                    stroke=p.bad, sw=1.6, step=st))
+                out.append(txt(x + pw / 2, top + ph / 2 - 6, "no such", size=12.5,
+                               weight=600, pal=p, fill=p.bad, step=st))
+                out.append(txt(x + pw / 2, top + ph / 2 + 12, "screen",
+                               size=12.5, weight=600, pal=p, fill=p.bad,
+                               step=st))
+
+            out.append(txt(x + pw / 2, top - 22, title, size=12.5, weight=600,
+                           pal=p, fill=p.bad if absent else p.ink, step=st))
+            out.append(txt(x + pw / 2, top + ph + 24, sub, size=11, pal=p,
+                           fill=p.ink3, step=st))
+            # No arrow INTO an absent screen: it is not the next step in the
+            # flow, it is the step that does not exist.
+            nxt = screens[i + 1][0] if i < n - 1 else None
+            if nxt and nxt != "absent":
+                ax = x + pw + 3
+                out.append(arrow(ax, top + ph / 2, ax + gap - 6, top + ph / 2,
+                                 pal=p, stroke=p.faint, sw=1.3, step=st + 1))
+        return svg(width, height, "".join(out), pal=p, steps=n,
+                   sim_label="screen")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

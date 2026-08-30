@@ -19,7 +19,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import COURSE  # noqa: E402
-from diagrams import agent_loop  # noqa: E402
+from diagrams import agent_loop, phone_flow  # noqa: E402
 
 
 # ---------------------------------------------------------------- diagrams --
@@ -1874,6 +1874,30 @@ DECK = {
             "kicker": "Demo · what the officer sees",
             "title": "Five screens, and one of them is the point",
             "blocks": [
+                phone_flow("hendri-screens", [
+                    ("list", "1 · Applications", "what is waiting"),
+                    ("detail", "2 · Applicant", "figures, name, camera"),
+                    ("progress", "3 · Running", "which tool, right now"),
+                    ("result", "4 · Recommendation", "every figure sourced"),
+                    ("stamp", "5 · Recorded", "a person decides"),
+                    ("absent", "disburse", "no endpoint either"),
+                ], cap="The officer's five screens, and the sixth that does not exist. "
+                       "Step through them.",
+                   note="Screen 4 is where the module's argument becomes a product, and "
+                        "screen 6 is where it becomes a guarantee: the boundary is in the "
+                        "code, not in the navigation."),
+                {"t": "p", "md": "Screen 4 is where the module's argument becomes a "
+                                 "product: **a recommendation you cannot check is a "
+                                 "recommendation you should not act on.** The next slide "
+                                 "says what each screen carries."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Demo · the mobile client",
+            "title": "…and what each of them carries",
+            "blocks": [
                 {"t": "cards", "cols": 3, "items": [
                     {"ico": "📥", "h": "1 — Applications", "style": "",
                      "p": "What is waiting. The officer picks one and the rest of the "
@@ -1896,9 +1920,9 @@ DECK = {
                           "disburses anything. The boundary is in the code, not in the "
                           "navigation."},
                 ]},
-                {"t": "band", "md": "Screen 3 is where the module's argument becomes a "
-                                    "product: **a recommendation you cannot check is a "
-                                    "recommendation you should not act on.**"},
+                {"t": "band", "md": "The absent screen is the one that matters most: a "
+                                    "capability boundary you can **navigate around** is "
+                                    "not a boundary. There is no endpoint either."},
             ],
         },
 

@@ -102,7 +102,7 @@ Generator yang ada: `neural_net` · `forward_pass` · `neuron_math` ·
 `residual` · `depth_vs_width` · `conv_compute` · `feature_maps` ·
 `tensor_ranks` · `tensor_grid` · `geometric_ops` · `sgd_descent` ·
 `sliding_window` · `bag_of_words` · `pixel_mask` · `coord_change` ·
-`agent_loop` · `latent_space` · `output_heads` · `reuse_curve`.
+`agent_loop` · `latent_space` · `output_heads` · `reuse_curve` · `phone_flow`.
 
 Aturan pertama: **kalau isinya aritmetika, hitungkan.** `backprop` dan
 `residual` sama-sama menampilkan angkanya sendiri — `residual` mengalikan lima

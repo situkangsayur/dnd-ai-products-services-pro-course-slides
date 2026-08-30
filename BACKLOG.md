@@ -21,7 +21,7 @@ bertindihan. **Web dan PDF sekarang sama persis**: 1.167 slide web,
 | | Jumlah |
 |---|---|
 | `mmd` (kotak-dan-panah) | 182 |
-| `draw` (SVG digambar, dari `tools/diagrams.py`) | 23 |
+| `draw` (SVG digambar, dari `tools/diagrams.py`) | 24 |
 | `img` | 4 |
 
 Dek yang **sama sekali belum** punya peraga gambar: ch04, ch06, ch07, ch10,
@@ -68,15 +68,38 @@ Prioritaskan listing yang **aritmetika**, bukan yang pemanggilan pustaka. Jejak
       0,53. Keras membagi dengan √(variansi + ε). Jejaknya menghitung keduanya.
 - [ ] `ch16`/`ch17` penyusunan batch
 
-## 3 · Slide kartu tanpa peraga — 128
+## 3 · Slide kartu tanpa peraga — 128, dan cuma segelintir yang perlu gambar
 
-128 slide berisi `cards`/`stats` dan tidak ada gambarnya. **Sebagian besar
-memang begitu bentuknya** — tiga hal yang harus dipenuhi tidak jadi lebih jelas
-kalau diberi gambar. Yang perlu diperiksa adalah yang kartunya cuma ikon:
-gambar yang mewakili isi lebih baik daripada ikon, dan itu permintaan yang
-sudah disampaikan.
+Daftarnya sudah disaring, dan hasilnya lebih berguna daripada dugaan awal:
 
-Belum ada daftar yang disaring; membuat daftar itu sendiri satu pekerjaan.
+| | Jumlah |
+|---|---|
+| slide `cards`/`stats` tanpa peraga | 128 |
+| …yang tiap kartunya berikon | 98 |
+| …yang subjeknya benar-benar **visual** | ± 7 |
+
+Judulnya yang menentukan. "Dua hal yang benar sekaligus", "tiga jebakan",
+"di mana ia menang dan di mana ia menyakitkan", "empat cara ini gagal" —
+semuanya **memang berbentuk kartu**, dan gambar tidak menambah apa pun.
+Perintahnya: *kalau kartunya bisa ditukar urutannya tanpa slidenya jadi salah,
+itu daftar, dan daftar memang begitu bentuknya.*
+
+Yang benar-benar minta gambar adalah slide **etalase** — di mana sesuatu
+dipakai, seperti apa bentuknya:
+
+- [x] ~~`hendri-agentic` lima layar~~ — selesai, jadi `phone_flow`: enam bingkai
+      telepon dengan isi skematis, dan yang keenam digambar sebagai **lubang**
+      bergaris putus dengan silang. "Layar yang tidak ada" itu klaim tentang
+      produknya dan pantas kelihatan sebagai celah, bukan cuma ditulis.
+- [ ] `ch11#4` "Where it is actually used" — empat ranah segmentasi; yang
+      mewakili isinya adalah topeng di atas gambar, dan `pixel_mask` sudah ada
+- [ ] `ch12#1` "What detection is for"
+- [ ] `ch01#41`/`#42` terobosan dan hal yang dulu dikira mustahil
+- [ ] `ch06#1` "keras.datasets does not exist" (8 kartu)
+- [ ] `ch19#22` "Landing a rocket, and crossing a road"
+
+Sisanya jangan disentuh. Menambah gambar ke daftar yang memang daftar cuma
+menambah tinggi, dan tinggi itu dibayar dengan ukuran tampil.
 
 ## 4 · Di luar dek
 
