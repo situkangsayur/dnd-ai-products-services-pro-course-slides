@@ -55,14 +55,18 @@ flowchart LR
 """
 
 MMD_EMBED = """
+%% Two rows of four rather than two columns of four: the comparison is
+%% attribute-by-attribute, so the attributes should line up across the rows --
+%% and four across fits the space a slide gives a figure, where four down does
+%% not.
 flowchart TB
   subgraph O["One-hot vectors"]
-    direction TB
+    direction LR
     O1["Sparse"] --> O2["High-dimensional<br/><small>20,000 dims</small>"] --> O3["Hardcoded"]
     O3 --> O4["<b>All words orthogonal:<br/>&quot;movie&quot; unrelated to &quot;film&quot;</b>"]
   end
   subgraph E["Word embeddings"]
-    direction TB
+    direction LR
     E1["Dense"] --> E2["Lower-dimensional<br/><small>256 to 1,024 dims</small>"] --> E3["Learned from data"]
     E3 --> E4["<b>Geometry reflects meaning</b>"]
   end
@@ -269,7 +273,10 @@ DECK = {
                                  "shorter sequences — and immediately raises two questions the "
                                  "character tokenizer never had."},
                 {"t": "code", "lang": "python", "file": "a word-level split",
-                 "src": """class WordTokenizer(CharTokenizer):
+                 # A raw string: the listing contains a regex, and "\w" is not
+                 # an escape Python recognises. Today that is a warning; in a
+                 # future version it is an error, and the fix costs one letter.
+                 "src": r"""class WordTokenizer(CharTokenizer):
     def standardize(self, inputs):
         inputs = inputs.lower()
         return "".join(c for c in inputs if c not in string.punctuation)

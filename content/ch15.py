@@ -1260,6 +1260,10 @@ parameterized_attention(query=target, key=source, value=source)"""},
                                     "learn to match the **subject** of the source sentence, "
                                     "while another attends to **punctuation**."},
                 {"t": "mmd", "id": "ch15-multihead", "src": MMD_MULTIHEAD,
+                 # A fan of four heads between two single nodes is squarish
+                 # whichever way round it is drawn — neither orientation wins,
+                 # and the renderer says so. So give it the room instead.
+                 "full": True,
                  "cap": "Figure 15.7 — each head attends to different parts of the source, in "
                         "separate partitions of the eventual output vector."},
             ],

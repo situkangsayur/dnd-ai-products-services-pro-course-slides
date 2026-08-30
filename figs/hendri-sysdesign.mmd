@@ -1,5 +1,8 @@
+%% direction chosen by tools/figures.py: this renders
+%% better in the space a slide gives it. Edit the deck
+%% source, not this file.
 
-flowchart TB
+flowchart LR
   APP["<b>Mobile app</b><br/><small>Flutter · field officer</small>"]
   GW["<b>API gateway</b><br/><small>authn, rate limit, WAF</small>"]
   ORCH["<b>Agent service</b><br/><small>loop, budgets, guardrails</small>"]
@@ -20,3 +23,15 @@ flowchart TB
   MCP --> T4
   ORCH --> OBS
   ORCH --> HUM
+
+  %% The four tools fan out from one node, and an unconstrained fan makes the
+  %% drawing exactly as tall as the fan is wide. Boxing them into one row keeps
+  %% the figure inside the space a slide gives it -- and says something true
+  %% besides: they are siblings behind one door, not a hierarchy.
+  subgraph TOOLS["Behind the one door"]
+    direction LR
+    T1
+    T2
+    T3
+    T4
+  end

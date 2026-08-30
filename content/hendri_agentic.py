@@ -236,15 +236,29 @@ flowchart TB
   MCP --> T4
   ORCH --> OBS
   ORCH --> HUM
+
+  %% The four tools fan out from one node, and an unconstrained fan makes the
+  %% drawing exactly as tall as the fan is wide. Boxing them into one row keeps
+  %% the figure inside the space a slide gives it -- and says something true
+  %% besides: they are siblings behind one door, not a hierarchy.
+  subgraph TOOLS["Behind the one door"]
+    direction LR
+    T1
+    T2
+    T3
+    T4
+  end
 """
 
 MMD_DEPLOY = """
 flowchart TB
   subgraph EDGE["Public edge"]
+    direction LR
     CDN["CDN / WAF"]
     GW2["API gateway"]
   end
   subgraph PRIV["Private subnet -- data residency: Indonesia"]
+    direction LR
     SVC["Agent service<br/><small>containers, autoscaled</small>"]
     MCPS["MCP servers"]
     ML["ML serving<br/><small>credit model</small>"]
@@ -273,7 +287,28 @@ flowchart TB
   S6["<b>6.</b> Agent drafts a recommendation<br/><small>with every figure cited</small>"]
   S7["<b>7.</b> HUMAN decides<br/><small>the agent never approves credit</small>"]
   S8["<b>8.</b> Trace written to the audit log"]
-  S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> S8
+  S1 --> S2 --> S3 --> S4
+  S4 --> S5
+  S5 --> S6 --> S7 --> S8
+
+  %% Two rows of four. Eight steps in one line comes out 2441px wide and eight
+  %% in one column 1110px tall; neither fits the space a slide gives a figure,
+  %% and the renderer can only choose between the two -- it cannot invent a
+  %% third shape. Subgraphs do that here.
+  subgraph ROW1[" "]
+    direction LR
+    S1
+    S2
+    S3
+    S4
+  end
+  subgraph ROW2[" "]
+    direction LR
+    S5
+    S6
+    S7
+    S8
+  end
 """
 
 MMD_NOCODE = """
@@ -1570,6 +1605,9 @@ DECK = {
             "title": "The components, and what talks to what",
             "blocks": [
                 {"t": "mmd", "id": "hendri-sysdesign", "src": MMD_SYSDESIGN,
+                 # Eleven components. Simplifying it to fit would be simplifying
+                 # it into a lie, so it gets the slide instead.
+                 "full": True,
                  "cap": "Four MCP servers, one of which is a classical ML model. The "
                         "approval queue is a first-class component, not an afterthought."},
                 {"t": "p", "md": "Note what the agent service does **not** hold: no "

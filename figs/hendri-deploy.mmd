@@ -4,10 +4,12 @@
 
 flowchart LR
   subgraph EDGE["Public edge"]
+    direction LR
     CDN["CDN / WAF"]
     GW2["API gateway"]
   end
   subgraph PRIV["Private subnet -- data residency: Indonesia"]
+    direction LR
     SVC["Agent service<br/><small>containers, autoscaled</small>"]
     MCPS["MCP servers"]
     ML["ML serving<br/><small>credit model</small>"]

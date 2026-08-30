@@ -43,14 +43,17 @@ flowchart LR
 """
 
 MMD_GRADSTYLE = """
-flowchart TB
+flowchart LR
   subgraph TF["TensorFlow — record then replay"]
+    direction TB
     T1["open a GradientTape"] --> T2["run the forward pass"] --> T3["tape.gradient(loss, w)"]
   end
   subgraph PT["PyTorch — build then walk back"]
+    direction TB
     P1["run the forward pass"] --> P2["loss.backward()"] --> P3["read w.grad"] --> P4["zero_grad()"]
   end
   subgraph JX["JAX — transform the function"]
+    direction TB
     J1["write a pure loss function"] --> J2["jax.value_and_grad(fn)"] --> J3["call the new function"]
   end
 """

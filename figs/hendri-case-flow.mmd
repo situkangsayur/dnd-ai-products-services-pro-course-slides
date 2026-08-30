@@ -1,8 +1,5 @@
-%% direction chosen by tools/figures.py: this renders
-%% better in the space a slide gives it. Edit the deck
-%% source, not this file.
 
-flowchart LR
+flowchart TB
   S1["<b>1.</b> Officer photographs the<br/>application in the field"]
   S2["<b>2.</b> Agent pulls customer and<br/>transaction data<br/><small>REST API, via MCP</small>"]
   S3["<b>3.</b> Agent runs the analysis<br/><small>SQL over 12 months</small>"]
@@ -11,4 +8,25 @@ flowchart LR
   S6["<b>6.</b> Agent drafts a recommendation<br/><small>with every figure cited</small>"]
   S7["<b>7.</b> HUMAN decides<br/><small>the agent never approves credit</small>"]
   S8["<b>8.</b> Trace written to the audit log"]
-  S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> S8
+  S1 --> S2 --> S3 --> S4
+  S4 --> S5
+  S5 --> S6 --> S7 --> S8
+
+  %% Two rows of four. Eight steps in one line comes out 2441px wide and eight
+  %% in one column 1110px tall; neither fits the space a slide gives a figure,
+  %% and the renderer can only choose between the two -- it cannot invent a
+  %% third shape. Subgraphs do that here.
+  subgraph ROW1[" "]
+    direction LR
+    S1
+    S2
+    S3
+    S4
+  end
+  subgraph ROW2[" "]
+    direction LR
+    S5
+    S6
+    S7
+    S8
+  end

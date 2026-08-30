@@ -1,8 +1,5 @@
-%% direction chosen by tools/figures.py: this renders
-%% better in the space a slide gives it. Edit the deck
-%% source, not this file.
 
-flowchart LR
+flowchart TB
   Q{"Do you need<br/>data augmentation?"}
   F["<b>Fast</b> feature extraction<br/>run the base once,<br/>cache features to disk<br/><small>seconds per epoch</small>"]
   S["<b>End-to-end</b> extraction<br/>chain base + classifier,<br/>run every image every time<br/><small>far more expensive</small>"]

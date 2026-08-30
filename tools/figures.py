@@ -195,12 +195,22 @@ def _make_svg_fluid(path):
 # vertical -- a deep chain that would become absurdly wide -- keeps its
 # orientation, because the flipped version measures worse and loses.
 
-# What the figure area actually offers, as width/height. Not the extreme 3.9 of
-# the raw box: a diagram that fills the last pixel looks cramped, and mermaid's
-# own padding already eats some of it.
-TARGET_ASPECT = 2.3
-# Below this a drawing is being shrunk enough to hurt, and a flip is worth trying.
-TALL_ENOUGH_TO_TRY = 1.35
+# The figure area a slide actually offers, in CSS pixels. **Measured in a
+# browser, not read off the stylesheet** -- the max-height in deck.css is an
+# upper bound, and the slide's own padding, title and caption take their cut
+# before the figure sees any of it. Reading 480 off the CSS and believing it
+# left thirty tall diagrams undetected, because the real figure gets about 340.
+SLIDE_FIG_W = 1320.0
+# 270, not the 480 the stylesheet allows: the height a figure actually gets
+# depends on what shares the slide with it. A figure alone measured 343; one
+# with a caption and two paragraphs measured 258. A single constant cannot
+# capture that, so take the tighter end -- being generous here means missing
+# exactly the figures that are worst off, which is how thirty of them went
+# undetected the first time.
+SLIDE_FIG_H = 270.0
+# Below this the drawing is being shrunk enough to hurt, and the other
+# orientation is worth the second render.
+WELL_ENOUGH = 0.55
 # Reported after the build: diagrams still too tall even after trying.
 AUTO_FLIPPED = []
 STILL_TALL = []
@@ -227,8 +237,8 @@ def _flip_direction(src):
     return src[:m.start()] + m.group(1) + flipped + m.group(3) + src[m.end():]
 
 
-def _aspect(svg_path):
-    """width / height from the viewBox, or None if it cannot be read."""
+def _size(svg_path):
+    """(width, height) from the viewBox, or None if it cannot be read."""
     try:
         with open(svg_path, encoding="utf-8") as f:
             head = f.read(4000)
@@ -237,18 +247,28 @@ def _aspect(svg_path):
     m = re.search(r'viewBox="[\d.\-]+ [\d.\-]+ ([\d.]+) ([\d.]+)"', head)
     if not m:
         return None
-    w, h = float(m.group(1)), float(m.group(2))
-    return (w / h) if h else None
+    return (float(m.group(1)), float(m.group(2)))
 
 
-def _shape_cost(aspect):
-    """How badly a shape fits the slide. Symmetric in log space.
+def _rendered_scale(size):
+    """How large the drawing will actually appear, 1.0 being its drawn size.
 
-    Log space matters: 1/2 as wide and twice as wide are equally wrong, and a
-    linear difference would call the second one much worse than the first.
+    This is the thing that matters, so compute it rather than a proxy: the
+    browser fits the drawing inside the figure box, so the scale is whichever
+    of the two constraints binds first.
+
+    It needs the real dimensions, not the aspect ratio. Two drawings can share
+    an aspect and render at completely different sizes, and an earlier version
+    of this that scored aspect alone rated a diagram 18 times wider than tall as
+    *marginally better* than one four times taller than wide — when both render
+    at about half size and neither is readable.
     """
-    import math
-    return abs(math.log((aspect or TARGET_ASPECT) / TARGET_ASPECT))
+    if not size:
+        return 0.0
+    w, h = size
+    if not w or not h:
+        return 0.0
+    return min(SLIDE_FIG_W / w, SLIDE_FIG_H / h, 1.0)
 
 
 def _choose_source(fig_id, src, tmp_svg):
@@ -258,33 +278,35 @@ def _choose_source(fig_id, src, tmp_svg):
     for a second mmdc run, so a deck of well-shaped diagrams costs nothing.
     """
     _run_mmdc(src, tmp_svg, THEME_WEB)
-    a0 = _aspect(tmp_svg)
-    if a0 is None or a0 >= TALL_ENOUGH_TO_TRY:
-        return src, a0, False
+    s0 = _size(tmp_svg)
+    sc0 = _rendered_scale(s0)
+    if s0 is None or sc0 >= WELL_ENOUGH:
+        return src, sc0, False
 
     other = _flip_direction(src)
     if other is None:
-        STILL_TALL.append((fig_id, round(a0, 2), "no direction to flip"))
-        return src, a0, False
+        STILL_TALL.append((fig_id, f"{sc0:.0%}", "no direction to flip"))
+        return src, sc0, False
 
     alt_svg = tmp_svg + ".alt.svg"
     try:
         _run_mmdc(other, alt_svg, THEME_WEB)
-        a1 = _aspect(alt_svg)
+        sc1 = _rendered_scale(_size(alt_svg))
     except RuntimeError:
-        a1 = None                      # a flip that will not render is not a flip
-    finally:
-        pass
+        sc1 = 0.0                      # a flip that will not render is not a flip
 
-    if a1 is not None and _shape_cost(a1) < _shape_cost(a0):
+    if sc1 > sc0:
         shutil.move(alt_svg, tmp_svg)
-        AUTO_FLIPPED.append((fig_id, round(a0, 2), round(a1, 2)))
-        return other, a1, True
+        AUTO_FLIPPED.append((fig_id, f"{sc0:.0%}", f"{sc1:.0%}"))
+        if sc1 < WELL_ENOUGH:
+            STILL_TALL.append((fig_id, f"{sc1:.0%}",
+                               "better flipped, still small -- split it"))
+        return other, sc1, True
 
     if os.path.exists(alt_svg):
         os.remove(alt_svg)
-    STILL_TALL.append((fig_id, round(a0, 2), "vertical suits it better"))
-    return src, a0, False
+    STILL_TALL.append((fig_id, f"{sc0:.0%}", "the other way round is worse"))
+    return src, sc0, False
 
 
 def render(fig_id, src, force=False):

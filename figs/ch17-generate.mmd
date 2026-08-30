@@ -1,5 +1,8 @@
+%% direction chosen by tools/figures.py: this renders
+%% better in the space a slide gives it. Edit the deck
+%% source, not this file.
 
-flowchart TB
+flowchart LR
   N["Start from pure noise<br/><small>diffusion_times = 1.0</small>"]
   D["<b>denoise()</b><br/><small>predict the noise mask,<br/>subtract it</small>"]
   S["Step forward:<br/>t = t - 1/diffusion_steps"]

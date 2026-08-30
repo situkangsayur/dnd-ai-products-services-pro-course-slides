@@ -1,8 +1,5 @@
-%% direction chosen by tools/figures.py: this renders
-%% better in the space a slide gives it. Edit the deck
-%% source, not this file.
 
-flowchart LR
+flowchart TB
   FM["Feature map of the<br/>last convolution layer<br/><small>how strongly each channel<br/>fires, at each location</small>"]
   GR["Gradient of the class score<br/>with respect to each channel<br/><small>how important each<br/>channel is to the class</small>"]
   W["Weight every channel<br/>by its importance"]

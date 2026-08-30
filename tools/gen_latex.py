@@ -193,9 +193,10 @@ def render_block(b, depth=0):
         _, pdf = figures.render(b["id"], b["src"])
         cap = (r"\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont %s\par}" % it(b["cap"])
                if b.get("cap") else "")
+        h = "0.74" if b.get("full") else "0.60"
         return ("\\begin{center}\n"
-                "\\includegraphics[width=0.92\\linewidth,height=0.60\\textheight,"
-                "keepaspectratio]{%s}\n\\end{center}\n%s\n" % (pdf, cap))
+                "\\includegraphics[width=0.92\\linewidth,height=%s\\textheight,"
+                "keepaspectratio]{%s}\n\\end{center}\n%s\n" % (h, pdf, cap))
     if t == "img":
         # Book figures are derived from a PDF that is not in the repository, so
         # a fresh clone may not have them yet. Degrade to the caption rather

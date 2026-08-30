@@ -146,7 +146,12 @@ def render_block(b):
     if t == "mmd":
         markup, _ = figures.render(b["id"], b["src"])
         cap = f'<figcaption>{ih(b["cap"])}</figcaption>' if b.get("cap") else ""
-        return f'<figure class="fig fig-mmd">{markup}{cap}</figure>'
+        # `full` gives the diagram the whole slide. Some diagrams are genuinely
+        # complex -- a system with eleven components is not a diagram that
+        # should be simplified into a lie -- and for those the honest answer is
+        # more room, not fewer boxes.
+        klass = "fig fig-mmd" + (" fig-full" if b.get("full") else "")
+        return f'<figure class="{klass}">{markup}{cap}</figure>'
     if t == "img":
         if not os.path.exists(os.path.join(_ROOT, b["src"])):
             return ('<div class="band amber"><p>%s <i>(figure not extracted; run '
