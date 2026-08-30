@@ -208,7 +208,7 @@ def _title_slide(deck):
             '<div class="cobrand">'
             '<img src="../_engine/assets/itb-logo.png" alt="ITB">'
             '<div class="co-txt"><b>Institut Teknologi Bandung</b><br>'
-            'Directorate of Continuing Professional Education'
+            'Directorate of Sustainable Professional Education'
             # The cohort partner is named only on decks that declare one. The
             # book chapters are reused across cohorts and institutions, so they
             # deliberately carry no partner branding.

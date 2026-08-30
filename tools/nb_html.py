@@ -34,6 +34,14 @@ OUT_DIR = os.path.join(ROOT, "notebooks-site")
 
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
+from course import COURSE  # noqa: E402
+
+# One source of truth for the organisation's name. This file used to carry its
+# own copy, split across two source lines, which is how it survived a rename
+# that corrected every other mention: "berkelanjutan" is *sustainable*, not
+# continuous, and 67 notebook footers went on saying otherwise.
+FOOTER = f"{COURSE['tagline']} · ITB · {COURSE['unit']}"
+
 
 def E(s):
     return html.escape(str(s), quote=False)
@@ -243,8 +251,7 @@ def render_notebook(path, rel_home="../index.html"):
         sub=sub,
         nav=f'<div class="nav"><a href="{rel_home}">&larr; All notebooks</a></div>',
         body="\n".join(cells),
-        footer="AI for Professional · ITB · Directorate of Continuing "
-               "Professional Education")
+        footer=FOOTER)
 
 
 def build(out_dir=OUT_DIR):

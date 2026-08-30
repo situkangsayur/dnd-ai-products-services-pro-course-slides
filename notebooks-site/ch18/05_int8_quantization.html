@@ -84,7 +84,9 @@ int_kernel, kernel_scale = abs_max_quantize(kernel)
 
 print("x as int8:     ", ops.convert_to_numpy(int_x))
 print("kernel as int8:", ops.convert_to_numpy(int_kernel))
-print(f"scales: {float(x_scale):.2f}, {float(kernel_scale):.2f}")</pre></div>
+sx = ops.convert_to_numpy(x_scale).item()
+sk = ops.convert_to_numpy(kernel_scale).item()
+print(f"scales: {sx:.2f}, {sk:.2f}")</pre></div>
 <div class="cell"><p>The tensor is spread across the full <strong>[-127, 127]</strong> range before casting. <code>+ 1e-7</code> avoids dividing by zero, and <strong>rounding and clipping before the cast</strong> is more accurate than casting directly.</p></div>
 <div class="cell"><h2>The matmul, and unscaling</h2></div>
 <div class="cell cell-in"><pre>int_y = ops.matmul(int_x, int_kernel)
@@ -194,5 +196,5 @@ print("runtime you are targeting.")</pre></div>
 <li><code>model.quantize("int8")</code> is one line and <strong>in place</strong> — keep the float32 file.</li>
 <li>Disagreements cluster at low confidence, but verify that on your own data.</li>
 </ul></div>
-<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+<footer>AI for Professional · ITB · Directorate of Sustainable Professional Education</footer>
 </div></body></html>

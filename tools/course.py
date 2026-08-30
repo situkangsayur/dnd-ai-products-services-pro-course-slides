@@ -13,7 +13,11 @@ COURSE = {
     "tagline": "AI for Professional",
     "by": "ITB Team",
     "org": "Institut Teknologi Bandung",
-    "unit": "Directorate of Continuing Professional Education",
+    # "Berkelanjutan" is SUSTAINABLE, not continuous. The English rendering
+    # people reach for -- "Continuing Professional Education", after the CPD
+    # convention -- is the wrong word for this directorate's name, and it is on
+    # every deck cover and every notebook footer, so it is worth getting right.
+    "unit": "Directorate of Sustainable Professional Education",
     "partner": "PT Bank Rakyat Indonesia (Persero) Tbk",
     "format": "Microcredential · hybrid · paid",
     # From BRI-diskusi-20-08-2026: 6 sks, 1 sks = 45 jam, dipecah

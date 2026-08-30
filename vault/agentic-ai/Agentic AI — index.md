@@ -7,7 +7,7 @@ updated: 2026-08-30
 # Agentic AI — index
 
 The module I teach in *Designing and Building AI Products and Services* (ITB,
-Directorate of Continuing Professional Education). It follows Viny's LLM module:
+Directorate of Sustainable Professional Education). It follows Viny's LLM module:
 hers ends with a model that **answers**, mine is about a system that **acts**.
 
 The module is deliberately deflationary. Most problems brought to "agents" are

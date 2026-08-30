@@ -85,7 +85,8 @@ plt.show()</pre></div>
     return (points[:, 0] + points[:, 1] &gt; 2.2).astype(float)
 
 acc = (handwritten_rule(X) == y).mean()
-print(f"hand-written rule: {acc:.3f} accuracy")</pre></div>
+print(f"hand-written rule: {acc:.3f} accuracy")</pre><div class="out">hand-written rule: 0.973 accuracy
+</div></div>
 <div class="cell"><p>Expected output:</p>
 <pre class="md-code">hand-written rule: 0.9xx accuracy</pre></div>
 <div class="cell"><blockquote><strong>Note</strong> — It works. It also took a human looking at a two-dimensional picture. Try the same approach on a 784-dimensional MNIST digit and the method collapses — not because it is wrong, but because there is no picture to look at.</blockquote></div>
@@ -102,7 +103,9 @@ model = LogisticRegression().fit(X_train, y_train)
 
 print(f"learned rule:      {model.score(X_test, y_test):.3f} accuracy (held out)")
 print(f"learned boundary:  {model.coef_[0][0]:+.2f}*x  {model.coef_[0][1]:+.2f}*y "
-      f"{model.intercept_[0]:+.2f}  &gt;  0")</pre></div>
+      f"{model.intercept_[0]:+.2f}  &gt;  0")</pre><div class="out">learned rule:      0.967 accuracy (held out)
+learned boundary:  +3.04*x  +2.26*y -5.91  &gt;  0
+</div></div>
 <div class="cell"><p>Expected output:</p>
 <pre class="md-code">learned rule:      0.9xx accuracy (held out)
 learned boundary:  +1.xx*x  +1.xx*y  -x.xx  &gt;  0</pre></div>
@@ -150,5 +153,5 @@ print(f"+ one extra feature:  {lifted:.3f}")</pre></div>
 <li>Learning is a <strong>search for a useful representation</strong> within a predefined space of possibilities.</li>
 <li>The right representation can turn an unsolvable problem into a trivial one, without changing the model at all.</li>
 </ul></div>
-<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+<footer>AI for Professional · ITB · Directorate of Sustainable Professional Education</footer>
 </div></body></html>
