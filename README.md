@@ -93,6 +93,22 @@ Teksnya `<text>` SVG asli, jadi tidak bisa terpotong seperti label mermaid.
 Dua palet dari satu builder: gelap untuk web, terang dicetak jadi PDF lewat
 Chrome (sudah jadi dependensi build lewat `mmdc`).
 
+## Mengukur dek di peramban
+
+Tiga hal tidak bisa diperiksa dari sumbernya, sebab baru terjadi ketika
+peramban menata halaman. Perkakasnya ada di `tools/`, lihat
+[`tools/AUDIT.md`](tools/AUDIT.md):
+
+```bash
+python3 tools/clip.py  http://127.0.0.1:5053   # label mermaid yang terpotong
+python3 tools/small.py http://127.0.0.1:5053   # figur yang tampil terlalu kecil
+python3 tools/audit.py http://127.0.0.1:5053   # slide yang terpotong / bertindihan
+```
+
+Ketiganya harus **nol**. Dua jebakan yang sempat memberi jawaban salah di sini,
+dan keduanya dicatat di AUDIT.md: slide tersembunyi berukuran nol, dan
+mengukur KOTAK elemen bukan GAMBAR di dalamnya.
+
 ## Animasi dan simulasi
 
 Metode yang diajarkan **diperlihatkan berjalan**, bukan dideskripsikan di dalam

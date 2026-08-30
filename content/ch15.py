@@ -15,7 +15,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
-from diagrams import attention_qkv  # noqa: E402
+from diagrams import attention_qkv, positional_encoding  # noqa: E402
 
 
 MMD_LM_LOOP = """
@@ -1778,6 +1778,19 @@ transformer.fit(train_ds, epochs=15, validation_data=val_ds)"""},
                                  "— is a poor one: positions can be large integers, and neural "
                                  "networks dislike large input values and discrete input "
                                  "distributions."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 15.3.5 · positional encoding",
+            "title": "The sinusoids, and the pattern they make",
+            "blocks": [
+                positional_encoding(
+                    "ch15-posenc-waves",
+                    cap="Left: three of the actual waves. Right: every dimension for "
+                        "every position. Both computed from the formula, not drawn to "
+                        "look right."),
             ],
         },
 

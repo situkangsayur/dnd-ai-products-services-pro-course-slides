@@ -111,6 +111,7 @@
  "ch15-multihead": "e9be0b843beef5eb",
  "ch15-order-blind": "8eb771caf4d15567",
  "ch15-posemb": "81196258877ad867",
+ "ch15-posenc-waves": "4e045aef1959a289",
  "ch15-qkv-run": "7ed9ce4f67f5660a",
  "ch15-rnn-bottleneck": "238c919bc24eaeac",
  "ch15-search": "2c185f0e8f2ef275",
@@ -197,6 +198,7 @@
  "hendri-wf": "7f45bd5feb134e69",
  "hendri-where": "d9312370656a3813",
  "hendri-who": "abd672e4aeb3753b",
+ "test-pe": "c03e15eaf9df5ff7",
  "viny-arc": "d937135f8e111aee",
  "viny-rag": "6b1c291832dd2636"
 }

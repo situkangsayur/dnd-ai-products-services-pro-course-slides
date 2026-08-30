@@ -712,6 +712,14 @@ Stop here. Give the room two minutes with the code on the previous slide before 
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The most obvious scheme --- concatenate the raw integer position --- is a poor one: positions can be large integers, and neural networks dislike large input values and discrete input distributions.\par}\vskip 4pt
 \end{frame}
 
+\framekicker{Section 15.3.5 $\cdot$ positional encoding}
+\begin{frame}[shrink=25]{The sinusoids, and the pattern they make}
+\begin{center}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch15-posenc-waves.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Left: three of the actual waves. Right: every dimension for every position. Both computed from the formula, not drawn to look right.\par}
+\end{frame}
+
 \framekicker{Section 15.3.5 $\cdot$ two schemes}
 \begin{frame}[shrink=25]{Sinusoidal, or learned}
 \begin{minipage}[t]{0.494\textwidth}

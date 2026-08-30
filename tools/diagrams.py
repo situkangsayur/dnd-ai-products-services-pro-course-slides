@@ -1343,3 +1343,104 @@ def pixel_mask(fig_id, *, cap="", note="", width=1040, height=440, full=False):
                    sim_label="stage")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ==================================================== positional encoding --
+
+def positional_encoding(fig_id, *, positions=12, dims=16, cap="", note="",
+                        width=1120, height=520, full=False):
+    """The sinusoids, and the pattern they make. Both, because neither alone lands.
+
+    "Add a sine wave of a different frequency per dimension" is a sentence that
+    passes and teaches nothing. Two pictures do the work:
+
+    * **Left** — three of the actual waves, at three of the actual frequencies.
+      The first dimension turns over every couple of positions; the last barely
+      moves across the whole sentence. That spread is the entire trick.
+    * **Right** — every dimension for every position as a heat map, which is
+      the picture people remember, and which only makes sense once you have
+      seen where the stripes come from.
+
+    Values are computed, not drawn to look right: this is the formula from
+    *Attention Is All You Need*, and the figure is what it produces.
+    """
+    import math
+
+    def pe(pos, i):
+        k = i // 2
+        angle = pos / (10000 ** (2 * k / dims))
+        return math.sin(angle) if i % 2 == 0 else math.cos(angle)
+
+    grid = [[pe(p, i) for i in range(dims)] for p in range(positions)]
+
+    def build(p):
+        out = []
+        # ---- left: three waves ------------------------------------------
+        lx, lw = 74, 460
+        ly, lh = 108, 220
+        out.append(txt(lx, 56, "the waves themselves", size=14.5, weight=600,
+                       pal=p, anchor="start", fill=p.ink))
+        out.append(line(lx, ly + lh / 2, lx + lw, ly + lh / 2, pal=p,
+                        stroke=p.faint, sw=1, dash="3 4"))
+
+        picks = [(0, p.accent, "dim 0 — fastest"),
+                 (6, p.warm, "dim 6"),
+                 (dims - 2, p.good, f"dim {dims - 2} — slowest")]
+        # The waves are plotted over a longer stretch than the heat map shows.
+        # Over twelve positions the middle frequency barely bends, and a wave
+        # drawn as a straight sloping line looks like a mistake rather than
+        # like a slow wave -- which is the opposite of the point.
+        wave_span = positions * 8
+        for k, (d, col, lab) in enumerate(picks):
+            pts = []
+            for s in range(241):
+                pos = s * wave_span / 240
+                v = pe(pos, d)
+                pts.append((lx + lw * s / 240, ly + lh / 2 - v * (lh / 2 - 12)))
+            dpath = " ".join(f"{'M' if i == 0 else 'L'}{x:.1f},{y:.1f}"
+                             for i, (x, y) in enumerate(pts))
+            out.append(f'<path d="{dpath}" fill="none" stroke="{col}" '
+                       f'stroke-width="2" opacity="0.95" '
+                       f'data-step="{k + 1}"/>')
+            out.append(txt(lx + 6, ly + lh + 44 + k * 18, f"— {lab}", size=12,
+                           pal=p, fill=col, anchor="start", step=k + 1))
+
+        out.append(txt(lx + lw, ly + lh + 22, "position →", size=12, pal=p,
+                       anchor="end", fill=p.ink3))
+        out.append(txt(lx - 10, ly + 8, "+1", size=11, mono=True, pal=p,
+                       fill=p.ink3, anchor="end"))
+        out.append(txt(lx - 10, ly + lh - 8, "−1", size=11, mono=True, pal=p,
+                       fill=p.ink3, anchor="end"))
+
+        # ---- right: the heat map ----------------------------------------
+        gx, gy = 640, 108
+        cw, ch = 26, 20
+        out.append(txt(gx, 56, "every dimension, every position", size=14.5,
+                       weight=600, pal=p, anchor="start", fill=p.ink))
+        for r in range(positions):
+            for c in range(dims):
+                v = grid[r][c]
+                # +1 warm, -1 accent, 0 nearly invisible: the sign is the
+                # information, so encode it as hue rather than as brightness.
+                col = p.warm if v >= 0 else p.accent
+                out.append(rect(gx + c * cw, gy + r * ch, cw - 2, ch - 2, r=2,
+                                pal=p, fill=col, stroke="none", sw=0,
+                                opacity=0.12 + 0.78 * abs(v), step=4))
+        out.append(txt(gx + dims * cw / 2, gy + positions * ch + 22,
+                       "dimension →", size=12, pal=p, fill=p.ink3, step=4))
+        out.append(txt(gx - 12, gy + positions * ch / 2, "position", size=12,
+                       pal=p, fill=p.ink3, anchor="end", step=4))
+
+        out.append(txt(width / 2, height - 54,
+                       "Each dimension is a wave of a different frequency, so "
+                       "every position gets a different combination.",
+                       size=13.5, pal=p, fill=p.ink2, step=5))
+        out.append(txt(width / 2, height - 30,
+                       "Nothing is learned here, and nothing needs to be — the "
+                       "values come from a formula, so position 5000 works even "
+                       "if training never saw one.",
+                       size=13, pal=p, fill=p.accent, step=5))
+        return svg(width, height, "".join(out), pal=p, steps=5,
+                   sim_label="stage")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)
