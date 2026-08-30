@@ -1528,3 +1528,124 @@ def depth_vs_width(fig_id, *, broad=(64, 512, 10), deep=(64, 96, 96, 96, 96, 10)
         return svg(width, height, "".join(out), pal=p, steps=2, sim_label="net")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ================================================ backpropagation, computed --
+
+def backprop(fig_id, *, x=2.0, w=1.5, b=-1.2, target=0.5, cap="", note="",
+             width=1140, height=520, full=False):
+    """One tiny graph, forward then backward, with both sets of numbers.
+
+    Backpropagation is usually drawn as a row of boxes with dashed arrows
+    labelled ``d loss / d y``, which restates the chain rule without ever
+    applying it. Here the forward pass carries real values and the backward
+    pass carries real gradients, computed from them — so the sentence
+    *"multiply the local derivatives along the path"* becomes something you can
+    check with a calculator.
+
+    The graph is ``loss = (relu(w·x + b) − target)²``, small enough that every
+    number fits and every derivative is one line of school calculus.
+
+    The default values keep the relu **active**. That matters: pick them so the
+    unit is off and every gradient on the slide is zero, which is a real and
+    important phenomenon and a hopeless first example — the reader sees a row of
+    zeros and learns nothing about the chain. Show the chain working first, then
+    turn one number negative and watch it die.
+    """
+    x1 = w * x                 # multiply
+    x2 = x1 + b                # add
+    y = max(0.0, x2)           # relu
+    loss = (y - target) ** 2   # squared error
+
+    # Backward, each factor local to its own node.
+    dloss_dy = 2 * (y - target)
+    dy_dx2 = 1.0 if x2 > 0 else 0.0
+    dx2_dx1 = 1.0
+    dx1_dw = x
+    dloss_dx2 = dloss_dy * dy_dx2
+    dloss_dx1 = dloss_dx2 * dx2_dx1
+    dloss_dw = dloss_dx1 * dx1_dw
+
+    def build(p):
+        out = []
+        nodes = [
+            ("w", f"{fmt(w)}", "parameter", None),
+            ("x1 = w·x", fmt(x1, 3), "multiply", f"∂x1/∂w = x = {fmt(x)}"),
+            ("x2 = x1 + b", fmt(x2, 3), "add", "∂x2/∂x1 = 1"),
+            ("y = relu(x2)", fmt(y, 3), "relu",
+             f"∂y/∂x2 = {fmt(dy_dx2)}"),
+            ("loss = (y−t)²", fmt(loss, 3), "squared error",
+             f"∂loss/∂y = 2(y−t) = {fmt(dloss_dy, 3)}"),
+        ]
+        n = len(nodes)
+        pad = 96
+        step = (width - 2 * pad) / (n - 1)
+        xs = [pad + i * step for i in range(n)]
+        fy, by = 168, 336
+        bw, bh = 150, 62
+
+        out.append(txt(pad - 30, fy - bh, "forward →", size=13, weight=600,
+                       pal=p, fill=p.accent, anchor="start"))
+        out.append(txt(width - pad + 30, by + 58, "← backward", size=13,
+                       weight=600, pal=p, fill=p.warm, anchor="end"))
+
+        for i, (label, val, kind, deriv) in enumerate(nodes):
+            cx = xs[i]
+            out.append(rect(cx - bw / 2, fy - bh / 2, bw, bh, r=8, pal=p,
+                            fill=p.accent_fill, stroke=p.accent, sw=1.6,
+                            step=i + 1))
+            out.append(txt(cx, fy - 11, label, size=13, mono=True, pal=p,
+                           fill=p.ink, step=i + 1))
+            out.append(txt(cx, fy + 12, val, size=15, weight=600, mono=True,
+                           pal=p, fill=p.accent, step=i + 1))
+            out.append(txt(cx, fy - bh / 2 - 14, kind, size=11.5, pal=p,
+                           fill=p.ink3, step=i + 1))
+            if i < n - 1:
+                out.append(arrow(cx + bw / 2 + 4, fy, xs[i + 1] - bw / 2 - 4, fy,
+                                 pal=p, stroke=p.accent, sw=1.6, step=i + 2))
+
+        # ---- backward: one local derivative per hop, then the product -------
+        grads = [(dloss_dw, "∂loss/∂w"), (dloss_dx1, "∂loss/∂x1"),
+                 (dloss_dx2, "∂loss/∂x2"), (dloss_dy, "∂loss/∂y"), (1.0, "1")]
+        for i in range(n - 1, 0, -1):
+            cx = xs[i]
+            st = n + (n - i)
+            deriv = nodes[i][3]
+            if deriv:
+                mx = (xs[i] + xs[i - 1]) / 2
+                out.append(arrow(cx - bw / 2 - 4, by, xs[i - 1] + bw / 2 + 4, by,
+                                 pal=p, stroke=p.warm, sw=1.6, step=st))
+                out.append(rect(mx - 84, by - 16, 168, 32, r=8, pal=p,
+                                fill=p.warm_fill, stroke=p.warm, sw=1.2,
+                                step=st))
+                out.append(txt(mx, by, deriv, size=11.5, mono=True, pal=p,
+                               fill=p.ink, step=st))
+            # the gradient that has accumulated by this point
+            out.append(txt(xs[i - 1], by + 34, f"{grads[i - 1][1]} = "
+                                               f"{fmt(grads[i - 1][0], 3)}",
+                           size=12, mono=True, pal=p, fill=p.warm, step=st))
+
+        # link the two rows so it reads as one graph seen twice
+        for i in range(n):
+            out.append(line(xs[i], fy + bh / 2 + 4, xs[i], by - 26, pal=p,
+                            stroke=p.faint, sw=0.9, dash="3 5"))
+
+        last = 2 * n - 1
+        out.append(txt(width / 2, height - 62,
+                       f"∂loss/∂w  =  {fmt(dloss_dy, 3)} × {fmt(dy_dx2)} × "
+                       f"{fmt(dx2_dx1)} × {fmt(dx1_dw)}  =  {fmt(dloss_dw, 3)}",
+                       size=14.5, mono=True, pal=p, fill=p.ink, step=last))
+        out.append(txt(width / 2, height - 38,
+                       "Multiply the local derivatives along the path. That is the "
+                       "chain rule, and applying it this way over a network is "
+                       "backpropagation.",
+                       size=13, pal=p, fill=p.accent, step=last))
+        out.append(txt(width / 2, height - 14,
+                       f"Each node only ever needs its OWN derivative — "
+                       f"{fmt(dx1_dw)}, {fmt(dx2_dx1)}, {fmt(dy_dx2)} — and what "
+                       f"arrived from the right.",
+                       size=12.5, pal=p, fill=p.ink3, step=last))
+        return svg(width, height, "".join(out), pal=p, steps=last,
+                   sim_label="hop")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

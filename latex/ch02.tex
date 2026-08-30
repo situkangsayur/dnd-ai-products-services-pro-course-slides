@@ -514,10 +514,21 @@ Update using the current gradient \textbf{and} previous updates --- like a ball 
 \framekicker{Section 2.4.4}
 \begin{frame}[shrink=25]{The chain rule, applied backwards over a graph}
 \begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch02-graph.tex.pdf}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch02-backprop.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Solid arrows are the forward pass; dashed arrows are the backward pass, each carrying one local derivative.\par}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Multiply the local derivatives along a path and you have the gradient. Applying the chain rule this way over a network \textbf{is} backpropagation.\par}\vskip 4pt
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Top row forward, bottom row backward. Every number computed from the one above it.\par}
+\end{frame}
+
+\framekicker{Section 2.4.4}
+\begin{frame}[shrink=25]{Reading it backwards: three things that make it work}
+\begin{isteps}
+\item \textbf{Each node only needs its own derivative.} Multiply by 1 for the addition, by \inlinecode{x} for the multiplication, by 1 or 0 for the relu. Nothing on the slide required knowing the whole graph --- which is exactly why this scales to a network with millions of nodes.
+\item \textbf{The gradient is a product along the path.} \inlinecode{2.6 $\times$ 1 $\times$ 1 $\times$ 2 = 5.2}. Applying the chain rule this way, node by node from the loss backwards, \hilite{is} backpropagation. There is no further mechanism.
+\item \textbf{The forward values are needed by the backward pass.} \inlinecode{$\partial$x1/$\partial$w} is \inlinecode{x}, so the input has to still be there when the gradient comes back. That is why training uses so much more memory than inference --- the forward pass is kept.
+\end{isteps}
+\begin{iband}[amber]
+\textbf{Now make the relu die.} Set \inlinecode{b = -1.2} so \inlinecode{x2} comes out negative. Then \inlinecode{$\partial$y/$\partial$x2 = 0}, the product collapses, and \inlinecode{$\partial$loss/$\partial$w = 0} --- the weight receives \textbf{no} gradient and cannot learn from this example. A dead unit is not a bug in the code; it is this multiplication reaching a zero.
+\end{iband}
 \end{frame}
 
 \framekicker{Section 2.4.5}

@@ -13,7 +13,8 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
-from diagrams import (forward_pass, geometric_ops, neural_net,  # noqa: E402
+from diagrams import (backprop, forward_pass, geometric_ops,  # noqa: E402
+                      neural_net,
                       sgd_descent, tensor_ranks)
 
 
@@ -1023,12 +1024,38 @@ loss_value = loss(y_pred, y_true)
             "kicker": "Section 2.4.4",
             "title": "The chain rule, applied backwards over a graph",
             "blocks": [
-                {"t": "mmd", "id": "ch02-graph", "src": MMD_GRAPH,
-                 "cap": "Solid arrows are the forward pass; dashed arrows are the backward "
-                        "pass, each carrying one local derivative."},
-                {"t": "p", "md": "Multiply the local derivatives along a path and you have the "
-                                 "gradient. Applying the chain rule this way over a network "
-                                 "**is** backpropagation."},
+                backprop(
+                    "ch02-backprop",
+                    cap="Top row forward, bottom row backward. Every number computed from "
+                        "the one above it."),
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 2.4.4",
+            "title": "Reading it backwards: three things that make it work",
+            "blocks": [
+                {"t": "steps", "items": [
+                    "**Each node only needs its own derivative.** Multiply by 1 for the "
+                    "addition, by `x` for the multiplication, by 1 or 0 for the relu. "
+                    "Nothing on the slide required knowing the whole graph — which is "
+                    "exactly why this scales to a network with millions of nodes.",
+                    "**The gradient is a product along the path.** "
+                    "`2.6 × 1 × 1 × 2 = 5.2`. Applying the chain rule this way, node by "
+                    "node from the loss backwards, ==is== backpropagation. There is no "
+                    "further mechanism.",
+                    "**The forward values are needed by the backward pass.** `∂x1/∂w` is "
+                    "`x`, so the input has to still be there when the gradient comes "
+                    "back. That is why training uses so much more memory than "
+                    "inference — the forward pass is kept.",
+                ]},
+                {"t": "band", "style": "amber",
+                 "md": "**Now make the relu die.** Set `b = -1.2` so `x2` comes out "
+                       "negative. Then `∂y/∂x2 = 0`, the product collapses, and "
+                       "`∂loss/∂w = 0` — the weight receives **no** gradient and cannot "
+                       "learn from this example. A dead unit is not a bug in the code; "
+                       "it is this multiplication reaching a zero."},
             ],
         },
 
