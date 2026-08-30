@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A ConvNet on MNIST, and why it beats the dense model · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>A ConvNet on MNIST, and why it beats the dense model</h1>
+  <p>The same problem as chapter 2, with a fraction of the parameters and a better score. The reason is two properties of the convolution operation, and both are visible in the numbers.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The model</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers
+
+inputs = keras.Input(shape=(28, 28, 1))
+x = layers.Conv2D(filters=32, kernel_size=3, activation="relu")(inputs)
+x = layers.MaxPooling2D(pool_size=2)(x)
+x = layers.Conv2D(filters=64, kernel_size=3, activation="relu")(x)
+x = layers.MaxPooling2D(pool_size=2)(x)
+x = layers.Conv2D(filters=128, kernel_size=3, activation="relu")(x)
+x = layers.Flatten()(x)
+outputs = layers.Dense(10, activation="softmax")(x)
+model = keras.Model(inputs=inputs, outputs=outputs)
+model.summary()</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">Total params: 104,202</pre></div>
+<div class="cell"><h2>Training it</h2></div>
+<div class="cell cell-in"><pre>from keras.datasets import mnist
+
+(train_images, train_labels), (test_images, test_labels) = mnist.load_data()
+train_images = train_images.reshape((60000, 28, 28, 1)).astype("float32") / 255
+test_images = test_images.reshape((10000, 28, 28, 1)).astype("float32") / 255
+
+model.compile(optimizer="rmsprop",
+              loss="sparse_categorical_crossentropy",
+              metrics=["accuracy"])
+model.fit(train_images, train_labels, epochs=5, batch_size=64, verbose=2)
+_, test_acc = model.evaluate(test_images, test_labels, verbose=0)
+print(f"test accuracy: {test_acc:.4f}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">test accuracy: 0.99xx</pre></div>
+<div class="cell"><h2>Against the dense model from chapter 2</h2></div>
+<div class="cell cell-in"><pre>dense = keras.Sequential([layers.Flatten(),
+                          layers.Dense(512, activation="relu"),
+                          layers.Dense(10, activation="softmax")])
+dense.compile(optimizer="rmsprop", loss="sparse_categorical_crossentropy",
+              metrics=["accuracy"])
+dense.fit(train_images, train_labels, epochs=5, batch_size=64, verbose=0)
+_, dense_acc = dense.evaluate(test_images, test_labels, verbose=0)
+
+print(f"{'model':10s} {'params':&gt;10s} {'test acc':&gt;10s}   error rate")
+print(f"{'dense':10s} {dense.count_params():&gt;10,} {dense_acc:&gt;10.4f}   "
+      f"{1-dense_acc:.4f}")
+print(f"{'convnet':10s} {model.count_params():&gt;10,} {test_acc:&gt;10.4f}   "
+      f"{1-test_acc:.4f}")
+print(f"\nerror reduced by {(1-dense_acc)/(1-test_acc):.1f}x, "
+      f"with {dense.count_params()/model.count_params():.1f}x fewer parameters")</pre></div>
+<div class="cell"><p><strong>Fewer parameters and a lower error.</strong> Two properties of convolution do this:</p>
+<ul>
+<li><strong>Translation invariance</strong> — a pattern learned in one corner is recognised everywhere, so the model does not relearn it 784 times.</li>
+<li><strong>Spatial hierarchies</strong> — small local patterns compose into larger ones, layer by layer.</li>
+</ul>
+<p>A Dense layer has neither, which is why it needs five times as many parameters to do worse.</p></div>
+<div class="cell"><h2>Watching the spatial dimensions shrink</h2></div>
+<div class="cell cell-in"><pre>for layer in model.layers:
+    print(f"{layer.__class__.__name__:16s} {str(layer.output.shape):24s} "
+          f"{layer.count_params():&gt;8,} params")</pre></div>
+<div class="cell"><p>Height and width fall — 28, 26, 13, 11, 5, 3 — while depth rises: 1, 32, 64, 128. <strong>Trading space for semantics</strong>, which is the shape of every ConvNet in this course.</p></div>
+<div class="cell"><h2>Why max pooling and not something gentler</h2></div>
+<div class="cell cell-in"><pre>def build(pooling):
+    keras.utils.set_random_seed(0)
+    i = keras.Input(shape=(28, 28, 1))
+    x = layers.Conv2D(32, 3, activation="relu")(i)
+    if pooling == "max":
+        x = layers.MaxPooling2D(2)(x)
+    elif pooling == "avg":
+        x = layers.AveragePooling2D(2)(x)
+    elif pooling == "stride":
+        x = layers.Conv2D(32, 3, strides=2, activation="relu", padding="same")(x)
+    x = layers.Conv2D(64, 3, activation="relu")(x)
+    x = layers.Flatten()(x)
+    o = layers.Dense(10, activation="softmax")(x)
+    m = keras.Model(i, o)
+    m.compile(optimizer="rmsprop", loss="sparse_categorical_crossentropy",
+              metrics=["accuracy"])
+    m.fit(train_images[:20000], train_labels[:20000], epochs=3,
+          batch_size=64, verbose=0)
+    return m.evaluate(test_images, test_labels, verbose=0)[1]
+
+for p in ["max", "avg", "stride"]:
+    print(f"{p:8s} pooling -&gt; test accuracy {build(p):.4f}")</pre></div>
+<div class="cell"><p>Max pooling usually wins here. The argument is that features encode the <strong>presence</strong> of a pattern, and averaging dilutes presence while max preserves it. Note that chapters 11 and 17 prefer strides — because segmentation and generation care <em>where</em> things are, and max pooling discards exactly that.</p></div>
+<div class="cell"><h2>What the first layer learned</h2></div>
+<div class="cell cell-in"><pre>import numpy as np
+import matplotlib.pyplot as plt
+
+filters = model.layers[1].get_weights()[0]      # (3, 3, 1, 32)
+f = filters[:, :, 0, :]
+f = (f - f.min()) / (f.max() - f.min())
+
+fig, axes = plt.subplots(4, 8, figsize=(9, 4.6))
+for ax, i in zip(axes.ravel(), range(32)):
+    ax.imshow(f[:, :, i], cmap="gray"); ax.axis("off")
+plt.suptitle("The 32 first-layer 3x3 filters", y=1.02)
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>Edge and blob detectors, learned rather than designed. Chapter 10 does this properly, at every depth, and the story it tells is the same one this glimpse suggests.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>A ConvNet beats a dense model on images with <strong>five times fewer parameters</strong>.</li>
+<li>Translation invariance and spatial hierarchies are the two reasons.</li>
+<li>Height and width shrink while depth grows — space traded for semantics.</li>
+<li>Max pooling preserves presence; use strides when position matters (chapters 11 and 17).</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

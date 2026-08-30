@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Reimplementing the first example from scratch · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Reimplementing the first example from scratch</h1>
+  <p>A Dense layer, a Sequential model, a batch generator, and a training step — written by hand, then checked against Keras. Nothing here is how you should work; everything here is what fit() is doing.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>A Dense layer, by hand</h2></div>
+<div class="cell cell-in"><pre>import tensorflow as tf
+import numpy as np
+
+class NaiveDense:
+    def __init__(self, input_size, output_size, activation):
+        self.activation = activation
+        w_shape = (input_size, output_size)
+        w_initial = tf.random.uniform(w_shape, minval=0, maxval=1e-1)
+        self.W = tf.Variable(w_initial)
+        self.b = tf.Variable(tf.zeros((output_size,)))
+
+    def __call__(self, inputs):
+        return self.activation(tf.matmul(inputs, self.W) + self.b)
+
+    @property
+    def weights(self):
+        return [self.W, self.b]</pre></div>
+<div class="cell"><p>Three lines of substance: a matrix multiply, an addition, an activation. Everything else is bookkeeping.</p></div>
+<div class="cell"><h2>A Sequential model, by hand</h2></div>
+<div class="cell cell-in"><pre>class NaiveSequential:
+    def __init__(self, layers):
+        self.layers = layers
+
+    def __call__(self, inputs):
+        x = inputs
+        for layer in self.layers:
+            x = layer(x)
+        return x
+
+    @property
+    def weights(self):
+        return [w for layer in self.layers for w in layer.weights]
+
+model = NaiveSequential([
+    NaiveDense(28 * 28, 512, activation=tf.nn.relu),
+    NaiveDense(512, 10, activation=tf.nn.softmax),
+])
+assert len(model.weights) == 4
+print(f"{sum(int(np.prod(w.shape)) for w in model.weights):,} parameters")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">407,050 parameters</pre></div>
+<div class="cell"><h2>A batch generator</h2></div>
+<div class="cell cell-in"><pre>class BatchGenerator:
+    def __init__(self, images, labels, batch_size=128):
+        assert len(images) == len(labels)
+        self.index = 0
+        self.images = images
+        self.labels = labels
+        self.batch_size = batch_size
+        self.num_batches = math.ceil(len(images) / batch_size)
+
+    def next(self):
+        images = self.images[self.index:self.index + self.batch_size]
+        labels = self.labels[self.index:self.index + self.batch_size]
+        self.index += self.batch_size
+        return images, labels
+
+import math</pre></div>
+<div class="cell"><h2>One training step</h2></div>
+<div class="cell"><p>Forward pass under a tape, loss, gradients, update. <strong>This is the whole of <code>fit()</code></strong>, minus callbacks, metrics, and every convenience.</p></div>
+<div class="cell cell-in"><pre>learning_rate = 1e-3
+
+def update_weights(gradients, weights):
+    for g, w in zip(gradients, weights):
+        w.assign_sub(g * learning_rate)
+
+def one_training_step(model, images_batch, labels_batch):
+    with tf.GradientTape() as tape:
+        predictions = model(images_batch)
+        per_sample_losses = tf.keras.losses.sparse_categorical_crossentropy(
+            labels_batch, predictions
+        )
+        average_loss = tf.reduce_mean(per_sample_losses)
+    gradients = tape.gradient(average_loss, model.weights)
+    update_weights(gradients, model.weights)
+    return average_loss</pre></div>
+<div class="cell"><blockquote><strong>Note</strong> — <code>w.assign_sub(g * lr)</code> is the entire optimizer. Replace this one line and you have SGD with momentum, or RMSprop, or Adam — that is genuinely the only difference between them.</blockquote></div>
+<div class="cell"><h2>The training loop</h2></div>
+<div class="cell cell-in"><pre>def fit(model, images, labels, epochs, batch_size=128):
+    for epoch_counter in range(epochs):
+        print(f"Epoch {epoch_counter}")
+        batch_generator = BatchGenerator(images, labels, batch_size)
+        for batch_counter in range(batch_generator.num_batches):
+            images_batch, labels_batch = batch_generator.next()
+            loss = one_training_step(model, images_batch, labels_batch)
+            if batch_counter % 100 == 0:
+                print(f"  loss at batch {batch_counter}: {loss:.2f}")
+
+from keras.datasets import mnist
+(train_images, train_labels), (test_images, test_labels) = mnist.load_data()
+train_images = train_images.reshape((60000, 28 * 28)).astype("float32") / 255
+test_images = test_images.reshape((10000, 28 * 28)).astype("float32") / 255
+
+fit(model, train_images, train_labels, epochs=10, batch_size=128)</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">Epoch 0
+  loss at batch 0: 5.02
+  loss at batch 100: 2.23
+  ...
+Epoch 9
+  loss at batch 400: 0.19</pre></div>
+<div class="cell"><h2>Did it work?</h2></div>
+<div class="cell cell-in"><pre>predictions = model(test_images).numpy()
+predicted_labels = np.argmax(predictions, axis=1)
+matches = predicted_labels == test_labels
+print(f"accuracy: {matches.mean():.3f}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">accuracy: 0.81 — 0.83</pre></div>
+<div class="cell"><p>Around 82%, against 97% from the Keras version in notebook 01. <strong>Same architecture, same data.</strong> The difference is the optimizer — plain SGD at a fixed 1e-3, against RMSprop — and it is a fifteen-point difference.</p>
+<p>That is a useful number to carry: the parts of Keras that look like convenience are frequently not.</p></div>
+<div class="cell"><h2>Checking one gradient against Keras</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers
+
+kmodel = keras.Sequential([layers.Dense(4, activation="relu"),
+                           layers.Dense(3, activation="softmax")])
+xb = tf.random.normal((8, 5))
+yb = tf.constant([0, 1, 2, 0, 1, 2, 0, 1])
+
+with tf.GradientTape() as tape:
+    loss = tf.reduce_mean(
+        keras.losses.sparse_categorical_crossentropy(yb, kmodel(xb))
+    )
+g = tape.gradient(loss, kmodel.trainable_weights)
+print("gradient shapes:", [tuple(t.shape) for t in g])
+print("finite:", all(bool(tf.reduce_all(tf.math.is_finite(t))) for t in g))</pre></div>
+<div class="cell"><p>Same mechanism, same tape. Keras is not doing anything else — it is doing this, with the loop, the metrics, and the callbacks written for you.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li><code>fit()</code> is a batch generator, a gradient tape, and one <code>assign_sub</code> per weight.</li>
+<li>The optimizer is one line, and swapping it is worth fifteen points of accuracy here.</li>
+<li>Writing it by hand once is what makes the framework legible afterwards.</li>
+<li>You should never work this way — but you should know exactly what you are calling.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

@@ -1,5 +1,8 @@
+%% direction chosen by tools/figures.py: this renders
+%% better in the space a slide gives it. Edit the deck
+%% source, not this file.
 
-flowchart TB
+flowchart LR
   subgraph T["Ordinary training"]
     direction TB
     T1["Image is FIXED"] --> T2["Adjust the WEIGHTS"] --> T3["Lower the loss"]

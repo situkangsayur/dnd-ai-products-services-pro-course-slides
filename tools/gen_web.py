@@ -59,7 +59,21 @@ def _code(b):
                 "</div>")
     src = esc_html(b.get("src", "").strip("\n"))
     nohl = " data-nohl" if b.get("lang") not in (None, "python", "py") else ""
-    return f'<div class="code">{head}<pre{nohl}>{src}</pre></div>'
+
+    # An optional `run`: the listing walked line by line, with the state after
+    # each step. Reading code and watching code run are different activities,
+    # and a listing on a slide only ever supports the first. The trace is
+    # authored, not executed -- these are teaching examples, and a slide that
+    # depends on a runtime is a slide that fails in a room with no network.
+    run = b.get("run")
+    data = ""
+    if run:
+        import json as _json
+        data = (" data-run='"
+                + esc_html(_json.dumps(run, ensure_ascii=False)).replace("'", "&#39;")
+                + "'")
+    cls = "code code-run" if run else "code"
+    return f'<div class="{cls}"{data}>{head}<pre{nohl}>{src}</pre></div>'
 
 
 def _table(b):
@@ -177,7 +191,8 @@ def _title_slide(deck):
         res = _links({"items": [
             {"k": r["kind"].upper(), "v": r["label"], "href": r["href"],
              "ic": {"notebook": "📓", "github": "⌥", "book": "📘", "paper": "📄",
-                    "tool": "🛠", "dataset": "🗃", "site": "🌐"}.get(r["kind"], "🔗"),
+                    "tool": "🛠", "dataset": "🗃", "site": "🌐",
+                    "lab": "▶"}.get(r["kind"], "🔗"),
              "pending": r.get("pending", False)}
             for r in d["resources"]]})
 

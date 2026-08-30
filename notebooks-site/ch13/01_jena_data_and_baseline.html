@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Jena weather data, and a baseline nothing beats for a while · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>The Jena weather data, and a baseline nothing beats for a while</h1>
+  <p>Eight years of readings every ten minutes, a windowed dataset, and a common-sense baseline that several neural networks will fail to beat.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The data</h2></div>
+<div class="cell cell-in"><pre>import os
+import numpy as np
+import keras
+
+fname = keras.utils.get_file(
+    origin="https://storage.googleapis.com/tensorflow/tf-keras-datasets/"
+           "jena_climate_2009_2016.csv.zip",
+    fname="jena_climate_2009_2016.csv.zip", extract=True)
+csv_path = os.path.join(fname, "jena_climate_2009_2016.csv")
+
+with open(csv_path) as f:
+    data = f.read()
+
+lines = data.split("\n")
+header = lines[0].split(",")
+lines = [l for l in lines[1:] if l]
+print(len(header), "columns,", len(lines), "rows")
+print(header)</pre></div>
+<div class="cell cell-in"><pre>temperature = np.zeros((len(lines),))
+raw_data = np.zeros((len(lines), len(header) - 1))
+for i, line in enumerate(lines):
+    values = [float(x) for x in line.split(",")[1:]]
+    temperature[i] = values[1]
+    raw_data[i, :] = values[:]
+
+print(raw_data.shape)</pre></div>
+<div class="cell"><h2>Look at it before modelling it</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+
+fig, (a1, a2) = plt.subplots(2, 1, figsize=(12, 6))
+a1.plot(range(len(temperature)), temperature, lw=.4)
+a1.set_title("Temperature, all eight years"); a1.set_ylabel("degC")
+a2.plot(range(1440), temperature[:1440], lw=1)
+a2.set_title("The first ten days"); a2.set_xlabel("10-minute steps")
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>Two periodicities, immediately visible: <strong>yearly</strong>, and <strong>daily</strong>. The yearly one is why a naive <em>predict the annual average</em> model would be poor, and the daily one is why <em>predict the last value</em> will be surprisingly good.</p></div>
+<div class="cell"><h2>The split, and why it is not random</h2></div>
+<div class="cell cell-in"><pre>num_train_samples = int(0.5 * len(raw_data))
+num_val_samples = int(0.25 * len(raw_data))
+num_test_samples = len(raw_data) - num_train_samples - num_val_samples
+
+print(f"train {num_train_samples}   validation {num_val_samples}   "
+      f"test {num_test_samples}")</pre></div>
+<div class="cell"><blockquote>⚠️ <strong>Chronological, always.</strong> The validation and test data must be <em>posterior</em> to the training data. A random split lets the model interpolate between readings it has already seen, and the score becomes meaningless — chapter 5's notebook 03 drew the picture.</blockquote></div>
+<div class="cell"><h2>Normalizing with training statistics</h2></div>
+<div class="cell cell-in"><pre>mean = raw_data[:num_train_samples].mean(axis=0)
+std = raw_data[:num_train_samples].std(axis=0)
+raw_data -= mean
+raw_data /= std
+print("normalized using the first half only")</pre></div>
+<div class="cell"><h2>Windowing</h2></div>
+<div class="cell cell-in"><pre>sampling_rate = 6      # one reading per hour
+sequence_length = 120  # five days of history
+delay = sampling_rate * (sequence_length + 24 - 1)   # target is 24h ahead
+batch_size = 256
+
+train_dataset = keras.utils.timeseries_dataset_from_array(
+    raw_data[:-delay],
+    targets=temperature[delay:],
+    sampling_rate=sampling_rate,
+    sequence_length=sequence_length,
+    shuffle=True,
+    batch_size=batch_size,
+    start_index=0,
+    end_index=num_train_samples)
+
+val_dataset = keras.utils.timeseries_dataset_from_array(
+    raw_data[:-delay], targets=temperature[delay:],
+    sampling_rate=sampling_rate, sequence_length=sequence_length,
+    shuffle=True, batch_size=batch_size,
+    start_index=num_train_samples,
+    end_index=num_train_samples + num_val_samples)
+
+test_dataset = keras.utils.timeseries_dataset_from_array(
+    raw_data[:-delay], targets=temperature[delay:],
+    sampling_rate=sampling_rate, sequence_length=sequence_length,
+    shuffle=True, batch_size=batch_size,
+    start_index=num_train_samples + num_val_samples)
+
+for samples, targets in train_dataset:
+    print("samples shape:", samples.shape)
+    print("targets shape:", targets.shape)
+    break</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">samples shape: (256, 120, 14)
+targets shape: (256,)</pre></div>
+<div class="cell"><p><strong>120 timesteps × 14 features per sample</strong>, one temperature as the target. <code>sampling_rate=6</code> means we keep one reading per hour, so 120 steps is five days of history.</p></div>
+<div class="cell"><h2>The baseline</h2></div>
+<div class="cell cell-in"><pre>def evaluate_naive_method(dataset):
+    total_abs_err = 0.
+    samples_seen = 0
+    for samples, targets in dataset:
+        # Column 1 is temperature; the last timestep is "now".
+        preds = samples[:, -1, 1] * std[1] + mean[1]
+        total_abs_err += np.sum(np.abs(preds - targets))
+        samples_seen += samples.shape[0]
+    return total_abs_err / samples_seen
+
+print(f"validation MAE: {evaluate_naive_method(val_dataset):.2f} degC")
+print(f"test MAE:       {evaluate_naive_method(test_dataset):.2f} degC")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">validation MAE: 2.44 degC
+test MAE:       2.62 degC</pre></div>
+<div class="cell"><p><strong>Tomorrow will be like today.</strong> Two and a half degrees of average error, from a model with no parameters.</p>
+<p>That number is the bar. Chapter 6 said to compute a common-sense baseline before believing anything; here it takes four lines and several of the neural networks in the next notebook will not clear it.</p></div>
+<div class="cell"><h2>Understanding why the baseline is strong</h2></div>
+<div class="cell cell-in"><pre>h = temperature[::6]                 # hourly
+diffs = np.abs(h[24:] - h[:-24])    # change over 24 hours
+
+plt.figure(figsize=(7, 4))
+plt.hist(diffs, bins=80)
+plt.axvline(diffs.mean(), color="r", ls="--",
+            label=f"mean {diffs.mean():.2f} degC")
+plt.xlabel("|temperature change over 24 hours|"); plt.legend()
+plt.title("Why 'tomorrow is like today' is hard to beat")
+plt.show()</pre></div>
+<div class="cell"><p>The distribution is concentrated near zero. <strong>Most of the time the temperature 24 hours from now is close to now</strong>, and any model has to earn its keep on the tail.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Timeseries splits are chronological. Never random.</li>
+<li><code>timeseries_dataset_from_array</code> handles windowing, sampling rate, and the target offset.</li>
+<li><strong>The naive baseline is 2.44 °C</strong> and several neural networks will not beat it.</li>
+<li>Understand <em>why</em> the baseline is strong before trying to beat it.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

@@ -12,7 +12,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
-from diagrams import feature_maps  # noqa: E402
+from diagrams import feature_maps, pixel_mask  # noqa: E402
 
 
 MMD_TASKS = """
@@ -202,11 +202,14 @@ DECK = {
             "kicker": "Section 11.2.1",
             "title": "What a label looks like when the label is an image",
             "blocks": [
-                {"t": "mmd", "id": "ch11-mask", "src": MMD_MASK,
-                 "cap": "A segmentation mask is the equivalent of a label: same size as the "
-                        "input, one channel, one integer per pixel."},
+                pixel_mask(
+                    "ch11-mask-pixels",
+                    cap="A twelve-by-nine scene and its label. The label is an image, "
+                        "and it is the same size as the input."),
                 {"t": "p", "md": "The dataset is **Oxford-IIIT Pets**: 7,390 pictures of cat "
-                                 "and dog breeds, each with a foreground-background mask."},
+                                 "and dog breeds, each with a foreground-background mask "
+                                 "stored as a PNG of the same name and the same size — "
+                                 "`1 = foreground`, `2 = background`, `3 = contour`."},
             ],
         },
 

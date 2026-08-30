@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A character-level language model, and sampling from it · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>A character-level language model, and sampling from it</h1>
+  <p>p(token | past tokens), trained in two minutes, then called in a loop to generate text — including the surgery that generation requires and the experiment that shows why bidirectional would break it.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The corpus</h2></div>
+<div class="cell cell-in"><pre>import keras
+import tensorflow as tf
+import numpy as np
+
+filename = keras.utils.get_file(
+    origin=("https://storage.googleapis.com/download.tensorflow.org/"
+            "data/shakespeare.txt"))
+shakespeare = open(filename, "r").read()
+
+print(f"{len(shakespeare):,} characters")
+print(shakespeare[:250])</pre></div>
+<div class="cell"><h2>Features and labels differ by one character</h2></div>
+<div class="cell cell-in"><pre>sequence_length = 100
+
+def split_input(inp, sequence_length):
+    for i in range(0, len(inp), sequence_length):
+        yield inp[i:i + sequence_length]
+
+features = list(split_input(shakespeare[:-1], sequence_length))
+labels = list(split_input(shakespeare[1:], sequence_length))
+dataset = tf.data.Dataset.from_tensor_slices((features, labels))
+
+x, y = next(dataset.as_numpy_iterator())
+print(repr(x[:50]))
+print(repr(y[:50]))</pre></div>
+<div class="cell"><p><code>shakespeare[:-1]</code> against <code>shakespeare[1:]</code>. <strong>That single line is the entire supervision signal</strong> — and one 100-character input produces 100 supervised predictions, not one.</p></div>
+<div class="cell"><h2>A 67-character vocabulary</h2></div>
+<div class="cell cell-in"><pre>from keras import layers
+
+tokenizer = layers.TextVectorization(
+    standardize=None, split="character",
+    output_sequence_length=sequence_length)
+tokenizer.adapt(dataset.map(lambda text, labels: text))
+
+vocabulary_size = tokenizer.vocabulary_size()
+print(f"vocabulary: {vocabulary_size} characters")
+print(tokenizer.get_vocabulary()[:20])
+
+dataset = dataset.map(
+    lambda f, l: (tokenizer(f), tokenizer(l)), num_parallel_calls=8)
+training_data = dataset.shuffle(10_000).batch(64).cache()</pre></div>
+<div class="cell"><h2>The model</h2></div>
+<div class="cell cell-in"><pre>embedding_dim, hidden_dim = 256, 1024
+
+inputs = layers.Input(shape=(sequence_length,), dtype="int", name="token_ids")
+x = layers.Embedding(vocabulary_size, embedding_dim)(inputs)
+x = layers.GRU(hidden_dim, return_sequences=True)(x)
+x = layers.Dropout(0.1)(x)
+outputs = layers.Dense(vocabulary_size, activation="softmax")(x)
+model = keras.Model(inputs, outputs)
+model.summary()</pre></div>
+<div class="cell"><p><code>return_sequences=True</code> is essential — a prediction at <strong>every</strong> position, not just the last. Note also that ~98% of the parameters are in the GRU; that balance shifts dramatically in the Transformer models later in this chapter.</p></div>
+<div class="cell"><h2>Training</h2></div>
+<div class="cell cell-in"><pre>model.compile(optimizer="adam",
+              loss="sparse_categorical_crossentropy",
+              metrics=["sparse_categorical_accuracy"])
+model.fit(training_data, epochs=20, verbose=2)</pre></div>
+<div class="cell"><p>A batch of 64 sequences of 100 characters is <strong>6,400 individual classifications</strong>. Around 70% next-character accuracy after 20 epochs.</p></div>
+<div class="cell"><h2>Surgery for generation</h2></div>
+<div class="cell cell-in"><pre>inputs = keras.Input(shape=(1,), dtype="int", name="token_ids")
+input_state = keras.Input(shape=(hidden_dim,), name="state")
+
+x = layers.Embedding(vocabulary_size, embedding_dim)(inputs)
+x, output_state = layers.GRU(hidden_dim, return_state=True)(
+    x, initial_state=input_state)
+outputs = layers.Dense(vocabulary_size, activation="softmax")(x)
+
+generation_model = keras.Model(inputs=(inputs, input_state),
+                               outputs=(outputs, output_state))
+generation_model.set_weights(model.get_weights())
+print("same weights, different interface")</pre></div>
+<div class="cell"><p>One token in, and the GRU state promoted from an internal detail to a <strong>named input and output</strong>. Same computational structure, so the weights transfer directly.</p></div>
+<div class="cell"><h2>Priming, then sampling</h2></div>
+<div class="cell cell-in"><pre>tokens = tokenizer.get_vocabulary()
+char_to_id = dict(zip(tokens, range(vocabulary_size)))
+id_to_char = dict(zip(range(vocabulary_size), tokens))
+
+prompt = "\nKING RICHARD III:\n"
+input_ids = [char_to_id[c] for c in prompt]
+
+state = keras.ops.zeros(shape=(1, hidden_dim))
+for token_id in input_ids:
+    inp = keras.ops.expand_dims([token_id], axis=0)
+    predictions, state = generation_model.predict((inp, state), verbose=0)
+
+generated_ids = []
+for i in range(250):
+    next_char = int(np.argmax(predictions, axis=-1)[0])
+    generated_ids.append(next_char)
+    inp = keras.ops.expand_dims([next_char], axis=0)
+    predictions, state = generation_model.predict((inp, state), verbose=0)
+
+print(prompt + "".join(id_to_char[t] for t in generated_ids))</pre></div>
+<div class="cell"><p>Correctly spelled words, speaker names in capitals followed by a colon, blank lines between speeches, verse-length lines. <strong>All of it from a next-character objective</strong>, none of it encoded.</p></div>
+<div class="cell"><h2>The diagnostic: replace GRU with Bidirectional(GRU)</h2></div>
+<div class="cell cell-in"><pre>bi = keras.Sequential([
+    layers.Input(shape=(sequence_length,), dtype="int"),
+    layers.Embedding(vocabulary_size, embedding_dim),
+    layers.Bidirectional(layers.GRU(256, return_sequences=True)),
+    layers.Dense(vocabulary_size, activation="softmax"),
+])
+bi.compile(optimizer="adam", loss="sparse_categorical_crossentropy",
+           metrics=["sparse_categorical_accuracy"])
+h = bi.fit(training_data.take(100), epochs=3, verbose=2)
+
+print(f"\nbidirectional training accuracy after 3 epochs: "
+      f"{h.history['sparse_categorical_accuracy'][-1]:.4f}")
+print("compare: the causal model reached ~0.70 after 20 epochs")</pre></div>
+<div class="cell"><blockquote>⚠️ <strong>Accuracy shoots above 99% almost immediately, and generation is dead.</strong> The backward pass hands the model the next character as a feature — it is reading the label off its own input.</blockquote>
+<p><strong>A training metric that suddenly looks too good is the most reliable signal of leakage there is.</strong> This is chapter 5's lesson, and chapter 15's causal mask exists to prevent exactly it.</p></div>
+<div class="cell"><h2>Temperature, briefly</h2></div>
+<div class="cell cell-in"><pre>def sample(prompt, temperature=1.0, length=200):
+    ids = [char_to_id[c] for c in prompt]
+    st = keras.ops.zeros(shape=(1, hidden_dim))
+    for t in ids:
+        p, st = generation_model.predict(
+            (keras.ops.expand_dims([t], axis=0), st), verbose=0)
+    out = []
+    for _ in range(length):
+        logits = np.log(np.maximum(p[0], 1e-9)) / temperature
+        probs = np.exp(logits); probs /= probs.sum()
+        nxt = int(np.random.choice(len(probs), p=probs))
+        out.append(nxt)
+        p, st = generation_model.predict(
+            (keras.ops.expand_dims([nxt], axis=0), st), verbose=0)
+    return "".join(id_to_char[i] for i in out)
+
+for t in [0.2, 0.7, 1.3]:
+    print(f"\n--- temperature {t} ---")
+    print(sample(prompt, temperature=t, length=180))</pre></div>
+<div class="cell"><p>Low temperature repeats; high temperature loses the spelling. <strong>Chapter 16 makes this a first-class control</strong> and adds top-K beside it.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>A language model is p(token | past tokens); labels are the features shifted by one.</li>
+<li>Generation needs an inference model with the recurrent state made explicit.</li>
+<li><strong>Bidirectional breaks it</strong> — 99% training accuracy, dead generation. Leakage looks like success.</li>
+<li>There is logic in the generation loop that has no counterpart in training.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

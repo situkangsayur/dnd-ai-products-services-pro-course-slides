@@ -745,6 +745,39 @@ x /= x.std(axis=0)      # each feature with unit standard deviation"""},
 
         {
             "type": "slide",
+            "kicker": "Section 6.3",
+            "title": "Reading the tree: what each question is really asking",
+            "blocks": [
+                {"t": "table",
+                 "head": ["Question", "Why it comes first", "Where a yes sends you"],
+                 "widths": [26, 46, 28],
+                 "rows": [
+                     ["**Sensitive data, or poor connectivity?**",
+                      "This one outranks the others because it is not a performance "
+                      "question. If the data may not leave the device, or there is no "
+                      "reliable link, no amount of latency budget changes the answer.",
+                      "**On device** — TF Lite, ONNX runtime"],
+                     ["**Strict latency requirement?**",
+                      "A REST round trip costs roughly 500 ms before your model does "
+                      "anything. That is fine for a form submission and useless for "
+                      "anything reacting to a camera.",
+                      "on to the next question"],
+                     ["**Move compute to the user?**",
+                      "Running in the browser costs you nothing per request and costs "
+                      "the user their battery. It also means shipping the model "
+                      "weights, which anyone can then keep.",
+                      "**In the browser** — TensorFlow.js, ONNX JS"],
+                 ]},
+                {"t": "band", "md": "**Every path that answers *no* ends at the REST "
+                                    "API**, and that is the right default: one copy of "
+                                    "the model, one place to update it, one place to "
+                                    "watch. Leave it only when a constraint above "
+                                    "forces you to."},
+            ],
+        },
+
+        {
+            "type": "slide",
             "kicker": "Section 6.3.2",
             "title": "When each route is the right one",
             "blocks": [

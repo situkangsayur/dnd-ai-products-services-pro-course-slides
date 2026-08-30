@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Transformer, and the experiment that reveals positional embeddings · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>The Transformer, and the experiment that reveals positional embeddings</h1>
+  <p>Encoder and decoder blocks built from scratch, trained — and failing — then fixed with two changed lines. The failure is the point.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The encoder block</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers, ops
+
+class TransformerEncoder(keras.Layer):
+    def __init__(self, hidden_dim, intermediate_dim, num_heads):
+        super().__init__()
+        key_dim = hidden_dim // num_heads
+        self.self_attention = layers.MultiHeadAttention(num_heads, key_dim)
+        self.self_attention_layernorm = layers.LayerNormalization()
+        self.feed_forward_1 = layers.Dense(intermediate_dim, activation="relu")
+        self.feed_forward_2 = layers.Dense(hidden_dim)
+        self.feed_forward_layernorm = layers.LayerNormalization()
+
+    def call(self, source, source_mask):
+        residual = x = source
+        mask = source_mask[:, None, :]
+        x = self.self_attention(query=x, key=x, value=x, attention_mask=mask)
+        x = x + residual
+        x = self.self_attention_layernorm(x)
+
+        residual = x
+        x = self.feed_forward_1(x)
+        x = self.feed_forward_2(x)
+        x = x + residual
+        x = self.feed_forward_layernorm(x)
+        return x</pre></div>
+<div class="cell"><p>Two stages, each <em>transform, add the residual, normalise</em> — the chapter-9 pattern exactly. <code>key_dim = hidden_dim // num_heads</code> keeps total width constant as heads are added: <strong>splitting, not growing.</strong></p></div>
+<div class="cell"><h2>LayerNormalization, not BatchNormalization</h2></div>
+<div class="cell cell-in"><pre>import numpy as np
+
+def layer_normalization(batch_of_sequences):
+    mean = np.mean(batch_of_sequences, keepdims=True, axis=-1)
+    variance = np.var(batch_of_sequences, keepdims=True, axis=-1)
+    return (batch_of_sequences - mean) / np.sqrt(variance + 1e-6)
+
+def batch_normalization(batch_of_images):
+    mean = np.mean(batch_of_images, keepdims=True, axis=(0, 1, 2))
+    variance = np.var(batch_of_images, keepdims=True, axis=(0, 1, 2))
+    return (batch_of_images - mean) / np.sqrt(variance + 1e-6)
+
+seqs = np.random.normal(size=(4, 10, 8))
+print("layer norm pools over axis -1 only:")
+print("  each sequence normalized independently -&gt;",
+      layer_normalization(seqs)[0].std().round(3))
+print()
+print("batch norm pools over axis 0, creating interactions BETWEEN samples.")
+print("Sequences in a batch have different lengths and padding amounts,")
+print("so batch statistics are contaminated by how you grouped examples.")</pre></div>
+<div class="cell"><h2>The decoder block</h2></div>
+<div class="cell cell-in"><pre>class TransformerDecoder(keras.Layer):
+    def __init__(self, hidden_dim, intermediate_dim, num_heads):
+        super().__init__()
+        key_dim = hidden_dim // num_heads
+        self.self_attention = layers.MultiHeadAttention(num_heads, key_dim)
+        self.self_attention_layernorm = layers.LayerNormalization()
+        self.cross_attention = layers.MultiHeadAttention(num_heads, key_dim)
+        self.cross_attention_layernorm = layers.LayerNormalization()
+        self.feed_forward_1 = layers.Dense(intermediate_dim, activation="relu")
+        self.feed_forward_2 = layers.Dense(hidden_dim)
+        self.feed_forward_layernorm = layers.LayerNormalization()
+
+    def call(self, target, source, source_mask):
+        residual = x = target
+        x = self.self_attention(query=x, key=x, value=x, use_causal_mask=True)
+        x = self.self_attention_layernorm(x + residual)
+
+        residual = x
+        mask = source_mask[:, None, :]
+        x = self.cross_attention(query=x, key=source, value=source,
+                                 attention_mask=mask)
+        x = self.cross_attention_layernorm(x + residual)
+
+        residual = x
+        x = self.feed_forward_1(x)
+        x = self.feed_forward_2(x)
+        x = self.feed_forward_layernorm(x + residual)
+        return x</pre></div>
+<div class="cell"><blockquote>⚠️ <strong>Two different masks, solving two different problems.</strong> <code>use_causal_mask=True</code> stops the decoder seeing its own future — notebook 01's bidirectional failure, prevented. The padding <code>attention_mask</code> on cross-attention stops it attending to empty source positions.</blockquote></div>
+<div class="cell"><h2>Seeing the causal mask</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+
+n = 8
+causal = np.tril(np.ones((n, n)))
+plt.figure(figsize=(4.5, 4))
+plt.imshow(causal, cmap="Greens")
+plt.xlabel("source position (key)"); plt.ylabel("target position (query)")
+plt.title("Row i may attend to positions 0..i")
+plt.colorbar(); plt.show()
+print(causal.astype(int))</pre></div>
+<div class="cell"><h2>The model, first attempt</h2></div>
+<div class="cell cell-in"><pre>hidden_dim, intermediate_dim, num_heads = 256, 2048, 8
+vocab_size, sequence_length = 15000, 20
+
+source = keras.Input(shape=(None,), dtype="int32", name="english")
+x = layers.Embedding(vocab_size, hidden_dim)(source)
+encoder_output = TransformerEncoder(hidden_dim, intermediate_dim, num_heads)(
+    source=x, source_mask=source != 0)
+
+target = keras.Input(shape=(None,), dtype="int32", name="spanish")
+x = layers.Embedding(vocab_size, hidden_dim)(target)
+x = TransformerDecoder(hidden_dim, intermediate_dim, num_heads)(
+    target=x, source=encoder_output, source_mask=source != 0)
+x = layers.Dropout(0.5)(x)
+target_predictions = layers.Dense(vocab_size, activation="softmax")(x)
+transformer = keras.Model([source, target], target_predictions)
+
+print(f"{transformer.count_params():,} parameters "
+      f"(the GRU model had 34,869,912)")</pre></div>
+<div class="cell cell-in"><pre>transformer.compile(optimizer="adam",
+                    loss="sparse_categorical_crossentropy",
+                    weighted_metrics=["accuracy"])
+h1 = transformer.fit(train_ds, epochs=15, validation_data=val_ds, verbose=2)
+print(f"\nbest validation accuracy: {max(h1.history['val_accuracy']):.4f}")
+print("the GRU model reached 0.65")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">best validation accuracy: 0.58xx</pre></div>
+<div class="cell"><h2>Stop here. Why is it worse?</h2></div>
+<div class="cell"><p>Seven percentage points <strong>worse</strong> than the RNN, with half the parameters. Before reading on, look at the model definition again.</p>
+<p><em>(Hint: this section is about sequence models. Is the model above a sequence model?)</em></p></div>
+<div class="cell"><h2>The demonstration</h2></div>
+<div class="cell cell-in"><pre># Shuffle the words in every source sentence and see what changes.
+import tensorflow as tf
+
+for inputs, targets, weights in train_ds.take(1):
+    eng = inputs["english"]
+    shuffled = tf.random.shuffle(tf.transpose(eng))
+    shuffled = tf.transpose(shuffled)
+
+    normal = transformer.predict(
+        [eng, inputs["spanish"]], verbose=0)
+    scrambled = transformer.predict(
+        [shuffled, inputs["spanish"]], verbose=0)
+
+    print("Mean absolute difference in predictions after shuffling")
+    print("every word of every source sentence:")
+    print(f"  {np.abs(normal - scrambled).mean():.6f}")
+    break</pre></div>
+<div class="cell"><p>Very small, and it would be <strong>exactly zero</strong> if the shuffle were applied consistently within the batch.</p>
+<p>The model is dense layers processing tokens independently plus an attention layer that sees tokens <strong>as a set</strong>. Change the order and you get identical pairwise scores. ==Attention is a set-processing mechanism, blind to position.==</p></div>
+<div class="cell"><h2>Positional embeddings</h2></div>
+<div class="cell cell-in"><pre>class PositionalEmbedding(keras.Layer):
+    def __init__(self, sequence_length, input_dim, output_dim):
+        super().__init__()
+        self.token_embeddings = layers.Embedding(input_dim, output_dim)
+        self.position_embeddings = layers.Embedding(sequence_length, output_dim)
+
+    def call(self, inputs):
+        positions = ops.cumsum(ops.ones_like(inputs), axis=-1) - 1
+        embedded_tokens = self.token_embeddings(inputs)
+        embedded_positions = self.position_embeddings(positions)
+        return embedded_tokens + embedded_positions</pre></div>
+<div class="cell"><p><code>ops.cumsum(ops.ones_like(inputs), axis=-1) - 1</code> produces <code>[0, 1, 2, …]</code> — a backend-agnostic <code>arange</code>. The layer is a <strong>drop-in replacement</strong> for <code>Embedding</code>.</p></div>
+<div class="cell"><h2>Two lines changed</h2></div>
+<div class="cell cell-in"><pre>source = keras.Input(shape=(None,), dtype="int32", name="english")
+x = PositionalEmbedding(sequence_length, vocab_size, hidden_dim)(source)
+encoder_output = TransformerEncoder(hidden_dim, intermediate_dim, num_heads)(
+    source=x, source_mask=source != 0)
+
+target = keras.Input(shape=(None,), dtype="int32", name="spanish")
+x = PositionalEmbedding(sequence_length, vocab_size, hidden_dim)(target)
+x = TransformerDecoder(hidden_dim, intermediate_dim, num_heads)(
+    target=x, source=encoder_output, source_mask=source != 0)
+x = layers.Dropout(0.5)(x)
+target_predictions = layers.Dense(vocab_size, activation="softmax")(x)
+transformer = keras.Model([source, target], target_predictions)
+
+transformer.compile(optimizer="adam",
+                    loss="sparse_categorical_crossentropy",
+                    weighted_metrics=["accuracy"])
+import time
+t0 = time.time()
+h2 = transformer.fit(train_ds, epochs=30, validation_data=val_ds, verbose=2)
+print(f"\nbest validation accuracy: {max(h2.history['val_accuracy']):.4f}")
+print(f"seconds per epoch: {(time.time()-t0)/30:.1f}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">best validation accuracy: 0.67xx</pre></div>
+<div class="cell"><h2>The three numbers, and the one that matters most</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+
+plt.figure(figsize=(8, 4.4))
+plt.plot(h1.history["val_accuracy"], lw=1.6, label="Transformer, no positions")
+plt.plot(h2.history["val_accuracy"], lw=1.6, label="Transformer + positions")
+plt.axhline(0.65, ls="--", c="k", lw=1.3, label="GRU seq2seq")
+plt.xlabel("epoch"); plt.ylabel("validation accuracy"); plt.legend()
+plt.title("Two lines changed")
+plt.show()
+
+print("GRU:                    0.65   34.9 M parameters")
+print("Transformer, no pos:    0.58   14.4 M parameters")
+print("Transformer + pos:      0.67   14.4 M parameters")
+print()
+print("And each epoch takes about a THIRD the time of the GRU --")
+print("no looped state passing, so the whole attention computation")
+print("happens in one go on a GPU.")</pre></div>
+<div class="cell"><p><strong>That speed-up is the consequential number</strong>, not the accuracy. Parallelisable training is what made scaling to billions of parameters economically possible — chapter 16 is the consequence.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>The encoder and decoder blocks are attention plus feedforward, each with add-and-norm.</li>
+<li><code>use_causal_mask=True</code> on decoder self-attention; a padding mask on cross-attention.</li>
+<li><strong>Attention is order-blind</strong> — shuffle the input and nothing changes.</li>
+<li>Positional embeddings cost two lines; the parallelisability is what changed the field.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

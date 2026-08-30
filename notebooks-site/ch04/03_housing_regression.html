@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Regression, and K-fold validation on a small dataset · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Regression, and K-fold validation on a small dataset</h1>
+  <p>506 samples, thirteen features on wildly different scales, and no validation set big enough to trust. K-fold is not a nicety here.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>A very small dataset</h2></div>
+<div class="cell cell-in"><pre>from keras.datasets import boston_housing
+import numpy as np
+
+(train_data, train_targets), (test_data, test_targets) = \
+    boston_housing.load_data()
+
+print(train_data.shape, test_data.shape)
+print("targets, in thousands of dollars:", train_targets[:6])
+print("\nfeature ranges — note the scales:")
+for i in range(train_data.shape[1]):
+    col = train_data[:, i]
+    print(f"  feature {i:2d}: {col.min():9.3f} .. {col.max():9.3f}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">(404, 13) (102, 13)
+targets, in thousands of dollars: [15.2 42.3 50.  21.1 17.7 18.5]</pre></div>
+<div class="cell"><h2>Normalization, and the rule about it</h2></div>
+<div class="cell cell-in"><pre>mean = train_data.mean(axis=0)
+std = train_data.std(axis=0)
+
+train_data = (train_data - mean) / std
+test_data = (test_data - mean) / std      # note: TRAIN statistics
+
+print("after normalization, feature 0:",
+      f"mean {train_data[:, 0].mean():+.3f}  std {train_data[:, 0].std():.3f}")</pre></div>
+<div class="cell"><blockquote>⚠️ <strong>The test set is normalized with the </strong>training<strong> mean and standard deviation.</strong> Using its own statistics leaks information from data you are pretending not to have — and the resulting number will be quietly optimistic.</blockquote></div>
+<div class="cell"><h2>The model</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers
+
+def build_model():
+    model = keras.Sequential([
+        layers.Dense(64, activation="relu"),
+        layers.Dense(64, activation="relu"),
+        layers.Dense(1),                    # no activation
+    ])
+    model.compile(optimizer="rmsprop", loss="mse", metrics=["mae"])
+    return model</pre></div>
+<div class="cell"><p><strong>No activation on the last layer.</strong> A sigmoid would cap the output at 1; anything else would constrain the range. Regression wants the layer left alone.</p></div>
+<div class="cell"><h2>K-fold, because 404 samples cannot spare a validation set</h2></div>
+<div class="cell cell-in"><pre>k = 4
+num_val_samples = len(train_data) // k
+num_epochs = 100
+all_scores = []
+
+for i in range(k):
+    print(f"fold {i}")
+    val_data = train_data[i * num_val_samples: (i + 1) * num_val_samples]
+    val_targets = train_targets[i * num_val_samples: (i + 1) * num_val_samples]
+    partial_train_data = np.concatenate(
+        [train_data[:i * num_val_samples],
+         train_data[(i + 1) * num_val_samples:]], axis=0)
+    partial_train_targets = np.concatenate(
+        [train_targets[:i * num_val_samples],
+         train_targets[(i + 1) * num_val_samples:]], axis=0)
+
+    model = build_model()
+    model.fit(partial_train_data, partial_train_targets,
+              epochs=num_epochs, batch_size=16, verbose=0)
+    _, val_mae = model.evaluate(val_data, val_targets, verbose=0)
+    all_scores.append(val_mae)
+
+print("\nper fold:", [round(s, 3) for s in all_scores])
+print(f"mean {np.mean(all_scores):.3f}   spread {max(all_scores)-min(all_scores):.3f}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">per fold: [2.0xx, 2.9xx, 2.5xx, 2.4xx]
+mean 2.5xx   spread 0.9xx</pre></div>
+<div class="cell"><p><strong>The spread between folds is comparable to the differences you would be trying to measure.</strong> That is the whole argument for K-fold: with a single split, which fold you happened to draw would decide your conclusion.</p></div>
+<div class="cell"><h2>Finding the right number of epochs</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+
+num_epochs = 200
+all_mae_histories = []
+for i in range(k):
+    val_data = train_data[i * num_val_samples: (i + 1) * num_val_samples]
+    val_targets_f = train_targets[i * num_val_samples: (i + 1) * num_val_samples]
+    ptd = np.concatenate([train_data[:i * num_val_samples],
+                          train_data[(i + 1) * num_val_samples:]], axis=0)
+    ptt = np.concatenate([train_targets[:i * num_val_samples],
+                          train_targets[(i + 1) * num_val_samples:]], axis=0)
+    model = build_model()
+    h = model.fit(ptd, ptt, validation_data=(val_data, val_targets_f),
+                  epochs=num_epochs, batch_size=16, verbose=0)
+    all_mae_histories.append(h.history["val_mae"])
+
+average_mae = [np.mean([x[i] for x in all_mae_histories])
+               for i in range(num_epochs)]
+
+plt.figure(figsize=(7, 4.2))
+plt.plot(range(11, len(average_mae) + 1), average_mae[10:], lw=1.5)
+plt.xlabel("epoch"); plt.ylabel("validation MAE (averaged over 4 folds)")
+plt.title(f"best around epoch {int(np.argmin(average_mae)) + 1}")
+plt.show()</pre></div>
+<div class="cell"><p>The first ten epochs are dropped so the rest is readable — their values are on a different scale entirely. Averaging over folds is what makes the minimum locatable at all; a single fold's curve is too noisy to read.</p></div>
+<div class="cell"><h2>The final model</h2></div>
+<div class="cell cell-in"><pre>model = build_model()
+model.fit(train_data, train_targets, epochs=130, batch_size=16, verbose=0)
+_, test_mae = model.evaluate(test_data, test_targets, verbose=0)
+print(f"test MAE: {test_mae:.3f}  (thousands of dollars)")
+
+pred = model.predict(test_data, verbose=0).ravel()
+plt.figure(figsize=(5, 5))
+plt.scatter(test_targets, pred, s=14, alpha=.7)
+lims = [0, max(test_targets.max(), pred.max()) + 3]
+plt.plot(lims, lims, "k--", lw=1)
+plt.xlabel("actual"); plt.ylabel("predicted"); plt.gca().set_aspect("equal")
+plt.title("Predicted against actual"); plt.show()</pre></div>
+<div class="cell"><p>Read the scatter, not the MAE. A model can hit a respectable average error while being systematically wrong at one end of the range — and here you can see whether it is.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Regression: no activation on the last layer, <code>mse</code> loss, <code>mae</code> as the readable metric.</li>
+<li>Normalize with <strong>training</strong> statistics, always.</li>
+<li>On small data, K-fold is not a refinement — the fold-to-fold spread is as large as the effects you are measuring.</li>
+<li>Plot predicted against actual; an average error hides systematic bias.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

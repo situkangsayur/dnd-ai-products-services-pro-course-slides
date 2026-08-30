@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fine-tuning a pretrained Transformer · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Fine-tuning a pretrained Transformer</h1>
+  <p>124 million parameters, one epoch, and 93.7% on the problem where chapter 14 hit a 90% ceiling.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>Causal and masked language models</h2></div>
+<div class="cell"><p>| | Causal LM | Masked LM | |---|---|---| | Distribution | p(token \| <strong>past</strong>) | p(token \| <strong>surrounding</strong>) | | Attention | causal-masked | bidirectional | | Good at | <strong>generating</strong> | <strong>representing</strong> | | Examples | GPT, Llama — chapter 16 | BERT, RoBERTa — here |</p>
+<p>BERT masks about <strong>15% of tokens</strong> and predicts the originals. No labels are needed, which is what made the training data available.</p></div>
+<div class="cell"><h2>Loading RoBERTa</h2></div>
+<div class="cell cell-in"><pre>import keras
+import keras_hub
+
+tokenizer = keras_hub.models.Tokenizer.from_preset("roberta_base_en")
+backbone = keras_hub.models.Backbone.from_preset("roberta_base_en")
+
+print(f"{backbone.count_params():,} parameters")
+backbone.summary()</pre></div>
+<div class="cell"><p><strong>RoBERTa used 160 GB of web text against BERT's 16 GB of Wikipedia</strong> — same architecture, ten times the data, and an estimated few hundred thousand dollars of compute. Twelve encoder blocks, which is the stacking property we relied on in notebook 04.</p></div>
+<div class="cell"><h2>The tokenizer, and why subwords are mandatory here</h2></div>
+<div class="cell cell-in"><pre>print(tokenizer("The quick brown fox"))
+print()
+print("vocabulary size:", tokenizer.vocabulary_size())
+print()
+for text in ["antidisestablishmentarianism", "keras", "COVID-19"]:
+    ids = tokenizer(text)
+    print(f"{text:32s} -&gt; {len(ids)} tokens")</pre></div>
+<div class="cell"><p>A 50,000-term vocabulary handles <strong>any</strong> word, including ones coined after training. Character-level would make sequences far too long (attention costs grow with the square of length); word-level would need a vocabulary covering millions of web documents.</p></div>
+<div class="cell"><h2>Packing, exactly as pretraining did</h2></div>
+<div class="cell cell-in"><pre>import tensorflow as tf
+from keras.utils import text_dataset_from_directory
+import pathlib
+
+base_dir = pathlib.Path("aclImdb")
+batch_size = 16       # 512-token sequences through 124M parameters
+
+train_ds = text_dataset_from_directory(base_dir / "train", batch_size=batch_size)
+val_ds = text_dataset_from_directory(base_dir / "val", batch_size=batch_size)
+test_ds = text_dataset_from_directory(base_dir / "test", batch_size=batch_size)
+
+def preprocess(text, label):
+    packer = keras_hub.layers.StartEndPacker(
+        sequence_length=512,
+        start_value=tokenizer.start_token_id,
+        end_value=tokenizer.end_token_id,
+        pad_value=tokenizer.pad_token_id,
+        return_padding_mask=True,
+    )
+    token_ids, padding_mask = packer(tokenizer(text))
+    return {"token_ids": token_ids, "padding_mask": padding_mask}, label
+
+train_p = train_ds.map(preprocess)
+val_p = val_ds.map(preprocess)
+test_p = test_ds.map(preprocess)
+
+x, y = next(iter(train_p))
+print({k: v.shape for k, v in x.items()}, y.shape)</pre></div>
+<div class="cell"><blockquote>⚠️ <strong>Match the pretraining token order.</strong> RoBERTa expects <code>&lt;s&gt;</code>, content, <code>&lt;/s&gt;</code>, then <code>&lt;pad&gt;</code>. Getting this wrong does not error — it just trains more slowly and scores worse.</blockquote></div>
+<div class="cell"><h2>The classification head, and why token zero</h2></div>
+<div class="cell cell-in"><pre>from keras import layers
+
+inputs = backbone.input
+x = backbone(inputs)
+x = x[:, 0, :]                              # the first token's representation
+x = layers.Dropout(0.1)(x)
+x = layers.Dense(768, activation="relu")(x)
+x = layers.Dropout(0.1)(x)
+outputs = layers.Dense(1, activation="sigmoid")(x)
+classifier = keras.Model(inputs, outputs)
+print(f"{classifier.count_params():,} parameters")</pre></div>
+<div class="cell"><p>Mean or max pooling would also work. Taking the first token works slightly better, and the reason is attention: <strong>the first position in the final encoder layer can attend to every other position</strong>. Rather than pooling with something coarse, attention pools contextually.</p></div>
+<div class="cell"><h2>One epoch, at 5e-5</h2></div>
+<div class="cell cell-in"><pre>classifier.compile(
+    optimizer=keras.optimizers.Adam(5e-5),
+    loss="binary_crossentropy",
+    metrics=["accuracy"],
+)
+classifier.fit(train_p, validation_data=val_p, epochs=1, verbose=2)
+print("\ntest:", classifier.evaluate(test_p, verbose=0))</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">test: [0.168, 0.9366]</pre></div>
+<div class="cell"><p><strong>93.7% after a single epoch</strong>, against the 90% ceiling of chapter 14.</p>
+<p><code>5e-5</code> is roughly twenty times smaller than Adam's default. Same discipline as chapter 8's fine-tuning, for the same reason: large updates destroy representations that cost $300,000 to learn.</p></div>
+<div class="cell"><h2>What it cost</h2></div>
+<div class="cell cell-in"><pre>print(f"{'model':38s} {'accuracy':&gt;9s} {'cost':&gt;26s}")
+print("-" * 76)
+rows = [("bigram bag-of-words (ch14)", 0.902, "seconds, CPU"),
+        ("sequence model + embeddings (ch14)", 0.90, "minutes, one GPU"),
+        ("RoBERTa base, 1 epoch", 0.937, "124M params, ~1 GPU-hour"),
+        ("RoBERTa large, fine-tuned", 0.95, "300M params")]
+for name, acc, cost in rows:
+    print(f"{name:38s} {acc:&gt;9.3f} {cost:&gt;26s}")
+print()
+print("Three points of accuracy for roughly four orders of magnitude")
+print("of compute. Whether that is worth it is chapter 18's question,")
+print("and it does not have a universal answer.")</pre></div>
+<div class="cell"><h2>Try the ablation that matters</h2></div>
+<div class="cell cell-in"><pre>import numpy as np
+
+# Freeze the backbone entirely: train only the head.
+backbone.trainable = False
+frozen = keras.Model(inputs, outputs)
+frozen.compile(optimizer=keras.optimizers.Adam(1e-3),
+               loss="binary_crossentropy", metrics=["accuracy"])
+print("trainable parameters with the backbone frozen:",
+      f"{sum(int(np.prod(w.shape)) for w in frozen.trainable_weights):,}")
+print()
+print("Train this and compare. Feature extraction alone usually gets")
+print("most of the way; fine-tuning the backbone buys the last points --")
+print("the same ordering as chapter 8's vision models.")</pre></div>
+<div class="cell"><p>Chapter 16 takes this further with <strong>LoRA</strong>, which makes fine-tuning a billion-parameter model fit in 16 GB — a technique that only exists because full fine-tuning does not.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Masked LMs represent text; causal LMs generate it. RoBERTa is the former.</li>
+<li>Match the pretraining tokenizer <strong>and</strong> its packing format.</li>
+<li>Take the first token's representation — attention has already pooled contextually.</li>
+<li>One epoch at 5e-5 gives 93.7%, for about four orders of magnitude more compute than a bigram model.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

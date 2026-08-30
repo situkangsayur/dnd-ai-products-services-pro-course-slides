@@ -34,10 +34,11 @@
 \vskip 6pt
 \vskip 4pt
 \reslink{Book}{Chapter 8 --- full text}{https://deeplearningwithpython.io/chapters/chapter08\_image-classification}
-\reslink{Notebook}{01\_convnet\_on\_mnist.ipynb}{../../notebooks/ch08/01\_convnet\_on\_mnist.ipynb}
-\reslink{Notebook}{02\_small\_dataset\_from\_scratch.ipynb}{../../notebooks/ch08/02\_small\_dataset\_from\_scratch.ipynb}
-\reslink{Notebook}{03\_data\_augmentation.ipynb}{../../notebooks/ch08/03\_data\_augmentation.ipynb}
-\reslink{Notebook}{04\_feature\_extraction\_and\_finetuning.ipynb}{../../notebooks/ch08/04\_feature\_extraction\_and\_finetuning.ipynb}
+\reslink{Notebook}{01\_convnet\_on\_mnist.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch08/01\_convnet\_on\_mnist.html}
+\reslink{Notebook}{02\_small\_dataset\_from\_scratch.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch08/02\_small\_dataset\_from\_scratch.html}
+\reslink{Notebook}{03\_data\_augmentation.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch08/03\_data\_augmentation.html}
+\reslink{Notebook}{04\_feature\_extraction\_and\_finetuning.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch08/04\_feature\_extraction\_and\_finetuning.html}
+\reslink{Notebook}{All chapter 8 notebooks}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/index.html\#ch08}
 \reslink{Repo}{Author's official notebook}{https://github.com/fchollet/deep-learning-with-python-notebooks/blob/master/chapter08\_image-classification.ipynb}
 \vskip 2pt
 \end{frame}
@@ -137,6 +138,7 @@ This makes ConvNets \textbf{data efficient} on images, because the visual world 
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/book/figure-8-4.png}
 \end{center}
 \vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Figure 8.4 --- a window slides over the input, each 3D patch is turned into a vector by the same learned kernel, and the vectors are reassembled into an output map.~\textcolor{ink3}{\footnotesize---~Chollet \& Watson, \emph{Deep Learning with Python}, 3rd ed. (Manning)}\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Three things to take from the picture. The window moves over \textbf{every} position. The \textbf{same} kernel is used at each one --- that is weight sharing. And the outputs are reassembled in the positions they came from, which is why the result is still an image and not a list. \hilite{The next slide computes one of those positions.}\par}\vskip 4pt
 \end{frame}
 
 \framekicker{Section 8.1.1}

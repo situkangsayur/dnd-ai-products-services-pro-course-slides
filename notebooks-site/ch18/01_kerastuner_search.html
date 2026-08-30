@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Automatic hyperparameter search with KerasTuner · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Automatic hyperparameter search with KerasTuner</h1>
+  <p>A search space, a Bayesian tuner, and the two things that separate a usable result from a contaminated one.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>Install and set up</h2></div>
+<div class="cell cell-in"><pre># !pip install keras-tuner -q
+import keras
+from keras import layers
+import keras_tuner as kt
+import numpy as np
+
+(x_train, y_train), (x_test, y_test) = keras.datasets.mnist.load_data()
+x_train = x_train.reshape((-1, 28 * 28)).astype("float32") / 255
+x_test = x_test.reshape((-1, 28 * 28)).astype("float32") / 255
+
+x_train_full, y_train_full = x_train[:], y_train[:]
+num_val = 10000
+x_train, x_val = x_train[:-num_val], x_train[-num_val:]
+y_train, y_val = y_train[:-num_val], y_train[-num_val:]
+print(f"train {len(x_train)}  val {len(x_val)}  test {len(x_test)}")</pre></div>
+<div class="cell"><h2>A search space is a model-building function</h2></div>
+<div class="cell cell-in"><pre>def build_model(hp):
+    units = hp.Int(name="units", min_value=16, max_value=64, step=16)
+    model = keras.Sequential([
+        layers.Dense(units, activation="relu"),
+        layers.Dense(10, activation="softmax"),
+    ])
+    optimizer = hp.Choice(name="optimizer", values=["rmsprop", "adam"])
+    model.compile(optimizer=optimizer,
+                  loss="sparse_categorical_crossentropy",
+                  metrics=["accuracy"])
+    return model</pre></div>
+<div class="cell"><p>Hardcoded values become <strong>ranges</strong>. Four kinds exist: <code>Int</code>, <code>Float</code>, <code>Boolean</code>, <code>Choice</code>. After sampling they are ordinary Python constants — the function is called once per trial with concrete values.</p></div>
+<div class="cell"><h2>A wider space, to make the point</h2></div>
+<div class="cell cell-in"><pre>def build_deeper(hp):
+    model = keras.Sequential()
+    for i in range(hp.Int("num_layers", 1, 3)):
+        model.add(layers.Dense(
+            hp.Int(f"units_{i}", 32, 256, step=32), activation="relu"))
+        if hp.Boolean(f"dropout_{i}"):
+            model.add(layers.Dropout(hp.Float(f"rate_{i}", 0.1, 0.5, step=0.1)))
+    model.add(layers.Dense(10, activation="softmax"))
+    model.compile(
+        optimizer=keras.optimizers.Adam(
+            hp.Float("lr", 1e-4, 1e-2, sampling="log")),
+        loss="sparse_categorical_crossentropy", metrics=["accuracy"])
+    return model
+
+print("The space grows combinatorially:")
+print("  3 depths x 8 widths^3 x 2 dropout^3 x 5 rates^3 x learning rate")
+print("  = millions of configurations, from six lines.")
+print()
+print("That is why designing the space is your job, not the tuner's.")</pre></div>
+<div class="cell"><blockquote><strong>Note</strong> — <code>sampling="log"</code> on the learning rate. Sampling it uniformly between 1e-4 and 1e-2 would put 90% of the trials above 1e-3 — <strong>learning rates should be searched on a log scale</strong>, always.</blockquote></div>
+<div class="cell"><h2>The tuner</h2></div>
+<div class="cell cell-in"><pre>tuner = kt.BayesianOptimization(
+    build_model,
+    objective="val_accuracy",
+    max_trials=20,
+    executions_per_trial=2,
+    directory="mnist_kt_test",
+    overwrite=True,
+)
+tuner.search_space_summary()</pre></div>
+<div class="cell"><p><strong><code>executions_per_trial=2</code></strong> is the answer to noisy feedback. Chapter 18 named the problem — <em>is 0.2% a better configuration or a lucky initialization?</em> — and this is the fix: train each configuration twice and average.</p>
+<p><strong><code>overwrite=False</code></strong> resumes a crashed search from the trial logs on disk. Set the directory somewhere durable before starting a multi-day run.</p></div>
+<div class="cell"><h2>Searching</h2></div>
+<div class="cell cell-in"><pre>callbacks = [keras.callbacks.EarlyStopping(monitor="val_loss", patience=5)]
+
+tuner.search(
+    x_train, y_train,
+    batch_size=128,
+    epochs=100,
+    validation_data=(x_val, y_val),
+    callbacks=callbacks,
+    verbose=2,
+)</pre></div>
+<div class="cell"><blockquote>⚠️ <strong>Never pass the test set as <code>validation_data</code> here.</strong> You would overfit to it immediately, and every number you report afterwards would be fiction.</blockquote>
+<p><code>epochs=100</code> with <code>EarlyStopping</code> — you do not know in advance how many epochs each configuration needs, so give a generous budget and let the callback cut each run short.</p></div>
+<div class="cell"><h2>The results</h2></div>
+<div class="cell cell-in"><pre>tuner.results_summary(num_trials=5)
+
+best_hps = tuner.get_best_hyperparameters(4)
+for i, hp in enumerate(best_hps):
+    print(f"{i}: {hp.values}")</pre></div>
+<div class="cell"><h2>Retraining properly</h2></div>
+<div class="cell cell-in"><pre>def get_best_epoch(hp):
+    model = build_model(hp)
+    cb = [keras.callbacks.EarlyStopping(monitor="val_loss", mode="min",
+                                        patience=10)]
+    history = model.fit(x_train, y_train,
+                        validation_data=(x_val, y_val),
+                        epochs=100, batch_size=128, callbacks=cb, verbose=0)
+    v = history.history["val_loss"]
+    best = int(np.argmin(v)) + 1
+    print(f"  best epoch: {best}")
+    return best
+
+def get_best_trained_model(hp):
+    best_epoch = get_best_epoch(hp)
+    model = build_model(hp)
+    model.fit(x_train_full, y_train_full, batch_size=128,
+              epochs=int(best_epoch * 1.2), verbose=0)
+    return model
+
+best_models = []
+for i, hp in enumerate(best_hps):
+    print(f"config {i}: {hp.values}")
+    m = get_best_trained_model(hp)
+    acc = m.evaluate(x_test, y_test, verbose=0)[1]
+    print(f"  test accuracy: {acc:.4f}\n")
+    best_models.append(m)</pre></div>
+<div class="cell"><p>Two details, both easy to skip:</p>
+<p><strong>A much higher patience</strong> (10, not 5) in this second pass. The aggressive patience saved time during the search and may have left models underfitted.</p>
+<p><strong><code>* 1.2</code> epochs, and training on the full data</strong> — validation folded back in, because there are no more hyperparameter decisions to make with it.</p></div>
+<div class="cell"><h2>The shortcut, and the warning</h2></div>
+<div class="cell cell-in"><pre>quick = tuner.get_best_models(4)
+print("reloaded from the search, without retraining:")
+for i, m in enumerate(quick):
+    print(f"  {i}: {m.evaluate(x_test, y_test, verbose=0)[1]:.4f}")
+print()
+print("Slightly worse than a proper retrain, and one line.")</pre></div>
+<div class="cell"><blockquote>⚠️ <strong>Validation-set overfitting.</strong> You have been updating hyperparameters using a signal computed on validation data — which means you have been <strong>training them on it</strong>, and they will overfit to it.</blockquote>
+<p>That is the entire purpose of keeping a separate test set, and it is why the test set is a <strong>one-shot instrument</strong>.</p></div>
+<div class="cell"><h2>Premade search spaces</h2></div>
+<div class="cell cell-in"><pre>print("KerasTuner ships tunable versions of the Keras Applications:")
+print("  kt.applications.HyperXception")
+print("  kt.applications.HyperResNet")
+print()
+print("Add data, run the search, get a pretty good model. Worth knowing")
+print("because the higher-level decisions -- 'should I use residual")
+print("connections throughout?' -- generalize across tasks in a way that")
+print("'how many units in layer 2' never does.")</pre></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Replace constants with ranges; search learning rates on a <strong>log scale</strong>.</li>
+<li><code>executions_per_trial</code> averages away the noise in the feedback signal.</li>
+<li>Retrain the winners with higher patience, on the full data, for ~20% more epochs.</li>
+<li><strong>Tuning trains hyperparameters on the validation set.</strong> The test set is a one-shot instrument.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

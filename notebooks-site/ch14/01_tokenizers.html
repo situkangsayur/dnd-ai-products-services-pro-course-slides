@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Three levels of tokenization, and the trade between them · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Three levels of tokenization, and the trade between them</h1>
+  <p>Character, word, and subword — built by hand, measured against each other, so that byte-pair encoding stops being a name and becomes a solution to a stated problem.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The simplest tokenizer there is</h2></div>
+<div class="cell cell-in"><pre>import re
+import string
+
+def standardize(text):
+    text = text.lower()
+    return "".join(c for c in text if c not in string.punctuation)
+
+def tokenize(text):
+    return standardize(text).split()
+
+sentence = "The cat sat on the mat, and the mat was NOT amused."
+print(tokenize(sentence))</pre></div>
+<div class="cell"><p>Lowercase, strip punctuation, split on whitespace. Every decision here is a <strong>loss of information</strong>, and each is defensible in some contexts and not others: lowercasing loses the distinction between <em>US</em> and <em>us</em>; stripping punctuation loses the question mark.</p></div>
+<div class="cell"><h2>Character level</h2></div>
+<div class="cell cell-in"><pre>text = open(__file__).read() if False else (
+    "the quick brown fox jumps over the lazy dog. " * 200)
+
+chars = sorted(set(text))
+print(f"vocabulary: {len(chars)} characters")
+print(f"sequence length for one sentence: "
+      f"{len('the quick brown fox jumps over the lazy dog.')}")</pre></div>
+<div class="cell"><p><strong>Tiny vocabulary, very long sequences.</strong> Nothing is ever out-of-vocabulary — it can encode any string in any language — and the model has to learn spelling before it can learn meaning.</p></div>
+<div class="cell"><h2>Word level</h2></div>
+<div class="cell cell-in"><pre>from keras.datasets import imdb
+
+word_index = imdb.get_word_index()
+print(f"vocabulary: {len(word_index):,} words")
+
+# The long tail, which is where the trouble is.
+import numpy as np
+ranks = np.arange(1, len(word_index) + 1)
+covered = {10_000: 0, 20_000: 0, 50_000: 0}
+print("\nTruncating the vocabulary drops the rare words:")
+for k in covered:
+    print(f"  keep the {k:,} most common -&gt; "
+          f"{len(word_index) - k:,} words become &lt;UNK&gt;")</pre></div>
+<div class="cell"><p><strong>Short sequences, huge vocabulary.</strong> And the vocabulary is a long tail: keeping the top 10,000 words is standard and throws away 80,000 of them. Every discarded word becomes <code>&lt;UNK&gt;</code> — identical to every other discarded word.</p></div>
+<div class="cell"><h2>Byte-pair encoding, built</h2></div>
+<div class="cell"><p>The idea: start from characters, then repeatedly <strong>merge the most frequent adjacent pair</strong> into a new token. Common words end up as one token; rare words decompose into pieces.</p></div>
+<div class="cell cell-in"><pre>from collections import Counter
+
+def get_stats(vocab):
+    pairs = Counter()
+    for word, freq in vocab.items():
+        symbols = word.split()
+        for i in range(len(symbols) - 1):
+            pairs[symbols[i], symbols[i + 1]] += freq
+    return pairs
+
+def merge_vocab(pair, vocab):
+    out = {}
+    bigram = re.escape(" ".join(pair))
+    p = re.compile(r"(?&lt;!\S)" + bigram + r"(?!\S)")
+    for word in vocab:
+        out[p.sub("".join(pair), word)] = vocab[word]
+    return out
+
+corpus = ("low low low low low lowest lowest newer newer newer newer "
+          "newer newer wider wider wider new new")
+vocab = Counter(corpus.split())
+vocab = {" ".join(w) + " &lt;/w&gt;": c for w, c in vocab.items()}
+
+print("start:", list(vocab)[:3], "...\n")
+merges = []
+for i in range(10):
+    pairs = get_stats(vocab)
+    if not pairs:
+        break
+    best = max(pairs, key=pairs.get)
+    merges.append(best)
+    vocab = merge_vocab(best, vocab)
+    print(f"merge {i+1:2d}: {best[0]!r} + {best[1]!r} -&gt; {''.join(best)!r}"
+          f"   (seen {pairs[best]} times)")</pre></div>
+<div class="cell cell-in"><pre>print("\nfinal vocabulary:")
+for w, c in vocab.items():
+    print(f"  {w!r}  x{c}")</pre></div>
+<div class="cell"><p><code>er&lt;/w&gt;</code>, <code>low</code>, <code>new</code> emerge as units because they are frequent. <strong>A word never seen before still encodes</strong> — into pieces — which is what removes <code>&lt;UNK&gt;</code> from the picture entirely.</p></div>
+<div class="cell"><h2>The trade, measured</h2></div>
+<div class="cell cell-in"><pre>sample = "internationalization pretokenization antidisestablishmentarianism"
+
+print(f"{'scheme':12s} {'vocabulary':&gt;12s} {'tokens for the sample':&gt;24s}")
+print("-" * 50)
+print(f"{'character':12s} {len(set(sample)):&gt;12,} {len(sample):&gt;24}")
+print(f"{'word':12s} {88584:&gt;12,} {len(sample.split()):&gt;24}")
+print(f"{'subword':12s} {32000:&gt;12,} {'~12 (estimated)':&gt;24}")</pre></div>
+<div class="cell"><p>Subword sits between the two on <strong>both</strong> axes, which is why every model in chapters 15 through 17 uses it. It is not a compromise so much as a solution: short sequences <em>and</em> a small vocabulary <em>and</em> no unknown words.</p></div>
+<div class="cell"><h2>TextVectorization</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers
+
+text_vectorization = layers.TextVectorization(
+    output_mode="int",
+    max_tokens=20,
+    output_sequence_length=10,
+)
+
+dataset = ["I write, erase, rewrite",
+           "Erase again, and then",
+           "A poppy blooms."]
+text_vectorization.adapt(dataset)
+print(text_vectorization.get_vocabulary())</pre></div>
+<div class="cell cell-in"><pre>encoded = text_vectorization("I write, rewrite, and still rewrite again")
+print("encoded:", encoded.numpy())
+
+vocab = text_vectorization.get_vocabulary()
+inverse = dict(enumerate(vocab))
+print("decoded:", " ".join(inverse[int(i)] for i in encoded if int(i) != 0))</pre></div>
+<div class="cell"><blockquote>⚠️ <strong><code>adapt()</code> is fitting.</strong> It learns the vocabulary from data, so it must see the training split only. Calling it on the full dataset puts test vocabulary into the model — chapter 5's leak, wearing a Keras layer.</blockquote></div>
+<div class="cell"><h2>Index 0 and index 1 are reserved</h2></div>
+<div class="cell cell-in"><pre>print(f"index 0: {vocab[0]!r}  (padding)")
+print(f"index 1: {vocab[1]!r}  (out of vocabulary)")
+print()
+print("Sequences are padded to a fixed length with 0, and every unknown")
+print("word collapses to 1. Both are information the model has to work")
+print("around, and both are visible in the encoded output above.")</pre></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Character level: tiny vocabulary, very long sequences, no unknown words.</li>
+<li>Word level: short sequences, enormous vocabulary, a long tail that becomes <code>&lt;UNK&gt;</code>.</li>
+<li><strong>BPE merges frequent adjacent pairs</strong>, getting both short sequences and a small vocabulary.</li>
+<li><code>adapt()</code> fits on data — training split only.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

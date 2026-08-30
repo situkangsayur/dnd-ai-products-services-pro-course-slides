@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Derivatives, gradients, and stochastic gradient descent · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Derivatives, gradients, and stochastic gradient descent</h1>
+  <p>Why a differentiable loss makes learning tractable, and what backpropagation is doing when Keras calls fit().</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>A derivative, numerically and then exactly</h2></div>
+<div class="cell cell-in"><pre>import numpy as np
+
+f = lambda x: x ** 2 + 3 * x + 1
+df_exact = lambda x: 2 * x + 3
+
+x0, eps = 2.0, 1e-6
+numeric = (f(x0 + eps) - f(x0)) / eps
+print(f"numeric: {numeric:.6f}   exact: {df_exact(x0):.6f}")</pre></div>
+<div class="cell"><p>The derivative says: <em>move x a little, and f moves this much, in this direction</em>. Learning is nothing more than using that to decide which way to move.</p></div>
+<div class="cell"><h2>Gradient descent by hand</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+
+x = 4.0
+lr = 0.15
+path = [x]
+for _ in range(25):
+    x = x - lr * df_exact(x)
+    path.append(x)
+
+xs = np.linspace(-6, 5, 300)
+plt.figure(figsize=(6, 4))
+plt.plot(xs, f(xs), lw=1.5)
+plt.plot(path, [f(p) for p in path], "o-", ms=4, lw=.8, color="#c0392b")
+plt.title(f"25 steps, lr={lr}  -&gt;  x = {x:.4f} (minimum at -1.5)")
+plt.show()</pre></div>
+<div class="cell"><h2>The learning rate is the whole story</h2></div>
+<div class="cell"><p>Chapter 3 will show this again with a real model. It is cheaper to learn it here, on a parabola, where nothing takes two minutes to fail.</p></div>
+<div class="cell cell-in"><pre>fig, axes = plt.subplots(1, 3, figsize=(13, 3.4))
+for ax, lr in zip(axes, [0.02, 0.15, 0.95]):
+    x, path = 4.0, [4.0]
+    for _ in range(25):
+        x = x - lr * df_exact(x)
+        path.append(x)
+    ax.plot(xs, f(xs), lw=1.2)
+    ax.plot(path, [f(p) for p in path], "o-", ms=3.5, lw=.8, color="#c0392b")
+    ax.set_title(f"lr = {lr}  -&gt;  {x:.3f}")
+    ax.set_ylim(-2, 40)
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>Too small and it never arrives. Too large and it oscillates or diverges. <strong>There is no correct value in the abstract</strong> — only one that suits the curvature of the surface you happen to be on.</p></div>
+<div class="cell"><h2>A gradient: the same idea in many dimensions</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import ops
+
+# Keras 3 exposes autodiff through the backend; here is the shape of it.
+import tensorflow as tf
+
+W = tf.Variable(tf.random.normal((2, 1)))
+b = tf.Variable(tf.zeros((1,)))
+X = tf.random.normal((64, 2))
+y = X @ tf.constant([[2.0], [-3.0]]) + 0.5
+
+with tf.GradientTape() as tape:
+    pred = X @ W + b
+    loss = tf.reduce_mean(tf.square(pred - y))
+
+gW, gb = tape.gradient(loss, [W, b])
+print("loss:", float(loss))
+print("dL/dW:", gW.numpy().ravel())
+print("dL/db:", gb.numpy())</pre></div>
+<div class="cell"><p><code>tape.gradient</code> is backpropagation. It applies the chain rule backwards through every operation recorded in the block above it — which is why the loss has to be <strong>differentiable</strong>, and why that constraint reappears in chapter 19 as a limitation rather than a detail.</p></div>
+<div class="cell"><h2>Full-batch, mini-batch, and stochastic</h2></div>
+<div class="cell cell-in"><pre>def descend(batch_size, steps=120, lr=0.08, seed=0):
+    rng = np.random.default_rng(seed)
+    Xd = rng.normal(size=(512, 2))
+    yd = Xd @ np.array([2.0, -3.0]) + 0.5 + rng.normal(scale=.3, size=512)
+    w = np.zeros(2); bb = 0.0; hist = []
+    for s in range(steps):
+        idx = rng.choice(len(Xd), size=batch_size, replace=False)
+        xb, yb = Xd[idx], yd[idx]
+        err = xb @ w + bb - yb
+        w -= lr * (2 * xb.T @ err / len(xb))
+        bb -= lr * (2 * err.mean())
+        hist.append(((Xd @ w + bb - yd) ** 2).mean())
+    return hist
+
+plt.figure(figsize=(7, 4))
+for bs, label in [(1, "stochastic (1)"), (32, "mini-batch (32)"), (512, "full batch")]:
+    plt.plot(descend(bs), lw=1.3, label=label)
+plt.yscale("log"); plt.xlabel("step"); plt.ylabel("full-dataset MSE")
+plt.legend(); plt.title("Batch size trades noise against cost per step")
+plt.show()</pre></div>
+<div class="cell"><p>Full batch gives the smoothest curve and the most expensive step. Stochastic is noisy and cheap. <strong>Mini-batch is neither, on purpose</strong>, and it is what every model in this course uses.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>A derivative tells you which way to move; gradient descent does nothing else.</li>
+<li>The learning rate has no correct value in the abstract — too small stalls, too large diverges.</li>
+<li>Backpropagation is the chain rule applied backwards over recorded operations, which is why the whole chain must be differentiable.</li>
+<li>Batch size trades gradient noise against cost per step; mini-batch is the deliberate middle.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lower precision, measured · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Lower precision, measured</h1>
+  <p>float16 inference, mixed-precision training, and the loss scaling without which small gradients round to zero.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>What precision actually means</h2></div>
+<div class="cell cell-in"><pre>import numpy as np
+
+for dtype, name in [(np.float16, "float16"), (np.float32, "float32"),
+                    (np.float64, "float64")]:
+    info = np.finfo(dtype)
+    print(f"{name:9s} bits {info.bits:2d}   eps {info.eps:.2e}   "
+          f"max {info.max:.2e}   tiny {info.tiny:.2e}")</pre></div>
+<div class="cell"><p><strong><code>eps</code> is the resolution</strong>: the smallest distance between two representable numbers near 1. float16 gives about 1e-3, float32 about 1e-7, float64 about 1e-16.</p>
+<p>Typical learning rates are 1e-3 and typical weight updates around 1e-6. <strong>float16 cannot represent that update at all.</strong></p></div>
+<div class="cell"><h2>Representable numbers are not evenly spaced</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+
+def spacing(dtype, values):
+    return [float(np.spacing(dtype(v))) for v in values]
+
+vals = np.logspace(-3, 4, 40)
+plt.figure(figsize=(7, 4.2))
+plt.loglog(vals, spacing(np.float16, vals), "o-", ms=3, label="float16")
+plt.loglog(vals, spacing(np.float32, vals), "s-", ms=3, label="float32")
+plt.xlabel("magnitude"); plt.ylabel("gap to the next representable number")
+plt.legend(); plt.title("Larger numbers have lower precision")
+plt.show()</pre></div>
+<div class="cell"><p>There are as many representable values between 2^N and 2^(N+1) as between 1 and 2, for any N. <strong>The error of converting a number to floating point grows with its magnitude</strong> — which is why normalizing your inputs was never only about gradients.</p></div>
+<div class="cell"><h2>float16 or bfloat16</h2></div>
+<div class="cell cell-in"><pre>print(f"{'':16s} {'exponent':&gt;9s} {'mantissa':&gt;9s} {'sign':&gt;5s}")
+print(f"{'float16':16s} {5:&gt;9d} {10:&gt;9d} {1:&gt;5d}")
+print(f"{'bfloat16':16s} {8:&gt;9d} {7:&gt;9d} {1:&gt;5d}")
+print(f"{'float32':16s} {8:&gt;9d} {23:&gt;9d} {1:&gt;5d}")
+print()
+print("bfloat16 has float32's RANGE with far less resolution.")
+print("Some devices -- TPUs especially -- are better optimized for it.")
+print("It is a one-line experiment: try both, keep the faster.")</pre></div>
+<div class="cell"><h2>float16 inference</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers
+import time
+
+keras.config.set_dtype_policy("float32")
+(x, y), (xt, yt) = keras.datasets.mnist.load_data()
+x = x.reshape(-1, 784).astype("float32") / 255
+xt = xt.reshape(-1, 784).astype("float32") / 255
+
+def build():
+    keras.utils.set_random_seed(0)
+    m = keras.Sequential([layers.Dense(512, activation="relu"),
+                          layers.Dense(512, activation="relu"),
+                          layers.Dense(10, activation="softmax")])
+    m.compile(optimizer="adam", loss="sparse_categorical_crossentropy",
+              metrics=["accuracy"])
+    return m
+
+fp32 = build()
+fp32.fit(x, y, epochs=3, batch_size=128, verbose=0)
+
+def bench(m, data, n=10, warmup=3):
+    for _ in range(warmup):
+        m.predict(data, verbose=0)
+    t0 = time.perf_counter()
+    for _ in range(n):
+        m.predict(data, verbose=0)
+    return (time.perf_counter() - t0) / n
+
+batch = xt[:2048]
+t32 = bench(fp32, batch)
+print(f"float32: {t32*1000:6.1f} ms   acc {fp32.evaluate(xt, yt, verbose=0)[1]:.4f}")</pre></div>
+<div class="cell"><blockquote>⚠️ <strong>Warm up before timing.</strong> The first call compiles; timing it measures the compiler, not the model.</blockquote></div>
+<div class="cell"><h2>Mixed precision for training</h2></div>
+<div class="cell cell-in"><pre>keras.config.set_dtype_policy("mixed_float16")
+
+mixed = build()
+t0 = time.time()
+mixed.fit(x, y, epochs=3, batch_size=128, verbose=0)
+t_mixed = time.time() - t0
+
+print(f"mixed_float16 training: {t_mixed:.1f}s   "
+      f"acc {mixed.evaluate(xt, yt, verbose=0)[1]:.4f}")
+print()
+for layer in mixed.layers:
+    print(f"{layer.name:12s} compute {layer.compute_dtype:12s} "
+          f"variables {layer.variable_dtype}")</pre></div>
+<div class="cell"><p><strong><code>compute_dtype</code> is float16; <code>variable_dtype</code> stays float32.</strong> Most of the forward pass runs on half-precision copies of the weights; the weights themselves are stored and updated in full precision, so they can receive accurate small updates.</p>
+<p>Some operations are numerically unstable in float16 — notably softmax and crossentropy. Pass <code>dtype="float32"</code> to opt a specific layer out.</p></div>
+<div class="cell"><h2>Loss scaling</h2></div>
+<div class="cell cell-in"><pre>import numpy as np
+
+# Gradients that vanish in float16.
+tiny = np.array([1e-4, 1e-5, 1e-6, 1e-7, 1e-8], dtype=np.float32)
+print(f"{'value':&gt;10s} {'as float16':&gt;14s} {'x 1024, as float16':&gt;22s}")
+for v in tiny:
+    print(f"{v:10.1e} {np.float16(v):&gt;14.1e} "
+          f"{np.float16(v * 1024):&gt;22.1e}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">  1.0e-07        1.2e-07                 1.0e-04
+  1.0e-08        0.0e+00                 1.0e-05</pre></div>
+<div class="cell"><p><strong>1e-8 rounds to zero in float16, and multiplying the loss by 1024 rescues it.</strong> Gradients are proportional to the loss, so a large scalar factor moves them into the representable range; the optimizer divides it back out before updating.</p></div>
+<div class="cell cell-in"><pre>keras.utils.set_random_seed(0)
+m = keras.Sequential([layers.Dense(512, activation="relu"),
+                      layers.Dense(512, activation="relu"),
+                      layers.Dense(10, activation="softmax")])
+m.compile(
+    optimizer=keras.optimizers.LossScaleOptimizer(
+        keras.optimizers.Adam(learning_rate=1e-3)),
+    loss="sparse_categorical_crossentropy",
+    metrics=["accuracy"],
+)
+m.fit(x, y, epochs=3, batch_size=128, verbose=0)
+print("with LossScaleOptimizer:", m.evaluate(xt, yt, verbose=0)[1])
+print()
+print("A fixed factor also works:")
+print("  keras.optimizers.Adam(learning_rate=1e-3, loss_scale_factor=10)")
+print("but LossScaleOptimizer adapts -- and the right value changes")
+print("over the course of training.")</pre></div>
+<div class="cell"><h2>float8: why it is not simply the next step</h2></div>
+<div class="cell cell-in"><pre>print("float16 is the LAST level that 'just works'.")
+print()
+print("At float8 you lose too much information. Keras has a built-in")
+print("implementation, but it:")
+print("  - covers only Dense, EinsumDense, and Embedding")
+print("  - tracks past activations to rescale each step")
+print("  - overrides part of the backward pass to do the same for gradients")
+print()
+print("That machinery has a cost. Below roughly 5 BILLION parameters, or")
+print("on anything short of an H100, the cost exceeds the benefit and you")
+print("get a SLOWDOWN. float8 is rare outside foundation-model training.")</pre></div>
+<div class="cell"><h2>Restore the default before continuing</h2></div>
+<div class="cell cell-in"><pre>keras.config.set_dtype_policy("float32")
+print("back to float32")</pre></div>
+<div class="cell"><blockquote><strong>Note</strong> — The dtype policy is <strong>global</strong>. Leaving it set affects every model built afterwards in the same process, which is a confusing afternoon if you forget.</blockquote></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>float16 resolves to about 1e-3; typical weight updates are 1e-6, so training in it alone fails.</li>
+<li>Mixed precision computes in float16 and stores variables in float32 — most of the speed, none of the instability.</li>
+<li><strong>Loss scaling</strong> rescues gradients that would round to zero; <code>LossScaleOptimizer</code> adapts the factor.</li>
+<li>float8 needs 5B+ parameters and recent hardware to pay for itself.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

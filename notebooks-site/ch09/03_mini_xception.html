@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Putting the patterns together: a mini-Xception · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Putting the patterns together: a mini-Xception</h1>
+  <p>Residual connections, batch normalization, and separable convolutions in one architecture — the model the rest of the vision chapters build on.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The three patterns, assembled</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers
+
+def mini_xception(input_shape=(180, 180, 3), num_classes=1):
+    inputs = keras.Input(shape=input_shape)
+    x = layers.Rescaling(1./255)(inputs)
+
+    # A regular convolution first: three channels are not worth separating.
+    x = layers.Conv2D(32, 5, use_bias=False)(x)
+
+    for size in [32, 64, 128, 256, 512]:
+        residual = x
+
+        x = layers.BatchNormalization()(x)
+        x = layers.Activation("relu")(x)
+        x = layers.SeparableConv2D(size, 3, padding="same", use_bias=False)(x)
+
+        x = layers.BatchNormalization()(x)
+        x = layers.Activation("relu")(x)
+        x = layers.SeparableConv2D(size, 3, padding="same", use_bias=False)(x)
+
+        x = layers.MaxPooling2D(3, strides=2, padding="same")(x)
+
+        residual = layers.Conv2D(size, 1, strides=2, padding="same",
+                                 use_bias=False)(residual)
+        x = layers.add([x, residual])
+
+    x = layers.GlobalAveragePooling2D()(x)
+    x = layers.Dropout(0.5)(x)
+    activation = "sigmoid" if num_classes == 1 else "softmax"
+    outputs = layers.Dense(num_classes, activation=activation)(x)
+    return keras.Model(inputs, outputs)
+
+model = mini_xception()
+print(f"{model.count_params():,} parameters, {len(model.layers)} layers")</pre></div>
+<div class="cell"><p>Five blocks, each: <strong>normalize, activate, separable-convolve</strong> — twice — then pool, then add the projected shortcut.</p>
+<p>Note the ordering inside the block: normalization and activation come <strong>before</strong> the convolution, not after. This is the <em>pre-activation</em> arrangement, and it keeps the residual path completely clean — nothing but additions from input to output.</p></div>
+<div class="cell"><h2>Filter counts grow as the maps shrink</h2></div>
+<div class="cell cell-in"><pre>for l in model.layers:
+    if isinstance(l, (layers.SeparableConv2D, layers.MaxPooling2D)):
+        print(f"{l.__class__.__name__:18s} {str(l.output.shape):24s}")</pre></div>
+<div class="cell"><p>180 → 88 → 44 → 22 → 11 → 6, while filters go 32 → 512. <strong>The same trade as chapter 8</strong>, applied more aggressively.</p></div>
+<div class="cell"><h2>Training it on cats and dogs</h2></div>
+<div class="cell cell-in"><pre>import pathlib
+from keras.utils import image_dataset_from_directory
+
+new_base_dir = pathlib.Path("cats_vs_dogs_small")
+train_dataset = image_dataset_from_directory(
+    new_base_dir / "train", image_size=(180, 180), batch_size=32)
+validation_dataset = image_dataset_from_directory(
+    new_base_dir / "validation", image_size=(180, 180), batch_size=32)
+test_dataset = image_dataset_from_directory(
+    new_base_dir / "test", image_size=(180, 180), batch_size=32)
+
+data_augmentation = keras.Sequential([
+    layers.RandomFlip("horizontal"),
+    layers.RandomRotation(0.1),
+    layers.RandomZoom(0.2),
+])
+
+inputs = keras.Input(shape=(180, 180, 3))
+x = data_augmentation(inputs)
+outputs = mini_xception()(x)
+model = keras.Model(inputs, outputs)
+
+model.compile(loss="binary_crossentropy", optimizer="rmsprop",
+              metrics=["accuracy"])
+callbacks = [keras.callbacks.ModelCheckpoint("mini_xception.keras",
+                                             save_best_only=True,
+                                             monitor="val_loss")]
+history = model.fit(train_dataset, epochs=60,
+                    validation_data=validation_dataset,
+                    callbacks=callbacks, verbose=2)</pre></div>
+<div class="cell"><h2>Against chapter 8's from-scratch model</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+import numpy as np
+
+h = history.history
+plt.figure(figsize=(7, 4.4))
+plt.plot(h["accuracy"], lw=1, label="training")
+plt.plot(h["val_accuracy"], lw=1.7, label="validation")
+plt.axhline(0.83, ls="--", c="k", lw=1,
+            label="chapter 8, augmented, from scratch")
+plt.xlabel("epoch"); plt.ylabel("accuracy"); plt.legend()
+plt.title("Mini-Xception on the same 2,000 images")
+plt.show()
+
+best = keras.models.load_model("mini_xception.keras")
+print(f"test accuracy: {best.evaluate(test_dataset, verbose=0)[1]:.3f}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">test accuracy: ~0.88 to 0.90</pre></div>
+<div class="cell"><p>About 90%, against 83% for chapter 8's plain stack on identical data. <strong>Architecture is worth roughly seven points here</strong> — and still not the 97% a pretrained backbone gives, which remains the chapter 8 lesson.</p></div>
+<div class="cell"><h2>One block at a time: what each pattern contributes</h2></div>
+<div class="cell cell-in"><pre>import itertools
+
+def variant(residual=True, bn=True, separable=True, blocks=(32, 64, 128)):
+    keras.utils.set_random_seed(0)
+    Conv = layers.SeparableConv2D if separable else layers.Conv2D
+    i = keras.Input(shape=(180, 180, 3))
+    x = layers.Rescaling(1./255)(i)
+    x = layers.Conv2D(32, 5, use_bias=False)(x)
+    for size in blocks:
+        r = x
+        if bn: x = layers.BatchNormalization()(x)
+        x = layers.Activation("relu")(x)
+        x = Conv(size, 3, padding="same", use_bias=False)(x)
+        x = layers.MaxPooling2D(3, strides=2, padding="same")(x)
+        if residual:
+            r = layers.Conv2D(size, 1, strides=2, padding="same",
+                              use_bias=False)(r)
+            x = layers.add([x, r])
+    x = layers.GlobalAveragePooling2D()(x)
+    o = layers.Dense(1, activation="sigmoid")(x)
+    m = keras.Model(i, o)
+    m.compile(loss="binary_crossentropy", optimizer="rmsprop",
+              metrics=["accuracy"])
+    return m
+
+print("Run each of these for ~20 epochs and compare. Expect the ordering to")
+print("hold even if the absolute numbers differ on your hardware:")
+for name, kw in [("all three", {}),
+                 ("no residual", {"residual": False}),
+                 ("no batchnorm", {"bn": False}),
+                 ("regular convolutions", {"separable": False})]:
+    m = variant(**kw)
+    print(f"  {name:22s} {m.count_params():&gt;9,} parameters")</pre></div>
+<div class="cell"><p>Running the full comparison takes about an hour; the parameter counts alone are informative, and the exercise is worth doing once on your own hardware. <strong>Ablation is how you find out which of your ideas were doing the work</strong> — chapter 18 formalises it.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Mini-Xception is the three patterns composed: pre-activation, separable convolutions, projected residuals.</li>
+<li>Normalization and activation go <strong>before</strong> the convolution, keeping the residual path clean.</li>
+<li>Architecture is worth about seven points here — real, and smaller than pretraining.</li>
+<li>Ablate one pattern at a time to find out which of them was doing the work.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

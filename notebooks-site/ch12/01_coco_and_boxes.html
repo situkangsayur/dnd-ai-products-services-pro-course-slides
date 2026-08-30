@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Boxes, formats, and IoU · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Boxes, formats, and IoU</h1>
+  <p>Before any model: the four box formats you will meet, the conversions between them, and the one metric the whole field is built on.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>Four ways to write the same box</h2></div>
+<div class="cell cell-in"><pre>import numpy as np
+
+# One box around an object, written four ways.
+xyxy = np.array([100., 150., 300., 400.])          # x_min, y_min, x_max, y_max
+xywh = np.array([100., 150., 200., 250.])          # x_min, y_min, width, height
+cxcywh = np.array([200., 275., 200., 250.])        # centre_x, centre_y, w, h
+rel_xyxy = xyxy / np.array([640., 480., 640., 480.])   # normalized to [0, 1]
+
+print(f"xyxy      {xyxy}")
+print(f"xywh      {xywh}")
+print(f"cxcywh    {cxcywh}")
+print(f"rel_xyxy  {rel_xyxy.round(4)}")</pre></div>
+<div class="cell"><blockquote>⚠️ <strong>This is where most object-detection bugs live.</strong> COCO uses <code>xywh</code>, Pascal VOC uses <code>xyxy</code>, YOLO uses normalized <code>cxcywh</code>, and none of them will tell you when you have mixed them up — the boxes will simply be in the wrong place.</blockquote></div>
+<div class="cell"><h2>Conversions, written once</h2></div>
+<div class="cell cell-in"><pre>def xywh_to_xyxy(b):
+    x, y, w, h = b[..., 0], b[..., 1], b[..., 2], b[..., 3]
+    return np.stack([x, y, x + w, y + h], axis=-1)
+
+def cxcywh_to_xyxy(b):
+    cx, cy, w, h = b[..., 0], b[..., 1], b[..., 2], b[..., 3]
+    return np.stack([cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2], axis=-1)
+
+def xyxy_to_cxcywh(b):
+    x0, y0, x1, y1 = b[..., 0], b[..., 1], b[..., 2], b[..., 3]
+    return np.stack([(x0 + x1) / 2, (y0 + y1) / 2, x1 - x0, y1 - y0], axis=-1)
+
+assert np.allclose(xywh_to_xyxy(xywh), xyxy)
+assert np.allclose(cxcywh_to_xyxy(cxcywh), xyxy)
+assert np.allclose(xyxy_to_cxcywh(xyxy), cxcywh)
+print("all round-trips agree")</pre></div>
+<div class="cell"><blockquote><strong>Note</strong> — Write the assertions. They cost nothing and they catch the conversion bug at the moment you introduce it rather than three hours later, in a picture.</blockquote></div>
+<div class="cell"><h2>Drawing them</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+import matplotlib.patches as patches
+
+rng = np.random.default_rng(0)
+img = rng.random((480, 640, 3)) * 0.3 + 0.5
+
+boxes = np.array([[100., 150., 300., 400.],
+                  [350., 100., 560., 260.],
+                  [420., 300., 600., 450.]])
+labels = ["cat", "dog", "chair"]
+
+fig, ax = plt.subplots(figsize=(8, 6))
+ax.imshow(img)
+for b, lab in zip(boxes, labels):
+    x0, y0, x1, y1 = b
+    ax.add_patch(patches.Rectangle((x0, y0), x1 - x0, y1 - y0,
+                                   fill=False, edgecolor="#ff7a1a", lw=2))
+    ax.text(x0, y0 - 6, lab, color="#ff7a1a", fontsize=11, weight="bold")
+ax.axis("off"); plt.show()</pre></div>
+<div class="cell"><h2>IoU: the metric everything rests on</h2></div>
+<div class="cell cell-in"><pre>def iou(a, b):
+    """Intersection over union, xyxy format."""
+    x0 = np.maximum(a[..., 0], b[..., 0])
+    y0 = np.maximum(a[..., 1], b[..., 1])
+    x1 = np.minimum(a[..., 2], b[..., 2])
+    y1 = np.minimum(a[..., 3], b[..., 3])
+    inter = np.clip(x1 - x0, 0, None) * np.clip(y1 - y0, 0, None)
+    area_a = (a[..., 2] - a[..., 0]) * (a[..., 3] - a[..., 1])
+    area_b = (b[..., 2] - b[..., 0]) * (b[..., 3] - b[..., 1])
+    return inter / (area_a + area_b - inter + 1e-9)
+
+truth = np.array([100., 150., 300., 400.])
+for name, pred in [("perfect", truth),
+                   ("slightly off", truth + 15),
+                   ("half overlap", np.array([200., 150., 400., 400.])),
+                   ("no overlap", np.array([400., 100., 550., 250.]))]:
+    print(f"{name:14s} IoU {iou(pred, truth):.3f}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">perfect        IoU 1.000
+slightly off   IoU 0.7xx
+half overlap   IoU 0.3xx
+no overlap     IoU 0.000</pre></div>
+<div class="cell"><h2>Seeing what an IoU threshold means</h2></div>
+<div class="cell cell-in"><pre>fig, axes = plt.subplots(1, 5, figsize=(15, 3.4))
+for ax, shift in zip(axes, [0, 20, 45, 75, 110]):
+    pred = truth + shift
+    ax.imshow(img)
+    for b, c, lab in [(truth, "#12b886", "truth"), (pred, "#c0392b", "pred")]:
+        x0, y0, x1, y1 = b
+        ax.add_patch(patches.Rectangle((x0, y0), x1 - x0, y1 - y0,
+                                       fill=False, edgecolor=c, lw=2))
+    ax.set_title(f"IoU {iou(pred, truth):.2f}", fontsize=11); ax.axis("off")
+plt.suptitle("The standard threshold is 0.5. Is that strict enough for you?", y=1.03)
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p><strong>IoU 0.5 is a loose box.</strong> It is the field's convention, not a law — and whether it is adequate depends entirely on what the box is used for downstream. A robot gripper needs 0.9; a photo-tagging feature does not.</p></div>
+<div class="cell"><h2>Non-maximum suppression</h2></div>
+<div class="cell cell-in"><pre>def nms(boxes, scores, threshold=0.5):
+    order = np.argsort(scores)[::-1]
+    keep = []
+    while len(order):
+        i = order[0]
+        keep.append(i)
+        if len(order) == 1:
+            break
+        rest = order[1:]
+        overlaps = np.array([iou(boxes[i], boxes[j]) for j in rest])
+        order = rest[overlaps &lt; threshold]
+    return keep
+
+# A detector fires several times on the same object.
+raw = np.array([[100., 150., 300., 400.],
+                [108., 158., 305., 405.],
+                [ 95., 145., 298., 396.],
+                [350., 100., 560., 260.]])
+scores = np.array([0.92, 0.88, 0.79, 0.85])
+
+kept = nms(raw, scores)
+print(f"{len(raw)} raw detections -&gt; {len(kept)} after NMS: {kept}")
+
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(13, 5))
+for ax, idx, title in [(a1, range(len(raw)), "raw detections"),
+                       (a2, kept, "after NMS")]:
+    ax.imshow(img)
+    for i in idx:
+        x0, y0, x1, y1 = raw[i]
+        ax.add_patch(patches.Rectangle((x0, y0), x1 - x0, y1 - y0,
+                                       fill=False, edgecolor="#ff7a1a", lw=2))
+        ax.text(x0, y0 - 6, f"{scores[i]:.2f}", color="#ff7a1a", fontsize=10)
+    ax.set_title(title); ax.axis("off")
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>Every dense detector produces overlapping duplicates by construction. <strong>NMS is not a refinement — it is part of the output</strong>, and its threshold is a real hyperparameter that trades missed adjacent objects against duplicate boxes.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Four box formats exist and none of them announce themselves. Write the conversions once, with assertions.</li>
+<li>IoU is the metric everything else is defined on top of.</li>
+<li>The conventional 0.5 threshold is looser than it sounds — look at the picture.</li>
+<li>NMS is part of a detector's output, and its threshold is a real trade-off.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Visualizing intermediate activations · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Visualizing intermediate activations</h1>
+  <p>What a ConvNet sees at each depth, on one photograph — from edges at the bottom to abstractions with no visual meaning at the top.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>A model, and an image it has never seen</h2></div>
+<div class="cell cell-in"><pre>import keras
+import numpy as np
+import matplotlib.pyplot as plt
+import pathlib
+
+# The augmented convnet from chapter 8, notebook 03. It is saved in THAT notebook's
+# folder, so the path is relative to this one -- or point model_path at any convnet.
+model_path = pathlib.Path("../ch08/convnet_with_augmentation.keras")
+if not model_path.exists():
+    raise FileNotFoundError(
+        f"{model_path} not found. Run ch08/03_data_augmentation.ipynb first "
+        "(it needs the Kaggle cats-vs-dogs archive), or set model_path to a convnet "
+        "you already have.")
+
+model = keras.models.load_model(model_path)
+model.summary()</pre></div>
+<div class="cell cell-in"><pre>img_path = keras.utils.get_file(
+    fname="cat.jpg",
+    origin="https://img-datasets.s3.amazonaws.com/cat.jpg")
+
+def get_img_array(path, target_size):
+    img = keras.utils.load_img(path, target_size=target_size)
+    array = keras.utils.img_to_array(img)
+    return np.expand_dims(array, axis=0)
+
+img_tensor = get_img_array(img_path, target_size=(180, 180))
+plt.imshow(img_tensor[0].astype("uint8")); plt.axis("off"); plt.show()</pre></div>
+<div class="cell"><h2>A model that returns every layer's output</h2></div>
+<div class="cell"><p>This is the capability chapter 7 said subclassing throws away. A Functional model is a <strong>graph</strong>, so you can ask any node for its value.</p></div>
+<div class="cell cell-in"><pre>layer_outputs = []
+layer_names = []
+for layer in model.layers:
+    if isinstance(layer, (keras.layers.Conv2D, keras.layers.MaxPooling2D)):
+        layer_outputs.append(layer.output)
+        layer_names.append(layer.name)
+
+activation_model = keras.Model(inputs=model.input, outputs=layer_outputs)
+activations = activation_model.predict(img_tensor, verbose=0)
+
+for name, act in zip(layer_names, activations):
+    print(f"{name:20s} {act.shape}")</pre></div>
+<div class="cell"><h2>The first layer</h2></div>
+<div class="cell cell-in"><pre>first = activations[0]
+fig, axes = plt.subplots(4, 8, figsize=(12, 6.4))
+for ax, i in zip(axes.ravel(), range(min(32, first.shape[-1]))):
+    ax.imshow(first[0, :, :, i], cmap="viridis")
+    ax.set_title(f"ch {i}", fontsize=7); ax.axis("off")
+plt.suptitle("First convolution layer — 32 channels", y=1.0)
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>Edge detectors, colour blobs, and one or two channels that are <strong>almost blank</strong> — filters that never learned anything useful. That is normal, and worth noticing: not every filter earns its place.</p></div>
+<div class="cell"><h2>Every layer, side by side</h2></div>
+<div class="cell cell-in"><pre>images_per_row = 16
+for layer_name, layer_activation in zip(layer_names, activations):
+    n_features = layer_activation.shape[-1]
+    size = layer_activation.shape[1]
+    n_cols = n_features // images_per_row
+    if n_cols &lt; 1:
+        continue
+    display_grid = np.zeros(((size + 1) * n_cols - 1,
+                             images_per_row * (size + 1) - 1))
+    for col in range(n_cols):
+        for row in range(images_per_row):
+            channel_index = col * images_per_row + row
+            channel_image = layer_activation[0, :, :, channel_index].copy()
+            if channel_image.sum() != 0:
+                channel_image -= channel_image.mean()
+                channel_image /= (channel_image.std() + 1e-7)
+                channel_image *= 64
+                channel_image += 128
+            channel_image = np.clip(channel_image, 0, 255).astype("uint8")
+            display_grid[col * (size + 1): (col + 1) * size + col,
+                         row * (size + 1): (row + 1) * size + row] = channel_image
+    scale = 1. / size
+    plt.figure(figsize=(scale * display_grid.shape[1],
+                        scale * display_grid.shape[0]))
+    plt.title(layer_name); plt.grid(False); plt.axis("off")
+    plt.imshow(display_grid, aspect="auto", cmap="viridis")
+plt.show()</pre></div>
+<div class="cell"><h2>Three things to read off these pictures</h2></div>
+<div class="cell"><p><strong>The first layer is almost a collection of edge detectors.</strong> It retains nearly all the information in the original image — you could reconstruct the cat from it.</p>
+<p><strong>Deeper layers become abstract and less visually interpretable.</strong> They start encoding <em>cat ear</em>, <em>whisker texture</em> — concepts rather than pixels.</p>
+<p><strong>Sparsity increases with depth.</strong> More and more channels are blank for any given input, because a filter that detects a specific thing is silent on images that do not contain it.</p></div>
+<div class="cell"><h2>Measuring the sparsity claim</h2></div>
+<div class="cell cell-in"><pre>fracs = []
+for name, act in zip(layer_names, activations):
+    blank = (act[0].reshape(-1, act.shape[-1]).max(axis=0) == 0).mean()
+    fracs.append(blank)
+    print(f"{name:20s} {blank:5.1%} of channels are entirely zero")
+
+plt.figure(figsize=(7, 3.6))
+plt.plot(range(len(fracs)), fracs, "o-")
+plt.xticks(range(len(fracs)), layer_names, rotation=45, ha="right")
+plt.ylabel("fraction of dead channels"); plt.tight_layout()
+plt.title("Sparsity increases with depth")
+plt.show()</pre></div>
+<div class="cell"><p>This is what the chapter means by a network <strong>distilling</strong> its input: information about <em>what the image is</em> survives, while information about <em>what it looks like</em> is progressively discarded. A ConvNet is an information funnel, and the funnel is deliberate.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>A Functional model lets you build a second model that outputs any intermediate layer.</li>
+<li>The first layer is nearly a lossless edge detector; deeper layers encode concepts.</li>
+<li><strong>Sparsity rises with depth</strong> — specific detectors are silent on most inputs.</li>
+<li>The network discards appearance and keeps identity. That is the point, not a defect.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

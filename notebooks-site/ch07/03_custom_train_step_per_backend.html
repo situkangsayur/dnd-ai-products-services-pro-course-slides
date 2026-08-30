@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Overriding train_step, and the backend-agnostic alternative · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Overriding train_step, and the backend-agnostic alternative</h1>
+  <p>How to change what one training step does — and why compute_loss() is usually the better place to do it.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The escape hatches, in order of how much they cost you</h2></div>
+<div class="cell"><p>| What you override | What you keep | What it costs | |---|---|---| | <code>compute_loss()</code> | everything | nothing — <strong>backend agnostic</strong> | | <code>train_step()</code> | callbacks, metrics, progress | the code is backend-specific | | the whole loop | nothing | everything |</p>
+<p>Chapter 17's VAE and diffusion models both take the first option, for exactly this reason.</p></div>
+<div class="cell"><h2>compute_loss(): the portable escape hatch</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers, ops
+import numpy as np
+
+class WeightedModel(keras.Model):
+    """Penalise mistakes on class 0 five times as heavily."""
+
+    def compute_loss(self, x=None, y=None, y_pred=None,
+                     sample_weight=None, training=True):
+        base = keras.losses.sparse_categorical_crossentropy(y, y_pred)
+        weights = ops.where(ops.equal(y, 0), 5.0, 1.0)
+        return ops.mean(base * weights)
+
+inputs = keras.Input(shape=(784,))
+h = layers.Dense(64, activation="relu")(inputs)
+outputs = layers.Dense(10, activation="softmax")(h)
+model = WeightedModel(inputs, outputs)
+
+from keras.datasets import mnist
+(x, y), (xt, yt) = mnist.load_data()
+x = x.reshape(-1, 784).astype("float32") / 255
+xt = xt.reshape(-1, 784).astype("float32") / 255
+
+model.compile(optimizer="rmsprop", metrics=["accuracy"])
+model.fit(x, y, epochs=2, batch_size=128, verbose=2)</pre></div>
+<div class="cell"><p>No <code>loss=</code> in <code>compile()</code> — the model supplies its own. This runs unchanged on all three backends, because nothing in it touches a gradient.</p></div>
+<div class="cell"><h2>train_step(): where the backend leaks in</h2></div>
+<div class="cell"><p>If you need the gradients themselves — to clip them, to accumulate them, to update two sets of weights alternately — you have to write backend-specific code. Here is the same idea three ways.</p></div>
+<div class="cell cell-in"><pre># TensorFlow
+class TFModel(keras.Model):
+    def train_step(self, data):
+        x, y = data
+        import tensorflow as tf
+        with tf.GradientTape() as tape:
+            y_pred = self(x, training=True)
+            loss = self.compute_loss(x=x, y=y, y_pred=y_pred)
+        grads = tape.gradient(loss, self.trainable_weights)
+        self.optimizer.apply_gradients(zip(grads, self.trainable_weights))
+        for m in self.metrics:
+            m.update_state(y, y_pred)
+        return {m.name: m.result() for m in self.metrics}</pre></div>
+<div class="cell cell-in"><pre># PyTorch
+class TorchModel(keras.Model):
+    def train_step(self, data):
+        x, y = data
+        self.zero_grad()
+        y_pred = self(x, training=True)
+        loss = self.compute_loss(x=x, y=y, y_pred=y_pred)
+        loss.backward()
+        trainable = [v for v in self.trainable_weights]
+        grads = [v.value.grad for v in trainable]
+        with torch.no_grad():
+            self.optimizer.apply(grads, trainable)
+        for m in self.metrics:
+            m.update_state(y, y_pred)
+        return {m.name: m.result() for m in self.metrics}</pre></div>
+<div class="cell cell-in"><pre># JAX -- stateless, so the signature is different entirely
+class JaxModel(keras.Model):
+    def train_step(self, state, data):
+        x, y = data
+        (trainable, non_trainable, optimizer_vars, metrics_vars) = state
+        grad_fn = jax.value_and_grad(self.compute_loss_and_updates,
+                                     has_aux=True)
+        (loss, aux), grads = grad_fn(trainable, non_trainable, x, y)
+        trainable, optimizer_vars = self.optimizer.stateless_apply(
+            optimizer_vars, grads, trainable)
+        return logs, (trainable, non_trainable, optimizer_vars, metrics_vars)</pre></div>
+<div class="cell"><p>Three genuinely different shapes, and the JAX one is not even the same signature. <strong>This is the cost of overriding <code>train_step</code></strong> — and the reason chapter 17 goes out of its way to avoid it.</p></div>
+<div class="cell"><h2>A real use: gradient clipping</h2></div>
+<div class="cell cell-in"><pre># The common case has a built-in, no subclassing required.
+model = keras.Sequential([layers.Dense(64, activation="relu"),
+                          layers.Dense(10, activation="softmax")])
+model.compile(
+    optimizer=keras.optimizers.RMSprop(clipnorm=1.0),
+    loss="sparse_categorical_crossentropy", metrics=["accuracy"])
+model.fit(x, y, epochs=1, batch_size=128, verbose=2)
+print("clipnorm handled by the optimizer -- no custom train_step needed")</pre></div>
+<div class="cell"><blockquote><strong>Note</strong> — Before writing a custom <code>train_step</code>, check whether the optimizer already takes the argument. <code>clipnorm</code>, <code>clipvalue</code>, <code>loss_scale_factor</code>, <code>use_ema</code>, and <code>weight_decay</code> all live there, and all of them are things people subclass to reimplement.</blockquote></div>
+<div class="cell"><h2>run_eagerly, for when it will not work</h2></div>
+<div class="cell cell-in"><pre>model.compile(optimizer="rmsprop",
+              loss="sparse_categorical_crossentropy",
+              metrics=["accuracy"],
+              run_eagerly=True)     # slow, but print() and pdb work
+model.fit(x[:2000], y[:2000], epochs=1, batch_size=128, verbose=2)</pre></div>
+<div class="cell"><p>Compiled graphs do not run your <code>print</code> statements the way you expect and cannot be stepped through. <code>run_eagerly=True</code> makes debugging possible and training slow — <strong>turn it on to find the bug, off before measuring anything.</strong></p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Override <code>compute_loss()</code> when you can — it is portable across all three backends.</li>
+<li>Override <code>train_step()</code> only when you need the gradients themselves, and accept that it is backend-specific.</li>
+<li>Check the optimizer's arguments first; clipping, EMA and loss scaling are already there.</li>
+<li><code>run_eagerly=True</code> to debug, off to measure.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

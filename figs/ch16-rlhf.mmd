@@ -1,5 +1,8 @@
+%% direction chosen by tools/figures.py: this renders
+%% better in the space a slide gives it. Edit the deck
+%% source, not this file.
 
-flowchart TB
+flowchart LR
   SFT["<b>1. Supervised fine-tuning</b><br/><small>handwritten prompts<br/>and responses</small>"]
   RANK["<b>2. Rank responses</b><br/><small>human evaluators order them<br/>most to least helpful</small>"]
   RM["<b>3. Reward model</b><br/><small>a smaller Transformer:<br/>sequence in, one float out</small>"]

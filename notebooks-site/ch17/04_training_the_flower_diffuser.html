@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Training a diffusion model on Oxford Flowers · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Training a diffusion model on Oxford Flowers</h1>
+  <p>The training step in five operations, the generation loop that re-noises on purpose, and 8,189 photographs turned into flowers that do not exist.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The dataset</h2></div>
+<div class="cell cell-in"><pre>import os
+import keras
+
+fpath = keras.utils.get_file(
+    origin="https://www.robots.ox.ac.uk/~vgg/data/flowers/102/102flowers.tgz",
+    extract=True)
+
+batch_size, image_size = 32, 128
+images_dir = os.path.join(fpath, "jpg")
+
+dataset = keras.utils.image_dataset_from_directory(
+    images_dir,
+    labels=None,
+    image_size=(image_size, image_size),
+    crop_to_aspect_ratio=True,
+)
+dataset = dataset.rebatch(batch_size, drop_remainder=True)
+
+import matplotlib.pyplot as plt
+for batch in dataset.take(1):
+    fig, axes = plt.subplots(2, 6, figsize=(13, 4.4))
+    for ax, im in zip(axes.ravel(), batch):
+        ax.imshow(im.numpy().astype("uint8")); ax.axis("off")
+    plt.tight_layout(); plt.show()
+    break</pre></div>
+<div class="cell"><blockquote>⚠️ <strong><code>crop_to_aspect_ratio=True</code>.</strong> Resizing without it distorts every image, and <strong>distortion in the training set becomes distortion in everything generated</strong> — very hard to diagnose after the fact.</blockquote></div>
+<div class="cell"><h2>The model class</h2></div>
+<div class="cell cell-in"><pre>from keras import ops
+import numpy as np
+
+class DiffusionModel(keras.Model):
+    def __init__(self, image_size, widths, block_depth, **kwargs):
+        super().__init__(**kwargs)
+        self.image_size = image_size
+        self.denoising_model = get_model(image_size, widths, block_depth)
+        self.seed_generator = keras.random.SeedGenerator()
+        self.loss = keras.losses.MeanAbsoluteError()
+        self.normalizer = keras.layers.Normalization()
+
+    def denoise(self, noisy_images, noise_rates, signal_rates):
+        pred_noise_masks = self.denoising_model([noisy_images, noise_rates])
+        pred_images = (noisy_images - noise_rates * pred_noise_masks) / signal_rates
+        return pred_images, pred_noise_masks</pre></div>
+<div class="cell"><p><strong>Mean absolute error, not mean squared.</strong> The noise mask is normally distributed; squared error would let a few extreme pixels dominate the gradient.</p>
+<p>The <code>denoise</code> arithmetic is the exact inverse of the mixing formula: <code>noisy = signal * image + noise * mask</code>, so <code>image = (noisy − noise * mask) / signal</code>.</p></div>
+<div class="cell"><h2>The training step</h2></div>
+<div class="cell cell-in"><pre>class DiffusionModel(DiffusionModel):     # extend the class above
+    def call(self, images):
+        images = self.normalizer(images)
+        noise_masks = keras.random.normal(
+            (batch_size, self.image_size, self.image_size, 3),
+            seed=self.seed_generator)
+        diffusion_times = keras.random.uniform(
+            (batch_size, 1, 1, 1), minval=0.0, maxval=1.0,
+            seed=self.seed_generator)
+        noise_rates, signal_rates = diffusion_schedule(diffusion_times)
+        noisy_images = signal_rates * images + noise_rates * noise_masks
+        pred_images, pred_noise_masks = self.denoise(
+            noisy_images, noise_rates, signal_rates)
+        return pred_images, pred_noise_masks, noise_masks
+
+    def compute_loss(self, x, y, y_pred, sample_weight=None, training=True):
+        _, pred_noise_masks, noise_masks = y_pred
+        return self.loss(noise_masks, pred_noise_masks)</pre></div>
+<div class="cell"><p>Five operations: normalize, sample <strong>random</strong> diffusion times, compute the rates, add noise, denoise. The loss is one comparison — <strong>all the difficulty is in the forward pass.</strong></p>
+<p>Random times matter: the model will be called at every point of the schedule during generation, so it must be trained across the full spectrum.</p></div>
+<div class="cell"><h2>Generation</h2></div>
+<div class="cell cell-in"><pre>class DiffusionModel(DiffusionModel):
+    def generate(self, num_images, diffusion_steps):
+        noisy_images = keras.random.normal(
+            (num_images, self.image_size, self.image_size, 3),
+            seed=self.seed_generator)
+        step_size = 1.0 / diffusion_steps
+        for step in range(diffusion_steps):
+            diffusion_times = ops.ones((num_images, 1, 1, 1)) - step * step_size
+            noise_rates, signal_rates = diffusion_schedule(diffusion_times)
+            pred_images, pred_noises = self.denoise(
+                noisy_images, noise_rates, signal_rates)
+            next_times = diffusion_times - step_size
+            next_noise_rates, next_signal_rates = diffusion_schedule(next_times)
+            noisy_images = (next_signal_rates * pred_images
+                            + next_noise_rates * pred_noises)
+        images = (self.normalizer.mean
+                  + pred_images * self.normalizer.variance ** 0.5)
+        return ops.clip(images, 0.0, 255.0)</pre></div>
+<div class="cell"><p>The surprising part: the model predicts the <strong>whole</strong> clean image at every step, and we then <strong>deliberately add back</strong> the noise appropriate to the next time index. Each iteration undoes slightly more than the last.</p>
+<p><code>diffusion_steps</code> is a <strong>generation-time</strong> parameter — the same weights sample in 5 steps or 50, trading quality for speed.</p></div>
+<div class="cell"><h2>A callback, because there is no metric</h2></div>
+<div class="cell cell-in"><pre>class VisualizationCallback(keras.callbacks.Callback):
+    def __init__(self, diffusion_steps=20, num_rows=3, num_cols=6):
+        self.diffusion_steps = diffusion_steps
+        self.num_rows, self.num_cols = num_rows, num_cols
+
+    def on_epoch_end(self, epoch=None, logs=None):
+        generated = self.model.generate(
+            num_images=self.num_rows * self.num_cols,
+            diffusion_steps=self.diffusion_steps)
+        fig, axes = plt.subplots(self.num_rows, self.num_cols,
+                                 figsize=(self.num_cols * 2, self.num_rows * 2))
+        for ax, im in zip(axes.ravel(), generated):
+            ax.imshow(ops.convert_to_numpy(im).astype("uint8")); ax.axis("off")
+        plt.suptitle(f"epoch {epoch}"); plt.tight_layout(); plt.show()
+        plt.close()</pre></div>
+<div class="cell"><p>We have no proper metric for image quality, so the practical answer is to look. Chapter 7's callback API, doing something it was not obviously designed for.</p></div>
+<div class="cell"><h2>Training</h2></div>
+<div class="cell cell-in"><pre>model = DiffusionModel(image_size, widths=[32, 64, 96, 128],
+                       block_depth=2)
+model.normalizer.adapt(dataset)          # DO NOT FORGET THIS
+
+model.compile(
+    optimizer=keras.optimizers.AdamW(
+        learning_rate=keras.optimizers.schedules.InverseTimeDecay(
+            initial_learning_rate=1e-3, decay_steps=1000, decay_rate=0.1),
+        use_ema=True,
+        ema_overwrite_frequency=100,
+    ),
+)
+
+model.fit(
+    dataset,
+    epochs=100,
+    callbacks=[
+        VisualizationCallback(),
+        keras.callbacks.ModelCheckpoint("diffusion_model.weights.h5",
+                                        save_weights_only=True,
+                                        save_best_only=True),
+    ],
+    verbose=2,
+)</pre></div>
+<div class="cell"><blockquote>⚠️ <strong><code>model.normalizer.adapt(dataset)</code>.</strong> Forget it and the noise and the images live on different scales; nothing works, and there is no error message.</blockquote>
+<p>On Colab you may hit <em>"Buffered data was truncated"</em> because the logs contain images — chain five <code>fit(..., epochs=20)</code> calls in five cells instead.</p></div>
+<div class="cell"><h2>Two optimizer settings, and what they do</h2></div>
+<div class="cell"><p><strong>Learning rate decay</strong> — <code>InverseTimeDecay</code> reduces the rate through training.</p>
+<p><strong>Exponential moving average</strong> (Polyak averaging) — keep a running average of the weights and overwrite with it every 100 batches. Helps when the loss landscape is noisy, which a generative objective's is.</p>
+<p>Neither changes what the model can represent. Both change <strong>which minimum it settles into</strong>, and for a generative model that is the difference between plausible flowers and coloured smears.</p></div>
+<div class="cell"><h2>Sampling at different step counts</h2></div>
+<div class="cell cell-in"><pre>model.load_weights("diffusion_model.weights.h5")
+
+fig, axes = plt.subplots(1, 5, figsize=(16, 3.4))
+for ax, steps in zip(axes, [3, 5, 10, 20, 50]):
+    im = model.generate(num_images=1, diffusion_steps=steps)[0]
+    ax.imshow(ops.convert_to_numpy(im).astype("uint8"))
+    ax.set_title(f"{steps} steps"); ax.axis("off")
+plt.suptitle("Same weights; only the number of denoising steps changes", y=1.04)
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>Three steps gives a blurred impression; fifty gives a sharp image. <strong>The quality-versus-latency dial in a production image generator is exactly this parameter.</strong></p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Five operations per training step; the loss is one comparison, and diffusion times must be sampled randomly.</li>
+<li>Generation predicts the clean image and then <strong>re-noises</strong> to the next schedule point.</li>
+<li><code>normalizer.adapt()</code> is not optional and fails silently.</li>
+<li><code>diffusion_steps</code> is the quality-versus-latency dial, chosen at generation time.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

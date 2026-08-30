@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Segment Anything: a promptable pretrained segmenter · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Segment Anything: a promptable pretrained segmenter</h1>
+  <p>The chapter-8 lesson in a new modality — a foundation model for segmentation, prompted with a point or a box, with no training at all.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>Loading it</h2></div>
+<div class="cell cell-in"><pre>import keras
+import keras_hub
+import numpy as np
+import matplotlib.pyplot as plt
+
+model = keras_hub.models.SAMImageSegmenter.from_preset("sam_base_sa1b")
+print(type(model).__name__)</pre></div>
+<div class="cell"><p><strong>SAM was trained on 1.1 billion masks over 11 million images.</strong> Like the backbones in chapter 8, everything it knows was learned before this notebook started.</p></div>
+<div class="cell"><h2>An image</h2></div>
+<div class="cell cell-in"><pre>image_path = keras.utils.get_file(
+    origin="https://img-datasets.s3.amazonaws.com/elephant.jpg")
+image = np.array(keras.utils.load_img(image_path, target_size=(1024, 1024)))
+
+plt.figure(figsize=(6, 6))
+plt.imshow(image); plt.axis("off"); plt.show()</pre></div>
+<div class="cell"><h2>Prompting with a point</h2></div>
+<div class="cell cell-in"><pre>def show_mask(mask, ax, color=(0.13, 0.55, 0.85, 0.6)):
+    h, w = mask.shape[-2:]
+    ax.imshow(mask.reshape(h, w, 1) * np.array(color).reshape(1, 1, -1))
+
+point = np.array([[[580.0, 450.0]]])          # (batch, num_points, 2)
+label = np.array([[1]])                        # 1 = foreground, 0 = background
+
+outputs = model.predict({
+    "images": image[np.newaxis, ...].astype("float32"),
+    "points": point,
+    "labels": label,
+}, verbose=0)
+
+mask = outputs["masks"][0][0] &gt; 0.0
+fig, ax = plt.subplots(figsize=(7, 7))
+ax.imshow(image)
+show_mask(mask, ax)
+ax.scatter(point[0, :, 0], point[0, :, 1], c="yellow", s=200, marker="*",
+           edgecolors="k")
+ax.axis("off"); ax.set_title("One point, one mask")
+plt.show()</pre></div>
+<div class="cell"><p>One click, no training, no labels. <strong>This is the chapter-8 argument again</strong>: the largest single jump available is not architecture, it is starting from something already trained.</p></div>
+<div class="cell"><h2>The ambiguity SAM handles explicitly</h2></div>
+<div class="cell cell-in"><pre># A point on a person could mean the shirt, the torso, or the whole person.
+# SAM returns several masks and a confidence for each.
+all_masks = outputs["masks"][0]
+iou = outputs["iou_pred"][0]
+
+fig, axes = plt.subplots(1, len(all_masks), figsize=(4 * len(all_masks), 4.4))
+for ax, m, score in zip(np.atleast_1d(axes), all_masks, iou):
+    ax.imshow(image); show_mask(m &gt; 0.0, ax)
+    ax.set_title(f"predicted IoU {float(score):.2f}", fontsize=10)
+    ax.axis("off")
+plt.suptitle("A point is ambiguous, so several masks are returned", y=1.02)
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p><strong>The ambiguity is in the prompt, not the model</strong>, and SAM does not pretend otherwise. Returning several candidates with confidences is a better design than picking one and being confidently wrong — a pattern worth borrowing.</p></div>
+<div class="cell"><h2>Prompting with a box</h2></div>
+<div class="cell cell-in"><pre># (batch, num_boxes, 2 corners, xy) -- keras-hub also wants every prompt key
+# present, so the point prompts are passed as empty arrays rather than omitted.
+box = np.array([[[[300.0, 200.0], [900.0, 800.0]]]])
+
+outputs = model.predict({
+    "images": image[np.newaxis, ...].astype("float32"),
+    "boxes": box,
+    "points": np.zeros((1, 0, 2), "float32"),
+    "labels": np.zeros((1, 0), "float32"),
+}, verbose=0)
+
+fig, ax = plt.subplots(figsize=(7, 7))
+ax.imshow(image)
+show_mask(outputs["masks"][0][0] &gt; 0.0, ax)
+x0, y0 = box[0, 0, 0]; x1, y1 = box[0, 0, 1]
+ax.add_patch(plt.Rectangle((x0, y0), x1 - x0, y1 - y0,
+                           fill=False, edgecolor="yellow", lw=2))
+ax.axis("off"); ax.set_title("Box prompt — far less ambiguous")
+plt.show()</pre></div>
+<div class="cell"><h2>When to reach for this, and when not</h2></div>
+<div class="cell"><p>| Situation | What to do | |---|---| | Generic objects, no labelled data | <strong>SAM, zero-shot.</strong> Nothing you train in a week will compete. | | A specific domain — cells, defects, satellite imagery | SAM <strong>as a labelling accelerator</strong>, then fine-tune a smaller model on the masks it helped you produce. | | Fixed classes, plenty of labels, tight latency budget | Notebook 01's model, or a U-Net. SAM is large and general, and you are paying for generality you do not need. |</p>
+<p>The middle row is the one most projects land on, and it is worth planning for: <strong>the fastest route to a labelled dataset is often a foundation model plus a human correcting it.</strong></p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>SAM segments generic objects with no training, prompted by a point or a box.</li>
+<li>It returns several masks with confidences, because a point prompt is genuinely ambiguous.</li>
+<li>The chapter-8 lesson holds in a new modality: pretraining beats architecture.</li>
+<li>In a specialised domain, use it to build the labelled dataset, then train something small.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

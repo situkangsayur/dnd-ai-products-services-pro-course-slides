@@ -15,6 +15,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from diagrams import attention_qkv  # noqa: E402
 
 
 MMD_LM_LOOP = """
@@ -1261,6 +1262,45 @@ parameterized_attention(query=target, key=source, value=source)"""},
                 {"t": "mmd", "id": "ch15-multihead", "src": MMD_MULTIHEAD,
                  "cap": "Figure 15.7 — each head attends to different parts of the source, in "
                         "separate partitions of the eventual output vector."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 15.3.1",
+            "title": "Self-attention, computed on one sentence",
+            "blocks": [
+                attention_qkv(
+                    "ch15-qkv-run", ["the", "cat", "sat", "on", "it"], focus=4,
+                    cap="One query — the word “it” — against every key in the sentence. "
+                        "Press play to walk the five stages."),
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 15.3.1",
+            "title": "Reading the five stages",
+            "blocks": [
+                {"t": "steps", "items": [
+                    "**Three matrices, one embedding.** `Wq`, `Wk` and `Wv` turn each "
+                    "token's embedding into a query, a key and a value. They are "
+                    "learned, and they are the *only* parameters in an attention head.",
+                    "**The query is dotted against every key.** That gives one raw score "
+                    "per token — how well “it” matches each word, including itself. "
+                    "Dividing by `sqrt(d)` keeps the scores in a range softmax can use.",
+                    "**Softmax turns scores into proportions.** They are positive and "
+                    "they sum to 100%. Nothing is discarded: every token gets a share, "
+                    "and a low share is still a share.",
+                    "**The output is the value vectors, mixed in those proportions.** "
+                    "==The new vector for “it” is literally built out of the other "
+                    "words in the sentence.== That is the whole mechanism.",
+                ]},
+                {"t": "band", "md": "This is one **head**. Multi-head attention runs "
+                                    "several of these in parallel with different `Wq`, "
+                                    "`Wk`, `Wv`, so each can specialise — one on syntax, "
+                                    "another on which noun a pronoun refers to — and "
+                                    "concatenates the results."},
             ],
         },
 

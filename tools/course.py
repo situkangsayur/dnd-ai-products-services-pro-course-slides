@@ -6,6 +6,8 @@ planning notes in ``riset/bri-training-ai/``. When a fact is not yet settled,
 it is marked ``pending`` rather than guessed at.
 """
 
+import os as _os
+
 COURSE = {
     "title": "Designing and Building AI Products and Services",
     "tagline": "AI for Professional",
@@ -142,13 +144,91 @@ def book_source(n):
             f"Chollet & Watson, Deep Learning with Python 3e — bab {n}")
 
 
+# ============================================================== deployment ====
+# Every address the decks point at, in one place, each overridable from the
+# environment. They appear on all twenty chapter decks, so correcting one in
+# twenty content files afterwards is how half of them end up stale.
+#
+#     COURSE_NOTEBOOK_BASE=https://example.org/nb \
+#     COURSE_JUPYTER_BASE=http://10.100.21.22:8888 \
+#     python3 tools/build.py
+#
+# Set any of them empty to fall back to relative paths and drop the chip, which
+# is what you want when reading the decks straight off a checkout with no site
+# and no server in front of them.
+
+# Rendered, browsable notebooks. **HTML, not .ipynb**: a link to a raw notebook
+# does not open a notebook, it downloads a file. Built by tools/nb_html.py.
+NOTEBOOK_BASE = _os.environ.get(
+    "COURSE_NOTEBOOK_BASE",
+    "https://hendrikarisma.my.id/rs/ai-products-course/notebooks").rstrip("/")
+
+# A live JupyterLab the participants can actually run the notebook in. Empty by
+# default: pointing a deck at a server that is not up is worse than not
+# offering the link, because the audience finds out mid-session. Set it once
+# the lab is running, e.g. COURSE_JUPYTER_BASE=http://10.100.21.22:8888
+JUPYTER_BASE = _os.environ.get("COURSE_JUPYTER_BASE", "").rstrip("/")
+
+# Where the notebooks live inside that lab's working directory. JupyterLab
+# addresses files by path from the directory it was started in, so this has to
+# match how the server was launched, not where the files are on your laptop.
+JUPYTER_ROOT = _os.environ.get("COURSE_JUPYTER_ROOT", "notebooks").strip("/")
+
+
+def notebook_url(n, name):
+    """Link to one notebook of chapter ``n``, as something a browser will open.
+
+    **Published as HTML, not as .ipynb.** A link to a raw notebook does not open
+    a notebook, it downloads a file -- which is what a chip on a slide used to
+    do. The rendered pages come from ``tools/nb_html.py``; the layout mirrors
+    the repository, so the path is derived rather than listed.
+
+    Falls back to the relative ``.ipynb`` path when no base URL is configured,
+    which is what you want when reading a checkout with no site in front of it.
+    """
+    if not NOTEBOOK_BASE:
+        return f"../../notebooks/ch{n:02d}/{name}"
+    page = name[:-6] + ".html" if name.endswith(".ipynb") else name
+    return f"{NOTEBOOK_BASE}/ch{n:02d}/{page}"
+
+
+def jupyter_url(n, name):
+    """Open one notebook in a running JupyterLab, or None if none is configured.
+
+    JupyterLab's own URL scheme: ``/lab/tree/<path>`` relative to the directory
+    the server was started in. Returns None rather than a guess when no lab is
+    configured, and the caller drops the chip -- a dead link on a slide is
+    discovered by the room, not by you.
+    """
+    if not JUPYTER_BASE:
+        return None
+    root = f"{JUPYTER_ROOT}/" if JUPYTER_ROOT else ""
+    return f"{JUPYTER_BASE}/lab/tree/{root}ch{n:02d}/{name}"
+
+
+def notebook_index_url(n=None):
+    """The notebook index, anchored at a chapter when one is given."""
+    if not NOTEBOOK_BASE:
+        return "../../notebooks/"
+    anchor = f"#ch{n:02d}" if n else ""
+    return f"{NOTEBOOK_BASE}/index.html{anchor}"
+
+
 def chapter_resources(n, local_notebooks=()):
     """Standard resource row for a chapter deck."""
     res = [{"kind": "book", "label": f"Chapter {n} — full text",
             "href": chapter_url(n)}]
     for nb in local_notebooks:
         res.append({"kind": "notebook", "label": nb,
-                    "href": f"../../notebooks/ch{n:02d}/{nb}"})
+                    "href": notebook_url(n, nb)})
+    if local_notebooks:
+        res.append({"kind": "notebook",
+                    "label": f"All chapter {n} notebooks",
+                    "href": notebook_index_url(n)})
+        lab = jupyter_url(n, local_notebooks[0])
+        if lab:
+            res.append({"kind": "lab",
+                        "label": "Run it — JupyterLab", "href": lab})
     up = official_nb_url(n)
     if up:
         res.append({"kind": "github", "label": "Author's official notebook", "href": up})

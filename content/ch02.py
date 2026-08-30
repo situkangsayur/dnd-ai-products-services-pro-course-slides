@@ -183,6 +183,35 @@ DECK = {
                                  "test set. Keras ships it, so there is nothing to download "
                                  "by hand."},
                 {"t": "code", "lang": "python", "file": "listing 2.1 — loading MNIST",
+                 # Walked line by line, with the state after each. Reading a
+                 # listing and watching one run are different things, and a
+                 # slide only ever supported the first.
+                 "run": [
+                     {"line": 1,
+                      "note": "Keras ships the dataset. The first call downloads "
+                              "it; later calls read the local cache.",
+                      "vars": {}},
+                     {"line": 3,
+                      "note": "Four arrays come back, already split into a "
+                              "training set and a test set.",
+                      "vars": {"train_images": "ndarray", "train_labels": "ndarray",
+                               "test_images": "ndarray", "test_labels": "ndarray"}},
+                     {"line": 5,
+                      "note": "60,000 images, each a 28x28 grid of 8-bit values. "
+                              "Rank 3 — three indices to reach one pixel.",
+                      "vars": {"train_images.shape": "(60000, 28, 28)",
+                               "dtype": "uint8"},
+                      "out": "(60000, 28, 28) uint8"},
+                     {"line": 6,
+                      "note": "One label per image, 0 to 9. Rank 1.",
+                      "vars": {"len(train_labels)": "60000"},
+                      "out": "60000 [5 0 4 1 9 2 1 3 1 4]"},
+                     {"line": 7,
+                      "note": "A separate 10,000 — not trained on, and not looked "
+                              "at until the very end.",
+                      "vars": {"test_images.shape": "(10000, 28, 28)"},
+                      "out": "(10000, 28, 28)"},
+                 ],
                  "src": """from keras.datasets import mnist
 
 (train_images, train_labels), (test_images, test_labels) = mnist.load_data()
@@ -302,6 +331,11 @@ print(train_images.shape, train_images.dtype, train_images.min(), train_images.m
                     cap="784 units, then 512, then 10. Six are drawn per layer and the "
                         "rest are the ellipsis — the counts underneath are the real "
                         "ones."),
+                {"t": "p", "md": "This is the model from listing 2.2, drawn. Every unit in "
+                                 "a layer is connected to every unit in the next, which is "
+                                 "what `Dense` means — and why the first layer alone holds "
+                                 "**401,920 weights**. The next slide shrinks it to four "
+                                 "inputs so the arithmetic fits on a slide."},
             ],
         },
 

@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sequence models, and the trap of one-hot inputs · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Sequence models, and the trap of one-hot inputs</h1>
+  <p>A bidirectional LSTM that loses to bag-of-words, the diagnosis, and the embedding layer that fixes it.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>Integer sequences, not multi-hot</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers
+
+max_length = 600
+max_tokens = 20000
+text_vectorization = layers.TextVectorization(
+    max_tokens=max_tokens,
+    output_mode="int",
+    output_sequence_length=max_length,
+)
+text_vectorization.adapt(text_only_train_ds)
+
+int_train_ds = train_ds.map(lambda x, y: (text_vectorization(x), y),
+                            num_parallel_calls=4)
+int_val_ds = val_ds.map(lambda x, y: (text_vectorization(x), y),
+                        num_parallel_calls=4)
+int_test_ds = test_ds.map(lambda x, y: (text_vectorization(x), y),
+                          num_parallel_calls=4)
+
+for x, y in int_train_ds:
+    print(x.shape, x.dtype)
+    break</pre></div>
+<div class="cell"><h2>The naive version: one-hot into an LSTM</h2></div>
+<div class="cell cell-in"><pre>from keras import ops
+
+inputs = keras.Input(shape=(None,), dtype="int64")
+embedded = ops.one_hot(inputs, num_classes=max_tokens)
+x = layers.Bidirectional(layers.LSTM(32))(embedded)
+x = layers.Dropout(0.5)(x)
+outputs = layers.Dense(1, activation="sigmoid")(x)
+model = keras.Model(inputs, outputs)
+model.compile(optimizer="rmsprop", loss="binary_crossentropy",
+              metrics=["accuracy"])
+model.summary()</pre></div>
+<div class="cell"><blockquote>⚠️ <strong>Every timestep is a 20,000-dimensional vector.</strong> 600 timesteps × 20,000 = 12 million numbers per review, almost all of them zero. This will be extremely slow, and it is the point of the exercise.</blockquote></div>
+<div class="cell cell-in"><pre>cb = [keras.callbacks.ModelCheckpoint("one_hot_bidir_lstm.keras",
+                                      save_best_only=True)]
+model.fit(int_train_ds, validation_data=int_val_ds, epochs=10,
+          callbacks=cb, verbose=2)
+acc = keras.models.load_model("one_hot_bidir_lstm.keras").evaluate(
+    int_test_ds, verbose=0)[1]
+print(f"\none-hot LSTM test accuracy: {acc:.3f}   "
+      f"(bag-of-bigrams was 0.90)")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">one-hot LSTM test accuracy: 0.87x   (bag-of-bigrams was 0.90)</pre></div>
+<div class="cell"><p><strong>Slower, more complex, and worse.</strong> Two reasons, and the second is the fixable one:</p>
+<ul>
+<li>The input representation is enormous and sparse.</li>
+<li><strong>One-hot vectors are all equidistant.</strong> <em>excellent</em> and <em>good</em> are exactly as far apart as <em>excellent</em> and <em>refrigerator</em>. The representation asserts that all words are unrelated, which is false.</li>
+</ul></div>
+<div class="cell"><h2>An Embedding layer</h2></div>
+<div class="cell cell-in"><pre>inputs = keras.Input(shape=(None,), dtype="int64")
+embedded = layers.Embedding(input_dim=max_tokens, output_dim=256)(inputs)
+x = layers.Bidirectional(layers.LSTM(32))(embedded)
+x = layers.Dropout(0.5)(x)
+outputs = layers.Dense(1, activation="sigmoid")(x)
+model = keras.Model(inputs, outputs)
+model.compile(optimizer="rmsprop", loss="binary_crossentropy",
+              metrics=["accuracy"])
+model.summary()</pre></div>
+<div class="cell"><p><strong>256 dimensions instead of 20,000</strong>, and the geometry is learned rather than imposed. An <code>Embedding</code> layer is a lookup table: token <em>i</em> returns row <em>i</em>, and those rows are trained by backpropagation like any other weights.</p></div>
+<div class="cell"><h2>Masking, which is not optional</h2></div>
+<div class="cell cell-in"><pre>inputs = keras.Input(shape=(None,), dtype="int64")
+embedded = layers.Embedding(input_dim=max_tokens, output_dim=256,
+                            mask_zero=True)(inputs)
+x = layers.Bidirectional(layers.LSTM(32))(embedded)
+x = layers.Dropout(0.5)(x)
+outputs = layers.Dense(1, activation="sigmoid")(x)
+model = keras.Model(inputs, outputs)
+model.compile(optimizer="rmsprop", loss="binary_crossentropy",
+              metrics=["accuracy"])
+
+cb = [keras.callbacks.ModelCheckpoint("embeddings_bidir_lstm_masked.keras",
+                                      save_best_only=True)]
+model.fit(int_train_ds, validation_data=int_val_ds, epochs=10,
+          callbacks=cb, verbose=2)
+acc_masked = keras.models.load_model(
+    "embeddings_bidir_lstm_masked.keras").evaluate(int_test_ds, verbose=0)[1]
+print(f"\nembedding + masking test accuracy: {acc_masked:.3f}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">embedding + masking test accuracy: 0.87x — 0.88x</pre></div>
+<div class="cell"><p><code>mask_zero=True</code> tells every downstream layer to <strong>skip the padding</strong>. Without it, a 20-word review padded to 600 gives the LSTM 580 steps of nothing to process, and the state it arrives with has been diluted by all of them.</p></div>
+<div class="cell"><h2>The scoreboard, and the honest reading</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+
+results = [("bag-of-words (unigram)", 0.885),
+           ("bag-of-bigrams", 0.902),
+           ("TF-IDF bigrams", 0.897),
+           ("one-hot bidir LSTM", 0.873),
+           ("embedding bidir LSTM", 0.874),
+           ("+ masking", acc_masked)]
+
+names = [r[0] for r in results]; vals = [r[1] for r in results]
+plt.figure(figsize=(8.5, 4))
+plt.barh(names[::-1], vals[::-1],
+         color=["#12b886" if v &gt;= 0.9 else "#888" for v in vals][::-1])
+plt.xlim(0.84, 0.92); plt.xlabel("test accuracy")
+plt.title("On this dataset, bag-of-bigrams wins")
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p><strong>The bag-of-words model wins.</strong> That is the honest result on IMDB, and the chapter says so.</p>
+<p>The rule the book gives is a ratio: <strong>number of training samples divided by mean sample length</strong>. Below about 1,500, bag-of-words wins. IMDB has 20,000 samples of ~230 words, giving 87 — well inside bag-of-words territory.</p></div>
+<div class="cell cell-in"><pre>import numpy as np
+
+lengths = []
+for x, _ in train_ds.take(50):
+    lengths += [len(s.numpy().split()) for s in x]
+ratio = 20000 / np.mean(lengths)
+print(f"mean review length: {np.mean(lengths):.0f} words")
+print(f"ratio: 20000 / {np.mean(lengths):.0f} = {ratio:.0f}")
+print(f"\nrule of thumb: below ~1500 -&gt; bag-of-words; above -&gt; sequence model")
+print(f"this dataset: {ratio:.0f}  -&gt;  {'bag-of-words' if ratio &lt; 1500 else 'sequence model'}")</pre></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>One-hot inputs assert that every word is equidistant from every other, which is false.</li>
+<li><code>Embedding</code> learns a dense geometry instead — 256 dimensions rather than 20,000.</li>
+<li><strong><code>mask_zero=True</code></strong> or the recurrent layer processes hundreds of padding steps.</li>
+<li>On IMDB, bag-of-bigrams wins. The samples-to-length ratio predicts which family to use.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

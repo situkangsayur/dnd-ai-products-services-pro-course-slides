@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A billion-parameter pretrained model, and what it is actually doing · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>A billion-parameter pretrained model, and what it is actually doing</h1>
+  <p>Gemma 3, prompted three ways — and the hallucination that survives all of them.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>Accepting the terms, then loading</h2></div>
+<div class="cell cell-in"><pre># You must accept the Gemma Terms of Use at
+#   https://www.kaggle.com/models/keras/gemma3
+# and generate an API key at https://www.kaggle.com/settings
+import kagglehub
+kagglehub.login()</pre></div>
+<div class="cell cell-in"><pre>import keras
+import keras_hub
+
+gemma_lm = keras_hub.models.CausalLM.from_preset(
+    "gemma3_1b",
+    dtype="float32",
+)
+gemma_lm.summary()</pre></div>
+<div class="cell"><p>Almost exactly a billion parameters, trained on roughly <strong>2 trillion tokens</strong> — two thousand times more than our mini-GPT.</p>
+<p>Two things in the summary are worth reading closely: a vocabulary of <strong>262,144</strong> terms, and a <code>ReversibleEmbedding</code> holding 302 million of the billion parameters — the tied embedding we built by hand, counted once.</p></div>
+<div class="cell"><h2>It is a fancy autocomplete for the internet</h2></div>
+<div class="cell cell-in"><pre>gemma_lm.compile(sampler="greedy")
+
+for prompt in ["A piece of advice",
+               "How can I make brownies?"]:
+    print(f"--- {prompt!r} ---")
+    print(gemma_lm.generate(prompt, max_length=40))
+    print()</pre></div>
+<div class="cell"><p>Far more coherent than mini-GPT, and <strong>still not useful</strong>. Asked how to make brownies, it writes the <em>forum post asking the question</em> — because that is a likely continuation in crawled web text.</p></div>
+<div class="cell"><h2>Prompting into a different part of the distribution</h2></div>
+<div class="cell cell-in"><pre>print(gemma_lm.generate(
+    "The following brownie recipe is easy to make in just a few steps.\n\n"
+    "You can start by",
+    max_length=60))</pre></div>
+<div class="cell"><p>It is tempting to imagine the model <em>interpreting</em> the prompt conversationally. <strong>Nothing of the sort is happening.</strong> We constructed a prompt for which an actual recipe is a more likely continuation than someone asking for help.</p></div>
+<div class="cell"><h2>Hallucination</h2></div>
+<div class="cell cell-in"><pre>print(gemma_lm.generate(
+    "Tell me about the 542nd president of the United States.",
+    max_length=40))</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">Tell me about the 542nd president of the United States.
+The 542nd president of the United States was James A. Garfield.</pre></div>
+<div class="cell"><p>Utter nonsense — and the model could not find a <strong>more likely</strong> way to complete the prompt. There is no mechanism by which it could decline: declining is just another continuation, and one this model was never trained to prefer.</p></div>
+<div class="cell"><h2>Prompt sensitivity, measured</h2></div>
+<div class="cell cell-in"><pre>variants = [
+    "What is the capital of France?",
+    "what is the capital of france",
+    "Q: What is the capital of France?\nA:",
+    "Please tell me the capital city of France.",
+    "The capital of France is",
+]
+for v in variants:
+    out = gemma_lm.generate(v, max_length=len(v.split()) + 15)
+    print(f"{v!r}\n  -&gt; {out[len(v):].strip()[:80]}\n")</pre></div>
+<div class="cell"><p><strong>The information conveyed about the task is identical in all five.</strong> If the answers differ, something other than understanding is happening.</p>
+<p>Chapter 19 makes this argument formally. Here it is worth doing the experiment yourself, on a question with an unambiguous answer, and looking at what comes back.</p></div>
+<div class="cell"><h2>Sampling strategies, on a model worth sampling from</h2></div>
+<div class="cell cell-in"><pre>prompt = "The three most important ideas in machine learning are"
+
+for sampler in ["greedy", "top_k", "random"]:
+    gemma_lm.compile(sampler=sampler)
+    print(f"--- {sampler} ---")
+    print(gemma_lm.generate(prompt, max_length=60))
+    print()</pre></div>
+<div class="cell"><p>The same four strategies from notebook 03, exposed as one argument. <strong><code>compile(sampler=...)</code> is where a production system's output character is decided</strong>, and it is worth choosing deliberately rather than accepting a default.</p></div>
+<div class="cell"><h2>What this costs to run</h2></div>
+<div class="cell cell-in"><pre>import time
+
+gemma_lm.compile(sampler="greedy")
+gemma_lm.generate("warm up", max_length=20)     # first call compiles
+
+t0 = time.time()
+out = gemma_lm.generate(prompt, max_length=128)
+dt = time.time() - t0
+tokens = len(out.split())
+print(f"{dt:.1f}s for ~{tokens} words  -&gt;  ~{tokens/dt:.1f} words/second")
+print()
+print("Multiply by your request volume before promising anyone a latency.")</pre></div>
+<div class="cell"><blockquote><strong>Note</strong> — Warm up first. The first call compiles, and timing it measures the compiler — the same mistake notebook 03 made deliberately, worth two orders of magnitude.</blockquote></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>A pretrained base model is a fancy autocomplete for the internet, and not yet useful.</li>
+<li>Prompting moves you around the distribution; it is not communication.</li>
+<li><strong>There is always a most-likely next token</strong>, so there is always an answer — true or not.</li>
+<li>Measure throughput after warming up, before promising a latency.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

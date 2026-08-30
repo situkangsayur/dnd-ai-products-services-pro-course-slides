@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>English to Spanish with recurrent encoder and decoder · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>English to Spanish with recurrent encoder and decoder</h1>
+  <p>The bottleneck architecture, working — and its two limits, which are what the Transformer was invented to remove.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The data</h2></div>
+<div class="cell cell-in"><pre>import pathlib, random, re, string
+import keras
+import tensorflow as tf
+
+zip_path = keras.utils.get_file(
+    origin=("http://storage.googleapis.com/download.tensorflow.org/"
+            "data/spa-eng.zip"),
+    fname="spa-eng", extract=True)
+text_path = pathlib.Path(zip_path) / "spa-eng" / "spa.txt"
+
+with open(text_path) as f:
+    lines = f.read().split("\n")[:-1]
+
+text_pairs = []
+for line in lines:
+    english, spanish = line.split("\t")
+    spanish = "[start] " + spanish + " [end]"
+    text_pairs.append((english, spanish))
+
+print(f"{len(text_pairs):,} pairs")
+print(random.choice(text_pairs))</pre></div>
+<div class="cell"><p><code>[start]</code> and <code>[end]</code> are inserted <strong>in the data</strong>, not built into the model. They are the seed and the stop signal for the generation loop.</p></div>
+<div class="cell"><h2>Two tokenizers, because punctuation is language-specific</h2></div>
+<div class="cell cell-in"><pre>random.shuffle(text_pairs)
+val_samples = int(0.15 * len(text_pairs))
+train_samples = len(text_pairs) - 2 * val_samples
+train_pairs = text_pairs[:train_samples]
+val_pairs = text_pairs[train_samples:train_samples + val_samples]
+test_pairs = text_pairs[train_samples + val_samples:]
+
+from keras import layers
+
+strip_chars = string.punctuation + "¿"
+strip_chars = strip_chars.replace("[", "").replace("]", "")
+
+def custom_standardization(input_string):
+    lowercase = tf.strings.lower(input_string)
+    return tf.strings.regex_replace(
+        lowercase, f"[{re.escape(strip_chars)}]", "")
+
+vocab_size, sequence_length = 15000, 20
+
+english_tokenizer = layers.TextVectorization(
+    max_tokens=vocab_size, output_mode="int",
+    output_sequence_length=sequence_length)
+spanish_tokenizer = layers.TextVectorization(
+    max_tokens=vocab_size, output_mode="int",
+    output_sequence_length=sequence_length + 1,
+    standardize=custom_standardization)
+
+english_tokenizer.adapt([p[0] for p in train_pairs])
+spanish_tokenizer.adapt([p[1] for p in train_pairs])
+print("Spanish sequence length is one longer -- that extra slot is what")
+print("makes the offset-by-one split possible.")</pre></div>
+<div class="cell"><blockquote>⚠️ <strong>Two customisations, both easy to miss.</strong> <code>[</code> and <code>]</code> must survive standardization or <code>"[start]"</code> collapses to <code>"start"</code>. And <code>¿</code> is not in <code>string.punctuation</code>, so it must be added explicitly.</blockquote></div>
+<div class="cell"><h2>The pipeline</h2></div>
+<div class="cell cell-in"><pre>batch_size = 64
+
+def format_dataset(eng, spa):
+    eng = english_tokenizer(eng)
+    spa = spanish_tokenizer(spa)
+    features = {"english": eng, "spanish": spa[:, :-1]}
+    labels = spa[:, 1:]
+    sample_weights = labels != 0
+    return features, labels, sample_weights
+
+def make_dataset(pairs):
+    eng_texts, spa_texts = zip(*pairs)
+    ds = tf.data.Dataset.from_tensor_slices((list(eng_texts), list(spa_texts)))
+    ds = ds.batch(batch_size).map(format_dataset, num_parallel_calls=4)
+    return ds.shuffle(2048).cache()
+
+train_ds = make_dataset(train_pairs)
+val_ds = make_dataset(val_pairs)
+
+inputs, targets, weights = next(iter(train_ds))
+for k, v in inputs.items():
+    print(f"inputs[{k!r}]: {v.shape}")
+print("targets:", targets.shape, " sample_weights:", weights.shape)</pre></div>
+<div class="cell"><p><code>sample_weights = labels != 0</code> tells Keras to <strong>ignore padded positions</strong> in the loss and metrics. Without it, a model that learned only to predict padding would score well.</p></div>
+<div class="cell"><h2>Why the naive single-RNN approach cannot work</h2></div>
+<div class="cell"><blockquote><em>"I will bring the bag to you"</em> becomes <em>"Te traeré la bolsa."</em> The <strong>first</strong> Spanish word corresponds to the <strong>last</strong> English word.</blockquote>
+<p>A single RNN emitting a target token at each step sees only source tokens 0…N when predicting target token N. There is no way to produce <em>Te</em> without having read to the end.</p></div>
+<div class="cell"><h2>Encoder and decoder</h2></div>
+<div class="cell cell-in"><pre>embed_dim, hidden_dim = 256, 1024
+
+source = keras.Input(shape=(None,), dtype="int32", name="english")
+x = layers.Embedding(vocab_size, embed_dim, mask_zero=True)(source)
+rnn_layer = layers.Bidirectional(layers.GRU(hidden_dim), merge_mode="sum")
+encoder_output = rnn_layer(x)
+
+target = keras.Input(shape=(None,), dtype="int32", name="spanish")
+x = layers.Embedding(vocab_size, embed_dim, mask_zero=True)(target)
+x = layers.GRU(hidden_dim, return_sequences=True)(x, initial_state=encoder_output)
+x = layers.Dropout(0.5)(x)
+target_predictions = layers.Dense(vocab_size, activation="softmax")(x)
+seq2seq_rnn = keras.Model([source, target], target_predictions)
+seq2seq_rnn.summary()</pre></div>
+<div class="cell"><p><strong>Bidirectional in the encoder, emphatically not in the decoder.</strong> We never predict source tokens, so there is nothing to cheat at — and a rich source representation is exactly what we want. The decoder is the Shakespeare setup from notebook 01, with its initial state supplied rather than zero.</p></div>
+<div class="cell"><h2>Training</h2></div>
+<div class="cell cell-in"><pre>seq2seq_rnn.compile(optimizer="adam",
+                    loss="sparse_categorical_crossentropy",
+                    weighted_metrics=["accuracy"])
+seq2seq_rnn.fit(train_ds, epochs=15, validation_data=val_ds, verbose=2)</pre></div>
+<div class="cell"><p>About 65% next-token accuracy — and that metric is poor for translation. It assumes tokens 0…N are already correct when predicting N+1, which is exactly what is <em>not</em> true at inference. <strong>BLEU</strong> is the standard alternative.</p></div>
+<div class="cell"><h2>Generating translations</h2></div>
+<div class="cell cell-in"><pre>import numpy as np
+
+spa_vocab = spanish_tokenizer.get_vocabulary()
+spa_index_lookup = dict(zip(range(len(spa_vocab)), spa_vocab))
+
+def generate_translation(input_sentence):
+    tokenized_input = english_tokenizer([input_sentence])
+    decoded_sentence = "[start]"
+    for i in range(sequence_length):
+        tokenized_target = spanish_tokenizer([decoded_sentence])[:, :-1]
+        preds = seq2seq_rnn.predict(
+            [tokenized_input, tokenized_target], verbose=0)
+        sampled_token_index = np.argmax(preds[0, i, :])
+        sampled_token = spa_index_lookup[sampled_token_index]
+        decoded_sentence += " " + sampled_token
+        if sampled_token == "[end]":
+            break
+    return decoded_sentence
+
+test_eng_texts = [pair[0] for pair in test_pairs]
+for _ in range(5):
+    s = random.choice(test_eng_texts)
+    print("-")
+    print(s)
+    print(generate_translation(s))</pre></div>
+<div class="cell"><blockquote><strong>Note</strong> — This loop is <strong>inefficient by construction</strong>: it reprocesses the whole source and the whole generated target on every sampled word. Chapter 16 quantifies exactly how expensive that is, and what caching does about it.</blockquote></div>
+<div class="cell"><h2>The two limits nothing here fixes</h2></div>
+<div class="cell cell-in"><pre>print("1. THE BOTTLENECK")
+print(f"   Everything the decoder knows about English arrives through")
+print(f"   one vector of {hidden_dim} numbers. Longer or more complex")
+print(f"   sentences do not get a bigger vector.\n")
+print("2. FORGETTING")
+print("   RNNs progressively lose the past. By the 100th token, little")
+print("   remains of the start of the sequence.\n")
+print("Deeper stacks, LSTM instead of GRU, a wider state -- none of these")
+print("address either. Google Translate circa 2017 was seven large LSTM")
+print("layers in essentially this shape, and these limits are what drove")
+print("the search for something else.")</pre></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>An encoder compresses the whole source; a decoder generates from it token by token.</li>
+<li>Bidirectional in the encoder is right; in the decoder it destroys the objective.</li>
+<li><code>sample_weights</code> keeps padding out of the loss.</li>
+<li><strong>The bottleneck and forgetting are structural</strong> — no amount of tuning removes them.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Data augmentation, and what it can and cannot fix · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Data augmentation, and what it can and cannot fix</h1>
+  <p>Random flips, rotations, and zooms buy ten points here. Understanding why it is not twenty is the more useful half.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>Augmentation as layers</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers
+
+data_augmentation = keras.Sequential([
+    layers.RandomFlip("horizontal"),
+    layers.RandomRotation(0.1),
+    layers.RandomZoom(0.2),
+])</pre></div>
+<div class="cell"><blockquote><strong>Note</strong> — These are <strong>layers</strong>, active during training and inert at inference — exactly like <code>Dropout</code>. Putting them in the model rather than the data pipeline means they follow the model everywhere it goes.</blockquote></div>
+<div class="cell"><h2>Seeing what it does</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+from keras.utils import image_dataset_from_directory
+import pathlib
+
+new_base_dir = pathlib.Path("cats_vs_dogs_small")
+train_dataset = image_dataset_from_directory(
+    new_base_dir / "train", image_size=(180, 180), batch_size=32)
+
+for images, _ in train_dataset.take(1):
+    fig, axes = plt.subplots(3, 6, figsize=(13, 6.6))
+    for row in range(3):
+        aug = data_augmentation(images)
+        for col in range(6):
+            axes[row, col].imshow(aug[col].numpy().astype("uint8"))
+            axes[row, col].axis("off")
+    plt.suptitle("The same six images, three times through augmentation", y=1.0)
+    plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>The same photographs, differently. <strong>No new information</strong> — that is the point and also the limit. Augmentation resamples the manifold you already have; it cannot show the model a breed it has never seen.</p></div>
+<div class="cell"><h2>The model, with augmentation and dropout</h2></div>
+<div class="cell cell-in"><pre>inputs = keras.Input(shape=(180, 180, 3))
+x = data_augmentation(inputs)
+x = layers.Rescaling(1./255)(x)
+x = layers.Conv2D(filters=32, kernel_size=3, activation="relu")(x)
+x = layers.MaxPooling2D(pool_size=2)(x)
+x = layers.Conv2D(filters=64, kernel_size=3, activation="relu")(x)
+x = layers.MaxPooling2D(pool_size=2)(x)
+x = layers.Conv2D(filters=128, kernel_size=3, activation="relu")(x)
+x = layers.MaxPooling2D(pool_size=2)(x)
+x = layers.Conv2D(filters=256, kernel_size=3, activation="relu")(x)
+x = layers.MaxPooling2D(pool_size=2)(x)
+x = layers.Conv2D(filters=256, kernel_size=3, activation="relu")(x)
+x = layers.Flatten()(x)
+x = layers.Dropout(0.5)(x)
+outputs = layers.Dense(1, activation="sigmoid")(x)
+model = keras.Model(inputs=inputs, outputs=outputs)
+
+model.compile(loss="binary_crossentropy", optimizer="rmsprop",
+              metrics=["accuracy"])
+
+validation_dataset = image_dataset_from_directory(
+    new_base_dir / "validation", image_size=(180, 180), batch_size=32)
+
+callbacks = [keras.callbacks.ModelCheckpoint(
+    filepath="convnet_with_augmentation.keras",
+    save_best_only=True, monitor="val_loss")]
+history = model.fit(train_dataset, epochs=100,
+                    validation_data=validation_dataset,
+                    callbacks=callbacks, verbose=2)</pre></div>
+<div class="cell"><blockquote>⚠️ <strong>One hundred epochs, not thirty.</strong> Augmentation slows overfitting down, so the model needs longer to reach its best. Running it for thirty and concluding augmentation <em>did not help</em> is a common and expensive mistake.</blockquote></div>
+<div class="cell"><h2>The result</h2></div>
+<div class="cell cell-in"><pre>import numpy as np
+
+h = history.history
+epochs = range(1, len(h["accuracy"]) + 1)
+
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4))
+a1.plot(epochs, h["accuracy"], lw=1, label="training")
+a1.plot(epochs, h["val_accuracy"], lw=1.6, label="validation")
+a1.set_title("Accuracy"); a1.legend(); a1.set_xlabel("epoch")
+a2.plot(epochs, h["loss"], lw=1, label="training")
+a2.plot(epochs, h["val_loss"], lw=1.6, label="validation")
+a2.set_title("Loss"); a2.legend(); a2.set_xlabel("epoch")
+plt.tight_layout(); plt.show()
+
+from keras.utils import image_dataset_from_directory
+test_dataset = image_dataset_from_directory(
+    new_base_dir / "test", image_size=(180, 180), batch_size=32)
+best = keras.models.load_model("convnet_with_augmentation.keras")
+print(f"test accuracy: {best.evaluate(test_dataset, verbose=0)[1]:.3f}")
+print(f"validation loss bottoms out at epoch "
+      f"{int(np.argmin(h['val_loss']))+1} of {len(epochs)}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">test accuracy: ~0.83</pre></div>
+<div class="cell"><h2>Where the ten points came from, and why not more</h2></div>
+<div class="cell"><p>| | test accuracy | |---|---| | from scratch, no augmentation | ~0.70 | | + augmentation + dropout | <strong>~0.83</strong> | | pretrained backbone (notebook 04) | ~0.97 |</p>
+<p>Augmentation is worth thirteen points and stops there. It <strong>resamples the manifold you have</strong>; it does not add information the 2,000 photographs never contained.</p>
+<p>The pretrained model in notebook 04 gets its advantage from somewhere else entirely: 1.4 million images it was trained on before you arrived.</p></div>
+<div class="cell"><h2>Choosing augmentations that are true</h2></div>
+<div class="cell cell-in"><pre># A horizontal flip of a cat is still a cat.
+# A horizontal flip of a digit is not still that digit.
+from keras.datasets import mnist
+(x, y), _ = mnist.load_data()
+
+flip = layers.RandomFlip("horizontal")
+img = x[0:1].reshape(1, 28, 28, 1).astype("float32")
+
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(5, 2.6))
+a1.imshow(img[0, :, :, 0], cmap="gray_r"); a1.set_title(f"label {y[0]}"); a1.axis("off")
+a2.imshow(flip(img, training=True)[0, :, :, 0], cmap="gray_r")
+a2.set_title("flipped -- still a 5?"); a2.axis("off")
+plt.show()</pre></div>
+<div class="cell"><p><strong>An augmentation encodes a claim about your data</strong>: <em>this transformation does not change the label</em>. Horizontal flip is true of animals and false of digits, text, and most medical imaging. Getting it wrong teaches the model something untrue, with no error message.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Augmentation layers are training-only, like dropout, and belong inside the model.</li>
+<li>It delays overfitting, so <strong>train for longer</strong> — judging it at the old epoch count understates it.</li>
+<li>Worth about thirteen points here; it resamples the manifold rather than adding information.</li>
+<li>Every augmentation asserts that a transformation preserves the label. Check that it does.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

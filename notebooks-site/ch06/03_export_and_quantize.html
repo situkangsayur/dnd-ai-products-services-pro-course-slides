@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Deploying: saving, serving, and making it smaller · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Deploying: saving, serving, and making it smaller</h1>
+  <p>What happens after fit() returns — the .keras format, inference-only export, and the two ways to make a model cheaper to run.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>A model to deploy</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers
+from keras.datasets import mnist
+import numpy as np
+
+(x, y), (xt, yt) = mnist.load_data()
+x = x.reshape(-1, 784).astype("float32") / 255
+xt = xt.reshape(-1, 784).astype("float32") / 255
+
+keras.utils.set_random_seed(0)
+model = keras.Sequential([
+    layers.Dense(256, activation="relu"),
+    layers.Dense(128, activation="relu"),
+    layers.Dense(10, activation="softmax"),
+])
+model.compile(optimizer="adam", loss="sparse_categorical_crossentropy",
+              metrics=["accuracy"])
+model.fit(x, y, epochs=3, batch_size=128, verbose=0)
+base_acc = model.evaluate(xt, yt, verbose=0)[1]
+print(f"accuracy: {base_acc:.4f}   parameters: {model.count_params():,}")</pre></div>
+<div class="cell"><h2>Saving, and what is in the file</h2></div>
+<div class="cell cell-in"><pre>import os, zipfile
+
+model.save("mnist.keras")
+size = os.path.getsize("mnist.keras")
+print(f"mnist.keras: {size/1e6:.2f} MB")
+
+with zipfile.ZipFile("mnist.keras") as z:
+    for n in z.namelist():
+        print(" ", n, f"{z.getinfo(n).file_size/1e6:.2f} MB")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">mnist.keras: 1.2x MB
+  metadata.json 0.00 MB
+  config.json 0.00 MB
+  model.weights.h5 1.2x MB</pre></div>
+<div class="cell"><p>A zip of three things: the architecture as JSON, the weights, and a little metadata. <strong>Backend-independent</strong> — chapter 3's notebook 02 saved under one backend and loaded under another.</p></div>
+<div class="cell"><h2>Preprocessing belongs inside the exported model</h2></div>
+<div class="cell"><p>The most common serving bug is not a broken model — it is preprocessing that differs by a fraction between the training script and the service. Put it in the graph and the question cannot arise.</p></div>
+<div class="cell cell-in"><pre>inputs = keras.Input(shape=(28, 28), dtype="uint8", name="image")
+x_ = keras.layers.Rescaling(1./255)(keras.ops.cast(inputs, "float32"))
+x_ = keras.layers.Reshape((784,))(x_)
+outputs = model(x_)
+servable = keras.Model(inputs, outputs, name="mnist_servable")
+
+# It now takes exactly what the caller has: raw uint8 images.
+raw = mnist.load_data()[1][0][:4]
+print("input dtype:", raw.dtype, " shape:", raw.shape)
+print("predictions:", servable.predict(raw, verbose=0).argmax(axis=1))
+servable.save("mnist_servable.keras")</pre></div>
+<div class="cell"><h2>Making it smaller: int8 quantization</h2></div>
+<div class="cell"><p>Chapter 18 explains the arithmetic. Here is what it costs and what it buys, measured.</p></div>
+<div class="cell cell-in"><pre>import copy, time
+
+q = keras.saving.load_model("mnist.keras")
+q.quantize("int8")
+q_acc = q.evaluate(xt, yt, verbose=0)[1]
+q.save("mnist_int8.keras")
+
+fp = os.path.getsize("mnist.keras") / 1e6
+qs = os.path.getsize("mnist_int8.keras") / 1e6
+print(f"float32: {fp:.2f} MB   accuracy {base_acc:.4f}")
+print(f"int8:    {qs:.2f} MB   accuracy {q_acc:.4f}")
+print(f"size: {fp/qs:.1f}x smaller   accuracy cost: {base_acc-q_acc:+.4f}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">float32: 1.2x MB   accuracy 0.97xx
+int8:    0.3x MB   accuracy 0.97xx
+size: ~4x smaller   accuracy cost: -0.00xx</pre></div>
+<div class="cell"><blockquote><strong>Note</strong> — Measure the accuracy cost on <strong>your</strong> data, every time. It is usually negligible and it is not guaranteed to be — and quantizing is a one-way operation on the model object, so keep the float32 file.</blockquote></div>
+<div class="cell"><h2>Measuring inference cost honestly</h2></div>
+<div class="cell cell-in"><pre>def bench(m, data, n=5, warmup=2):
+    for _ in range(warmup):
+        m.predict(data, verbose=0)
+    t0 = time.perf_counter()
+    for _ in range(n):
+        m.predict(data, verbose=0)
+    return (time.perf_counter() - t0) / n
+
+batch = xt[:512]
+print(f"float32: {bench(model, batch)*1000:.1f} ms / 512 samples")
+print(f"int8:    {bench(q, batch)*1000:.1f} ms / 512 samples")</pre></div>
+<div class="cell"><p><strong>Warm up first.</strong> The first call compiles; timing it measures the compiler. Chapter 16's generation notebook makes the same mistake deliberately, and it costs two orders of magnitude there.</p></div>
+<div class="cell"><h2>What still has to be built around this</h2></div>
+<div class="cell"><p>The model is the small part. A deployment also needs:</p>
+<ul>
+<li><strong>Input validation</strong> — the shape and dtype the model expects, enforced at the boundary rather than assumed.</li>
+<li><strong>Monitoring</strong> — not just errors, but the distribution of inputs. Chapter 19's point about distribution shift starts counting from the day you deploy.</li>
+<li><strong>A rollback</strong> — models are data, and a bad model ships as easily as a good one.</li>
+<li><strong>A held-out set you have not touched</strong>, so the number you quote is one you can defend.</li>
+</ul></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li><code>.keras</code> is a zip of config plus weights, and it is backend-independent.</li>
+<li>Put preprocessing <strong>inside</strong> the exported model — it removes the most common serving bug.</li>
+<li>int8 quantization is roughly 4× smaller; measure the accuracy cost on your own data.</li>
+<li>Warm up before benchmarking, or you are timing the compiler.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

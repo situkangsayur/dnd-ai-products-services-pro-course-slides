@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>2,000 images, from scratch · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>2,000 images, from scratch</h1>
+  <p>The realistic case: a few thousand images, a model that overfits within five epochs, and a baseline to improve on in the next two notebooks.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>Getting the data</h2></div>
+<div class="cell cell-in"><pre>import os, shutil, pathlib
+import keras
+
+# Cats vs dogs. Requires a Kaggle account; see the book for the download step.
+# If you already have the archive, point original_dir at the extracted folder.
+original_dir = pathlib.Path("train")
+new_base_dir = pathlib.Path("cats_vs_dogs_small")
+
+def make_subset(subset_name, start_index, end_index):
+    for category in ("cat", "dog"):
+        dir = new_base_dir / subset_name / category
+        os.makedirs(dir, exist_ok=True)
+        fnames = [f"{category}.{i}.jpg" for i in range(start_index, end_index)]
+        for fname in fnames:
+            shutil.copyfile(src=original_dir / fname, dst=dir / fname)
+
+if original_dir.exists() and not new_base_dir.exists():
+    make_subset("train", 0, 1000)
+    make_subset("validation", 1000, 1500)
+    make_subset("test", 1500, 2500)
+    print("subsets created")
+else:
+    print("point original_dir at your extracted Kaggle download")</pre></div>
+<div class="cell"><blockquote><strong>Note</strong> — <strong>2,000 training images, 1,000 validation, 2,000 test.</strong> Deliberately small. Everything interesting in this chapter follows from that number.</blockquote></div>
+<div class="cell"><h2>image_dataset_from_directory</h2></div>
+<div class="cell cell-in"><pre>from keras.utils import image_dataset_from_directory
+
+train_dataset = image_dataset_from_directory(
+    new_base_dir / "train", image_size=(180, 180), batch_size=32)
+validation_dataset = image_dataset_from_directory(
+    new_base_dir / "validation", image_size=(180, 180), batch_size=32)
+test_dataset = image_dataset_from_directory(
+    new_base_dir / "test", image_size=(180, 180), batch_size=32)
+
+for data_batch, labels_batch in train_dataset:
+    print("data batch shape:", data_batch.shape)
+    print("labels batch shape:", labels_batch.shape)
+    break</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">data batch shape: (32, 180, 180, 3)
+labels batch shape: (32,)</pre></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+
+for images, labels in train_dataset.take(1):
+    fig, axes = plt.subplots(2, 6, figsize=(13, 4.4))
+    for ax, img, lab in zip(axes.ravel(), images, labels):
+        ax.imshow(img.numpy().astype("uint8"))
+        ax.set_title("dog" if lab == 1 else "cat", fontsize=9)
+        ax.axis("off")
+    plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><h2>The model</h2></div>
+<div class="cell cell-in"><pre>from keras import layers
+
+inputs = keras.Input(shape=(180, 180, 3))
+x = layers.Rescaling(1./255)(inputs)
+x = layers.Conv2D(filters=32, kernel_size=3, activation="relu")(x)
+x = layers.MaxPooling2D(pool_size=2)(x)
+x = layers.Conv2D(filters=64, kernel_size=3, activation="relu")(x)
+x = layers.MaxPooling2D(pool_size=2)(x)
+x = layers.Conv2D(filters=128, kernel_size=3, activation="relu")(x)
+x = layers.MaxPooling2D(pool_size=2)(x)
+x = layers.Conv2D(filters=256, kernel_size=3, activation="relu")(x)
+x = layers.MaxPooling2D(pool_size=2)(x)
+x = layers.Conv2D(filters=256, kernel_size=3, activation="relu")(x)
+x = layers.Flatten()(x)
+outputs = layers.Dense(1, activation="sigmoid")(x)
+model = keras.Model(inputs=inputs, outputs=outputs)
+
+model.compile(loss="binary_crossentropy", optimizer="rmsprop",
+              metrics=["accuracy"])
+model.summary()</pre></div>
+<div class="cell"><p><code>Rescaling</code> is <strong>inside the model</strong>, not in the data pipeline. Chapter 6's point about preprocessing travelling with the model, applied by default.</p></div>
+<div class="cell"><h2>Training, with a checkpoint</h2></div>
+<div class="cell cell-in"><pre>callbacks = [
+    keras.callbacks.ModelCheckpoint(
+        filepath="convnet_from_scratch.keras",
+        save_best_only=True,
+        monitor="val_loss")
+]
+history = model.fit(train_dataset, epochs=30,
+                    validation_data=validation_dataset,
+                    callbacks=callbacks, verbose=2)</pre></div>
+<div class="cell"><h2>The curves, and the diagnosis</h2></div>
+<div class="cell cell-in"><pre>import numpy as np
+
+h = history.history
+epochs = range(1, len(h["accuracy"]) + 1)
+
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4))
+a1.plot(epochs, h["accuracy"], "o-", ms=3, label="training")
+a1.plot(epochs, h["val_accuracy"], "s-", ms=3, label="validation")
+a1.set_title("Accuracy"); a1.legend(); a1.set_xlabel("epoch")
+a2.plot(epochs, h["loss"], "o-", ms=3, label="training")
+a2.plot(epochs, h["val_loss"], "s-", ms=3, label="validation")
+a2.set_title("Loss"); a2.legend(); a2.set_xlabel("epoch")
+plt.tight_layout(); plt.show()
+
+turn = int(np.argmin(h["val_loss"])) + 1
+print(f"validation loss bottoms out at epoch {turn} of {len(epochs)}")</pre></div>
+<div class="cell"><p>Training accuracy runs to nearly 100%. Validation stalls around 70% and validation loss turns up within about five epochs. <strong>Textbook overfitting</strong>, and entirely expected with 2,000 samples.</p></div>
+<div class="cell"><h2>The baseline</h2></div>
+<div class="cell cell-in"><pre>test_model = keras.models.load_model("convnet_from_scratch.keras")
+_, test_acc = test_model.evaluate(test_dataset, verbose=0)
+print(f"test accuracy: {test_acc:.3f}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">test accuracy: ~0.70</pre></div>
+<div class="cell"><p>Around 70%. Hold onto that number: notebook 03 adds augmentation and reaches the low 80s; notebook 04 uses a pretrained backbone and reaches the high 90s. <strong>Same data, same budget.</strong></p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li><code>image_dataset_from_directory</code> turns a folder tree into a batched dataset in one call.</li>
+<li>Put <code>Rescaling</code> inside the model so preprocessing travels with it.</li>
+<li>2,000 images overfit a from-scratch ConvNet within five epochs.</li>
+<li><strong>70% is the baseline</strong> the next two notebooks improve on.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

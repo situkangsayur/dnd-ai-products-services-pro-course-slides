@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Underfitting, overfitting, and finding the capacity you need · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Underfitting, overfitting, and finding the capacity you need</h1>
+  <p>The book's prescription is deliberately counterintuitive: make the model overfit first, then fight it. This notebook runs three capacities and shows why.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>Three models of different sizes</h2></div>
+<div class="cell cell-in"><pre>import numpy as np
+import keras
+from keras import layers
+from keras.datasets import imdb
+
+(train_data, train_labels), _ = imdb.load_data(num_words=10000)
+
+def vectorize(seqs, dim=10000):
+    out = np.zeros((len(seqs), dim), dtype="float32")
+    for i, s in enumerate(seqs):
+        out[i, s] = 1.
+    return out
+
+x = vectorize(train_data)
+y = np.asarray(train_labels).astype("float32")
+
+def run(units, epochs=20, name=""):
+    keras.utils.set_random_seed(0)
+    m = keras.Sequential([layers.Dense(units, activation="relu"),
+                          layers.Dense(units, activation="relu"),
+                          layers.Dense(1, activation="sigmoid")])
+    m.compile(optimizer="rmsprop", loss="binary_crossentropy",
+              metrics=["accuracy"])
+    h = m.fit(x, y, epochs=epochs, batch_size=512,
+              validation_split=0.4, verbose=0)
+    print(f"{name:12s} best val loss {min(h.history['val_loss']):.4f} "
+          f"at epoch {int(np.argmin(h.history['val_loss']))+1}")
+    return h
+
+h_small = run(4, name="tiny (4)")
+h_medium = run(16, name="medium (16)")
+h_large = run(512, name="large (512)")</pre></div>
+<div class="cell"><h2>The three curves</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+
+plt.figure(figsize=(8, 4.8))
+for h, lab, c in [(h_small, "tiny (4)", "#1f77b4"),
+                  (h_medium, "medium (16)", "#2ca02c"),
+                  (h_large, "large (512)", "#d62728")]:
+    plt.plot(h.history["val_loss"], c=c, lw=1.6, label=f"{lab} — validation")
+    plt.plot(h.history["loss"], c=c, lw=1.0, ls="--", alpha=.6,
+             label=f"{lab} — training")
+plt.xlabel("epoch"); plt.ylabel("loss"); plt.ylim(0, 0.8)
+plt.legend(fontsize=9); plt.title("Capacity, and when overfitting starts")
+plt.show()</pre></div>
+<div class="cell"><p>Read it in three parts.</p>
+<p><strong>Tiny</strong> — training loss stays high. It cannot represent the problem; this is underfitting, and no amount of regularization helps.</p>
+<p><strong>Large</strong> — training loss collapses almost immediately and validation loss turns around within two epochs. Enormous capacity, memorized fast.</p>
+<p><strong>Medium</strong> — the useful one, and note that it <em>also</em> overfits. The goal was never a model that does not overfit.</p></div>
+<div class="cell"><h2>Why you should make it overfit first</h2></div>
+<div class="cell"><p>The book's sequence is: <strong>get to overfitting, then regularize</strong>. The reason is that a model that has not overfit tells you nothing — you cannot distinguish <em>not enough capacity</em> from <em>not enough training</em> from <em>the wrong architecture</em> by looking at a flat curve.</p>
+<p>Once it overfits, you know the capacity is sufficient and every subsequent change is measurable.</p></div>
+<div class="cell"><h2>Three things to check before blaming capacity</h2></div>
+<div class="cell cell-in"><pre># 1. Is the learning rate right? Chapter 3's lesson, on a real model.
+for lr in [1e-5, 1e-3, 1e-1]:
+    keras.utils.set_random_seed(0)
+    m = keras.Sequential([layers.Dense(16, activation="relu"),
+                          layers.Dense(16, activation="relu"),
+                          layers.Dense(1, activation="sigmoid")])
+    m.compile(optimizer=keras.optimizers.RMSprop(learning_rate=lr),
+              loss="binary_crossentropy", metrics=["accuracy"])
+    h = m.fit(x, y, epochs=5, batch_size=512, validation_split=0.4, verbose=0)
+    print(f"lr={lr:&lt;7} train loss after 5 epochs: "
+          f"{h.history['loss'][-1]:.4f}   val acc {h.history['val_accuracy'][-1]:.4f}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">lr=1e-05   train loss after 5 epochs: 0.6xxx   val acc 0.6xxx
+lr=0.001   train loss after 5 epochs: 0.1xxx   val acc 0.88xx
+lr=0.1     train loss after 5 epochs: 0.6xxx   val acc 0.5xxx</pre></div>
+<div class="cell"><p>Both extremes look like <em>the model cannot learn</em>. Only one of them is about the model. <strong>Check the learning rate, the batch size, and whether the problem is learnable at all</strong> before reaching for a bigger network.</p></div>
+<div class="cell"><h2>A problem with no signal in it</h2></div>
+<div class="cell cell-in"><pre>rng = np.random.default_rng(0)
+x_junk = rng.random((5000, 100)).astype("float32")
+y_junk = rng.integers(0, 2, size=5000).astype("float32")
+
+keras.utils.set_random_seed(0)
+m = keras.Sequential([layers.Dense(64, activation="relu"),
+                      layers.Dense(64, activation="relu"),
+                      layers.Dense(1, activation="sigmoid")])
+m.compile(optimizer="rmsprop", loss="binary_crossentropy", metrics=["accuracy"])
+h = m.fit(x_junk, y_junk, epochs=30, batch_size=128,
+          validation_split=0.3, verbose=0)
+print(f"training accuracy:   {h.history['accuracy'][-1]:.3f}")
+print(f"validation accuracy: {h.history['val_accuracy'][-1]:.3f}  (chance is 0.5)")</pre></div>
+<div class="cell"><p>Training accuracy climbs; validation sits at chance. <strong>This is what a genuinely unlearnable problem looks like</strong>, and it is worth recognising, because the response is to go back to the data rather than to the architecture.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Underfitting and overfitting look different on the loss curves and have opposite remedies.</li>
+<li><strong>Make the model overfit first</strong> — a flat curve is uninformative.</li>
+<li>Check the learning rate and the batch size before concluding the model is too small.</li>
+<li>A model that fits training data while validation sits at chance means the problem, not the model, is the issue.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

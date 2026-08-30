@@ -179,6 +179,114 @@ def _make_svg_fluid(path):
     return svg
 
 
+# ----------------------------------------------- orientation, chosen by shape --
+#
+# A slide's figure area is much wider than it is tall -- roughly 1300 x 340.
+# A `flowchart TB` with eight nodes comes out around 400 x 1000, and the browser
+# does the only thing it can: it fits the whole drawing inside the box, which
+# means scaling it to a quarter of its drawn size and letterboxing it with empty
+# space on both sides. Nothing warns about this. The SVG is valid, the slide
+# does not overflow, and the diagram is simply too small to read.
+#
+# Authors should not have to keep this in their heads. So the direction is
+# chosen here, by measurement: render as authored, and if the result is too tall
+# for the space it has to live in, render it the other way round and keep
+# whichever shape suits the slide better. A diagram that is genuinely better
+# vertical -- a deep chain that would become absurdly wide -- keeps its
+# orientation, because the flipped version measures worse and loses.
+
+# What the figure area actually offers, as width/height. Not the extreme 3.9 of
+# the raw box: a diagram that fills the last pixel looks cramped, and mermaid's
+# own padding already eats some of it.
+TARGET_ASPECT = 2.3
+# Below this a drawing is being shrunk enough to hurt, and a flip is worth trying.
+TALL_ENOUGH_TO_TRY = 1.35
+# Reported after the build: diagrams still too tall even after trying.
+AUTO_FLIPPED = []
+STILL_TALL = []
+
+_DIRECTION = re.compile(
+    r"^(\s*(?:flowchart|graph)\s+)(TB|TD|BT|LR|RL)(\s*(?:;|$))", re.M)
+
+_FLIP = {"TB": "LR", "TD": "LR", "BT": "RL", "LR": "TB", "RL": "BT"}
+
+
+def _flip_direction(src):
+    """The same diagram, laid out the other way. None if there is nothing to flip.
+
+    Only the top-level direction is touched. A `direction` line inside a
+    subgraph is the author saying something specific about that cluster, and
+    overriding it would be second-guessing a decision that was made on purpose.
+    """
+    m = _DIRECTION.search(src)
+    if not m:
+        return None
+    flipped = _FLIP.get(m.group(2))
+    if not flipped:
+        return None
+    return src[:m.start()] + m.group(1) + flipped + m.group(3) + src[m.end():]
+
+
+def _aspect(svg_path):
+    """width / height from the viewBox, or None if it cannot be read."""
+    try:
+        with open(svg_path, encoding="utf-8") as f:
+            head = f.read(4000)
+    except OSError:
+        return None
+    m = re.search(r'viewBox="[\d.\-]+ [\d.\-]+ ([\d.]+) ([\d.]+)"', head)
+    if not m:
+        return None
+    w, h = float(m.group(1)), float(m.group(2))
+    return (w / h) if h else None
+
+
+def _shape_cost(aspect):
+    """How badly a shape fits the slide. Symmetric in log space.
+
+    Log space matters: 1/2 as wide and twice as wide are equally wrong, and a
+    linear difference would call the second one much worse than the first.
+    """
+    import math
+    return abs(math.log((aspect or TARGET_ASPECT) / TARGET_ASPECT))
+
+
+def _choose_source(fig_id, src, tmp_svg):
+    """Render candidates and return the source whose shape suits the slide.
+
+    Renders the authored version first. Only if that comes out tall does it pay
+    for a second mmdc run, so a deck of well-shaped diagrams costs nothing.
+    """
+    _run_mmdc(src, tmp_svg, THEME_WEB)
+    a0 = _aspect(tmp_svg)
+    if a0 is None or a0 >= TALL_ENOUGH_TO_TRY:
+        return src, a0, False
+
+    other = _flip_direction(src)
+    if other is None:
+        STILL_TALL.append((fig_id, round(a0, 2), "no direction to flip"))
+        return src, a0, False
+
+    alt_svg = tmp_svg + ".alt.svg"
+    try:
+        _run_mmdc(other, alt_svg, THEME_WEB)
+        a1 = _aspect(alt_svg)
+    except RuntimeError:
+        a1 = None                      # a flip that will not render is not a flip
+    finally:
+        pass
+
+    if a1 is not None and _shape_cost(a1) < _shape_cost(a0):
+        shutil.move(alt_svg, tmp_svg)
+        AUTO_FLIPPED.append((fig_id, round(a0, 2), round(a1, 2)))
+        return other, a1, True
+
+    if os.path.exists(alt_svg):
+        os.remove(alt_svg)
+    STILL_TALL.append((fig_id, round(a0, 2), "vertical suits it better"))
+    return src, a0, False
+
+
 def render(fig_id, src, force=False):
     """Render one diagram; return (web_svg_markup, tex_pdf_relpath).
 
@@ -200,11 +308,17 @@ def render(fig_id, src, force=False):
             raise RuntimeError(
                 f"{fig_id}: diagram changed but mermaid-cli (mmdc) is not on PATH.\n"
                 "  install:  npm i -g @mermaid-js/mermaid-cli")
+        # Pick the orientation by measuring both, then render the PDF from
+        # whichever won so the two artefacts never disagree.
+        chosen, _, flipped = _choose_source(fig_id, src, svg_path)
         with open(mmd_path, "w", encoding="utf-8") as f:
-            f.write(src.rstrip("\n") + "\n")
-        _run_mmdc(src, svg_path, THEME_WEB)
+            if flipped:
+                f.write("%% direction chosen by tools/figures.py: this renders\n"
+                        "%% better in the space a slide gives it. Edit the deck\n"
+                        "%% source, not this file.\n")
+            f.write(chosen.rstrip("\n") + "\n")
         _make_svg_fluid(svg_path)
-        _run_mmdc(src, pdf_path, THEME_TEX, pdf=True)
+        _run_mmdc(chosen, pdf_path, THEME_TEX, pdf=True)
         manifest[fig_id] = digest
         _save_manifest(manifest)
 

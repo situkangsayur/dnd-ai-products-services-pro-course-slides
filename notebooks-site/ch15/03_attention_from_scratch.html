@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Attention, derived from the problem it solves · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Attention, derived from the problem it solves</h1>
+  <p>Score, softmax, weighted sum — built up in NumPy, with the score matrix visualised, then the two refinements the 2017 paper added.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The simplest version</h2></div>
+<div class="cell cell-in"><pre>import numpy as np
+
+def softmax(x, axis=-1):
+    e = np.exp(x - x.max(axis=axis, keepdims=True))
+    return e / e.sum(axis=axis, keepdims=True)
+
+def dot_product_attention(target, source):
+    scores = np.einsum("btd,bsd-&gt;bts", target, source)
+    scores = softmax(scores, axis=-1)
+    return np.einsum("bts,bsd-&gt;btd", scores, source), scores
+
+rng = np.random.default_rng(0)
+target = rng.normal(size=(1, 5, 8))     # 5 target positions, 8 dims
+source = rng.normal(size=(1, 7, 8))     # 7 source positions
+
+out, scores = dot_product_attention(target, source)
+print("output:", out.shape, " scores:", scores.shape)
+print("each row of scores sums to 1:", np.allclose(scores.sum(-1), 1))</pre></div>
+<div class="cell"><p>Read the <code>einsum</code> subscripts: <code>b</code>atch, <code>t</code>arget length, <code>s</code>ource length, <code>d</code>imension. The first contraction produces a <strong>(batch, target, source)</strong> score matrix; the second uses it to take a weighted sum.</p>
+<p><strong>Every attention implementation in every framework is these two contractions with a softmax between them.</strong></p></div>
+<div class="cell"><h2>The score matrix, drawn</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+
+eng = ["I", "will", "bring", "the", "bag", "to", "you"]
+spa = ["Te", "traeré", "la", "bolsa", "[end]"]
+
+# A hand-built matrix showing what a trained model should learn.
+S = np.array([
+    [.02, .03, .04, .02, .03, .06, .80],
+    [.20, .45, .30, .02, .01, .01, .01],
+    [.02, .02, .03, .60, .28, .03, .02],
+    [.01, .02, .03, .20, .70, .02, .02],
+    [.05, .05, .10, .05, .10, .30, .35],
+])
+
+fig, ax = plt.subplots(figsize=(7.5, 5))
+im = ax.imshow(S, cmap="Blues", aspect="auto")
+ax.set_xticks(range(len(eng)), eng, rotation=45, ha="right")
+ax.set_yticks(range(len(spa)), spa)
+for i in range(len(spa)):
+    for j in range(len(eng)):
+        if S[i, j] &gt; .15:
+            ax.text(j, i, f"{S[i,j]:.2f}", ha="center", va="center",
+                    fontsize=8, color="w" if S[i, j] &gt; .5 else "k")
+plt.colorbar(im); ax.set_title("Attention scores for a translation")
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>Read a row as: <em>when producing this Spanish word, how much did the model draw on each English word?</em> <strong>The <code>Te</code> row peaking at <code>you</code> is exactly the long-range dependency the RNN could not express.</strong></p></div>
+<div class="cell"><h2>Parameterizing it: query, key, value</h2></div>
+<div class="cell cell-in"><pre>dim = 8
+Wq, Wk, Wv, Wo = (rng.normal(size=(dim, dim)) * 0.3 for _ in range(4))
+
+def parameterized_attention(query, key, value):
+    q = query @ Wq
+    k = key @ Wk
+    v = value @ Wv
+    scores = softmax(np.einsum("btd,bsd-&gt;bts", q, k), axis=-1)
+    out = np.einsum("bts,bsd-&gt;btd", scores, v)
+    return out @ Wo, scores
+
+out, _ = parameterized_attention(query=target, key=source, value=source)
+print("output:", out.shape)</pre></div>
+<div class="cell"><p><code>sum(score(target, source) * source)</code> has become <code>sum(score(query, key) * value)</code>. The names come from <strong>search engines</strong>: the query is your search term, the keys are tags to match against, the values are what you retrieve.</p></div>
+<div class="cell"><h2>Refinement 1: scale before the softmax</h2></div>
+<div class="cell cell-in"><pre>for d in [8, 64, 512]:
+    q = rng.normal(size=(1, 4, d)); k = rng.normal(size=(1, 6, d))
+    raw = np.einsum("btd,bsd-&gt;bts", q, k)
+    scaled = raw / np.sqrt(d)
+    print(f"dim {d:4d}:  raw logit std {raw.std():7.2f}   "
+          f"scaled {scaled.std():5.2f}   "
+          f"max softmax {softmax(raw).max():.3f} -&gt; {softmax(scaled).max():.3f}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">dim    8:  raw logit std    2.9x   scaled  1.0x   max softmax 0.7xx -&gt; 0.4xx
+dim   64:  raw logit std    8.0x   scaled  1.0x   max softmax 0.9xx -&gt; 0.4xx
+dim  512:  raw logit std   22.x     scaled  1.0x   max softmax 1.000 -&gt; 0.4xx</pre></div>
+<div class="cell"><p>At 512 dimensions the unscaled softmax is <strong>effectively one-hot</strong>, and a one-hot softmax has vanishing gradients. Dividing by √d holds the logit variance constant regardless of dimension — which is why the mechanism is called <em>scaled</em> dot-product attention.</p></div>
+<div class="cell"><h2>Refinement 2: multiple heads</h2></div>
+<div class="cell cell-in"><pre>def multi_head_attention(query, key, value, num_heads=4, head_dim=4):
+    outs = []
+    for _ in range(num_heads):
+        wq = rng.normal(size=(query.shape[-1], head_dim)) * .3
+        wk = rng.normal(size=(key.shape[-1], head_dim)) * .3
+        wv = rng.normal(size=(value.shape[-1], head_dim)) * .3
+        q, k, v = query @ wq, key @ wk, value @ wv
+        s = softmax(np.einsum("btd,bsd-&gt;bts", q, k) / np.sqrt(head_dim), -1)
+        outs.append(np.einsum("bts,bsd-&gt;btd", s, v))
+    return np.concatenate(outs, axis=-1)
+
+out = multi_head_attention(target, source, source)
+print("concatenated across 4 heads of 4 dims:", out.shape)</pre></div>
+<div class="cell"><p>One softmax sum is <strong>blunt</strong>: attend to many tokens and the interesting features of individual ones wash out. Running the operation several times with different projections lets one head match the subject while another attends to punctuation, in separate partitions of the output.</p></div>
+<div class="cell"><h2>The Keras layer</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers
+import numpy as np
+
+mha = layers.MultiHeadAttention(num_heads=8, key_dim=32)
+t = np.random.normal(size=(2, 5, 256)).astype("float32")
+s = np.random.normal(size=(2, 7, 256)).astype("float32")
+
+out, attn = mha(query=t, key=s, value=s, return_attention_scores=True)
+print("output:", out.shape)
+print("attention scores:", attn.shape, " (batch, heads, target, source)")</pre></div>
+<div class="cell"><p><code>return_attention_scores=True</code> gives you the matrix from the plot above, per head. <strong>It is the first thing to look at when a Transformer misbehaves</strong> — chapter 10's interpretability argument, in a different modality.</p></div>
+<div class="cell"><h2>Self-attention</h2></div>
+<div class="cell cell-in"><pre>out = mha(query=s, key=s, value=s)
+print("self-attention output:", out.shape)
+print()
+print('"The train left the station on time."')
+print()
+print("What kind of station? A radio station? The ISS?")
+print("Self-attention lets the model give a high score to the pair")
+print("(station, train), summing 'train' into the representation of")
+print("'station' -- turning a word in a vacuum into a word in context.")</pre></div>
+<div class="cell"><h2>Why attention alone is not enough</h2></div>
+<div class="cell cell-in"><pre># A sequence of length one. The score matrix is a single 1.
+one = np.random.normal(size=(1, 1, 16)).astype("float32")
+m = layers.MultiHeadAttention(num_heads=2, key_dim=8)
+print("attention on a length-1 sequence:", m(one, one, one).shape)
+print()
+print("With one token the softmax is [1.0], so the layer reduces to a")
+print("linear projection. Stack 100 of them and the whole computation")
+print("still simplifies to ONE matrix multiplication.")
+print()
+print("That is why the Transformer block adds a feedforward network:")
+print("  attention   -&gt; mixes positions, no nonlinearity")
+print("  feedforward -&gt; mixes features, HAS the nonlinearity")</pre></div>
+<div class="cell"><p>This is the argument for the second half of the block, and it is a genuine one rather than an empirical addition. <strong>Attention is an expressive pooling operation</strong>, and pooling alone cannot represent anything a single linear layer cannot.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Attention is two einsum contractions with a softmax between them.</li>
+<li>The score matrix is (target × source) and is directly interpretable.</li>
+<li>Scale by √d or the softmax saturates and the gradients vanish.</li>
+<li>Multiple heads avoid one blunt weighted sum; the feedforward block supplies the nonlinearity attention lacks.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

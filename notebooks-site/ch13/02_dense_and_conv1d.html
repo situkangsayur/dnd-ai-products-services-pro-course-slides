@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Two architectures that fail, and why each one fails · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Two architectures that fail, and why each one fails</h1>
+  <p>A dense model and a 1D convnet on the same problem. Both lose to the baseline, for two different and instructive reasons.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>Setup</h2></div>
+<div class="cell"><p>This notebook assumes the datasets from notebook 01. Re-run its cells, or import them if you have factored them out.</p></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers
+import numpy as np
+import matplotlib.pyplot as plt
+
+sequence_length, n_features = 120, 14
+NAIVE_MAE = 2.44
+
+def train(model, name, epochs=10):
+    model.compile(optimizer="rmsprop", loss="mse", metrics=["mae"])
+    cb = [keras.callbacks.ModelCheckpoint(f"jena_{name}.keras",
+                                          save_best_only=True)]
+    h = model.fit(train_dataset, epochs=epochs,
+                  validation_data=val_dataset, callbacks=cb, verbose=2)
+    best = keras.models.load_model(f"jena_{name}.keras")
+    mae = best.evaluate(test_dataset, verbose=0)[1]
+    print(f"\n{name}: test MAE {mae:.2f} degC   (baseline {NAIVE_MAE})")
+    return h, mae</pre></div>
+<div class="cell"><h2>A dense model</h2></div>
+<div class="cell cell-in"><pre>inputs = keras.Input(shape=(sequence_length, n_features))
+x = layers.Flatten()(inputs)
+x = layers.Dense(16, activation="relu")(x)
+outputs = layers.Dense(1)(x)
+dense_model = keras.Model(inputs, outputs)
+
+h_dense, mae_dense = train(dense_model, "dense")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">dense: test MAE 2.6x — 2.7x degC   (baseline 2.44)</pre></div>
+<div class="cell"><p><strong>Worse than doing nothing.</strong> The reason is instructive: <code>Flatten</code> destroys the time axis. The model receives 1,680 numbers with no indication that some of them are recent and some are five days old.</p>
+<p>The simple solution is in its hypothesis space — it <em>could</em> learn to read the last temperature — but gradient descent has no reason to find that particular point among millions.</p></div>
+<div class="cell"><h2>A 1D convnet</h2></div>
+<div class="cell cell-in"><pre>inputs = keras.Input(shape=(sequence_length, n_features))
+x = layers.Conv1D(8, 24, activation="relu")(inputs)
+x = layers.MaxPooling1D(2)(x)
+x = layers.Conv1D(8, 12, activation="relu")(x)
+x = layers.MaxPooling1D(2)(x)
+x = layers.Conv1D(8, 6, activation="relu")(x)
+x = layers.GlobalAveragePooling1D()(x)
+outputs = layers.Dense(1)(x)
+conv_model = keras.Model(inputs, outputs)
+
+h_conv, mae_conv = train(conv_model, "conv")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">conv: test MAE 3.1x degC   (baseline 2.44)</pre></div>
+<div class="cell"><p><strong>Worse still</strong>, and for a different reason. Two properties that made convolution excellent on images are wrong here:</p>
+<p><strong>Translation invariance.</strong> A convolution treats a pattern the same wherever it occurs. But weather from five days ago is not equivalent to weather from an hour ago — and <em>recency is exactly what matters</em>.</p>
+<p><strong>Pooling.</strong> <code>MaxPooling1D</code> discards order within its window, and the most recent readings are the most informative ones being thrown away.</p></div>
+<div class="cell"><h2>The comparison</h2></div>
+<div class="cell cell-in"><pre>plt.figure(figsize=(8, 4.6))
+for h, name in [(h_dense, "dense"), (h_conv, "conv1d")]:
+    plt.plot(h.history["val_mae"], lw=1.6, label=f"{name} — validation")
+plt.axhline(NAIVE_MAE, color="k", ls="--", lw=1.4,
+            label=f"naive baseline ({NAIVE_MAE})")
+plt.xlabel("epoch"); plt.ylabel("validation MAE (degC)"); plt.legend()
+plt.title("Neither architecture beats 'tomorrow is like today'")
+plt.show()</pre></div>
+<div class="cell"><h2>The general lesson</h2></div>
+<div class="cell"><blockquote>A model's hypothesis space containing the right answer does not mean gradient descent will find it.</blockquote>
+<p>The dense model <em>could</em> have learned to output the last temperature. It did not, because nothing in its structure suggested that. <strong>Architecture is a prior</strong>, and the right prior for this problem is <em>the recent past matters more than the distant past</em> — which is precisely what a recurrent layer encodes, and what notebook 03 uses.</p></div>
+<div class="cell"><h2>One thing worth trying</h2></div>
+<div class="cell cell-in"><pre># Give the dense model the hint explicitly and watch what happens.
+inputs = keras.Input(shape=(sequence_length, n_features))
+recent = layers.Lambda(lambda t: t[:, -6:, :])(inputs)   # last six hours only
+x = layers.Flatten()(recent)
+x = layers.Dense(16, activation="relu")(x)
+outputs = layers.Dense(1)(x)
+recent_model = keras.Model(inputs, outputs)
+
+h_recent, mae_recent = train(recent_model, "recent")</pre></div>
+<div class="cell"><p>Cutting the input to the last six hours usually <strong>improves</strong> the dense model, sometimes to near the baseline. Removing information made it better — which tells you the problem was never capacity. It was the prior.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li><code>Flatten</code> destroys the time axis; the model cannot tell recent from distant.</li>
+<li>Convolution's translation invariance is <strong>wrong</strong> for forecasting, where recency is the signal.</li>
+<li>A hypothesis space containing the answer does not mean gradient descent will find it.</li>
+<li>Architecture is a prior. Choose one that matches the structure of the problem.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

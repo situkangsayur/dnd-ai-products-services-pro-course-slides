@@ -22,6 +22,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
 
+import figures            # noqa: E402
 import gen_index          # noqa: E402
 import gen_latex          # noqa: E402
 import gen_web            # noqa: E402
@@ -173,6 +174,21 @@ def main():
         for did, spills in overfull:
             for pt, line in spills:
                 print(f"  {did}.tex baris {line:5d}  {pt:4d}pt")
+
+    # A tall diagram is scaled down until it fits the figure area, and past a
+    # point that is not a diagram any more. The renderer flips what it can;
+    # what it could not flip is reported here rather than left to be discovered
+    # on a projector.
+    if figures.AUTO_FLIPPED:
+        print(f"\n{len(figures.AUTO_FLIPPED)} diagram diputar arahnya agar muat "
+              f"(tinggi -> lebar):")
+        for fid, before, after in figures.AUTO_FLIPPED:
+            print(f"  {fid:26s} rasio {before} -> {after}")
+    if figures.STILL_TALL:
+        print(f"\n{len(figures.STILL_TALL)} diagram MASIH tinggi — akan mengecil "
+              f"di slide, pertimbangkan memecahnya:")
+        for fid, ratio, why in figures.STILL_TALL:
+            print(f"  {fid:26s} rasio {ratio:<5} ({why})")
     if fails:
         print(f"\n{len(fails)} failure(s):")
         for did, err in fails:

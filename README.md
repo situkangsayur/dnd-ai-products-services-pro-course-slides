@@ -33,6 +33,83 @@ kecilkan fontnya.
 Dek web ditulis ke repo tetangga `../course-web-slides/`. Kalau checkout-nya
 tidak bersebelahan, tunjuk dengan `COURSE_WEB_SLIDES_DIR`.
 
+## Alamat: notebook dan JupyterLab
+
+Semua alamat yang ditunjuk slide ada di **satu tempat**, di blok konfigurasi
+`tools/course.py`, dan tiap-tiapnya bisa ditimpa dari environment:
+
+| Variabel | Bawaan | Untuk apa |
+|---|---|---|
+| `COURSE_NOTEBOOK_BASE` | `https://hendrikarisma.my.id/rs/ai-products-course/notebooks` | notebook yang sudah dirender |
+| `COURSE_JUPYTER_BASE` | *(kosong)* | JupyterLab yang benar-benar hidup, mis. `http://10.100.21.22:8888` |
+| `COURSE_JUPYTER_ROOT` | `notebooks` | letak notebook di dalam direktori kerja lab itu |
+
+```bash
+COURSE_JUPYTER_BASE=http://10.100.21.22:8888 python3 tools/build.py
+```
+
+**Notebook ditautkan sebagai HTML, bukan `.ipynb`.** Tautan ke berkas notebook
+mentah tidak membuka notebook — ia mengunduh berkas, dan itu yang terjadi kalau
+chip di slide diklik. Halaman yang bisa dibaca dibuat oleh:
+
+```bash
+python3 tools/nb_html.py          # notebooks/ -> notebooks-site/
+```
+
+Keluarannya berdiri sendiri (satu stylesheet, disisipkan, memakai palet dek)
+dan punya `index.html` dengan jangkar per bab, sehingga dek bisa menunjuk
+`index.html#ch07` dan mendarat di tempat yang benar.
+
+**`COURSE_JUPYTER_BASE` sengaja kosong secara bawaan.** Menunjuk dek ke peladen
+yang belum hidup lebih buruk daripada tidak menawarkan tautannya sama sekali,
+sebab yang menemukannya adalah ruangan, di tengah sesi. Isi begitu labnya jalan;
+chipnya muncul sendiri.
+
+## Gambar: dua jalur, dan cara memilihnya
+
+**Mermaid** (`{"t": "mmd"}`) untuk graf kotak-dan-panah. **Jangan pusing memilih
+`TB` atau `LR`** — tulis yang paling masuk akal, karena `tools/figures.py`
+memilihkan arahnya dengan MENGUKUR: dirender apa adanya, dan kalau bentuknya
+terlalu tinggi untuk ruang yang diberikan slide, dirender ulang dengan arah
+dibalik; yang paling mendekati rasio ruang figur yang menang. Diagram yang
+memang lebih baik vertikal tetap vertikal, sebab versi baliknya kalah saat
+diukur. Build melaporkan mana yang diputar dan mana yang **masih** tinggi.
+
+**SVG yang digambar** (`{"t": "draw"}`, dari `tools/diagrams.py`) untuk apa pun
+yang bukan graf kotak. Ada alasannya:
+
+> Jaringan saraf itu bukan diagram alir. Yang menarik justru bahwa ada
+> **neuron**, bahwa tiap neuron tersambung ke tiap neuron lapis berikutnya, dan
+> bahwa bentuk datanya berubah sepanjang jalan. Digambar sebagai lima persegi
+> panjang, semua itu hilang — dan slidenya tidak mengajarkan apa pun yang tidak
+> bisa dikatakan dalam satu kalimat.
+
+Generator yang ada: `neural_net` · `forward_pass` · `neuron_math` ·
+`attention_qkv` · `dropout_net` · `conv_compute` · `feature_maps` ·
+`tensor_ranks` · `tensor_grid` · `geometric_ops` · `sgd_descent` ·
+`sliding_window` · `bag_of_words` · `pixel_mask`.
+
+Teksnya `<text>` SVG asli, jadi tidak bisa terpotong seperti label mermaid.
+Dua palet dari satu builder: gelap untuk web, terang dicetak jadi PDF lewat
+Chrome (sudah jadi dependensi build lewat `mmdc`).
+
+## Animasi dan simulasi
+
+Metode yang diajarkan **diperlihatkan berjalan**, bukan dideskripsikan di dalam
+kotak. Dua mekanisme, keduanya memakai bilah kendali yang sama:
+
+* **Figur bertahap** — elemen SVG menandai dirinya `data-step="N"`; `deck.js`
+  menyingkapnya satu per satu.
+* **Kode yang dijalankan** — blok `code` boleh membawa `run`: daftar langkah
+  berisi nomor baris, catatan, variabel, dan keluaran. Barisnya disorot dan
+  keadaannya muncul di panel bawahnya.
+
+Satu syarat mutlak: **diamnya harus tetap terbaca utuh.** PDF tidak punya
+JavaScript, jadi makna yang hanya ada di gerakan adalah makna yang separuh
+audiens tidak pernah terima. Jejak `run` juga ditulis tangan di sumber dek,
+bukan dieksekusi — slide yang butuh runtime adalah slide yang gagal di ruangan
+tanpa jaringan.
+
 ## Isi
 
 ```

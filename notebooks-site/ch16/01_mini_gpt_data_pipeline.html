@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A billion tokens, and the pipeline that feeds them · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>A billion tokens, and the pipeline that feeds them</h1>
+  <p>Interleaved shards, a fast tokenizer, and the design decision GPT made about document boundaries.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The corpus</h2></div>
+<div class="cell cell-in"><pre>import keras
+import pathlib
+
+extract_dir = keras.utils.get_file(
+    fname="mini-c4",
+    origin=("https://hf.co/datasets/mattdangerw/mini-c4/resolve/main/"
+            "mini-c4.zip"),
+    extract=True)
+extract_dir = pathlib.Path(extract_dir) / "mini-c4"
+
+shards = sorted(extract_dir.glob("*.txt"))
+print(f"{len(shards)} shards")
+print(f"first shard: {shards[0].stat().st_size / 1e6:.0f} MB")</pre></div>
+<div class="cell"><p><strong>C4</strong> — the Colossal Clean Crawled Corpus, 750 GB in full. We take under 1%. GPT-1 used BooksCorpus, self-published books added without their authors' permission; it has since been taken down by its publishers.</p></div>
+<div class="cell"><h2>What one document looks like</h2></div>
+<div class="cell cell-in"><pre>with open(shards[0], "r") as f:
+    print(f.readline().replace("\\n", "\n")[:300])</pre></div>
+<div class="cell"><p>Crawled web text: a headline, a newline, marketing copy. <strong>Hold that image</strong> — it is what the model's distribution will be made of, and it explains the output later in this chapter.</p></div>
+<div class="cell"><h2>SentencePiece</h2></div>
+<div class="cell cell-in"><pre>import keras_hub
+import numpy as np
+
+vocabulary_file = keras.utils.get_file(
+    origin="https://hf.co/mattdangerw/spiece/resolve/main/vocabulary.proto")
+tokenizer = keras_hub.tokenizers.SentencePieceTokenizer(vocabulary_file)
+
+print(tokenizer.tokenize("The quick brown fox."))
+print(tokenizer.detokenize([450, 4996, 17354, 1701, 29916, 29889]))
+print(f"\nvocabulary: {tokenizer.vocabulary_size():,}")</pre></div>
+<div class="cell"><p>Exactly the byte-pair encoding from chapter 14's notebook 01, implemented in C++ and with a <code>detokenize()</code>. <strong>Same technique, different engineering</strong> — which is the right reason to reach for a library.</p></div>
+<div class="cell"><h2>Document boundaries as a token</h2></div>
+<div class="cell cell-in"><pre>eot = tokenizer.token_to_id("&lt;|endoftext|&gt;")
+print(f"&lt;|endoftext|&gt; is token {eot}")
+print()
+print("GPT makes NO attempt to keep document boundaries out of the middle")
+print("of a training sample. Documents are concatenated and the boundary")
+print("is marked with this token.")
+print()
+print("Simplicity in the pipeline, paid for with one vocabulary entry --")
+print("and a recurring pattern: when a structural constraint is expensive")
+print("to enforce in data, encode it as a token and let the model learn it.")</pre></div>
+<div class="cell"><h2>The pipeline</h2></div>
+<div class="cell cell-in"><pre>import tensorflow as tf
+
+batch_size = 128
+sequence_length = 256
+suffix = np.array([eot])
+
+def read_file(filename):
+    ds = tf.data.TextLineDataset(filename)
+    ds = ds.map(lambda x: tf.strings.regex_replace(x, r"\\n", "\n"))
+    ds = ds.map(tokenizer, num_parallel_calls=8)
+    return ds.map(lambda x: tf.concat([x, suffix], -1))
+
+files = [str(f) for f in shards]
+ds = tf.data.Dataset.from_tensor_slices(files)
+ds = ds.interleave(read_file, cycle_length=32, num_parallel_calls=32)
+ds = ds.rebatch(sequence_length + 1, drop_remainder=True)
+ds = ds.map(lambda x: (x[:-1], x[1:]))
+ds = ds.batch(batch_size).prefetch(8)
+
+for x, y in ds.take(1):
+    print("inputs: ", x.shape)
+    print("targets:", y.shape)
+    print("\noffset by one, exactly as in chapter 15:")
+    print(" x[0][:8] =", x[0][:8].numpy())
+    print(" y[0][:8] =", y[0][:8].numpy())
+    break</pre></div>
+<div class="cell"><p><strong><code>interleave</code></strong> lets every CPU core tokenize a different shard simultaneously. <strong><code>rebatch(257)</code></strong> windows the token stream into even samples. <strong><code>prefetch(8)</code></strong> keeps batches ready so the GPU never waits — chapter 18 returns to this as the thing that turns eight expensive GPUs into eight expensive idle GPUs.</p></div>
+<div class="cell"><h2>The size of it</h2></div>
+<div class="cell cell-in"><pre>num_batches = 29373        # counted once; see the note below
+num_val_batches = 500
+num_train_batches = num_batches - num_val_batches
+
+val_ds = ds.take(num_val_batches).repeat()
+train_ds = ds.skip(num_val_batches).repeat()
+
+print(f"{num_batches:,} batches x {batch_size} samples x "
+      f"{sequence_length} tokens")
+print(f"= {num_batches * batch_size * sequence_length / 1e9:.2f} billion tokens")
+print()
+print("Counting it yourself:  ds.reduce(0, lambda c, _: c + 1)")
+print("...but tokenizing a dataset this size takes several minutes on a")
+print("fast CPU, so the number is hardcoded above.")</pre></div>
+<div class="cell"><h2>Sanity-check the pipeline before spending six hours on it</h2></div>
+<div class="cell cell-in"><pre>for x, y in train_ds.take(1):
+    sample = x[0].numpy()
+    print("decoded first sample:\n")
+    text = tokenizer.detokenize(sample)
+    text = text.numpy().decode() if hasattr(text, "numpy") else str(text)
+    print(text[:600])
+    print("\n---")
+    print("does it contain a document boundary?",
+          bool((sample == eot).any()))
+    break</pre></div>
+<div class="cell"><p><strong>Read the decoded text before training.</strong> A pipeline bug here — a wrong regex, a misaligned offset — costs six hours of GPU time and produces a model that trains happily on nonsense.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li><code>interleave</code> parallelises tokenization across shards; <code>prefetch</code> keeps the accelerator fed.</li>
+<li>GPT concatenates documents and marks boundaries with a token rather than respecting them in the data.</li>
+<li>The offset-by-one split is chapter 15's, unchanged.</li>
+<li>Decode a sample and read it before starting an expensive run.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

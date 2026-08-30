@@ -440,7 +440,8 @@ times = [0.0, 0.25, 0.5, 0.75, 1.0]
 fig, axes = plt.subplots(1, len(times), figsize=(15, 3.2))
 for ax, tt in zip(axes, times):
     n_, s_ = diffusion_schedule(ops.array([[[[tt]]]]))
-    n_ = float(ops.convert_to_numpy(n_)); s_ = float(ops.convert_to_numpy(s_))
+    # .item(): NumPy 2 refuses float() on a non-0-d array, and these are shape (1,1,1,1).
+    n_ = ops.convert_to_numpy(n_).item(); s_ = ops.convert_to_numpy(s_).item()
     mixed = s_ * img + n_ * noise
     show = np.clip((mixed - mixed.min()) / (mixed.max() - mixed.min()), 0, 1)
     ax.imshow(show); ax.axis("off")

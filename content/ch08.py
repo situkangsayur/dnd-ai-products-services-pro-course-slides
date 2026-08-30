@@ -291,10 +291,16 @@ print(f"Test accuracy: {test_acc:.3f}")"""},
             "kicker": "Section 8.1.1",
             "title": "How the convolution actually runs",
             "blocks": [
-                {"t": "img", "src": FIG_CONV, "credit": True, "max_h": "44vh",
+                {"t": "img", "src": FIG_CONV, "credit": True, "max_h": "40vh",
                  "cap": "Figure 8.4 — a window slides over the input, each 3D patch is turned "
                         "into a vector by the same learned kernel, and the vectors are "
                         "reassembled into an output map."},
+                {"t": "p", "md": "Three things to take from the picture. The window moves "
+                                 "over **every** position. The **same** kernel is used at "
+                                 "each one — that is weight sharing. And the outputs are "
+                                 "reassembled in the positions they came from, which is why "
+                                 "the result is still an image and not a list. ==The next "
+                                 "slide computes one of those positions.=="},
             ],
         },
 

@@ -35,11 +35,12 @@
 \vskip 6pt
 \vskip 4pt
 \reslink{Book}{Chapter 15 --- full text}{https://deeplearningwithpython.io/chapters/chapter15\_language-models-and-the-transformer}
-\reslink{Notebook}{01\_shakespeare\_language\_model.ipynb}{../../notebooks/ch15/01\_shakespeare\_language\_model.ipynb}
-\reslink{Notebook}{02\_seq2seq\_rnn\_translation.ipynb}{../../notebooks/ch15/02\_seq2seq\_rnn\_translation.ipynb}
-\reslink{Notebook}{03\_attention\_from\_scratch.ipynb}{../../notebooks/ch15/03\_attention\_from\_scratch.ipynb}
-\reslink{Notebook}{04\_transformer\_translation.ipynb}{../../notebooks/ch15/04\_transformer\_translation.ipynb}
-\reslink{Notebook}{05\_finetuning\_roberta.ipynb}{../../notebooks/ch15/05\_finetuning\_roberta.ipynb}
+\reslink{Notebook}{01\_shakespeare\_language\_model.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch15/01\_shakespeare\_language\_model.html}
+\reslink{Notebook}{02\_seq2seq\_rnn\_translation.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch15/02\_seq2seq\_rnn\_translation.html}
+\reslink{Notebook}{03\_attention\_from\_scratch.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch15/03\_attention\_from\_scratch.html}
+\reslink{Notebook}{04\_transformer\_translation.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch15/04\_transformer\_translation.html}
+\reslink{Notebook}{05\_finetuning\_roberta.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch15/05\_finetuning\_roberta.html}
+\reslink{Notebook}{All chapter 15 notebooks}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/index.html\#ch15}
 \reslink{Repo}{Author's official notebook}{https://github.com/fchollet/deep-learning-with-python-notebooks/blob/master/chapter15\_language-models-and-the-transformer.ipynb}
 \vskip 2pt
 \end{frame}
@@ -493,6 +494,27 @@ By projecting query and key differently, one head might learn to match the \text
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch15-multihead.tex.pdf}
 \end{center}
 \vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Figure 15.7 --- each head attends to different parts of the source, in separate partitions of the eventual output vector.\par}
+\end{frame}
+
+\framekicker{Section 15.3.1}
+\begin{frame}[shrink=25]{Self-attention, computed on one sentence}
+\begin{center}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch15-qkv-run.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont One query --- the word ``it'' --- against every key in the sentence. Press play to walk the five stages.\par}
+\end{frame}
+
+\framekicker{Section 15.3.1}
+\begin{frame}[shrink=25]{Reading the five stages}
+\begin{isteps}
+\item \textbf{Three matrices, one embedding.} \inlinecode{Wq}, \inlinecode{Wk} and \inlinecode{Wv} turn each token's embedding into a query, a key and a value. They are learned, and they are the \textit{only} parameters in an attention head.
+\item \textbf{The query is dotted against every key.} That gives one raw score per token --- how well ``it'' matches each word, including itself. Dividing by \inlinecode{sqrt(d)} keeps the scores in a range softmax can use.
+\item \textbf{Softmax turns scores into proportions.} They are positive and they sum to 100\%. Nothing is discarded: every token gets a share, and a low share is still a share.
+\item \textbf{The output is the value vectors, mixed in those proportions.} \hilite{The new vector for ``it'' is literally built out of the other words in the sentence.} That is the whole mechanism.
+\end{isteps}
+\begin{iband}[signal]
+This is one \textbf{head}. Multi-head attention runs several of these in parallel with different \inlinecode{Wq}, \inlinecode{Wk}, \inlinecode{Wv}, so each can specialise --- one on syntax, another on which noun a pronoun refers to --- and concatenates the results.
+\end{iband}
 \end{frame}
 
 \framekicker{Section 15.3.1 $\cdot$ figure 15.7}

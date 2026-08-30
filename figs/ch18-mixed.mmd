@@ -1,5 +1,8 @@
+%% direction chosen by tools/figures.py: this renders
+%% better in the space a slide gives it. Edit the deck
+%% source, not this file.
 
-flowchart TB
+flowchart LR
   I["Inputs"]
   C["<b>compute_dtype = float16</b><br/><small>most of the forward pass,<br/>on half-precision copies<br/>of the weights</small>"]
   G["float16 gradients"]

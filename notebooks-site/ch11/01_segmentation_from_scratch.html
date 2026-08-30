@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Semantic segmentation on Oxford Pets · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Semantic segmentation on Oxford Pets</h1>
+  <p>Classifying every pixel rather than the image. Same ConvNet ideas, one decisive change: strides instead of pooling, because now position matters.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The data</h2></div>
+<div class="cell cell-in"><pre>import os, pathlib
+import keras
+
+input_dir = "images/"
+target_dir = "annotations/trimaps/"
+
+# Download from https://www.robots.ox.ac.uk/~vgg/data/pets/ if not present.
+input_img_paths = sorted(
+    [os.path.join(input_dir, f) for f in os.listdir(input_dir)
+     if f.endswith(".jpg")])
+target_paths = sorted(
+    [os.path.join(target_dir, f) for f in os.listdir(target_dir)
+     if f.endswith(".png") and not f.startswith(".")])
+
+print(f"{len(input_img_paths)} images")
+print(input_img_paths[9])
+print(target_paths[9])</pre></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+import numpy as np
+from keras.utils import load_img, img_to_array, array_to_img
+
+plt.figure(figsize=(4, 4))
+plt.axis("off")
+plt.imshow(load_img(input_img_paths[9]))
+plt.show()
+
+def display_target(target_array):
+    # Labels are 1, 2, 3. Subtract 1 and scale so they are visible.
+    normalized = (target_array.astype("uint8") - 1) * 127
+    plt.axis("off")
+    plt.imshow(normalized[:, :, 0])
+
+img = img_to_array(load_img(target_paths[9], color_mode="grayscale"))
+plt.figure(figsize=(4, 4)); display_target(img); plt.show()
+print("unique label values:", np.unique(img))</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">unique label values: [1. 2. 3.]</pre></div>
+<div class="cell"><p>Three classes per pixel: <strong>1 = the animal, 2 = the background, 3 = the outline.</strong> The target has the same spatial shape as the input, which is the entire difference from chapter 8.</p></div>
+<div class="cell"><h2>Loading everything into memory</h2></div>
+<div class="cell cell-in"><pre>img_size = (200, 200)
+num_imgs = len(input_img_paths)
+
+import random
+random.Random(1337).shuffle(input_img_paths)
+random.Random(1337).shuffle(target_paths)
+
+def path_to_input_image(path):
+    return img_to_array(load_img(path, target_size=img_size))
+
+def path_to_target(path):
+    img = img_to_array(
+        load_img(path, target_size=img_size, color_mode="grayscale"))
+    img = img.astype("uint8") - 1        # labels become 0, 1, 2
+    return img
+
+input_imgs = np.zeros((num_imgs,) + img_size + (3,), dtype="float32")
+targets = np.zeros((num_imgs,) + img_size + (1,), dtype="uint8")
+for i in range(num_imgs):
+    input_imgs[i] = path_to_input_image(input_img_paths[i])
+    targets[i] = path_to_target(target_paths[i])
+
+num_val_samples = 1000
+train_input_imgs = input_imgs[:-num_val_samples]
+train_targets = targets[:-num_val_samples]
+val_input_imgs = input_imgs[-num_val_samples:]
+val_targets = targets[-num_val_samples:]
+print(train_input_imgs.shape, train_targets.shape)</pre></div>
+<div class="cell"><blockquote><strong>Note</strong> — The same shuffle seed on both lists. <strong>They must stay aligned</strong> — and two independently shuffled lists is a silent, total failure with no error message.</blockquote></div>
+<div class="cell"><h2>The model, and the one decisive change</h2></div>
+<div class="cell cell-in"><pre>from keras import layers
+
+def get_model(img_size, num_classes):
+    inputs = keras.Input(shape=img_size + (3,))
+    x = layers.Rescaling(1./255)(inputs)
+
+    x = layers.Conv2D(64, 3, strides=2, activation="relu", padding="same")(x)
+    x = layers.Conv2D(64, 3, activation="relu", padding="same")(x)
+    x = layers.Conv2D(128, 3, strides=2, activation="relu", padding="same")(x)
+    x = layers.Conv2D(128, 3, activation="relu", padding="same")(x)
+    x = layers.Conv2D(256, 3, strides=2, padding="same", activation="relu")(x)
+    x = layers.Conv2D(256, 3, activation="relu", padding="same")(x)
+
+    x = layers.Conv2DTranspose(256, 3, activation="relu", padding="same")(x)
+    x = layers.Conv2DTranspose(256, 3, activation="relu", padding="same",
+                               strides=2)(x)
+    x = layers.Conv2DTranspose(128, 3, activation="relu", padding="same")(x)
+    x = layers.Conv2DTranspose(128, 3, activation="relu", padding="same",
+                               strides=2)(x)
+    x = layers.Conv2DTranspose(64, 3, activation="relu", padding="same")(x)
+    x = layers.Conv2DTranspose(64, 3, activation="relu", padding="same",
+                               strides=2)(x)
+
+    outputs = layers.Conv2D(num_classes, 3, activation="softmax",
+                            padding="same")(x)
+    return keras.Model(inputs, outputs)
+
+model = get_model(img_size=img_size, num_classes=3)
+model.summary()</pre></div>
+<div class="cell"><p><strong><code>strides=2</code> everywhere, and no <code>MaxPooling2D</code>.</strong> Max pooling throws away <em>where</em> the maximum was, and for classification that is a feature — for segmentation it is the answer being discarded.</p></div>
+<div class="cell"><h2>Training</h2></div>
+<div class="cell cell-in"><pre>model.compile(optimizer="rmsprop",
+              loss="sparse_categorical_crossentropy")
+
+callbacks = [keras.callbacks.ModelCheckpoint("oxford_segmentation.keras",
+                                             save_best_only=True)]
+history = model.fit(train_input_imgs, train_targets,
+                    epochs=50, callbacks=callbacks, batch_size=64,
+                    validation_data=(val_input_imgs, val_targets), verbose=2)</pre></div>
+<div class="cell cell-in"><pre>epochs = range(1, len(history.history["loss"]) + 1)
+plt.figure(figsize=(7, 4.2))
+plt.plot(epochs, history.history["loss"], lw=1, label="training")
+plt.plot(epochs, history.history["val_loss"], lw=1.7, label="validation")
+plt.xlabel("epoch"); plt.ylabel("loss"); plt.legend()
+plt.title(f"Overfits from about epoch "
+          f"{int(np.argmin(history.history['val_loss']))+1}")
+plt.show()</pre></div>
+<div class="cell"><h2>Predictions</h2></div>
+<div class="cell cell-in"><pre>model = keras.models.load_model("oxford_segmentation.keras")
+
+i = 4
+test_image = val_input_imgs[i]
+mask = model.predict(np.expand_dims(test_image, 0), verbose=0)[0]
+
+def display_mask(pred):
+    mask = np.argmax(pred, axis=-1) * 127
+    plt.axis("off"); plt.imshow(mask)
+
+fig = plt.figure(figsize=(12, 4))
+plt.subplot(1, 3, 1); plt.axis("off")
+plt.imshow(array_to_img(test_image)); plt.title("input")
+plt.subplot(1, 3, 2); plt.axis("off")
+plt.imshow(val_targets[i][:, :, 0] * 127); plt.title("ground truth")
+plt.subplot(1, 3, 3); display_mask(mask); plt.title("prediction")
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>The animal is found. The <strong>outline class is the weak one</strong> — a one-pixel-wide band, and there are far fewer of those pixels than of the other two.</p></div>
+<div class="cell"><h2>Per-class IoU, because pixel accuracy lies</h2></div>
+<div class="cell cell-in"><pre>preds = model.predict(val_input_imgs[:200], verbose=0).argmax(-1)
+truth = val_targets[:200, :, :, 0]
+
+print(f"pixel accuracy: {(preds == truth).mean():.4f}\n")
+names = ["animal", "background", "outline"]
+for c in range(3):
+    inter = ((preds == c) &amp; (truth == c)).sum()
+    union = ((preds == c) | (truth == c)).sum()
+    freq = (truth == c).mean()
+    print(f"{names[c]:11s} IoU {inter/union:.3f}   "
+          f"{freq:.1%} of all pixels")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">pixel accuracy: 0.87xx
+
+animal      IoU 0.8xx   3x.x% of all pixels
+background  IoU 0.8xx   5x.x% of all pixels
+outline     IoU 0.2xx    6.x% of all pixels</pre></div>
+<div class="cell"><p><strong>Pixel accuracy of 87% hides an outline IoU of 0.2.</strong> Chapter 6's rule about choosing a metric that reflects what you want has teeth here: a model that ignored the outline entirely would barely dent the headline number.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Segmentation predicts a class per pixel; the target has the input's spatial shape.</li>
+<li><strong>Strides, not pooling</strong> — max pooling discards the position that is the answer.</li>
+<li>Shuffle inputs and targets with the same seed, or fail silently and completely.</li>
+<li>Report per-class IoU; pixel accuracy hides the rare class you probably care about.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

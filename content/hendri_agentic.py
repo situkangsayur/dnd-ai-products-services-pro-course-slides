@@ -1185,6 +1185,11 @@ DECK = {
                 {"t": "mmd", "id": "hendri-interfaces", "src": MMD_INTERFACES,
                  "cap": "The human column is the one that gets designed last and matters "
                         "most in a regulated setting."},
+                {"t": "p", "md": "**Machine-to-machine** is the half everyone builds: MCP "
+                                 "inward to tools, A2A across organisations, REST and "
+                                 "events to everything already running. **Human-to-machine** "
+                                 "is the half that gets skipped — approval, escalation, "
+                                 "audit — and it is the half a supervisor reads."},
             ],
         },
 
@@ -1697,6 +1702,13 @@ DECK = {
                 {"t": "mmd", "id": "hendri-case-flow", "src": MMD_CASE_FLOW,
                  "cap": "Step 7 is a person. Step 8 is what makes step 7 defensible six "
                         "months later."},
+                {"t": "p", "md": "Steps 1–6 are the agent working: read the application, "
+                                 "analyse the account, check policy, score, cite the "
+                                 "clause, queue the recommendation. **Step 7 is a person**, "
+                                 "and nothing in steps 1–6 can reach past it. Step 8 writes "
+                                 "the whole run down — ==the officer's reason included==, "
+                                 "which is the only place this system learns something it "
+                                 "did not already know."},
             ],
         },
 

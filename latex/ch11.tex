@@ -34,9 +34,10 @@
 \vskip 6pt
 \vskip 4pt
 \reslink{Book}{Chapter 11 --- full text}{https://deeplearningwithpython.io/chapters/chapter11\_image-segmentation}
-\reslink{Notebook}{01\_segmentation\_from\_scratch.ipynb}{../../notebooks/ch11/01\_segmentation\_from\_scratch.ipynb}
-\reslink{Notebook}{02\_conv2dtranspose.ipynb}{../../notebooks/ch11/02\_conv2dtranspose.ipynb}
-\reslink{Notebook}{03\_segment\_anything.ipynb}{../../notebooks/ch11/03\_segment\_anything.ipynb}
+\reslink{Notebook}{01\_segmentation\_from\_scratch.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch11/01\_segmentation\_from\_scratch.html}
+\reslink{Notebook}{02\_conv2dtranspose.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch11/02\_conv2dtranspose.html}
+\reslink{Notebook}{03\_segment\_anything.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch11/03\_segment\_anything.html}
+\reslink{Notebook}{All chapter 11 notebooks}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/index.html\#ch11}
 \reslink{Repo}{Author's official notebook}{https://github.com/fchollet/deep-learning-with-python-notebooks/blob/master/chapter11\_image-segmentation.ipynb}
 \vskip 2pt
 \end{frame}
@@ -102,10 +103,10 @@ Delineating an organ or a lesion rather than merely detecting it.
 \framekicker{Section 11.2.1}
 \begin{frame}[shrink=25]{What a label looks like when the label is an image}
 \begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch11-mask.tex.pdf}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch11-mask-pixels.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont A segmentation mask is the equivalent of a label: same size as the input, one channel, one integer per pixel.\par}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}The dataset is \textbf{Oxford-IIIT Pets}: 7,390 pictures of cat and dog breeds, each with a foreground-background mask.\par}\vskip 4pt
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont A twelve-by-nine scene and its label. The label is an image, and it is the same size as the input.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The dataset is \textbf{Oxford-IIIT Pets}: 7,390 pictures of cat and dog breeds, each with a foreground-background mask stored as a PNG of the same name and the same size --- \inlinecode{1 = foreground}, \inlinecode{2 = background}, \inlinecode{3 = contour}.\par}\vskip 4pt
 \end{frame}
 
 \framekicker{Section 11.2.1}

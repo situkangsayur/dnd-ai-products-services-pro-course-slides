@@ -1253,3 +1253,93 @@ def dropout_net(fig_id, *, rate=0.5, cap="", note="", width=1060, height=470,
                    sim_label="pass")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+# Appended to tools/diagrams.py after the figure rebuild finishes.
+
+
+def pixel_mask(fig_id, *, cap="", note="", width=1040, height=440, full=False):
+    """An image and its per-pixel label, side by side, at pixel resolution.
+
+    Segmentation is the one task where **the label is the same shape as the
+    input**, and that sentence lands only once somebody has seen the two grids
+    next to each other. Four cards with emoji on them describe where
+    segmentation is used; this shows what it *is*.
+
+    The scene is deliberately tiny -- 12x9 -- so every cell is visible and the
+    class of every pixel can be pointed at.
+    """
+    W, H = 12, 9
+    # 0 sky, 1 road, 2 car, 3 person
+    scene = [[0] * W for _ in range(H)]
+    for y in range(6, H):
+        for x in range(W):
+            scene[y][x] = 1
+    for y in range(4, 7):
+        for x in range(2, 6):
+            scene[y][x] = 2
+    for y in range(3, 7):
+        for x in range(8, 10):
+            scene[y][x] = 3
+
+    def build(p):
+        names = ["sky", "road", "car", "person"]
+        cols = [p.fill2, p.ink3, p.accent, p.warm]
+        out = []
+        cell = 26
+        gap = 2
+        gw = W * (cell + gap)
+
+        def grid(x0, y0, painter, step):
+            g = []
+            for y in range(H):
+                for x in range(W):
+                    cx, cy = x0 + x * (cell + gap), y0 + y * (cell + gap)
+                    fill, label = painter(x, y)
+                    g.append(rect(cx, cy, cell, cell, r=2, pal=p, fill=fill,
+                                  stroke=p.faint, sw=0.5, step=step))
+                    if label is not None:
+                        g.append(txt(cx + cell / 2, cy + cell / 2, str(label),
+                                     size=10, mono=True, pal=p, fill=p.ink,
+                                     step=step))
+            return "".join(g)
+
+        left, right, top = 60, 60 + gw + 120, 96
+        out.append(txt(left, 56, "the input image", size=14.5, weight=600,
+                       pal=p, anchor="start", fill=p.ink, step=1))
+        out.append(grid(left, top,
+                        lambda x, y: (cols[scene[y][x]], None), 1))
+        out.append(txt(left, top + H * (cell + gap) + 26,
+                       f"shape ({H}, {W}, 3) — three colour channels",
+                       size=12, mono=True, pal=p, anchor="start", fill=p.accent,
+                       step=1))
+
+        out.append(txt(right, 56, "the label", size=14.5, weight=600, pal=p,
+                       anchor="start", fill=p.ink, step=2))
+        out.append(grid(right, top,
+                        lambda x, y: (cols[scene[y][x]], scene[y][x]), 2))
+        out.append(txt(right, top + H * (cell + gap) + 26,
+                       f"shape ({H}, {W}, 1) — one class id per pixel",
+                       size=12, mono=True, pal=p, anchor="start", fill=p.accent,
+                       step=2))
+
+        out.append(arrow(left + gw + 24, top + H * (cell + gap) / 2,
+                         right - 24, top + H * (cell + gap) / 2,
+                         pal=p, stroke=p.line, sw=1.6, step=2))
+
+        lx = left
+        ly = height - 52
+        for i, (nm, c) in enumerate(zip(names, cols)):
+            x = lx + i * 150
+            out.append(rect(x, ly - 11, 22, 22, r=4, pal=p, fill=c,
+                            stroke=p.faint, sw=0.8, step=3))
+            out.append(txt(x + 30, ly, f"{i} · {nm}", size=12.5, pal=p,
+                           anchor="start", fill=p.ink2, step=3))
+
+        out.append(txt(width / 2, height - 16,
+                       "Classification gives one label per image. Segmentation "
+                       "gives one label per pixel — the output is the same size "
+                       "as the input.",
+                       size=13, pal=p, fill=p.accent, step=3))
+        return svg(width, height, "".join(out), pal=p, steps=3,
+                   sim_label="stage")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

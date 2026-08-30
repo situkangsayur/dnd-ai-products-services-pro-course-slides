@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pretraining an embedding, and the geometry it learns · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Pretraining an embedding, and the geometry it learns</h1>
+  <p>Continuous bag-of-words on unlabelled text, then use of the result — and a look at the space itself, which is where the interest is.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The idea</h2></div>
+<div class="cell"><p>Chapter 8's argument in a new modality. <strong>Labelled data is scarce; unlabelled text is not.</strong> Train an embedding on a task that needs no labels — predict a word from its neighbours — and reuse the geometry.</p></div>
+<div class="cell cell-in"><pre>import numpy as np
+import keras
+from keras import layers
+
+# A corpus. Substitute anything larger you have; more text is strictly better.
+from keras.datasets import imdb
+word_index = imdb.get_word_index()
+index_word = {v + 3: k for k, v in word_index.items()}
+index_word.update({0: "&lt;PAD&gt;", 1: "&lt;START&gt;", 2: "&lt;UNK&gt;"})
+
+(train_data, _), _ = imdb.load_data(num_words=10000)
+print(f"{len(train_data):,} documents, "
+      f"{sum(len(d) for d in train_data):,} tokens")</pre></div>
+<div class="cell"><h2>Building (context, target) pairs</h2></div>
+<div class="cell cell-in"><pre>WINDOW = 2
+VOCAB = 10000
+
+def cbow_pairs(sequences, window=WINDOW, limit=400_000):
+    contexts, targets = [], []
+    for seq in sequences:
+        for i, target in enumerate(seq):
+            lo, hi = max(0, i - window), min(len(seq), i + window + 1)
+            ctx = [seq[j] for j in range(lo, hi) if j != i]
+            if len(ctx) != 2 * window:
+                continue
+            contexts.append(ctx)
+            targets.append(target)
+            if len(targets) &gt;= limit:
+                return np.array(contexts), np.array(targets)
+    return np.array(contexts), np.array(targets)
+
+X, y = cbow_pairs(train_data)
+print("contexts:", X.shape, " targets:", y.shape)
+print("\nexample:")
+print("  context:", [index_word.get(i, '?') for i in X[100]])
+print("  target: ", index_word.get(y[100], '?'))</pre></div>
+<div class="cell"><p><strong>No labels anywhere.</strong> The supervision comes from the text's own structure, which is the definition of self-supervised learning and the same principle behind every model in chapters 15 to 17.</p></div>
+<div class="cell"><h2>The CBOW model</h2></div>
+<div class="cell cell-in"><pre>EMBED = 128
+
+inputs = keras.Input(shape=(2 * WINDOW,), dtype="int32")
+emb = layers.Embedding(VOCAB, EMBED, name="embedding")(inputs)
+x = layers.GlobalAveragePooling1D()(emb)     # average the context vectors
+outputs = layers.Dense(VOCAB, activation="softmax")(x)
+cbow = keras.Model(inputs, outputs)
+
+cbow.compile(optimizer="adam", loss="sparse_categorical_crossentropy",
+             metrics=["accuracy"])
+cbow.summary()</pre></div>
+<div class="cell"><p>Average the context embeddings, predict the missing word. The output layer is 10,000-wide and holds most of the parameters — <strong>and it is thrown away</strong>. The <code>Embedding</code> table is the artifact we are after.</p></div>
+<div class="cell"><h2>Training</h2></div>
+<div class="cell cell-in"><pre>cbow.fit(X, y, epochs=5, batch_size=512, validation_split=0.05,
+         verbose=2)</pre></div>
+<div class="cell"><blockquote><strong>Note</strong> — Accuracy will be low — predicting one word out of 10,000 from four neighbours is genuinely hard. <strong>The accuracy is not the objective</strong>; the embedding table is.</blockquote></div>
+<div class="cell"><h2>Looking at the space</h2></div>
+<div class="cell cell-in"><pre>W = cbow.get_layer("embedding").get_weights()[0]
+norms = np.linalg.norm(W, axis=1, keepdims=True) + 1e-9
+Wn = W / norms
+
+def nearest(word, k=8):
+    idx = word_index.get(word)
+    if idx is None or idx + 3 &gt;= VOCAB:
+        return f"{word!r} not in the vocabulary"
+    i = idx + 3
+    sims = Wn @ Wn[i]
+    top = np.argsort(sims)[::-1][1:k+1]
+    return [(index_word.get(j, "?"), round(float(sims[j]), 3)) for j in top]
+
+for w in ["good", "terrible", "film", "actor", "three"]:
+    print(f"{w:10s} -&gt;", nearest(w, 6))</pre></div>
+<div class="cell"><p>The neighbours should be <strong>semantically related, not orthographically similar</strong>. Expect <em>good</em> near <em>great</em>, <em>decent</em>, <em>fine</em>; <em>three</em> near other numbers.</p>
+<p>Nothing told the model that numbers form a category. It fell out of the fact that numbers appear in similar contexts — which is the whole distributional hypothesis, demonstrated.</p></div>
+<div class="cell"><h2>Projecting it</h2></div>
+<div class="cell cell-in"><pre>from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
+
+words = ["good", "great", "excellent", "wonderful", "best",
+         "bad", "terrible", "awful", "worst", "poor",
+         "one", "two", "three", "four", "five",
+         "he", "she", "they", "him", "her",
+         "movie", "film", "story", "plot", "script"]
+idxs = [word_index[w] + 3 for w in words if w in word_index
+        and word_index[w] + 3 &lt; VOCAB]
+labels = [index_word[i] for i in idxs]
+
+proj = TSNE(n_components=2, perplexity=6, init="pca",
+            random_state=0).fit_transform(Wn[idxs])
+
+plt.figure(figsize=(9, 7))
+plt.scatter(proj[:, 0], proj[:, 1], s=30, c="#00539f")
+for (x0, y0), lab in zip(proj, labels):
+    plt.annotate(lab, (x0, y0), fontsize=10,
+                 xytext=(4, 4), textcoords="offset points")
+plt.title("A learned word geometry"); plt.xticks([]); plt.yticks([])
+plt.show()</pre></div>
+<div class="cell"><p>Positive adjectives together, negative adjectives together, numbers together, pronouns together. <strong>This geometry is what chapter 15 means by an embedding space</strong>, and what its attention mechanism repeatedly refines.</p></div>
+<div class="cell"><h2>Using it downstream</h2></div>
+<div class="cell cell-in"><pre># Freeze the pretrained table and train only the classifier on top.
+pretrained = layers.Embedding(VOCAB, EMBED, trainable=False,
+                              name="pretrained_embedding")
+pretrained.build((None,))
+pretrained.set_weights([W])
+
+inputs = keras.Input(shape=(None,), dtype="int32")
+x = pretrained(inputs)
+x = layers.Bidirectional(layers.LSTM(32))(x)
+x = layers.Dropout(0.5)(x)
+outputs = layers.Dense(1, activation="sigmoid")(x)
+clf = keras.Model(inputs, outputs)
+clf.compile(optimizer="rmsprop", loss="binary_crossentropy",
+            metrics=["accuracy"])
+print(f"trainable parameters: {sum(np.prod(w.shape) for w in clf.trainable_weights):,}")
+print(f"frozen (pretrained):  {np.prod(W.shape):,}")</pre></div>
+<div class="cell"><p>The chapter-8 procedure, exactly: <strong>freeze, train the head, consider unfreezing later at a lower learning rate.</strong></p>
+<p>Pretrained embeddings help most when labelled data is scarce. On the full IMDB training set they help little — 20,000 labelled reviews is enough to learn a task-specific geometry. Try it with 1,000 and the gap opens.</p></div>
+<div class="cell"><h2>What chapter 15 changes about all this</h2></div>
+<div class="cell"><p>One vector per word, fixed. <em>Bank</em> gets a single embedding whether it is a river bank or a savings bank.</p>
+<p><strong>Chapter 15's attention mechanism produces a different vector for each occurrence</strong>, conditioned on its neighbours. That is the single largest step between this notebook and a modern language model — and the geometry you plotted above is the thing it refines, layer by layer.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>CBOW learns an embedding from unlabelled text — self-supervision, as in chapters 15 to 17.</li>
+<li>The output layer holds most of the parameters and is discarded; the table is the artifact.</li>
+<li>The learned geometry groups words by <strong>context</strong>, which is the distributional hypothesis working.</li>
+<li>One vector per word is the limitation attention removes.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

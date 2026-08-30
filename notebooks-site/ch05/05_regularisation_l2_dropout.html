@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Regularizing: smaller, L2, and dropout · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Regularizing: smaller, L2, and dropout</h1>
+  <p>Three ways to fight overfitting on the same problem, measured against each other rather than described.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The setup, and the baseline to beat</h2></div>
+<div class="cell cell-in"><pre>import numpy as np
+import keras
+from keras import layers, regularizers
+from keras.datasets import imdb
+
+(train_data, train_labels), _ = imdb.load_data(num_words=10000)
+
+def vectorize(seqs, dim=10000):
+    out = np.zeros((len(seqs), dim), dtype="float32")
+    for i, s in enumerate(seqs):
+        out[i, s] = 1.
+    return out
+
+x = vectorize(train_data)
+y = np.asarray(train_labels).astype("float32")
+
+def fit(model, epochs=20):
+    model.compile(optimizer="rmsprop", loss="binary_crossentropy",
+                  metrics=["accuracy"])
+    return model.fit(x, y, epochs=epochs, batch_size=512,
+                     validation_split=0.4, verbose=0)
+
+keras.utils.set_random_seed(0)
+baseline = fit(keras.Sequential([
+    layers.Dense(16, activation="relu"),
+    layers.Dense(16, activation="relu"),
+    layers.Dense(1, activation="sigmoid"),
+]))</pre></div>
+<div class="cell"><h2>Option 1: a smaller model</h2></div>
+<div class="cell cell-in"><pre>keras.utils.set_random_seed(0)
+smaller = fit(keras.Sequential([
+    layers.Dense(4, activation="relu"),
+    layers.Dense(4, activation="relu"),
+    layers.Dense(1, activation="sigmoid"),
+]))</pre></div>
+<div class="cell"><h2>Option 2: L2 weight regularization</h2></div>
+<div class="cell"><p>Add the sum of the squared weights to the loss. The model now pays for complexity, so it keeps only the weights that earn their place.</p></div>
+<div class="cell cell-in"><pre>keras.utils.set_random_seed(0)
+l2 = fit(keras.Sequential([
+    layers.Dense(16, kernel_regularizer=regularizers.l2(0.002),
+                 activation="relu"),
+    layers.Dense(16, kernel_regularizer=regularizers.l2(0.002),
+                 activation="relu"),
+    layers.Dense(1, activation="sigmoid"),
+]))</pre></div>
+<div class="cell"><h2>Option 3: dropout</h2></div>
+<div class="cell"><p>Zero a random half of the outputs during training. The layer cannot rely on any specific unit being present, so it cannot build a fragile conspiracy of units that happens to fit the training set.</p></div>
+<div class="cell cell-in"><pre>keras.utils.set_random_seed(0)
+dropout = fit(keras.Sequential([
+    layers.Dense(16, activation="relu"),
+    layers.Dropout(0.5),
+    layers.Dense(16, activation="relu"),
+    layers.Dropout(0.5),
+    layers.Dense(1, activation="sigmoid"),
+]))</pre></div>
+<div class="cell"><blockquote><strong>Note</strong> — Dropout is active during <strong>training only</strong>. At inference Keras scales the outputs instead, so <code>predict()</code> is deterministic — which is why you never see it in the evaluation numbers.</blockquote></div>
+<div class="cell"><h2>All four, on one axis</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+
+runs = [("baseline (16, 16)", baseline, "#888888"),
+        ("smaller (4, 4)", smaller, "#1f77b4"),
+        ("L2 0.002", l2, "#2ca02c"),
+        ("dropout 0.5", dropout, "#d62728")]
+
+plt.figure(figsize=(8, 4.8))
+for name, h, c in runs:
+    plt.plot(h.history["val_loss"], lw=1.7, c=c, label=name)
+plt.xlabel("epoch"); plt.ylabel("validation loss"); plt.ylim(0.25, 0.75)
+plt.legend(); plt.title("Three ways to delay overfitting")
+plt.show()
+
+print(f"{'run':22s} {'best val loss':&gt;14s} {'at epoch':&gt;9s}")
+for name, h, _ in runs:
+    v = h.history["val_loss"]
+    print(f"{name:22s} {min(v):14.4f} {int(np.argmin(v))+1:9d}")</pre></div>
+<div class="cell"><p>Read the <strong>epoch of the minimum</strong>, not just the minimum. Regularization does not usually give a dramatically better best score on this problem — it delays the turn, which buys you a wider window in which the model is good.</p></div>
+<div class="cell"><h2>Dropout rate is a real hyperparameter</h2></div>
+<div class="cell cell-in"><pre>rates = [0.0, 0.2, 0.5, 0.8]
+best = []
+for r in rates:
+    keras.utils.set_random_seed(0)
+    layers_list = [layers.Dense(16, activation="relu")]
+    if r: layers_list.append(layers.Dropout(r))
+    layers_list.append(layers.Dense(16, activation="relu"))
+    if r: layers_list.append(layers.Dropout(r))
+    layers_list.append(layers.Dense(1, activation="sigmoid"))
+    h = fit(keras.Sequential(layers_list), epochs=15)
+    best.append(min(h.history["val_loss"]))
+    print(f"dropout {r:.1f} -&gt; best val loss {best[-1]:.4f}")
+
+plt.figure(figsize=(5.5, 3.8))
+plt.plot(rates, best, "o-")
+plt.xlabel("dropout rate"); plt.ylabel("best validation loss")
+plt.title("Too much dropout underfits")
+plt.show()</pre></div>
+<div class="cell"><p>At 0.8 the model is being asked to work with a fifth of its units and it underfits. <strong>Regularization taken far enough becomes the other failure</strong> — which is why chapter 18 hands the choice to a tuner rather than to intuition.</p></div>
+<div class="cell"><h2>What actually works best</h2></div>
+<div class="cell"><p>The most effective regularizer on this problem is not on the chart: <strong>more training data</strong>. Notebook 02 showed the curve. Every technique here is what you reach for when more data is not available — which is most of the time, and is why they matter.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Reducing capacity, L2, and dropout all delay overfitting by different mechanisms.</li>
+<li>Read the epoch at which validation loss turns, not only its minimum.</li>
+<li>Dropout is training-only; inference is deterministic.</li>
+<li>Over-regularizing produces underfitting — the rate is a hyperparameter, not a constant.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

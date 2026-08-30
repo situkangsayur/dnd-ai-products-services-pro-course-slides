@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A pretrained backbone: feature extraction, then fine-tuning · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>A pretrained backbone: feature extraction, then fine-tuning</h1>
+  <p>The same 2,000 images, and 97% — because the model has already seen 1.4 million others. This is the most valuable technique in the chapter and the one with the strictest procedure.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>Loading a backbone without its head</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers
+
+conv_base = keras.applications.vgg16.VGG16(
+    weights="imagenet",
+    include_top=False,          # drop the 1000-class classifier
+    input_shape=(180, 180, 3),
+)
+conv_base.summary()
+print(f"\n{conv_base.count_params():,} parameters, all pretrained")</pre></div>
+<div class="cell"><p><code>include_top=False</code> drops the ImageNet classifier and keeps the <strong>convolutional base</strong> — the part that learned edges, textures, and object parts. Those transfer; the 1000-class head does not.</p></div>
+<div class="cell"><h2>Fast feature extraction, without augmentation</h2></div>
+<div class="cell"><p>Run every image through the frozen base once, cache the features, and train a small classifier on those. <strong>Very fast, and it rules out augmentation</strong> — the features are computed once, so there is nothing to randomise.</p></div>
+<div class="cell cell-in"><pre>import numpy as np
+import pathlib
+from keras.utils import image_dataset_from_directory
+
+new_base_dir = pathlib.Path("cats_vs_dogs_small")
+train_dataset = image_dataset_from_directory(
+    new_base_dir / "train", image_size=(180, 180), batch_size=32)
+validation_dataset = image_dataset_from_directory(
+    new_base_dir / "validation", image_size=(180, 180), batch_size=32)
+test_dataset = image_dataset_from_directory(
+    new_base_dir / "test", image_size=(180, 180), batch_size=32)
+
+def get_features_and_labels(dataset):
+    all_features, all_labels = [], []
+    for images, labels in dataset:
+        preprocessed = keras.applications.vgg16.preprocess_input(images)
+        features = conv_base.predict(preprocessed, verbose=0)
+        all_features.append(features)
+        all_labels.append(labels)
+    return np.concatenate(all_features), np.concatenate(all_labels)
+
+train_features, train_labels = get_features_and_labels(train_dataset)
+val_features, val_labels = get_features_and_labels(validation_dataset)
+test_features, test_labels = get_features_and_labels(test_dataset)
+print(train_features.shape)</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">(2000, 5, 5, 512)</pre></div>
+<div class="cell cell-in"><pre>inputs = keras.Input(shape=(5, 5, 512))
+x = layers.Flatten()(inputs)
+x = layers.Dense(256)(x)
+x = layers.Dropout(0.5)(x)
+outputs = layers.Dense(1, activation="sigmoid")(x)
+model = keras.Model(inputs, outputs)
+model.compile(loss="binary_crossentropy", optimizer="rmsprop",
+              metrics=["accuracy"])
+
+callbacks = [keras.callbacks.ModelCheckpoint(
+    "feature_extraction.keras", save_best_only=True, monitor="val_loss")]
+h1 = model.fit(train_features, train_labels, epochs=20,
+               validation_data=(val_features, val_labels),
+               callbacks=callbacks, verbose=2)
+print("test:", keras.models.load_model("feature_extraction.keras")
+      .evaluate(test_features, test_labels, verbose=0)[1])</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">test: ~0.97</pre></div>
+<div class="cell"><p><strong>Ninety-seven percent, in twenty seconds of training.</strong> Against 70% from scratch and 83% with augmentation. Everything the base knows was learned before this notebook started.</p></div>
+<div class="cell"><h2>Feature extraction with augmentation</h2></div>
+<div class="cell"><p>Slower, because the base runs on every batch — but augmentation works again, and the ceiling is higher.</p></div>
+<div class="cell cell-in"><pre>conv_base.trainable = False
+print("trainable weights after freezing:", len(conv_base.trainable_weights))
+
+data_augmentation = keras.Sequential([
+    layers.RandomFlip("horizontal"),
+    layers.RandomRotation(0.1),
+    layers.RandomZoom(0.2),
+])
+
+inputs = keras.Input(shape=(180, 180, 3))
+x = data_augmentation(inputs)
+x = keras.applications.vgg16.preprocess_input(x)
+x = conv_base(x)
+x = layers.Flatten()(x)
+x = layers.Dense(256)(x)
+x = layers.Dropout(0.5)(x)
+outputs = layers.Dense(1, activation="sigmoid")(x)
+model = keras.Model(inputs, outputs)
+model.compile(loss="binary_crossentropy", optimizer="rmsprop",
+              metrics=["accuracy"])</pre></div>
+<div class="cell"><blockquote>⚠️ <strong><code>conv_base.trainable = False</code> </strong>before<strong> compiling.</strong> Setting it afterwards has no effect on an already-compiled model, and the base will train — destroying the weights you came for, with no error.</blockquote></div>
+<div class="cell"><h2>Fine-tuning: the procedure, in order</h2></div>
+<div class="cell"><p>Unfreezing part of the base can add a few more points. The order is not negotiable.</p>
+<ol>
+<li>Add your head to a <strong>frozen</strong> base.</li>
+<li>Train the head to convergence.</li>
+<li>Unfreeze the <strong>top few</strong> layers of the base.</li>
+<li>Retrain both, at a <strong>much lower</strong> learning rate.</li>
+</ol>
+<p>Skip step 2 and the large, random gradients from an untrained head propagate into the base and wreck it on the first batch.</p></div>
+<div class="cell cell-in"><pre>conv_base.trainable = True
+for layer in conv_base.layers[:-4]:
+    layer.trainable = False
+
+for layer in conv_base.layers:
+    print(f"  {layer.name:24s} trainable={layer.trainable}")</pre></div>
+<div class="cell cell-in"><pre>model.compile(loss="binary_crossentropy",
+              optimizer=keras.optimizers.RMSprop(learning_rate=1e-5),
+              metrics=["accuracy"])
+
+callbacks = [keras.callbacks.ModelCheckpoint(
+    "fine_tuning.keras", save_best_only=True, monitor="val_loss")]
+h2 = model.fit(train_dataset, epochs=30,
+               validation_data=validation_dataset,
+               callbacks=callbacks, verbose=2)
+
+best = keras.models.load_model("fine_tuning.keras")
+print(f"test accuracy: {best.evaluate(test_dataset, verbose=0)[1]:.3f}")</pre></div>
+<div class="cell"><p><code>learning_rate=1e-5</code> — a hundred times smaller than the default. The same discipline reappears in chapter 15 for RoBERTa and chapter 16 for Gemma. <strong>Large updates destroy representations that cost a great deal to learn.</strong></p></div>
+<div class="cell"><h2>Why only the top layers</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+
+names = [l.name for l in conv_base.layers if "conv" in l.name]
+print("Earlier layers encode generic features -- edges, colours, textures.")
+print("Later layers encode specific ones -- 'dog ear', 'car wheel'.")
+print()
+for i, n in enumerate(names):
+    kind = "generic (keep frozen)" if i &lt; len(names) - 3 else "specific (worth tuning)"
+    print(f"  {n:16s} {kind}")</pre></div>
+<div class="cell"><p>Two reasons to leave the early layers alone: they encode features that transfer to <em>any</em> image problem, and every unfrozen layer is more parameters to fit from 2,000 samples. <strong>More trainable parameters on a small dataset is more overfitting</strong>, which is the thing you were trying to fix.</p></div>
+<div class="cell"><h2>The whole chapter, in one table</h2></div>
+<div class="cell cell-in"><pre>print(f"{'approach':38s} {'test acc':&gt;9s}")
+print(f"{'-'*48}")
+for name, acc in [("from scratch", 0.70),
+                  ("+ augmentation + dropout", 0.83),
+                  ("VGG16 features, cached", 0.97),
+                  ("VGG16 + augmentation", 0.975),
+                  ("VGG16 fine-tuned (top 4 layers)", 0.98)]:
+    print(f"{name:38s} {acc:&gt;9.3f}")
+print("\n(your numbers will vary by a point or two)")</pre></div>
+<div class="cell"><p>The largest single jump is <strong>from scratch to pretrained</strong>, and it is not close. Chapter 15 makes the same point about text and chapter 16 about generation. If there is one habit to take from this chapter: ==start from a pretrained backbone, always, and justify not doing so.==</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li><code>include_top=False</code> keeps the convolutional base and drops the task-specific head.</li>
+<li>Cached features are fastest but rule out augmentation; running the base per batch costs time and restores it.</li>
+<li>Freeze <strong>before</strong> compiling, or the base trains and is destroyed.</li>
+<li>Fine-tune only the top layers, only after the head has converged, and only at a much lower learning rate.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conv2DTranspose, and the checkerboard artifact · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Conv2DTranspose, and the checkerboard artifact</h1>
+  <p>How upsampling with a learned kernel works, why it produces a grid pattern, and the two ways to avoid it.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>What it does to a shape</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers
+import numpy as np
+
+x = np.zeros((1, 8, 8, 4), dtype="float32")
+
+for stride in [1, 2, 4]:
+    out = layers.Conv2DTranspose(4, 3, strides=stride, padding="same")(x)
+    print(f"strides={stride}: {x.shape} -&gt; {out.shape}")</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code">strides=1: (1, 8, 8, 4) -&gt; (1, 8, 8, 4)
+strides=2: (1, 8, 8, 4) -&gt; (1, 16, 16, 4)
+strides=4: (1, 8, 8, 4) -&gt; (1, 32, 32, 4)</pre></div>
+<div class="cell"><p>The inverse of a strided convolution in <strong>shape</strong> — not in value. It is sometimes called a <em>deconvolution</em>, which is wrong and misleading: nothing is being deconvolved.</p></div>
+<div class="cell"><h2>The mechanism</h2></div>
+<div class="cell cell-in"><pre>import matplotlib.pyplot as plt
+
+# One hot pixel, one fixed kernel, so the mechanism is visible.
+inp = np.zeros((1, 4, 4, 1), dtype="float32")
+inp[0, 1, 1, 0] = 1.0
+inp[0, 2, 3, 0] = 1.0
+
+ct = layers.Conv2DTranspose(1, 3, strides=2, padding="same",
+                            use_bias=False,
+                            kernel_initializer="ones")
+out = ct(inp).numpy()
+
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(8, 3.6))
+a1.imshow(inp[0, :, :, 0], cmap="gray_r"); a1.set_title("input 4x4, two hot pixels")
+a2.imshow(out[0, :, :, 0], cmap="gray_r"); a2.set_title("output 8x8")
+for a in (a1, a2): a.set_xticks([]); a.set_yticks([])
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>Each input pixel is <strong>multiplied by the whole kernel</strong> and stamped into the output at its strided position. Where the stamps overlap, the contributions add — and that overlap is where the artifact comes from.</p></div>
+<div class="cell"><h2>The checkerboard</h2></div>
+<div class="cell cell-in"><pre># kernel_size=3 with strides=2 gives uneven overlap.
+bad = layers.Conv2DTranspose(1, 3, strides=2, padding="same",
+                             use_bias=False, kernel_initializer="ones")
+ones = np.ones((1, 16, 16, 1), dtype="float32")
+out_bad = bad(ones).numpy()[0, :, :, 0]
+
+# kernel_size divisible by stride overlaps evenly.
+good = layers.Conv2DTranspose(1, 4, strides=2, padding="same",
+                              use_bias=False, kernel_initializer="ones")
+out_good = good(ones).numpy()[0, :, :, 0]
+
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(10, 4))
+a1.imshow(out_bad, cmap="gray"); a1.set_title(
+    f"kernel 3, stride 2 -- values {np.unique(out_bad)}")
+a2.imshow(out_good, cmap="gray"); a2.set_title(
+    f"kernel 4, stride 2 -- values {np.unique(out_good)}")
+for a in (a1, a2): a.set_xticks([]); a.set_yticks([])
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>A uniform input produces a <strong>striped output</strong>. With kernel 3 and stride 2, some output pixels receive two contributions and some receive one — the grid pattern is baked into the arithmetic, before any learning happens.</p></div>
+<div class="cell"><h2>Two fixes</h2></div>
+<div class="cell cell-in"><pre># Fix 1: make kernel_size divisible by strides.
+fix1 = keras.Sequential([layers.Conv2DTranspose(32, 4, strides=2,
+                                                padding="same")])
+
+# Fix 2: separate the upsampling from the convolution entirely.
+fix2 = keras.Sequential([
+    layers.UpSampling2D(size=2, interpolation="bilinear"),
+    layers.Conv2D(32, 3, padding="same"),
+])
+
+probe = np.ones((1, 16, 16, 8), dtype="float32")
+print("Conv2DTranspose(4, stride 2):", fix1(probe).shape,
+      f"{fix1.count_params():,} params")
+print("UpSampling + Conv2D:        ", fix2(probe).shape,
+      f"{fix2.count_params():,} params")</pre></div>
+<div class="cell"><p>Fix 2 is what chapter 17's U-Net uses, and it is the one to reach for by default. <strong>Interpolate, then convolve</strong> — the upsampling is fixed and artifact-free, and the convolution learns what to do with the result.</p></div>
+<div class="cell"><h2>Seeing it in a real decoder</h2></div>
+<div class="cell cell-in"><pre>def decoder(kind):
+    keras.utils.set_random_seed(0)
+    i = keras.Input(shape=(8, 8, 64))
+    x = i
+    for f in [64, 32, 16]:
+        if kind == "transpose":
+            x = layers.Conv2DTranspose(f, 3, strides=2, padding="same",
+                                       activation="relu")(x)
+        else:
+            x = layers.UpSampling2D(2, interpolation="bilinear")(x)
+            x = layers.Conv2D(f, 3, padding="same", activation="relu")(x)
+    o = layers.Conv2D(1, 3, padding="same", activation="sigmoid")(x)
+    return keras.Model(i, o)
+
+probe = np.random.default_rng(0).normal(size=(1, 8, 8, 64)).astype("float32")
+fig, axes = plt.subplots(1, 2, figsize=(10, 4.4))
+for ax, kind in zip(axes, ["transpose", "upsample"]):
+    out = decoder(kind)(probe).numpy()[0, :, :, 0]
+    ax.imshow(out, cmap="gray"); ax.set_title(kind); ax.axis("off")
+plt.suptitle("Untrained decoders on the same input", y=1.0)
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>Untrained, so this shows the <strong>structural bias</strong> rather than anything learned. Training reduces the artifact; it does not remove it, and generative models in chapter 17 are where it becomes most visible.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li><code>Conv2DTranspose</code> stamps a learned kernel at strided positions and adds the overlaps.</li>
+<li>Uneven overlap produces the <strong>checkerboard artifact</strong>, before any training.</li>
+<li>Fix by making kernel size divisible by stride, or by separating upsampling from convolution.</li>
+<li><code>UpSampling2D</code> + <code>Conv2D</code> is the safer default, and what chapter 17's U-Net uses.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

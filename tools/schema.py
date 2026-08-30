@@ -52,7 +52,14 @@ BLOCKS  — the ``t`` key selects the kind
         {"ico":"🧠","h":"Heading","p":"body","tag":"label","style":"accent"}]}
         style: "" | accent | warn | good | bad
     {"t":"stats",   "items":[{"v":"3","l":"label"}], "cols": 4}
-    {"t":"code",    "lang":"python", "file":"listing 2.1", "src":"..."}
+    {"t":"code",    "lang":"python", "file":"listing 2.1", "src":"...",
+                    "run":[{"line":3, "note":"...", "vars":{"x":"5"},
+                            "out":"..."}, ...]}
+        ``run`` is optional: the listing walked one line at a time, with the
+        state after each step, driven by the same control bar the figures use.
+        The trace is authored rather than executed -- these are teaching
+        examples, and a slide that needs a runtime is a slide that breaks in a
+        room with no network. Lines are 1-based into ``src``.
     {"t":"out",     "src":"..."}                         program output
     {"t":"table",   "head":[...], "rows":[[...],...], "widths":[...]}
     {"t":"quote",   "md":"...", "cite":"..."}
@@ -232,6 +239,11 @@ def lint(deck, strict=False):
       deck-too-short    a book chapter under MIN_CHAPTER_SLIDES; the chapter is
                         almost certainly not covered.
       no-figure         a content-heavy chapter deck with too few diagrams.
+      figure-unexplained
+                        a slide that is a figure and nothing else, with no
+                        explaining slide after it. The decks are read alone as
+                        well as presented, and a diagram with no words near it
+                        is one a reader has to guess at.
     """
     warns = []
     did = deck.get("id", "?")
@@ -257,6 +269,22 @@ def lint(deck, strict=False):
                     f"{did}: code-unexplained  \"{s.get('title', '')[:46]}\" ({', '.join(missing)})")
                 break
 
+        # A figure left to speak for itself. Deliberately generous: prose on
+        # the same slide counts, and so does a following slide that is prose
+        # about it -- the "figure, then reading" pattern used throughout.
+        if (any(k in FIGURE_KINDS for k in kinds)
+                and not any(k in TEXT_KINDS for k in kinds)):
+            nxt = slides[i + 1] if i + 1 < len(slides) else None
+            explained = False
+            if nxt:
+                nk = [b.get("t") for b in _flatten(nxt.get("blocks", []))]
+                explained = (any(k in TEXT_KINDS for k in nk)
+                             and not any(k in FIGURE_KINDS for k in nk))
+            if not explained:
+                warns.append(
+                    f"{did}: figure-unexplained \"{s.get('title', '')[:46]}\" "
+                    f"(no prose beside it, none after it)")
+
         w = _weight(blocks)
         if w > MAX_WEIGHT:
             warns.append(f"{did}: slide-too-dense   \"{s.get('title', '')[:46]}\" "
@@ -274,5 +302,14 @@ def lint(deck, strict=False):
 
     return warns
 
+
+FIGURE_KINDS = {"fig", "draw", "mmd", "img"}
+
+# Blocks that actually carry words. Deliberately NOT `PROSE_KINDS`, which is
+# the code lint's idea of "anything that is not code" and therefore includes
+# the figures themselves -- reusing it here made the figure check pass on every
+# deck, which looked like a clean bill of health and was a bug.
+TEXT_KINDS = {"p", "lead", "bullets", "steps", "band", "quote", "table",
+              "cards", "stats"}
 
 MIN_CHAPTER_SLIDES = 34

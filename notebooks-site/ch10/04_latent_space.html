@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The latent space of a trained classifier · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>The latent space of a trained classifier</h1>
+  <p>Take the penultimate layer's output as an embedding, project it to two dimensions, and see the structure the network built without ever being asked to.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>A classifier, and its penultimate layer</h2></div>
+<div class="cell cell-in"><pre>import keras
+from keras import layers
+from keras.datasets import fashion_mnist
+import numpy as np
+
+(x, y), (xt, yt) = fashion_mnist.load_data()
+x = x.reshape(-1, 28, 28, 1).astype("float32") / 255
+xt = xt.reshape(-1, 28, 28, 1).astype("float32") / 255
+classes = ["T-shirt", "Trouser", "Pullover", "Dress", "Coat",
+           "Sandal", "Shirt", "Sneaker", "Bag", "Boot"]
+
+inputs = keras.Input(shape=(28, 28, 1))
+z = layers.Conv2D(32, 3, activation="relu")(inputs)
+z = layers.MaxPooling2D(2)(z)
+z = layers.Conv2D(64, 3, activation="relu")(z)
+z = layers.MaxPooling2D(2)(z)
+z = layers.Flatten()(z)
+embedding = layers.Dense(32, activation="relu", name="embedding")(z)
+outputs = layers.Dense(10, activation="softmax")(embedding)
+model = keras.Model(inputs, outputs)
+
+model.compile(optimizer="adam", loss="sparse_categorical_crossentropy",
+              metrics=["accuracy"])
+model.fit(x, y, epochs=6, batch_size=128, validation_split=.1, verbose=2)
+print("test:", model.evaluate(xt, yt, verbose=0)[1])</pre></div>
+<div class="cell"><h2>Extracting the embedding</h2></div>
+<div class="cell cell-in"><pre>encoder = keras.Model(model.input, model.get_layer("embedding").output)
+emb = encoder.predict(xt[:4000], verbose=0)
+labels = yt[:4000]
+print("embedding:", emb.shape)</pre></div>
+<div class="cell"><p>Thirty-two numbers per garment. <strong>The classifier was never asked to organise this space</strong> — it was asked to get the label right, and the organisation is a by-product.</p></div>
+<div class="cell"><h2>Projecting it</h2></div>
+<div class="cell cell-in"><pre>from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
+import matplotlib.pyplot as plt
+
+pca = PCA(n_components=2).fit_transform(emb)
+tsne = TSNE(n_components=2, init="pca", perplexity=30,
+            random_state=0).fit_transform(emb)
+
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(14, 6.4))
+for ax, proj, name in [(a1, pca, "PCA"), (a2, tsne, "t-SNE")]:
+    sc = ax.scatter(proj[:, 0], proj[:, 1], c=labels, cmap="tab10", s=6, alpha=.75)
+    ax.set_title(f"{name} of the 32-d embedding"); ax.set_xticks([]); ax.set_yticks([])
+handles = [plt.Line2D([], [], marker="o", ls="", color=plt.cm.tab10(i / 9),
+                      label=classes[i]) for i in range(10)]
+fig.legend(handles=handles, loc="lower center", ncol=10, fontsize=8.5,
+           frameon=False, bbox_to_anchor=(0.5, -0.03))
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><h2>Reading the structure</h2></div>
+<div class="cell"><p>Three things are worth pointing out on the t-SNE panel.</p>
+<p><strong>Footwear clusters together</strong> — sandal, sneaker, and boot sit adjacent, because they <em>are</em> adjacent. Nobody encoded that relation.</p>
+<p><strong>Shirt overlaps with T-shirt, pullover, and coat.</strong> Those are genuinely confusable and the confusion matrix will show it. The geometry predicts the errors.</p>
+<p><strong>Bag and trouser sit apart from everything.</strong> Distinctive shapes, distinctive region.</p></div>
+<div class="cell"><h2>The geometry predicts the confusion matrix</h2></div>
+<div class="cell cell-in"><pre>from sklearn.metrics import confusion_matrix
+
+pred = model.predict(xt[:4000], verbose=0).argmax(axis=1)
+cm = confusion_matrix(labels, pred, normalize="true")
+
+plt.figure(figsize=(7.5, 6.4))
+plt.imshow(cm, cmap="Blues")
+plt.xticks(range(10), classes, rotation=45, ha="right")
+plt.yticks(range(10), classes)
+plt.colorbar(label="fraction"); plt.title("Confusion matrix")
+for i in range(10):
+    for j in range(10):
+        if cm[i, j] &gt; 0.03 and i != j:
+            plt.text(j, i, f"{cm[i,j]:.2f}", ha="center", va="center", fontsize=7)
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>The off-diagonal mass sits exactly where the embedding clusters overlap. <strong>The two pictures are the same fact seen twice</strong>, and the embedding version tells you <em>why</em> — the model's representation does not separate those classes, so no decision boundary drawn on it can.</p></div>
+<div class="cell"><h2>Nearest neighbours in the learned space</h2></div>
+<div class="cell cell-in"><pre>from sklearn.neighbors import NearestNeighbors
+
+nn = NearestNeighbors(n_neighbors=6).fit(emb)
+query_indices = [3, 17, 42, 77]
+
+fig, axes = plt.subplots(len(query_indices), 6, figsize=(10, 1.8 * len(query_indices)))
+for row, qi in enumerate(query_indices):
+    _, idx = nn.kneighbors(emb[qi:qi+1])
+    for col, j in enumerate(idx[0]):
+        axes[row, col].imshow(xt[j, :, :, 0], cmap="gray_r")
+        axes[row, col].axis("off")
+        axes[row, col].set_title("query" if col == 0 else classes[labels[j]],
+                                 fontsize=8)
+plt.suptitle("Nearest neighbours in the 32-d embedding", y=1.0)
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>Similar garments, retrieved by distance in a space nobody designed for retrieval. <strong>This is the same mechanism as chapter 15's embeddings and chapter 16's vector database</strong> — a classifier trained on labels produces a usable similarity metric as a by-product, and that by-product is often more valuable than the labels.</p></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>The penultimate layer is an embedding you can use for retrieval and clustering.</li>
+<li>Its structure is emergent — the model was optimised for labels, not geometry.</li>
+<li>Overlapping clusters predict the confusion matrix, and explain it.</li>
+<li>The same idea scales up to chapter 15's embeddings and chapter 16's vector databases.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

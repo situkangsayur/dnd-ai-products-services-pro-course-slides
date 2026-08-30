@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Instruction tuning under LoRA · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>Instruction tuning under LoRA</h1>
+  <p>Why fit() runs out of memory on a model that generates fine, what LoRA does about it, and what instruction tuning does and does not change.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>The dataset</h2></div>
+<div class="cell cell-in"><pre>import json
+import keras
+import tensorflow as tf
+
+PROMPT_TEMPLATE = "[instruction]\n{}[end]\n[response]\n"
+RESPONSE_TEMPLATE = "{}[end]"
+
+dataset_path = keras.utils.get_file(
+    origin=("https://hf.co/datasets/databricks/databricks-dolly-15k/"
+            "resolve/main/databricks-dolly-15k.jsonl"))
+
+data = {"prompts": [], "responses": []}
+with open(dataset_path) as file:
+    for line in file:
+        features = json.loads(line)
+        if features["context"]:
+            continue                     # the RAG-shaped examples; skip for now
+        data["prompts"].append(PROMPT_TEMPLATE.format(features["instruction"]))
+        data["responses"].append(RESPONSE_TEMPLATE.format(features["response"]))
+
+print(f"{len(data['prompts']):,} pairs")
+print(repr(data["prompts"][0]))
+print(repr(data["responses"][0]))</pre></div>
+<div class="cell cell-in"><pre>ds = tf.data.Dataset.from_tensor_slices(data).shuffle(2000).batch(2)
+val_ds = ds.take(100)
+train_ds = ds.skip(100)
+print("batch size 2 -- that number is about to matter")</pre></div>
+<div class="cell"><h2>Why fit() would run out of memory</h2></div>
+<div class="cell cell-in"><pre>import keras_hub
+gemma_lm = keras_hub.models.CausalLM.from_preset("gemma3_1b", dtype="float32")
+
+params = gemma_lm.count_params()
+weights_gb = params * 4 / 1e9
+adam_gb = params * 4 * 3 / 1e9      # gradient, velocity, momentum
+
+print(f"parameters:            {params:,}")
+print(f"weights (float32):     {weights_gb:.1f} GB")
+print(f"Adam optimizer state:  {adam_gb:.1f} GB")
+print(f"forward-pass activations: a few GB")
+print(f"{'':24s} {'-'*12}")
+print(f"total:                 &gt; 16 GB")
+print()
+print("The model loaded and generated fine, because generation needs")
+print("only the weights. Training needs four times that, before")
+print("activations. This is the common shape of LLM work: GPU")
+print("throughput is a SECONDARY concern to fitting in memory at all.")</pre></div>
+<div class="cell"><h2>LoRA, from first principles</h2></div>
+<div class="cell cell-in"><pre>from keras import ops
+import numpy as np
+
+class Linear(keras.Layer):
+    def __init__(self, input_dim, output_dim):
+        super().__init__()
+        self.kernel = self.add_weight(shape=(input_dim, output_dim))
+
+    def call(self, inputs):
+        return ops.matmul(inputs, self.kernel)
+
+
+class LoraLinear(keras.Layer):
+    def __init__(self, input_dim, output_dim, rank):
+        super().__init__()
+        self.kernel = self.add_weight(shape=(input_dim, output_dim),
+                                      trainable=False)
+        self.alpha = self.add_weight(shape=(input_dim, rank))
+        self.beta = self.add_weight(shape=(rank, output_dim))
+
+    def call(self, inputs):
+        frozen = ops.matmul(inputs, self.kernel)
+        update = ops.matmul(ops.matmul(inputs, self.alpha), self.beta)
+        return frozen + update
+
+d, r = 2048, 8
+print(f"kernel {d}x{d}:         {d*d:&gt;10,} frozen")
+print(f"alpha {d}x{r} + beta {r}x{d}: {2*d*r:&gt;10,} trainable")
+print(f"{d*d / (2*d*r):.0f}x fewer")</pre></div>
+<div class="cell"><p>The update does <strong>not</strong> have the expressive power of the original kernel — at the narrow middle the whole update passes through eight floats.</p>
+<p>That is the bet, and it holds: <strong>during fine-tuning you no longer need the expressive power you needed during pretraining.</strong> The representation is already built; you are only steering it.</p></div>
+<div class="cell"><h2>Turning it on</h2></div>
+<div class="cell cell-in"><pre>gemma_lm.backbone.enable_lora(rank=8)
+gemma_lm.summary()</pre></div>
+<div class="cell"><p>Expected output:</p>
+<pre class="md-code"> Total params:         1,001,190,528 (3.73 GB)
+ Trainable params:         1,304,576 (4.98 MB)
+ Non-trainable params:   999,885,952 (3.72 GB)</pre></div>
+<div class="cell"><p>Weights still occupy 3.7 GB; <strong>trainable</strong> parameters are now 5 MB, which takes the optimizer state from gigabytes to megabytes.</p>
+<p>Note that the total went <em>up</em> slightly — alpha and beta are new weights. <strong>LoRA adds parameters to the model and removes them from the optimizer</strong>, and the optimizer was the problem.</p></div>
+<div class="cell cell-in"><pre># The same thing written out, which is what you edit to change the choice.
+print("gemma_lm.backbone.trainable = False")
+print("for i in range(gemma_lm.backbone.num_layers):")
+print("    layer = gemma_lm.backbone.get_layer(f'decoder_block_{i}')")
+print("    layer.attention.key_dense.trainable = True")
+print("    layer.attention.key_dense.enable_lora(rank=8)")
+print("    layer.attention.query_dense.trainable = True")
+print("    layer.attention.query_dense.enable_lora(rank=8)")
+print()
+print("Two decisions the one-liner makes for you: WHICH layers get LoRA,")
+print("and at WHAT rank. Adding the value projection, or only the later")
+print("blocks, is a one-line change from here.")</pre></div>
+<div class="cell"><h2>Inside the preprocessor</h2></div>
+<div class="cell cell-in"><pre>preprocessor = gemma_lm.preprocessor
+preprocessor.sequence_length = 512
+batch = next(iter(train_ds))
+x, y, sample_weight = preprocessor(batch)
+
+print("token_ids:   ", x["token_ids"].shape)
+print("padding_mask:", x["padding_mask"].shape)
+print("y:           ", y.shape)
+print("sample_weight:", sample_weight.shape)
+print()
+print("offset by one, exactly as in chapter 15:")
+print(" x:", x["token_ids"][0, :5].numpy())
+print(" y:", y[0, :5].numpy())</pre></div>
+<div class="cell"><p><code>sample_weight</code> restricts the loss to <strong>response tokens</strong>. We do not care about loss on a fixed user prompt, and certainly not on padding.</p>
+<p><strong>Instruction tuning is not a new objective.</strong> It is the pretraining objective, on curated data, with the loss masked to the parts we care about.</p></div>
+<div class="cell"><h2>Fine-tuning</h2></div>
+<div class="cell cell-in"><pre>gemma_lm.compile(
+    loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+    optimizer=keras.optimizers.Adam(5e-5),
+    weighted_metrics=[keras.metrics.SparseCategoricalAccuracy()],
+)
+gemma_lm.fit(train_ds, validation_data=val_ds, epochs=1, verbose=2)</pre></div>
+<div class="cell"><p>About <strong>55%</strong> next-word accuracy on responses, against 36% for mini-GPT. <code>weighted_metrics</code> is what makes the mask reach the metric, so the score is over response tokens only.</p></div>
+<div class="cell"><h2>The result</h2></div>
+<div class="cell cell-in"><pre>print(gemma_lm.generate(
+    "[instruction]\nWhat is a proper noun?[end]\n[response]\n",
+    max_length=512))</pre></div>
+<div class="cell"><p>It <strong>responds</strong> to the question rather than carrying on the thought of the prompt — and emits <code>[end]</code> when finished, because the training data taught it where responses stop.</p></div>
+<div class="cell"><h2>The honest test</h2></div>
+<div class="cell cell-in"><pre>print(gemma_lm.generate(
+    "[instruction]\nWho is the 542nd president of the United States?[end]\n"
+    "[response]\n",
+    max_length=512))</pre></div>
+<div class="cell"><p><strong>Identical nonsense, now delivered in a helpful tone.</strong></p>
+<p>Instruction tuning changed the <em>format</em> of the answer, not its relationship to truth. One thing that helps: train on many pairs where the desired response is <em>"I don't know"</em> — which teaches the model to avoid topics where it answers badly. ==A behaviour, not an understanding.==</p></div>
+<div class="cell"><h2>Saving just the adapter</h2></div>
+<div class="cell cell-in"><pre>import os
+
+gemma_lm.save("gemma_instruct_lora.keras")
+size = os.path.getsize("gemma_instruct_lora.keras") / 1e9
+print(f"full model: {size:.2f} GB")
+print()
+print("In production you would save only the LoRA weights -- a few MB --")
+print("and apply them to the base model at load time. That is what makes")
+print("it practical to serve dozens of task-specific adapters from ONE")
+print("copy of the base model in memory.")</pre></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>Generation needs the weights; training needs four times that, which is why <code>fit()</code> dies on a model that generates fine.</li>
+<li>LoRA freezes the kernel and learns a low-rank correction — a thousandfold cut in trainable parameters.</li>
+<li>Instruction tuning is the pretraining objective on curated data with the loss masked to responses.</li>
+<li><strong>It changes the form of the answer, not its truth.</strong></li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>

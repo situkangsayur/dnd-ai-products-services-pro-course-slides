@@ -34,9 +34,10 @@
 \vskip 6pt
 \vskip 4pt
 \reslink{Book}{Chapter 6 --- full text}{https://deeplearningwithpython.io/chapters/chapter06\_universal-workflow-of-ml}
-\reslink{Notebook}{01\_understand\_data\_before\_modelling.ipynb}{../../notebooks/ch06/01\_understand\_data\_before\_modelling.ipynb}
-\reslink{Notebook}{02\_common\_preprocessing.ipynb}{../../notebooks/ch06/02\_common\_preprocessing.ipynb}
-\reslink{Notebook}{03\_export\_and\_quantize.ipynb}{../../notebooks/ch06/03\_export\_and\_quantize.ipynb}
+\reslink{Notebook}{01\_understand\_data\_before\_modelling.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch06/01\_understand\_data\_before\_modelling.html}
+\reslink{Notebook}{02\_common\_preprocessing.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch06/02\_common\_preprocessing.html}
+\reslink{Notebook}{03\_export\_and\_quantize.ipynb}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/ch06/03\_export\_and\_quantize.html}
+\reslink{Notebook}{All chapter 6 notebooks}{https://hendrikarisma.my.id/rs/ai-products-course/notebooks/index.html\#ch06}
 \vskip 2pt
 \end{frame}
 
@@ -462,6 +463,19 @@ Also discuss the \textbf{threshold} with stakeholders. Different thresholds give
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch06-deploy.tex.pdf}
 \end{center}
 \vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The constraints choose the route, not the other way round.\par}
+\end{frame}
+
+\framekicker{Section 6.3}
+\begin{frame}[shrink=25]{Reading the tree: what each question is really asking}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.4324\textwidth}>{\raggedright\arraybackslash}p{0.2632\textwidth}}
+\thead{Question} & \thead{Why it comes first} & \thead{Where a yes sends you} \\ \midrule
+\textbf{Sensitive data, or poor connectivity?} & This one outranks the others because it is not a performance question. If the data may not leave the device, or there is no reliable link, no amount of latency budget changes the answer. & \textbf{On device} --- TF Lite, ONNX runtime \\
+\textbf{Strict latency requirement?} & A REST round trip costs roughly 500 ms before your model does anything. That is fine for a form submission and useless for anything reacting to a camera. & on to the next question \\
+\textbf{Move compute to the user?} & Running in the browser costs you nothing per request and costs the user their battery. It also means shipping the model weights, which anyone can then keep. & \textbf{In the browser} --- TensorFlow.js, ONNX JS \\
+\end{itable}
+\begin{iband}[signal]
+\textbf{Every path that answers \textit{no} ends at the REST API}, and that is the right default: one copy of the model, one place to update it, one place to watch. Leave it only when a constraint above forces you to.
+\end{iband}
 \end{frame}
 
 \framekicker{Section 6.3.2}

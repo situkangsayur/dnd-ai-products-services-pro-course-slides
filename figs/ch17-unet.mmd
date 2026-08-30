@@ -1,5 +1,8 @@
+%% direction chosen by tools/figures.py: this renders
+%% better in the space a slide gives it. Edit the deck
+%% source, not this file.
 
-flowchart TB
+flowchart LR
   IN["<b>Two inputs</b><br/><small>noisy image 128x128<br/>+ noise rate</small>"]
   DOWN["<b>Downsampling stage</b><br/><small>128 -&gt; 64 -&gt; 32 -&gt; 16<br/>widths 32, 64, 96</small>"]
   MID["<b>Middle stage</b><br/><small>16x16, constant size<br/>width 128</small>"]

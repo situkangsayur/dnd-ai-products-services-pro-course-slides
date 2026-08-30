@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A pretrained detector, and reading its output honestly · AI for Professional</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#123A6B;--bg2:#1B4E8C;--card:rgba(255,255,255,.07);
+--line:rgba(180,216,255,.30);--ink:#F4F8FF;--ink2:#C9DAF2;--ink3:#93AACB;
+--sig:#22D3EE;--lime:#7BD949;
+--mono:'JetBrains Mono',ui-monospace,'SF Mono',Menlo,monospace;
+--sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),var(--bg2) 60%,var(--bg));
+color:var(--ink);font:400 16px/1.68 var(--sans);min-height:100vh}
+.wrap{max-width:920px;margin:0 auto;padding:38px 22px 90px}
+header{border-bottom:1px solid var(--line);padding-bottom:18px;margin-bottom:26px}
+.kick{font:600 11.5px var(--sans);letter-spacing:.16em;text-transform:uppercase;
+color:var(--sig)}
+h1{font:700 30px/1.2 var(--sans);margin:6px 0 4px;letter-spacing:-.02em}
+h2{font:600 22px/1.3 var(--sans);margin:30px 0 10px}
+h3{font:600 18px/1.35 var(--sans);margin:24px 0 8px}
+p{color:var(--ink2)}
+a{color:var(--sig)}
+ul,ol{color:var(--ink2)}
+blockquote{margin:14px 0;padding:10px 16px;border-left:3px solid var(--sig);
+background:var(--card);border-radius:0 8px 8px 0;color:var(--ink2)}
+code{font:400 .92em var(--mono);background:rgba(255,255,255,.10);
+padding:1px 5px;border-radius:4px}
+pre{font:400 13.5px/1.6 var(--mono);background:rgba(0,0,0,.30);
+border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+overflow-x:auto;color:var(--ink)}
+pre code{background:none;padding:0}
+.cell{margin:16px 0}
+.cell-in{position:relative}
+.cell-in::before{content:"In";position:absolute;left:-40px;top:14px;
+font:600 11px var(--mono);color:var(--ink3)}
+.out{font:400 13px/1.55 var(--mono);white-space:pre-wrap;color:var(--lime);
+background:rgba(0,0,0,.22);border-radius:8px;padding:10px 14px;margin-top:8px}
+.nav{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.nav a{font-size:13.5px;text-decoration:none;border:1px solid var(--line);
+padding:5px 12px;border-radius:999px;color:var(--ink2)}
+.nav a:hover{color:var(--ink);background:var(--card)}
+.ch{margin:28px 0 8px;padding-top:22px;border-top:1px solid var(--line)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.nb{display:block;text-decoration:none;border:1px solid var(--line);
+border-radius:12px;padding:14px 16px;background:var(--card)}
+.nb:hover{border-color:var(--sig)}
+.nb b{display:block;color:var(--ink);font:600 15px var(--sans);margin-bottom:3px}
+.nb span{color:var(--ink3);font-size:12.5px}
+footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--line);
+color:var(--ink3);font-size:13px}
+@media(max-width:640px){.cell-in::before{display:none}.wrap{padding:24px 14px 60px}}
+</style>
+</head><body><div class="wrap">
+<header>
+  <div class="kick">Notebook</div>
+  <h1>A pretrained detector, and reading its output honestly</h1>
+  <p>RetinaNet from KerasHub in three lines, then the part that matters: what the confidence threshold is actually trading, and how to choose it for your problem rather than the demo's.</p>
+</header>
+<div class="nav"><a href="../index.html">&larr; All notebooks</a></div>
+<div class="cell"><h2>Loading it</h2></div>
+<div class="cell cell-in"><pre>import keras
+import keras_hub
+import numpy as np
+import matplotlib.pyplot as plt
+
+detector = keras_hub.models.ObjectDetector.from_preset(
+    "retinanet_resnet50_fpn_coco")
+print(type(detector).__name__)</pre></div>
+<div class="cell"><p>Trained on COCO: 80 classes, 330,000 images. The same argument as chapters 8 and 11 — <strong>whatever you train this week will not compete with this</strong>, and the interesting question is what to do with it.</p></div>
+<div class="cell"><h2>Running it</h2></div>
+<div class="cell cell-in"><pre>image_path = keras.utils.get_file(
+    origin="https://img-datasets.s3.amazonaws.com/elephant.jpg")
+image = np.array(keras.utils.load_img(image_path))
+
+preds = detector.predict(image[np.newaxis, ...], verbose=0)
+print({k: np.array(v).shape for k, v in preds.items()})</pre></div>
+<div class="cell cell-in"><pre>import matplotlib.patches as patches
+
+COCO = ["person", "bicycle", "car", "motorcycle", "airplane", "bus", "train",
+        "truck", "boat", "traffic light"]   # first ten; full list in the docs
+
+def draw(image, boxes, classes, scores, threshold=0.5, ax=None):
+    if ax is None:
+        _, ax = plt.subplots(figsize=(9, 7))
+    ax.imshow(image)
+    n = 0
+    for b, c, s in zip(boxes, classes, scores):
+        if s &lt; threshold:
+            continue
+        n += 1
+        x0, y0, x1, y1 = b
+        ax.add_patch(patches.Rectangle((x0, y0), x1-x0, y1-y0, fill=False,
+                                       edgecolor="#ff7a1a", lw=2))
+        ax.text(x0, y0 - 6, f"{int(c)} {s:.2f}", color="#ff7a1a",
+                fontsize=9, weight="bold")
+    ax.set_title(f"threshold {threshold}: {n} detections")
+    ax.axis("off")
+    return ax
+
+boxes = np.array(preds["boxes"][0])
+classes = np.array(preds["labels"][0])      # keras-hub returns "labels", not "classes"
+scores = np.array(preds["confidence"][0])
+draw(image, boxes, classes, scores, 0.5)
+plt.show()</pre></div>
+<div class="cell"><h2>The threshold is a decision, not a default</h2></div>
+<div class="cell cell-in"><pre>fig, axes = plt.subplots(1, 4, figsize=(19, 5))
+for ax, t in zip(axes, [0.1, 0.3, 0.5, 0.8]):
+    draw(image, boxes, classes, scores, t, ax=ax)
+plt.tight_layout(); plt.show()</pre></div>
+<div class="cell"><p>Low threshold: everything found, plus things that are not there. High threshold: only what it is sure about, and it misses.</p>
+<p><strong>There is no correct value.</strong> The right one depends on what a false positive costs against what a false negative costs, in your application — which is a business question wearing a hyperparameter's clothes.</p></div>
+<div class="cell"><h2>The precision-recall curve, which is the honest picture</h2></div>
+<div class="cell cell-in"><pre># With ground truth available you would sweep the threshold and plot
+# precision against recall. Here is the shape of that computation.
+def precision_recall(pred_boxes, pred_scores, true_boxes, iou_threshold=0.5):
+    def iou(a, b):
+        x0 = np.maximum(a[0], b[:, 0]); y0 = np.maximum(a[1], b[:, 1])
+        x1 = np.minimum(a[2], b[:, 2]); y1 = np.minimum(a[3], b[:, 3])
+        inter = np.clip(x1-x0, 0, None) * np.clip(y1-y0, 0, None)
+        aa = (a[2]-a[0]) * (a[3]-a[1])
+        bb = (b[:, 2]-b[:, 0]) * (b[:, 3]-b[:, 1])
+        return inter / (aa + bb - inter + 1e-9)
+
+    order = np.argsort(pred_scores)[::-1]
+    matched = np.zeros(len(true_boxes), bool)
+    tp, fp = [], []
+    for i in order:
+        if len(true_boxes) == 0:
+            fp.append(1); tp.append(0); continue
+        overlaps = iou(pred_boxes[i], true_boxes)
+        j = overlaps.argmax()
+        if overlaps[j] &gt;= iou_threshold and not matched[j]:
+            matched[j] = True; tp.append(1); fp.append(0)
+        else:
+            tp.append(0); fp.append(1)
+    tp, fp = np.cumsum(tp), np.cumsum(fp)
+    recall = tp / max(len(true_boxes), 1)
+    precision = tp / np.maximum(tp + fp, 1)
+    return precision, recall
+
+print("Supply your own ground-truth boxes to plot this properly.")
+print("mAP is the area under this curve, averaged over classes and")
+print("over IoU thresholds from 0.5 to 0.95 -- which is why a single")
+print("mAP number tells you much less than the curve it came from.")</pre></div>
+<div class="cell"><h2>Fine-tuning on your own classes</h2></div>
+<div class="cell cell-in"><pre># The chapter-8 pattern, unchanged: keep the backbone, replace the head.
+backbone = detector.backbone
+backbone.trainable = False
+
+print("backbone parameters:", f"{backbone.count_params():,}")
+print("\nThe procedure is the one from chapter 8:")
+print("  1. freeze the backbone")
+print("  2. train the new detection head to convergence")
+print("  3. unfreeze the top of the backbone")
+print("  4. retrain both at a much lower learning rate")</pre></div>
+<div class="cell"><p>One detail specific to detection: <strong>your classes need boxes, not just labels</strong>, and boxes are expensive to annotate. Chapter 11's SAM is the practical answer — use it to propose masks, derive boxes from them, and correct rather than draw.</p></div>
+<div class="cell"><h2>What to check before deploying a detector</h2></div>
+<div class="cell"><ul>
+<li><strong>The threshold</strong>, chosen from your own cost of a false positive against a false negative.</li>
+<li><strong>The NMS threshold</strong> — too aggressive and adjacent objects merge; too loose and you ship duplicates.</li>
+<li><strong>The size distribution</strong> of your objects against the model's training distribution. A detector trained on COCO is not tuned for objects that occupy 2% of the frame.</li>
+<li><strong>What happens with zero objects.</strong> The empty case is the one least often tested and most often encountered.</li>
+<li><strong>Latency at your batch size</strong>, warmed up — chapter 16's lesson about timing the compiler applies here too.</li>
+</ul></div>
+<div class="cell"><p>---</p>
+<h2>What to take away</h2>
+<ul>
+<li>A pretrained detector is three lines and beats anything you will train this week.</li>
+<li>The confidence threshold is a cost decision, not a default.</li>
+<li>mAP hides the precision-recall curve it came from; look at the curve.</li>
+<li>Fine-tuning follows the chapter-8 procedure — but boxes are expensive, so consider SAM for annotation.</li>
+</ul></div>
+<footer>AI for Professional · ITB · Directorate of Continuing Professional Education</footer>
+</div></body></html>
