@@ -19,6 +19,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import COURSE  # noqa: E402
+from diagrams import agent_loop  # noqa: E402
 
 
 # ---------------------------------------------------------------- diagrams --
@@ -88,19 +89,6 @@ flowchart TB
   W --> P4
   W --> P5
   P5 -. "add open-ended tool choice" .-> AG
-"""
-
-MMD_LOOP = """
-flowchart TB
-  G["Goal or user request"]
-  P["<b>Plan</b><br/><small>what should happen next?</small>"]
-  T["<b>Act</b><br/><small>call a tool</small>"]
-  O["<b>Observe</b><br/><small>the result enters<br/>the context</small>"]
-  C["<b>Check</b><br/><small>goal met? budget spent?</small>"]
-  D["Answer, or hand off<br/>to a human"]
-  G --> P --> T --> O --> C
-  C -- "not yet" --> P
-  C -- "done, or out of budget" --> D
 """
 
 MMD_TOOL = """
@@ -679,12 +667,21 @@ DECK = {
             "kicker": "The loop",
             "title": "Plan, act, observe, check",
             "blocks": [
-                {"t": "mmd", "id": "hendri-loop", "src": MMD_LOOP,
-                 "cap": "The whole of agent engineering is in what fills each box."},
+                agent_loop("hendri-loop",
+                           cap="The loop, and one real run turning inside it — the SME "
+                               "credit assessment from the demo repository. Step through "
+                               "it: six turns, six tools, and the step budget filling one "
+                               "cell at a time.",
+                           note="Four boxes and an arrow back is a picture of a while "
+                                "statement. What it leaves out is how many times it goes "
+                                "round, what each turn costs, and what makes it stop."),
                 {"t": "p", "md": "This is the **ReAct** pattern — reason, then act, then "
                                  "read the result and reason again. Published as an ICLR "
                                  "2023 paper and now assumed by every framework in the "
-                                 "field."},
+                                 "field. Note where the run ends: **it stopped because it "
+                                 "was finished, not because it ran out** — and turn 7, "
+                                 "the approval, is not missing from the trace because the "
+                                 "prompt was polite about it. There is no such tool."},
             ],
         },
 

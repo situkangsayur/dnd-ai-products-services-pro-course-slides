@@ -1841,3 +1841,267 @@ def coord_change(fig_id, *, cap="", note="", width=1240, height=470, full=False,
                    sim_label="panel")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ================================================ the agent loop, actually run --
+
+def agent_loop(fig_id, *, cap="", note="", width=1280, height=452, full=False,
+               max_steps=8):
+    """Plan, act, observe, check -- with a real run turning inside it.
+
+    The loop drawn as four boxes and an arrow back is a picture of a `while`
+    statement. What it leaves out is everything that matters: how many times it
+    goes round, what each turn actually costs, and what makes it stop. So the
+    ring is on the left and a real trace runs on the right -- one line per turn,
+    with the step budget filling a cell at a time, ending on the turn that
+    cannot happen because no tool for it exists.
+
+    The trace is the SME credit assessment from ``ai-agentic-demo``: six turns,
+    six tools, and a recommendation that a person still has to decide.
+    """
+    turns = [
+        ("get_application",       "APP-2203 · Batik Ayu Mandiri"),
+        ("get_transactions",      "12 months · 1 843 rows"),
+        ("compute_risk_features", "DSCR 0.82 · 9 features"),
+        ("score_credit",          "pd = 0.693"),
+        ("lookup_policy",         "CP-04, CP-05, CP-06"),
+        ("submit_recommendation", "queued for an officer"),
+    ]
+
+    def build(p):
+        import math
+        out = []
+        cx, cy, r = 268.0, 244.0, 112.0
+        stations = (("Plan", "what next?", -90), ("Act", "call a tool", 0),
+                    ("Observe", "result enters\\nthe context", 90),
+                    ("Check", "goal met?\\nbudget spent?", 180))
+
+        # ---- the ring ---------------------------------------------------
+        for i in range(4):
+            a0 = math.radians(stations[i][2] + 16)
+            a1 = math.radians(stations[(i + 1) % 4][2] - 16)
+            x0, y0 = cx + r * math.cos(a0), cy + r * math.sin(a0)
+            x1, y1 = cx + r * math.cos(a1), cy + r * math.sin(a1)
+            out.append(path(f"M{x0:.1f},{y0:.1f} A{r:.1f},{r:.1f} 0 0 1 "
+                            f"{x1:.1f},{y1:.1f}",
+                            stroke=p.line, sw=1.5, pal=p, marker=True, step=1))
+        for name, sub, ang in stations:
+            a = math.radians(ang)
+            x, y = cx + r * math.cos(a), cy + r * math.sin(a)
+            out.append(circle(x, y, 46, pal=p, fill=p.fill, stroke=p.accent,
+                              sw=1.6, step=1))
+            lines = sub.split("\\n")
+            out.append(txt(x, y - 6 - 5 * len(lines), name, size=14,
+                           weight=600, pal=p, fill=p.ink, step=1))
+            for k, ln in enumerate(lines):
+                out.append(txt(x, y + 10 + 12 * k - 5 * (len(lines) - 1), ln,
+                               size=10, pal=p, fill=p.ink3, step=1))
+
+        out.append(txt(cx, 46, "the goal", size=11.5, pal=p, fill=p.ink3,
+                       step=1))
+        out.append(txt(cx, 66, "“Assess APP-2203.”", size=13,
+                       weight=600, pal=p, fill=p.ink, step=1))
+        out.append(arrow(cx, 80, cx, cy - r - 48, pal=p, stroke=p.line,
+                         sw=1.4, step=1))
+        out.append(arrow(cx - r - 46, cy, 104, cy, pal=p, stroke=p.good,
+                         sw=1.6, step=7))
+        out.append(txt(56, cy - 12, "done, or", size=11, pal=p, fill=p.good,
+                       step=7))
+        out.append(txt(56, cy + 22, "out of budget", size=11, pal=p,
+                       fill=p.good, step=7))
+
+        # ---- the trace ---------------------------------------------------
+        tx, ty = 470.0, 88.0
+        out.append(txt(tx, 52, "one real run", size=13.5, weight=600, pal=p,
+                       fill=p.ink, anchor="start", step=1))
+        for i, (tool, result) in enumerate(turns):
+            st = i + 2
+            y = ty + i * 38
+            out.append(txt(tx, y, f"{i + 1}", size=12, mono=True, pal=p,
+                           fill=p.ink3, anchor="start", step=st))
+            out.append(txt(tx + 26, y, tool, size=13, mono=True, pal=p,
+                           fill=p.accent, anchor="start", step=st))
+            out.append(txt(tx + 262, y, "→", size=13, pal=p, fill=p.ink3,
+                           anchor="start", step=st))
+            out.append(txt(tx + 286, y, result, size=12.5, pal=p, fill=p.ink2,
+                           anchor="start", step=st))
+
+        # ---- the step budget, filling one cell per turn -------------------
+        by = ty + len(turns) * 38 + 26
+        out.append(txt(tx, by, "step budget", size=12, pal=p, fill=p.ink3,
+                       anchor="start", step=1))
+        # The whole budget is visible from the first step -- otherwise the row
+        # starts with two lonely cells and reads as the budget, not as what is
+        # left of it. Spent cells are painted OVER the empty ones as the run
+        # goes, which is what the cumulative reveal makes easy.
+        for i in range(max_steps):
+            out.append(rect(tx + 108 + i * 30, by - 11, 22, 20, r=4, pal=p,
+                            fill=p.fill, stroke=p.line, sw=1.2, step=1))
+        for i in range(len(turns)):
+            out.append(rect(tx + 108 + i * 30, by - 11, 22, 20, r=4, pal=p,
+                            fill=p.accent, stroke=p.accent, sw=1.2,
+                            step=i + 2))
+        out.append(txt(tx + 108 + max_steps * 30 + 12, by,
+                       f"{len(turns)} of {max_steps} — it stopped because "
+                       f"it was finished, not because it ran out",
+                       size=11.5, pal=p, fill=p.ink3, anchor="start", step=7))
+
+        out.append(txt(tx, by + 40,
+                       "Turn 7 would have been approve_credit.",
+                       size=13.5, weight=600, pal=p, fill=p.good,
+                       anchor="start", step=7))
+        out.append(txt(tx, by + 62,
+                       "There is no such tool in the registry, so there is no "
+                       "seventh turn — and no prompt that can invent one.",
+                       size=12.5, pal=p, fill=p.ink2, anchor="start", step=7))
+        return svg(width, height, "".join(out), pal=p, steps=7,
+                   sim_label="turn")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ================================================ the latent space, walked in --
+
+def _mix(c1, c2, t):
+    """Blend two ``#rrggbb`` colours. Anything else comes back as c1."""
+    if not (c1.startswith("#") and c2.startswith("#") and len(c1) == len(c2) == 7):
+        return c1
+    a = [int(c1[i:i + 2], 16) for i in (1, 3, 5)]
+    b = [int(c2[i:i + 2], 16) for i in (1, 3, 5)]
+    return "#" + "".join(f"{round(x + (y - x) * t):02x}" for x, y in zip(a, b))
+
+
+def latent_space(fig_id, *, cap="", note="", width=1240, height=486, full=False,
+                 n_steps=5, seed=11):
+    """Why "the in-betweens of the training images" is a claim about geometry.
+
+    The chain of boxes -- prompt, encoder, latent space, decoder, image -- says
+    what the parts are called and nothing about what makes any of it work. What
+    makes it work is that the training images land on a *region* of the space,
+    and that every point of that region decodes to something valid. So walk a
+    straight line between two of them and watch the decoded shape change
+    continuously.
+
+    The tiles are schematic on purpose: a hand-drawn SVG cannot show a
+    photograph, and pretending otherwise would be the wrong kind of honest. The
+    shape is a stand-in, and what the figure is really showing is that the
+    interpolation is smooth -- and that it stops being smooth as soon as you
+    step off the region the data covers, which is where the extra fingers come
+    from.
+    """
+    import math
+    import random
+    rng = random.Random(seed)
+
+    # The data manifold: a band, not a blob. That shape is the point -- most of
+    # the space is NOT valid, which is what the off-manifold step says.
+    #
+    # The band is kept close to straight deliberately. An arc would look better
+    # and would make the figure lie: the chord between two points of an arc
+    # leaves the arc in the middle, so the tidy story "walk from A to B and
+    # every step is valid" would be false exactly where the figure claims it.
+    # That failure is real and worth a slide of its own; it is not this slide.
+    def band(t):
+        return 0.10 + 0.80 * t, 0.26 + 0.44 * t + 0.05 * math.sin(t * 5.2)
+
+    cloud = []
+    for _ in range(46):
+        u, v = band(rng.uniform(0, 1))
+        cloud.append((u + rng.gauss(0, 0.022), v + rng.gauss(0, 0.045)))
+    A, B = band(0.08), band(0.92)
+    OFF = (0.30, 0.86)
+
+    def build(p):
+        out = []
+        px, py, pw, ph = 62.0, 86.0, 470.0, 300.0
+
+        def XY(u, v):
+            return px + u * pw, py + (1 - v) * ph
+
+        out.append(txt(px, 56, "the latent space", size=13.5, weight=600,
+                       pal=p, fill=p.ink, anchor="start", step=1))
+        out.append(rect(px, py, pw, ph, r=10, pal=p, fill=p.fill,
+                        stroke=p.line, sw=1.0, step=1))
+        for u, v in cloud:
+            x, y = XY(u, v)
+            out.append(circle(x, y, 4, pal=p, fill=p.ink3, stroke="none",
+                              sw=0, step=1))
+        out.append(txt(px + pw / 2, py + ph + 22,
+                       "each dot is one training image", size=11.5, pal=p,
+                       fill=p.ink3, step=1))
+
+        ax, ay = XY(*A)
+        bx, by_ = XY(*B)
+        for (x, y, lbl) in ((ax, ay, "A"), (bx, by_, "B")):
+            out.append(circle(x, y, 8, pal=p, fill=p.accent, stroke=p.accent,
+                              sw=1.5, step=2))
+            out.append(txt(x, y - 18, lbl, size=13, weight=600, pal=p,
+                           fill=p.accent, step=2))
+        out.append(line(ax, ay, bx, by_, pal=p, stroke=p.accent, sw=1.4,
+                        dash="5 4", step=3))
+        for i in range(1, n_steps - 1):
+            t = i / (n_steps - 1)
+            out.append(circle(ax + (bx - ax) * t, ay + (by_ - ay) * t, 5,
+                              pal=p, fill=p.fill, stroke=p.accent, sw=1.5,
+                              step=3))
+
+        ox, oy = XY(*OFF)
+        out.append(circle(ox, oy, 8, pal=p, fill=p.bad, stroke=p.bad, sw=1.5,
+                          step=5))
+        out.append(txt(ox, oy - 18, "C", size=13, weight=600, pal=p, fill=p.bad,
+                       step=5))
+        out.append(txt(ox + 16, oy + 4, "no training image near here",
+                       size=11, pal=p, fill=p.bad, anchor="start", step=5))
+
+        # ---- what the decoder returns for each point ---------------------
+        tw, gap = 96.0, 18.0
+        gx, gy = 596.0, 96.0
+        out.append(txt(gx, 56, "what the decoder returns", size=13.5,
+                       weight=600, pal=p, fill=p.ink, anchor="start", step=1))
+        for i in range(n_steps):
+            t = i / (n_steps - 1)
+            x = gx + i * (tw + gap)
+            st = 4 if 0 < i < n_steps - 1 else 2
+            out.append(rect(x, gy, tw, tw, r=8, pal=p, fill=p.fill,
+                            stroke=p.line, sw=1.1, step=st))
+            col = _mix(p.accent, p.warm, t)
+            # Body and head both interpolate, so the tile changes continuously
+            # rather than switching between two states.
+            bw = 26 + 34 * t
+            bh = 48 - 20 * t
+            out.append(rect(x + tw / 2 - bw / 2, gy + tw - 14 - bh, bw, bh,
+                            r=5, pal=p, fill=col, stroke="none", sw=0, step=st))
+            out.append(circle(x + tw / 2, gy + tw - 20 - bh - (12 - 3 * t),
+                              12 - 3 * t, pal=p, fill=col, stroke="none", sw=0,
+                              step=st))
+            lbl = "A" if i == 0 else ("B" if i == n_steps - 1 else f"t = {t:.2f}")
+            out.append(txt(x + tw / 2, gy + tw + 18, lbl, size=11.5,
+                           mono=i not in (0, n_steps - 1), pal=p,
+                           fill=p.accent if i in (0, n_steps - 1) else p.ink3,
+                           step=st))
+
+        # C, off the manifold.
+        cxx = gx
+        cyy = gy + tw + 62
+        out.append(rect(cxx, cyy, tw, tw, r=8, pal=p, fill=p.fill,
+                        stroke=p.bad, sw=1.3, step=5))
+        rng2 = __import__("random").Random(4)
+        for _ in range(9):
+            out.append(rect(cxx + rng2.uniform(8, 62), cyy + rng2.uniform(8, 62),
+                            rng2.uniform(10, 30), rng2.uniform(8, 26), r=3,
+                            pal=p, fill=p.bad, stroke="none", sw=0,
+                            step=5))
+        out.append(txt(cxx + tw / 2, cyy + tw + 18, "C", size=11.5, weight=600,
+                       pal=p, fill=p.bad, step=5))
+        out.append(txt(cxx + tw + 22, cyy + 34,
+                       "Every point decodes to something. Only the points the "
+                       "data covers", size=12.5, pal=p, fill=p.ink2,
+                       anchor="start", step=5))
+        out.append(txt(cxx + tw + 22, cyy + 54,
+                       "decode to something valid — which is where the sixth "
+                       "finger comes from.", size=12.5, pal=p, fill=p.ink2,
+                       anchor="start", step=5))
+        return svg(width, height, "".join(out), pal=p, steps=5,
+                   sim_label="step")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

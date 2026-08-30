@@ -200,10 +200,10 @@ Every row favours the workflow. That is not an argument against agents --- it is
 \framekicker{The loop}
 \begin{frame}[shrink=25]{Plan, act, observe, check}
 \begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-loop.tex.pdf}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/hendri-loop.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The whole of agent engineering is in what fills each box.\par}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}This is the \textbf{ReAct} pattern --- reason, then act, then read the result and reason again. Published as an ICLR 2023 paper and now assumed by every framework in the field.\par}\vskip 4pt
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The loop, and one real run turning inside it --- the SME credit assessment from the demo repository. Step through it: six turns, six tools, and the step budget filling one cell at a time.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}This is the \textbf{ReAct} pattern --- reason, then act, then read the result and reason again. Published as an ICLR 2023 paper and now assumed by every framework in the field. Note where the run ends: \textbf{it stopped because it was finished, not because it ran out} --- and turn 7, the approval, is not missing from the trace because the prompt was polite about it. There is no such tool.\par}\vskip 4pt
 \end{frame}
 
 \framekicker{The loop $\cdot$ the part people forget}

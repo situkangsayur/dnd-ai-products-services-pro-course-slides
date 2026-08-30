@@ -137,7 +137,7 @@
  "ch17-autoencoder": "e0a6880b3663e580",
  "ch17-diffusion-idea": "bf026693561a5588",
  "ch17-generate": "68f0a073c2fd2ad5",
- "ch17-latent": "2a081a79b7c02fa8",
+ "ch17-latent": "7a53275de6c18099",
  "ch17-reverse": "e03286b82b1b1a06",
  "ch17-slerp": "3c68bfbcf4c8c9b2",
  "ch17-t2i": "9986768d3da0956d",
@@ -187,7 +187,7 @@
  "hendri-failure": "c7c23a1526ef6390",
  "hendri-interfaces": "3a2e09124fc44a92",
  "hendri-ladder": "936b0e8077ceb3f4",
- "hendri-loop": "4069f51624e555b9",
+ "hendri-loop": "581d4c038dce9411",
  "hendri-maturity": "6ee1c76361918857",
  "hendri-mcp-a2a": "1da7a0d8b5ce9793",
  "hendri-memory": "8e41b94f04381884",
@@ -201,6 +201,8 @@
  "hendri-wf": "7f45bd5feb134e69",
  "hendri-where": "d9312370656a3813",
  "hendri-who": "abd672e4aeb3753b",
+ "test-al": "345f02b18f7b7217",
+ "test-ls": "7a53275de6c18099",
  "viny-arc": "d937135f8e111aee",
  "viny-rag": "6b1c291832dd2636"
 }

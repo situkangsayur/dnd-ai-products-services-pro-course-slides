@@ -14,16 +14,8 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
+from diagrams import latent_space  # noqa: E402
 
-
-MMD_LATENT = """
-flowchart LR
-  L["<b>Latent image space</b><br/><small>low-dimensional<br/>vector space</small>"]
-  P["A point<br/><small>a vector</small>"]
-  D["<b>Decoder / generator</b>"]
-  I["A valid image<br/><small>that has never<br/>been seen before</small>"]
-  L --> P --> D --> I
-"""
 
 MMD_T2I = """
 flowchart LR
@@ -208,9 +200,26 @@ DECK = {
                 {"t": "p", "md": "The module that realises the mapping, taking a latent point "
                                  "and outputting a grid of pixels, is called a **generator**, or "
                                  "sometimes a **decoder**."},
-                {"t": "mmd", "id": "ch17-latent", "src": MMD_LATENT,
-                 "cap": "Figure 17.1 — once the space is learned, sample from it and decode."},
-                {"t": "p", "md": "What comes out are the ==in-betweens of the training images==."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 17.1.1",
+            "title": "…and a walk between two points in it",
+            "blocks": [
+                latent_space("ch17-latent",
+                             cap="Figure 17.1 — the space, two points in it, and what the "
+                                 "decoder returns along the line between them. Step through "
+                                 "it; the last step leaves the region the data covers.",
+                             note="The tiles are schematic: a drawn SVG cannot show a "
+                                  "photograph, and pretending otherwise would be the wrong "
+                                  "kind of honest. What it does show is the thing that "
+                                  "matters — the change is continuous."),
+                {"t": "p", "md": "The ==in-betweens of the training images== — a claim "
+                                 "about **geometry**, not understanding. Walk the line "
+                                 "between two of them and every point on it decodes to an "
+                                 "image nobody ever took."},
             ],
         },
 

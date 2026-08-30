@@ -101,13 +101,29 @@ Generator yang ada: `neural_net` · `forward_pass` · `neuron_math` ·
 `backprop` · `attention_qkv` · `positional_encoding` · `dropout_net` ·
 `residual` · `depth_vs_width` · `conv_compute` · `feature_maps` ·
 `tensor_ranks` · `tensor_grid` · `geometric_ops` · `sgd_descent` ·
-`sliding_window` · `bag_of_words` · `pixel_mask`.
+`sliding_window` · `bag_of_words` · `pixel_mask` · `coord_change` ·
+`agent_loop` · `latent_space`.
 
-Aturannya satu: **kalau isinya aritmetika, hitungkan.** `backprop` dan
+Aturan pertama: **kalau isinya aritmetika, hitungkan.** `backprop` dan
 `residual` sama-sama menampilkan angkanya sendiri — `residual` mengalikan lima
 turunan dua kali, sekali tanpa jalan pintas dan sekali dengan, lalu menaruh
 kedua hasilnya berdampingan. Kalimat "gradien jadi lebih besar" tidak
 membuktikan apa pun; `0.0089` di sebelah `5.21` membuktikannya.
+
+Aturan kedua: **kalau isinya proses, jalankan satu contohnya.** `agent_loop`
+tidak menamai empat kotak gelung agen — ia memutar satu penilaian kredit
+sungguhan di dalamnya, enam giliran, dengan anggaran langkah terisi satu sel
+tiap giliran, dan berhenti di giliran ketujuh yang tidak ada karena perkakasnya
+memang tidak ada. `latent_space` berjalan dari A ke B dan memperlihatkan
+keluaran dekodernya berubah mulus, lalu satu titik di luar manifold yang
+keluarannya kacau.
+
+Aturan ketiga: **kalau gambarnya mengklaim sesuatu, jangan biarkan gambarnya
+membantah klaimnya.** Pita data di `latent_space` sengaja dibuat hampir lurus:
+kalau melengkung, tali busur antara dua titiknya keluar dari pita di tengah —
+dan cerita rapi "berjalan dari A ke B, tiap langkah sah" jadi salah persis di
+tempat gambarnya mengklaimnya. Kegagalan itu nyata dan pantas dapat slide
+sendiri; ia bukan slide ini.
 
 Teksnya `<text>` SVG asli, jadi tidak bisa terpotong seperti label mermaid.
 Dua palet dari satu builder: gelap untuk web, terang dicetak jadi PDF lewat

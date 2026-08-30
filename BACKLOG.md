@@ -20,14 +20,15 @@ bertindihan. **Web dan PDF sekarang sama persis**: 1.167 slide web,
 
 | | Jumlah |
 |---|---|
-| `mmd` (kotak-dan-panah) | 185 |
-| `draw` (SVG digambar, dari `tools/diagrams.py`) | 18 |
+| `mmd` (kotak-dan-panah) | 183 |
+| `draw` (SVG digambar, dari `tools/diagrams.py`) | 21 |
 | `img` | 4 |
 
 Dek yang **sama sekali belum** punya peraga gambar: ch04, ch06, ch07, ch10,
-ch12, ch13, ch16, ch17, ch18, ch19, ch20, `viny-llm`. Empat di antaranya
-disebut langsung: `ch17#3`, `ch19#58`, `ch04#1`, dan banyak diagram vertikal di
-`hendri-agentic`.
+ch12, ch13, ch16, ch18, ch19, ch20, `viny-llm`. Dua yang disebut langsung
+sudah dikerjakan — `ch17` (ruang laten, dengan jalan dari A ke B dan satu titik
+di luar manifold) dan `hendri-agentic` (gelung agen, dengan satu jalannya yang
+sungguhan berputar di dalamnya). Sisa yang disebut: `ch19#58` dan `ch04#1`.
 
 Bukan semua 185 harus jadi gambar. Graf ketergantungan, alur keputusan, dan
 diagram penyebaran memang graf kotak — dan sesudah `figures.py` memutar
@@ -38,10 +39,11 @@ isinya tanpa gambarnya jadi salah, itu bukan gambar — itu daftar.*
 
 Kandidat berikutnya, berurutan:
 
-- [ ] `ch17` — arsitektur urutan (sequence); yang menarik justru bentuk
-      datanya berubah tiap langkah, dan itu yang hilang jadi kotak
-- [ ] `hendri-agentic` — gelung agen: rencana → tindakan → amatan, dengan
-      enam anggaran yang menghentikannya. Sekarang mermaid
+- [x] ~~`ch17` ruang laten~~ dan ~~`hendri-agentic` gelung agen~~ — selesai.
+      Keduanya memakai kaidah yang sama: gambarnya menjalankan satu contoh
+      sungguhan, bukan menamai bagian-bagiannya.
+- [ ] `ch17` — arsitektur difusi: denoising itu gelung, dan gelungnya yang
+      hilang kalau digambar sebagai rantai kotak
 - [ ] `ch19`/`ch20` — alur penyebaran; sebagian memang graf, periksa satu-satu
 - [ ] `ch04` — pembagian latih/uji dan pengacakan batch, keduanya aritmetika
 - [ ] `viny-llm` — ada `attention_qkv` di `ch15` yang bisa dipakai ulang
