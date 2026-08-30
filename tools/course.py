@@ -42,11 +42,12 @@ COURSE = {
 #     study programme in the Faculty of Information Technology.
 #   * Doctoral standing differs across the three assistants and the words are
 #     not interchangeable: "candidate" means the qualifying stage has been
-#     passed. Rahman and Viny are doctoral CANDIDATES; Hendri is a doctoral
-#     STUDENT. Getting somebody's own standing wrong on their own course page is
-#     exactly the kind of small error an audience notices. Where a candidate's
-#     institution is not stated here it is because it has not been confirmed --
-#     better silent than guessed.
+#     passed. Rahman and Viny are Doctoral Candidates at STEI ITB; Hendri is a
+#     Doctoral Student there. Getting somebody's own standing wrong on their own
+#     course page is exactly the kind of small error an audience notices.
+#   * The doctoral line comes first in all three affiliations. It is the thing
+#     they share, it is why they are teaching on this course, and burying it
+#     behind a job title made three colleagues look like three unrelated people.
 TEAM = [
     {
         "key": "bambang",
@@ -62,9 +63,9 @@ TEAM = [
         "key": "rahman",
         "name": "Rahman Indra Kesuma, S.Kom., M.Cs.",
         "role": "Teaching Assistant",
-        "aff": "Lecturer in Informatics Engineering, Institut Teknologi Sumatera "
-               "(ITERA) · doctoral candidate · artificial intelligence and data "
-               "engineering",
+        "aff": "Doctoral Candidate, STEI ITB · Lecturer in Informatics "
+               "Engineering, Institut Teknologi Sumatera (ITERA) · artificial "
+               "intelligence and data engineering",
         "url": "https://if.itera.ac.id/dosen-rahman-indra-kesuma/",
         "topics": "Topic 2 — Machine Learning · Topic 3 — Deep Learning",
     },
@@ -72,10 +73,10 @@ TEAM = [
         "key": "viny",
         "name": "Viny Christanti Mawardi, S.Kom., M.Kom.",
         "role": "Teaching Assistant",
-        "aff": "Head of the Informatics Engineering study programme, Faculty of "
-               "Information Technology, Universitas Tarumanagara (Untar) · "
-               "doctoral candidate · information retrieval and natural language "
-               "processing",
+        "aff": "Doctoral Candidate, STEI ITB · Head of the Informatics "
+               "Engineering study programme, Faculty of Information Technology, "
+               "Universitas Tarumanagara (Untar) · information retrieval and "
+               "natural language processing",
         "url": "https://untar.ac.id/en/leaders/study-programs/viny-christanti/",
         "topics": "Topic 4 — LLMs, fine-tuning, and RAG",
     },
@@ -83,7 +84,7 @@ TEAM = [
         "key": "hendri",
         "name": "Hendri Karisma, M.T.",
         "role": "Teaching Assistant",
-        "aff": "Doctoral student, STEI ITB · VP of Engineering, Jejakin · "
+        "aff": "Doctoral Student, STEI ITB · VP of Engineering, Jejakin · "
                "Lecturer in Informatics, STMIK Tazkia",
         "url": "https://hendrikarisma.my.id",
         "topics": "Topic 6 — Agentic AI",
