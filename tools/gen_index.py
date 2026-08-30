@@ -50,11 +50,19 @@ def load_manifest(outdir):
         return {d["id"]: d for d in json.load(f)["decks"]}
 
 
+# The standalone modules run in teaching order, not alphabetical order: the
+# LLM module comes before the agentic one, because agentic AI is built on top
+# of what the LLM module covers. Anything not listed falls in after these.
+MODULE_ORDER = ["viny-llm", "hendri-agentic"]
+
+
 def _sort_key(d):
-    # Chapters in order, then the standalone modules, alphabetically.
+    """Chapters in book order, then the modules in teaching order."""
     if d.get("number") is not None:
         return (0, d["number"], "")
-    return (1, 0, d["id"])
+    did = d["id"]
+    rank = MODULE_ORDER.index(did) if did in MODULE_ORDER else len(MODULE_ORDER)
+    return (1, rank, did)
 
 
 def _card(d):
@@ -178,7 +186,14 @@ footer.ix-foot-bar{
   font-size:11.5px; color:var(--ink3); display:flex; flex-wrap:wrap;
   gap:8px 22px; justify-content:space-between;
 }
-@media (max-width:640px){ .ix-hero{padding:34px 0 30px} }
+@media (max-width:760px){
+  .ix-wrap{padding:0 18px 56px}
+  .ix-hero{padding:34px 0 30px}
+  .ix-grid{grid-template-columns:1fr}
+  .ix-pdfs{grid-template-columns:1fr}
+  .ix-meta{gap:8px 16px;font-size:12px}
+  footer.ix-foot-bar{flex-direction:column;gap:8px}
+}
 """
 
 
@@ -251,8 +266,8 @@ def write(decks, outdir):
   </p>
 
   <footer class="ix-foot-bar">
-    <span>{esc_html(COURSE['org'])} · in partnership with {esc_html(COURSE['partner'])}</span>
-    <span>Chapter decks follow <i>{esc_html('Deep Learning with Python, Third Edition')}</i> by Chollet &amp; Watson</span>
+    <span>{esc_html(COURSE['org'])} · {esc_html(COURSE['unit'])}</span>
+    <span>{esc_html(COURSE['credits'])}</span>
   </footer>
 
 </div>
