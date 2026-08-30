@@ -216,7 +216,7 @@ flowchart LR
 
 MMD_SYSDESIGN = """
 flowchart TB
-  APP["<b>Android app</b><br/><small>field officer</small>"]
+  APP["<b>Mobile app</b><br/><small>Flutter · field officer</small>"]
   GW["<b>API gateway</b><br/><small>authn, rate limit, WAF</small>"]
   ORCH["<b>Agent service</b><br/><small>loop, budgets, guardrails</small>"]
   MCP["<b>MCP servers</b>"]
@@ -358,7 +358,7 @@ DECK = {
         "27701:2025**, and produce the evidence an auditor asks for.",
         "Produce a **system design and a deployment design**, including where "
         "the data is allowed to be.",
-        "Walk one end-to-end case: an Android app, a REST service, a classical "
+        "Walk one end-to-end case: a Flutter app on Android and iOS, a REST service, a classical "
         "ML model behind MCP, and a human who makes the decision.",
     ],
     "slides": [
@@ -1535,7 +1535,7 @@ DECK = {
                      "p": "UU PDP on the customer data, OJK on the decision, and a "
                           "policy corpus the agent must cite from."},
                     {"ico": "📱", "h": "A mobile front end", "style": "accent",
-                     "p": "An Android app the field officer uses at the applicant's "
+                     "p": "A Flutter app — Android and iOS — the field officer uses at the applicant's "
                           "premises, often on a poor connection."},
                 ]},
             ],
@@ -1804,7 +1804,7 @@ DECK = {
 
         # ==============================================================
         {"type": "section", "num": "11", "title": "The demo",
-         "lead": "An Android app, a REST service, a model behind MCP, and a human who "
+         "lead": "A Flutter app on either phone, a REST service, a model behind MCP, and a human who "
                  "decides."},
 
         {
@@ -1876,8 +1876,8 @@ DECK = {
                  "head": ["Component", "Stack", "Purpose"],
                  "widths": [26, 26, 48],
                  "rows": [
-                     ["**Android app**", "Kotlin, Jetpack Compose",
-                      "The five screens above; the assessment is a job, not a call"],
+                     ["**Mobile app**", "Flutter — Android + iOS",
+                      "Five screens from one codebase; the assessment is a job"],
                      ["**Agent case**", "Python, `agentcore`",
                       "The loop, budgets, guardrails, traces — from the demo repository"],
                      ["**REST service**", "Python standard library",

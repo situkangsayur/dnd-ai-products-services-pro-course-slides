@@ -31,7 +31,7 @@
 \item Design both interfaces: \textbf{machine-to-machine} (MCP, A2A, REST, events) and \textbf{human-to-machine} (approval, escalation, audit).
 \item Map a deployment against \textbf{UU PDP, OJK, ISO/IEC 27001:2022 and 27701:2025}, and produce the evidence an auditor asks for.
 \item Produce a \textbf{system design and a deployment design}, including where the data is allowed to be.
-\item Walk one end-to-end case: an Android app, a REST service, a classical ML model behind MCP, and a human who makes the decision.
+\item Walk one end-to-end case: a Flutter app on Android and iOS, a REST service, a classical ML model behind MCP, and a human who makes the decision.
 \end{isteps}
 
 \vskip 6pt
@@ -782,7 +782,7 @@ UU PDP on the customer data, OJK on the decision, and a policy corpus the agent 
 \begin{minipage}[t]{0.494\textwidth}
 \begin{icardaccent}
 \cardh{A mobile front end}
-An Android app the field officer uses at the applicant's premises, often on a poor connection.
+A Flutter app --- Android and iOS --- the field officer uses at the applicant's premises, often on a poor connection.
 \end{icardaccent}
 \end{minipage}%
 \end{frame}
@@ -920,7 +920,7 @@ Region availability is \textbf{not} the same as the model being served from that
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The fifth is the one people miss. \textbf{A model updated underneath you is a change you did not test}, and in a regulated setting that is a finding.\par}\vskip 4pt
 \end{frame}
 
-\coursesection{11}{The demo}{An Android app, a REST service, a model behind MCP, and a human who decides.}
+\coursesection{11}{The demo}{A Flutter app on either phone, a REST service, a model behind MCP, and a human who decides.}
 
 \framekicker{Demo $\cdot$ the mobile app}
 \begin{frame}[shrink=25]{Why the front end is a phone}
@@ -989,7 +989,7 @@ Screen 3 is where the module's argument becomes a product: \textbf{a recommendat
 \begin{frame}[shrink=25]{What ships with this module}
 \begin{itable}{>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.4512\textwidth}}
 \thead{Component} & \thead{Stack} & \thead{Purpose} \\ \midrule
-\textbf{Android app} & Kotlin, Jetpack Compose & The five screens above; the assessment is a job, not a call \\
+\textbf{Mobile app} & Flutter --- Android + iOS & Five screens from one codebase; the assessment is a job \\
 \textbf{Agent case} & Python, \inlinecode{agentcore} & The loop, budgets, guardrails, traces --- from the demo repository \\
 \textbf{REST service} & Python standard library & Stands in for core banking, analytics, policy and the queue. No framework: the point is the shape of the API. \\
 \textbf{Credit model} & scikit-learn & Two candidates fitted, the better one shipped; returns the score \textbf{and the reason codes} \\
