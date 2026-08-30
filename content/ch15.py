@@ -1499,7 +1499,31 @@ multi_head_attention(query=target, key=source, value=source)"""},
 def layer_normalization(batch_of_sequences):
     mean = np.mean(batch_of_sequences, keepdims=True, axis=-1)
     variance = np.var(batch_of_sequences, keepdims=True, axis=-1)
-    return (batch_of_sequences - mean) / variance"""},
+    return (batch_of_sequences - mean) / variance""",
+                 "run": [
+                     {"line": 1, "note": "One token's embedding, four dimensions "
+                                         "of it. Everything below happens inside "
+                                         "this row and nothing else.",
+                      "vars": {"x": "[2.0, -1.0, 0.5, 2.5]"}},
+                     {"line": 3, "note": "`axis=-1` — the mean is over the "
+                                         "**features of one token**, not over the "
+                                         "batch. Nothing about any other sequence "
+                                         "enters the calculation.",
+                      "vars": {"mean": "1.000"}},
+                     {"line": 4, "note": "Same axis. (1² + 2² + 0.5² + 1.5²) / 4.",
+                      "vars": {"variance": "1.875", "√variance": "1.369"}},
+                     {"line": 5, "note": "As written, dividing by the variance. "
+                                         "The result is centred but its variance "
+                                         "is 0.53, not 1.",
+                      "vars": {"out": "[0.533, -1.067, -0.267, 0.800]",
+                               "var(out)": "0.533"}},
+                     {"line": 5, "note": "Keras divides by **√(variance + ε)**, "
+                                         "which is what makes the output unit "
+                                         "variance. Worth knowing before you "
+                                         "reimplement this from the slide.",
+                      "vars": {"out": "[0.730, -1.461, -0.365, 1.095]",
+                               "var(out)": "1.000"}},
+                 ]},
                 {"t": "code", "lang": "python", "file": "batch normalization", "src": """# input shape: (batch_size, height, width, channels)
 def batch_normalization(batch_of_images):
     mean = np.mean(batch_of_images, keepdims=True, axis=(0, 1, 2))

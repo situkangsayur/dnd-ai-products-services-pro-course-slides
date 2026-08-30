@@ -77,12 +77,24 @@
 
 \framekicker{Vocabulary}
 \begin{frame}[shrink=25]{The distinction that decides your output layer}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.3196\textwidth}>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.376\textwidth}}
+\thead{Task} & \thead{Final layer} & \thead{Why} \\ \midrule
+Binary --- 2 classes & 1 unit, \textbf{sigmoid} & one number, and 1 $-$ p is the other class \\
+Multiclass --- N classes, \textbf{one} label & N units, \textbf{softmax} & exactly one is true, so they may compete \\
+Multilabel --- N classes, \textbf{many} labels & N units, \textbf{sigmoid} & several may be true, so they must not compete \\
+Scalar regression & 1 unit, \textbf{no activation} & any real number is a legal answer \\
+\end{itable}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Multiclass and multilabel look almost identical on the slide and need different heads. The next slide computes both on the same logits, which is the only way the difference stops being a thing to memorise.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Vocabulary}
+\begin{frame}[shrink=25]{\ldots{}and the one line of arithmetic behind it}
 \begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch04-heads.tex.pdf}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch04-heads.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Multiclass and multilabel look similar and need different heads.\par}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The same three logits through both heads. Step through them and read the two sums: softmax always makes 1, sigmoid has no reason to.\par}
 \begin{iband}[signal]
-\textbf{Softmax} forces the outputs to sum to 1 --- right when exactly one class is true. \textbf{Sigmoid per class} lets several be true at once. Choosing the wrong one \hilite{trains a model that cannot express the answer}
+The wrong head \hilite{cannot express the answer}, and no amount of training data fixes that.
 \end{iband}
 \end{frame}
 

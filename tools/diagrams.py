@@ -2105,3 +2105,107 @@ def latent_space(fig_id, *, cap="", note="", width=1240, height=486, full=False,
                    sim_label="step")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ============================================ softmax or sigmoid, worked out --
+
+def output_heads(fig_id, *, cap="", note="", width=1330, height=414, full=False):
+    """The choice of output layer, decided by arithmetic instead of a table.
+
+    "Softmax when exactly one class is true, sigmoid per class when several
+    can be" is correct, memorisable, and teaches nothing about why. The why is
+    one line of arithmetic: softmax divides by the sum over classes, so the
+    classes compete for a fixed budget of one; sigmoid squashes each logit on
+    its own, so they do not.
+
+    So both are computed on the SAME logits, and the example is chosen to make
+    the difference matter -- a photograph that really is both a cat and
+    outdoors. Softmax has to split its belief between two true things. Sigmoid
+    does not have to.
+    """
+    import math
+    classes = ("cat", "dog", "outdoors")
+    z = (2.4, -0.5, 2.1)
+    truth = (True, False, True)
+
+    ez = [math.exp(v) for v in z]
+    Z = sum(ez)
+    soft = [e / Z for e in ez]
+    sig = [1 / (1 + math.exp(-v)) for v in z]
+
+    def build(p):
+        out = []
+        colw, gap = 300.0, 84.0
+        lx, rx = 92.0, 92.0 + colw + gap + 176.0
+        rowh = 34.0
+
+        # ---- the shared logits, in a ROW ----------------------------------
+        # Three rows of two columns is the obvious layout and costs 90px of
+        # height, which the figure then pays for in rendered scale. Across the
+        # top it costs one line.
+        out.append(txt(lx, 54, "one image, one set of logits", size=13.5,
+                       weight=600, pal=p, fill=p.ink, anchor="start", step=1))
+        for i, c in enumerate(classes):
+            x = lx + i * 244
+            out.append(rect(x, 74, 216, 46, r=8, pal=p, fill=p.fill,
+                            stroke=p.good if truth[i] else p.line,
+                            sw=1.4 if truth[i] else 1.0, step=1))
+            out.append(txt(x + 16, 90, c, size=12.5, pal=p,
+                           fill=p.good if truth[i] else p.ink3,
+                           anchor="start", step=1))
+            out.append(txt(x + 16, 108, f"z = {z[i]:+.1f}", size=12.5,
+                           mono=True, pal=p, fill=p.ink, anchor="start",
+                           step=1))
+            if truth[i]:
+                out.append(txt(x + 200, 99, "true", size=11, pal=p,
+                               fill=p.good, anchor="end", step=1))
+        out.append(txt(lx + 3 * 244 + 8, 99,
+                       "the photograph is a cat, and it is outdoors — both",
+                       size=12, pal=p, fill=p.ink3, anchor="start", step=1))
+
+        # ---- the two heads ------------------------------------------------
+        hy = 168.0
+        for col, (name, formula, vals, tot, st, colr) in enumerate((
+                ("softmax", "eᶻⁱ ⁄ Σⱼ eᶻʲ", soft, sum(soft), 2, p.bad),
+                ("sigmoid, per class", "1 ⁄ (1 + e⁻ᶻ)", sig, sum(sig), 3,
+                 p.good))):
+            x = lx if col == 0 else rx
+            out.append(txt(x, hy, name, size=14, weight=600, pal=p, fill=colr,
+                           anchor="start", step=st))
+            out.append(txt(x, hy + 22, formula, size=12.5, mono=True, pal=p,
+                           fill=p.ink3, anchor="start", step=st))
+            for i, c in enumerate(classes):
+                y = hy + 56 + i * rowh
+                out.append(txt(x, y, c, size=12.5, pal=p,
+                               fill=p.ink2 if not truth[i] else p.ink,
+                               anchor="start", step=st))
+                bw = 128.0 * vals[i]
+                out.append(rect(x + 108, y - 9, 128, 18, r=4, pal=p,
+                                fill=p.fill, stroke=p.line, sw=1.0, step=st))
+                out.append(rect(x + 108, y - 9, bw, 18, r=4, pal=p, fill=colr,
+                                stroke="none", sw=0, step=st))
+                out.append(txt(x + 248, y, f"{vals[i]:.3f}", size=12.5,
+                               mono=True, pal=p, fill=p.ink, anchor="start",
+                               step=st))
+            y = hy + 56 + 3 * rowh + 6
+            out.append(line(x, y - 12, x + 296, y - 12, pal=p, stroke=p.faint,
+                            sw=1, step=st))
+            out.append(txt(x, y + 6, "sum", size=12.5, pal=p, fill=p.ink3,
+                           anchor="start", step=st))
+            out.append(txt(x + 248, y + 6, f"{tot:.3f}", size=13.5, mono=True,
+                           weight=600, pal=p, fill=colr, anchor="start",
+                           step=st))
+            out.append(txt(x, y + 30,
+                           "always 1 — the classes share one budget"
+                           if col == 0 else
+                           "not 1, and nothing says it should be",
+                           size=11.5, pal=p, fill=colr, anchor="start",
+                           step=st))
+
+        # The verdict is NOT repeated here. It is the band beside the figure on
+        # the slide, and saying it twice costs 60px of drawing height, which
+        # the figure pays for in rendered size.
+        return svg(width, height, "".join(out), pal=p, steps=3,
+                   sim_label="head")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

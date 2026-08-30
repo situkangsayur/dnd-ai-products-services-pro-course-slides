@@ -25,7 +25,7 @@
  "ch03-valsplit": "27526cb0b2ab95e3",
  "ch04-bottleneck": "ac3999a4b7267bae",
  "ch04-curve": "c992745bae2898f1",
- "ch04-heads": "d7077c4f713be757",
+ "ch04-heads": "9c2df07035010128",
  "ch04-kfold": "b37e354516b4ca5a",
  "ch04-leak": "fdee4877c7395378",
  "ch04-workflow": "cb5e02e98af44083",
@@ -203,6 +203,7 @@
  "hendri-who": "abd672e4aeb3753b",
  "test-al": "345f02b18f7b7217",
  "test-ls": "7a53275de6c18099",
+ "test-oh": "e6fb749d7a1dceb1",
  "viny-arc": "d937135f8e111aee",
  "viny-rag": "6b1c291832dd2636"
 }

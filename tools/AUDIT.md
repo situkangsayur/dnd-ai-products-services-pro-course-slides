@@ -48,6 +48,13 @@ letterboxed rather than cropped, so they measured as "fits". A screenshot found
 it in one look. **Look at a slide occasionally; the metrics only answer the
 question you thought to ask.** The origin is now `top left`.
 
+The guard for that fourth trap has already paid for itself once: a later
+sweep came back reporting **1 113 slides measured and zero problems** for a
+build with 1 169 slides, and the line `MEASUREMENT FAILED for: ch01` under it.
+Without that line the missing 56 slides would have been invisible — the totals
+looked perfect. Read the failure list before the totals, and check that the
+slide count is the one you expect.
+
 And one flake worth knowing: **wait for the webfonts.** Measuring before they
 land reports phantom clipping — the fallback face is wider, every label
 overflows, and the next run comes back clean. Both scripts await

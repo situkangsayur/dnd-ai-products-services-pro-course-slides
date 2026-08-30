@@ -13,6 +13,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
+from diagrams import output_heads  # noqa: E402
 
 
 MMD_WORKFLOW = """
@@ -50,14 +51,6 @@ flowchart TB
   D --> F2 --> AVG
   D --> F3 --> AVG
   D --> F4 --> AVG
-"""
-
-MMD_HEADS = """
-flowchart TB
-  T1["Binary<br/>2 classes"] --> H1["1 unit<br/>sigmoid"]
-  T2["Multiclass<br/>N classes, one label"] --> H2["N units<br/>softmax"]
-  T3["Multilabel<br/>N classes, many labels"] --> H3["N units<br/>sigmoid"]
-  T4["Scalar regression"] --> H4["1 unit<br/>no activation"]
 """
 
 
@@ -159,13 +152,41 @@ DECK = {
             "kicker": "Vocabulary",
             "title": "The distinction that decides your output layer",
             "blocks": [
-                {"t": "mmd", "id": "ch04-heads", "src": MMD_HEADS,
-                 "cap": "Multiclass and multilabel look similar and need different heads."},
+                {"t": "table",
+                 "head": ["Task", "Final layer", "Why"],
+                 "widths": [34, 26, 40],
+                 "rows": [
+                     ["Binary — 2 classes", "1 unit, **sigmoid**",
+                      "one number, and 1 − p is the other class"],
+                     ["Multiclass — N classes, **one** label", "N units, **softmax**",
+                      "exactly one is true, so they may compete"],
+                     ["Multilabel — N classes, **many** labels", "N units, **sigmoid**",
+                      "several may be true, so they must not compete"],
+                     ["Scalar regression", "1 unit, **no activation**",
+                      "any real number is a legal answer"],
+                 ]},
+                {"t": "p", "md": "Multiclass and multilabel look almost identical on the "
+                                 "slide and need different heads. The next slide computes "
+                                 "both on the same logits, which is the only way the "
+                                 "difference stops being a thing to memorise."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Vocabulary",
+            "title": "…and the one line of arithmetic behind it",
+            "blocks": [
+                output_heads("ch04-heads",
+                             cap="The same three logits through both heads. Step through "
+                                 "them and read the two sums: softmax always makes 1, "
+                                 "sigmoid has no reason to.",
+                             note="Softmax divides by the sum over classes, so the classes "
+                                  "share one budget of 1. Sigmoid squashes each logit on "
+                                  "its own, so they do not."),
                 {"t": "band",
-                 "md": "**Softmax** forces the outputs to sum to 1 — right when exactly one "
-                       "class is true. **Sigmoid per class** lets several be true at once. "
-                       "Choosing the wrong one ==trains a model that cannot express the "
-                       "answer=="},
+                 "md": "The wrong head ==cannot express the answer==, and no amount of "
+                       "training data fixes that."},
             ],
         },
 

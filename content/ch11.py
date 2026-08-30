@@ -424,7 +424,26 @@ model = get_model(img_size=img_size, num_classes=3)"""},
 Conv2D(128, 3, strides=2, padding="same")           # -> (50, 50, 128)
 
 # input (50, 50, 128)
-Conv2DTranspose(64, 3, strides=2, padding="same")   # -> (100, 100, 64)"""},
+Conv2DTranspose(64, 3, strides=2, padding="same")   # -> (100, 100, 64)""",
+                 "run": [
+                     {"line": 1, "note": "100 x 100 pixels, 64 channels per pixel.",
+                      "vars": {"shape": "(100, 100, 64)"}},
+                     {"line": 2, "note": "`strides=2` halves both spatial axes; "
+                                         "the filter count sets the last one. "
+                                         "Space traded for channels.",
+                      "vars": {"shape": "(50, 50, 128)",
+                               "pixels": "10 000 → 2 500"}},
+                     {"line": 5, "note": "The transpose runs the same arithmetic "
+                                         "backwards: stride 2 **doubles** the "
+                                         "spatial axes instead of halving them.",
+                      "vars": {"shape": "(100, 100, 64)"}},
+                     {"line": 5, "note": "Back to the shape line 1 started from — "
+                                         "which is the whole point, and why a "
+                                         "segmentation model can end at one "
+                                         "label per input pixel. The **shape** is "
+                                         "recovered; the information is not.",
+                      "vars": {"shape": "(100, 100, 64)", "same as line 1": "yes"}},
+                 ]},
                 {"t": "band",
                  "md": "So a stack of `Conv2D` with strides, mirrored by a stack of "
                        "`Conv2DTranspose` with the same strides, ==returns you to the "

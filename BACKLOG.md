@@ -20,15 +20,16 @@ bertindihan. **Web dan PDF sekarang sama persis**: 1.167 slide web,
 
 | | Jumlah |
 |---|---|
-| `mmd` (kotak-dan-panah) | 183 |
-| `draw` (SVG digambar, dari `tools/diagrams.py`) | 21 |
+| `mmd` (kotak-dan-panah) | 182 |
+| `draw` (SVG digambar, dari `tools/diagrams.py`) | 22 |
 | `img` | 4 |
 
 Dek yang **sama sekali belum** punya peraga gambar: ch04, ch06, ch07, ch10,
 ch12, ch13, ch16, ch18, ch19, ch20, `viny-llm`. Dua yang disebut langsung
 sudah dikerjakan — `ch17` (ruang laten, dengan jalan dari A ke B dan satu titik
 di luar manifold) dan `hendri-agentic` (gelung agen, dengan satu jalannya yang
-sungguhan berputar di dalamnya). Sisa yang disebut: `ch19#58` dan `ch04#1`.
+sungguhan berputar di dalamnya), dan `ch04` (softmax lawan sigmoid, dihitung
+pada logit yang sama). Sisa yang disebut: `ch19#58`.
 
 Bukan semua 185 harus jadi gambar. Graf ketergantungan, alur keputusan, dan
 diagram penyebaran memang graf kotak — dan sesudah `figures.py` memutar
@@ -48,18 +49,22 @@ Kandidat berikutnya, berurutan:
 - [ ] `ch04` — pembagian latih/uji dan pengacakan batch, keduanya aritmetika
 - [ ] `viny-llm` — ada `attention_qkv` di `ch15` yang bisa dipakai ulang
 
-## 2 · Kode yang belum bisa dijalankan di slide — 291 dari 298
+## 2 · Kode yang belum bisa dijalankan di slide — 289 dari 298
 
 Blok `code` boleh membawa `run`: daftar langkah berisi nomor baris, catatan,
-dan keadaan variabel. Baru **7 dari 298** yang punya.
+dan keadaan variabel. Baru **9 dari 298** yang punya.
 
 Sudah: `ch01` gelung latih · `ch02` listing 2.1 + relu · `ch03` GradientTape +
-langkah latih utuh · `ch04` K-fold · `ch12` IoU.
+langkah latih utuh · `ch04` K-fold · `ch11` Conv2DTranspose · `ch12` IoU ·
+`ch15` normalisasi lapis.
 
 Prioritaskan listing yang **aritmetika**, bukan yang pemanggilan pustaka. Jejak
 `run` ditulis tangan; angkanya harus benar, jadi hitung dulu.
 
-- [ ] `ch11` Conv2DTranspose (kebalikan konvolusi — angkanya kecil, cocok)
+- [x] ~~`ch11` Conv2DTranspose~~ · ~~`ch15` normalisasi lapis~~ — selesai.
+      Yang kedua sekaligus mencatat satu hal: listing di buku membagi dengan
+      **variansi**, bukan akarnya, jadi keluarannya berpusat tapi variansinya
+      0,53. Keras membagi dengan √(variansi + ε). Jejaknya menghitung keduanya.
 - [ ] `ch14` n-gram dan pemotongan teks (chunking)
 - [ ] `ch15` perhitungan perhatian (attention) satu kepala
 - [ ] `ch16`/`ch17` penyusunan batch
