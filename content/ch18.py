@@ -13,7 +13,7 @@ audience will return to most, because every technique in it is a cost decision.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 
 
 MMD_HPO_LOOP = """
@@ -1363,7 +1363,7 @@ predictions = model.predict(...)"""},
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "04_mixed_precision_and_loss_scaling.ipynb",
-                     "href": "../../course-slides/notebooks/ch18/04_mixed_precision_and_loss_scaling.ipynb"},
+                     "href": notebook_url(18, "04_mixed_precision_and_loss_scaling.ipynb")},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 19 — The future of AI",
                      "href": "../ch19/index.html"},
                 ]},

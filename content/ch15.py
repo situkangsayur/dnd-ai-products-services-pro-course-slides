@@ -14,7 +14,7 @@ fine-tuned in a single epoch.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 from diagrams import attention_qkv, positional_encoding  # noqa: E402
 
 
@@ -2572,7 +2572,7 @@ classifier.fit(
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "03_attention_from_scratch.ipynb",
-                     "href": "../../course-slides/notebooks/ch15/03_attention_from_scratch.ipynb"},
+                     "href": notebook_url(15, "03_attention_from_scratch.ipynb")},
                     {"k": "PAPER", "ic": "📄", "v": "Vaswani et al., Attention Is All You Need",
                      "href": "https://arxiv.org/abs/1706.03762"},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 16 — Text generation",

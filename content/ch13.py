@@ -12,7 +12,7 @@ and only an LSTM beats it.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 
 
 MMD_TASKS = """
@@ -783,7 +783,7 @@ outputs = layers.Dense(1)(x)"""},
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "03_lstm_and_gru.ipynb",
-                     "href": "../../course-slides/notebooks/ch13/03_lstm_and_gru.ipynb"},
+                     "href": notebook_url(13, "03_lstm_and_gru.ipynb")},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 14 — Text classification",
                      "href": "../ch14/index.html"},
                 ]},

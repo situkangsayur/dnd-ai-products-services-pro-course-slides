@@ -12,7 +12,7 @@ Xception that beats chapter 8's model with less than half the parameters.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 from diagrams import depth_vs_width, residual  # noqa: E402
 
 
@@ -811,7 +811,7 @@ history = model.fit(augmented_train_dataset, epochs=100,
                        "parameter count== — before any hyperparameter tuning."},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "03_mini_xception.ipynb",
-                     "href": "../../course-slides/notebooks/ch09/03_mini_xception.ipynb"},
+                     "href": notebook_url(9, "03_mini_xception.ipynb")},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 10 — Interpreting what ConvNets learn",
                      "href": "../ch10/index.html"},
                 ]},

@@ -12,7 +12,7 @@ where a figure moves between runs the slide says so.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 
 
 MMD_WORKFLOW = """
@@ -910,7 +910,7 @@ print(f"test MAE {test_mae:.2f}   first prediction {predictions[0][0]:.2f}")"""}
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "01_imdb_binary_classification.ipynb",
-                     "href": "../../course-slides/notebooks/ch04/01_imdb_binary_classification.ipynb"},
+                     "href": notebook_url(4, "01_imdb_binary_classification.ipynb")},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 5 — Fundamentals of machine learning",
                      "href": "../ch05/index.html"},
                 ]},

@@ -163,9 +163,51 @@ def book_source(n):
 
 # Rendered, browsable notebooks. **HTML, not .ipynb**: a link to a raw notebook
 # does not open a notebook, it downloads a file. Built by tools/nb_html.py.
+#
+# The default is RELATIVE, and deliberately so. It used to be the absolute
+# address of the published site, which meant every chip on every slide was a
+# promise about a host -- and until that host actually had the files, all 22
+# decks linked to a 404. Relative to the deck page (`slides/<id>/index.html`)
+# the notebooks are two levels up, so the same build works unchanged on a
+# laptop, on :5053, and under /rs/ai-products-course/ once deployed. The
+# notebooks travel with the site: course-web's build copies them into
+# `site/notebooks/`, so there is nothing separate left to publish.
+#
+# Set COURSE_NOTEBOOK_BASE to an absolute URL only when the notebooks really
+# are served from somewhere other than the site the decks are served from.
 NOTEBOOK_BASE = _os.environ.get(
-    "COURSE_NOTEBOOK_BASE",
-    "https://hendrikarisma.my.id/rs/ai-products-course/notebooks").rstrip("/")
+    "COURSE_NOTEBOOK_BASE", "../../notebooks").rstrip("/")
+
+# Where this site is published. Only the LaTeX renderer needs it: a relative
+# href is meaningless in a PDF, which has no page to be relative to. gen_latex
+# resolves every site-relative link against this before writing it out, so the
+# web deck keeps its portable relative links and the printed deck still has
+# something a reader can click.
+SITE_URL = _os.environ.get(
+    "COURSE_SITE_URL",
+    "https://hendrikarisma.my.id/rs/ai-products-course").rstrip("/")
+
+
+def absolute(href, depth=2):
+    """Resolve a site-relative href against SITE_URL. Absolute ones pass through.
+
+    ``depth`` is how far below the site root the page carrying the link sits --
+    2 for a deck at ``slides/<id>/``, which is the only caller so far.
+    """
+    if not href or "://" in href or href.startswith(("#", "mailto:")):
+        return href
+    parts = href.split("/")
+    up = 0
+    while parts and parts[0] == "..":
+        parts.pop(0)
+        up += 1
+    if not up:
+        return href
+    # Anything climbing past the site root is a bug in the caller, not
+    # something to paper over with a guessed prefix.
+    if up > depth:
+        raise ValueError(f"link climbs above the site root: {href}")
+    return "/".join([SITE_URL] + parts)
 
 # A live JupyterLab the participants can actually run the notebook in. Empty by
 # default: pointing a deck at a server that is not up is worse than not
@@ -187,13 +229,13 @@ def notebook_url(n, name):
     do. The rendered pages come from ``tools/nb_html.py``; the layout mirrors
     the repository, so the path is derived rather than listed.
 
-    Falls back to the relative ``.ipynb`` path when no base URL is configured,
-    which is what you want when reading a checkout with no site in front of it.
+    The base is relative by default, so the link resolves against whatever
+    path the site is served from. Always ``.html`` -- there is no configuration
+    under which a chip should hand the browser a file to download.
     """
-    if not NOTEBOOK_BASE:
-        return f"../../notebooks/ch{n:02d}/{name}"
     page = name[:-6] + ".html" if name.endswith(".ipynb") else name
-    return f"{NOTEBOOK_BASE}/ch{n:02d}/{page}"
+    base = NOTEBOOK_BASE or "../../notebooks"
+    return f"{base}/ch{n:02d}/{page}"
 
 
 def jupyter_url(n, name):
@@ -212,10 +254,9 @@ def jupyter_url(n, name):
 
 def notebook_index_url(n=None):
     """The notebook index, anchored at a chapter when one is given."""
-    if not NOTEBOOK_BASE:
-        return "../../notebooks/"
     anchor = f"#ch{n:02d}" if n else ""
-    return f"{NOTEBOOK_BASE}/index.html{anchor}"
+    base = NOTEBOOK_BASE or "../../notebooks"
+    return f"{base}/index.html{anchor}"
 
 
 def chapter_resources(n, local_notebooks=()):

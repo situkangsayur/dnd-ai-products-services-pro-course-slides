@@ -10,6 +10,7 @@ import schema
 
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 from course import presenter_names, presenter_roles
+from course import absolute  # noqa: E402
 from inline import tex as it, esc_tex, tex_url
 
 RES_LABEL = {
@@ -108,7 +109,8 @@ def _links(b):
             out.append(r"\reslink{%s}{%s}{}" % (esc_tex(l.get("k", "")), v + r"~\textit{(menyusul)}"))
         else:
             out.append(r"\reslink{%s}{%s}{%s}" % (
-                esc_tex(l.get("k", "")), v, tex_url(l.get("href", ""))))
+                esc_tex(l.get("k", "")), v,
+                tex_url(absolute(l.get("href", "")))))
     return "\\vskip 4pt\n" + "\n".join(out) + "\n\\vskip 2pt\n"
 
 

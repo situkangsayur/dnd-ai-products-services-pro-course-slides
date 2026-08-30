@@ -12,7 +12,7 @@ model stays undertrained -- and says why that is still worth doing.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 
 
 MMD_TWOSTAGE = """
@@ -868,7 +868,7 @@ plt.show()"""},
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "03_pretrained_retinanet.ipynb",
-                     "href": "../../course-slides/notebooks/ch12/03_pretrained_retinanet.ipynb"},
+                     "href": notebook_url(12, "03_pretrained_retinanet.ipynb")},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 13 — Timeseries forecasting",
                      "href": "../ch13/index.html"},
                 ]},

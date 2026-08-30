@@ -12,7 +12,7 @@ ran.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 
 
 MMD_STACK = """
@@ -965,7 +965,7 @@ predictions = model.predict(new_inputs, batch_size=128)  # batched, returns NumP
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "01_three_frameworks_side_by_side.ipynb",
-                     "href": "../../course-slides/notebooks/ch03/01_three_frameworks_side_by_side.ipynb"},
+                     "href": notebook_url(3, "01_three_frameworks_side_by_side.ipynb")},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 4 — Classification and regression",
                      "href": "../ch04/index.html"},
                 ]},

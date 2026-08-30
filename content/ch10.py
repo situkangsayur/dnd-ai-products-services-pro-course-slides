@@ -12,7 +12,7 @@ projection. The chapter's claim is that ConvNets are *not* black boxes.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 
 
 MMD_FOUR = """
@@ -857,7 +857,7 @@ plt.scatter(projected[:, 0], projected[:, 1], c=labels, s=4, cmap="coolwarm")"""
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "03_grad_cam.ipynb",
-                     "href": "../../course-slides/notebooks/ch10/03_grad_cam.ipynb"},
+                     "href": notebook_url(10, "03_grad_cam.ipynb")},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 11 — Image segmentation",
                      "href": "../ch11/index.html"},
                 ]},

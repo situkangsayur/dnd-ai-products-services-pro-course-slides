@@ -74,9 +74,12 @@ Belum ada daftar yang disaring; membuat daftar itu sendiri satu pekerjaan.
 
 ## 4 · Di luar dek
 
-- [ ] `notebooks-site/` sudah di-commit tetapi belum tayang di
-      `hendrikarisma.my.id/rs/ai-products-course/notebooks/` — sampai tayang,
-      keping notebook di slide akan 404. Isinya statis, tinggal disalin.
+- [x] ~~`notebooks-site/` belum tayang~~ — **selesai lewat cara lain.**
+      Notebook sekarang ikut situsnya: `course-web/tools/build.py` memasang
+      `site/notebooks/`, dan tautannya relatif, jadi benar di laptop, di
+      `:5053`, dan di `/rs/ai-products-course/` sekaligus. Tidak ada langkah
+      publikasi terpisah lagi. PDF tetap dapat URL mutlak lewat
+      `course.absolute()` + `COURSE_SITE_URL`.
 - [ ] Aplikasi Flutter di `ai-agentic-demo/integrated/mobile/` **belum pernah
       dikompilasi** — tidak ada Flutter SDK di lingkungan ini. Sumbernya sudah
       diperiksa, tetapi anggarkan satu kali build sebelum dipakai.

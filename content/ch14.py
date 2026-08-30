@@ -12,7 +12,7 @@ embeddings, all measured on the same IMDB benchmark.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 from diagrams import bag_of_words, sliding_window  # noqa: E402
 
 
@@ -854,7 +854,7 @@ outputs = layers.Dense(1, activation="sigmoid")(layers.Dropout(0.5)(x))"""},
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "04_pretraining_an_embedding.ipynb",
-                     "href": "../../course-slides/notebooks/ch14/04_pretraining_an_embedding.ipynb"},
+                     "href": notebook_url(14, "04_pretraining_an_embedding.ipynb")},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 15 — Language models and the Transformer",
                      "href": "../ch15/index.html"},
                 ]},

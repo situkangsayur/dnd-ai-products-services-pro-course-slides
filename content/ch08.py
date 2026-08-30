@@ -12,7 +12,7 @@ then fine-tune it. Accuracy climbs 80% -> 84% -> 98.1% -> 98.6%.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 from diagrams import conv_compute  # noqa: E402
 
 
@@ -1017,7 +1017,7 @@ print(f"Test accuracy: {test_acc:.3f}")"""},
                        "*what architecture?* but ==*whose features can I start from?*=="},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "04_feature_extraction_and_finetuning.ipynb",
-                     "href": "../../course-slides/notebooks/ch08/04_feature_extraction_and_finetuning.ipynb"},
+                     "href": notebook_url(8, "04_feature_extraction_and_finetuning.ipynb")},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 9 — ConvNet architecture patterns",
                      "href": "../ch09/index.html"},
                 ]},

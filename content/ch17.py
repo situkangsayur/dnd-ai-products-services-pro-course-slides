@@ -13,7 +13,7 @@ is the best visual argument in the book for what a neural network actually is.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 
 
 MMD_LATENT = """
@@ -1549,7 +1549,7 @@ display(images)"""},
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "05_stable_diffusion_latent_walk.ipynb",
-                     "href": "../../course-slides/notebooks/ch17/05_stable_diffusion_latent_walk.ipynb"},
+                     "href": notebook_url(17, "05_stable_diffusion_latent_walk.ipynb")},
                     {"k": "PAPER", "ic": "📄", "v": "Kingma & Welling, Auto-Encoding Variational Bayes",
                      "href": "https://arxiv.org/abs/1312.6114"},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 18 — Best practices for the real world",

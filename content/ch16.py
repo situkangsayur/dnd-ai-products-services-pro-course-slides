@@ -14,7 +14,7 @@ prompt sensitivity, and a pretraining-data supply that is running out.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 
 
 MMD_HISTORY = """
@@ -2215,7 +2215,7 @@ ANSWER: 72"""},
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "05_instruction_tuning_with_lora.ipynb",
-                     "href": "../../course-slides/notebooks/ch16/05_instruction_tuning_with_lora.ipynb"},
+                     "href": notebook_url(16, "05_instruction_tuning_with_lora.ipynb")},
                     {"k": "PAPER", "ic": "📄", "v": "Hu et al., LoRA (2021)",
                      "href": "https://arxiv.org/abs/2106.09685"},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 17 — Image generation",

@@ -12,7 +12,7 @@ one that most often saves a project from failing quietly.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 from diagrams import dropout_net  # noqa: E402
 
 
@@ -1096,7 +1096,7 @@ regularizers.l1_l2(l1=0.001, l2=0.001)     # both at once"""},
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "02_shuffled_labels_and_manifolds.ipynb",
-                     "href": "../../course-slides/notebooks/ch05/02_shuffled_labels_and_manifolds.ipynb"},
+                     "href": notebook_url(5, "02_shuffled_labels_and_manifolds.ipynb")},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 6 — The universal workflow",
                      "href": "../ch06/index.html"},
                 ]},

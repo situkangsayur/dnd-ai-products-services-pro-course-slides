@@ -12,7 +12,7 @@ the slide says so rather than pretending to a precision it does not have.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 from diagrams import (backprop, forward_pass, geometric_ops,  # noqa: E402
                       neural_net,
                       sgd_descent, tensor_ranks)
@@ -1304,9 +1304,9 @@ accuracy: 0.90"""},
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "01_first_mnist.ipynb",
-                     "href": "../../course-slides/notebooks/ch02/01_first_mnist.ipynb"},
+                     "href": notebook_url(2, "01_first_mnist.ipynb")},
                     {"k": "NOTEBOOK", "ic": "📓", "v": "04_mnist_from_scratch.ipynb",
-                     "href": "../../course-slides/notebooks/ch02/04_mnist_from_scratch.ipynb"},
+                     "href": notebook_url(2, "04_mnist_from_scratch.ipynb")},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 3 — The frameworks",
                      "href": "../ch03/index.html"},
                 ]},

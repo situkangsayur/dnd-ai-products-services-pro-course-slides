@@ -39,13 +39,27 @@ Semua alamat yang ditunjuk slide ada di **satu tempat**, di blok konfigurasi
 
 | Variabel | Bawaan | Untuk apa |
 |---|---|---|
-| `COURSE_NOTEBOOK_BASE` | `https://hendrikarisma.my.id/rs/ai-products-course/notebooks` | notebook yang sudah dirender |
+| `COURSE_NOTEBOOK_BASE` | `../../notebooks` | notebook yang sudah dirender, **relatif** terhadap halaman dek |
+| `COURSE_SITE_URL` | `https://hendrikarisma.my.id/rs/ai-products-course` | akar situs; HANYA dipakai perender LaTeX |
 | `COURSE_JUPYTER_BASE` | *(kosong)* | JupyterLab yang benar-benar hidup, mis. `http://10.100.21.22:8888` |
 | `COURSE_JUPYTER_ROOT` | `notebooks` | letak notebook di dalam direktori kerja lab itu |
 
 ```bash
 COURSE_JUPYTER_BASE=http://10.100.21.22:8888 python3 tools/build.py
 ```
+
+**Kenapa bawaannya relatif.** Dulu alamat notebook itu URL mutlak ke peladen
+yang dipublikasikan — artinya tiap chip di tiap slide adalah janji tentang satu
+mesin, dan selama berkasnya belum ada di sana, semuanya 404. Sekarang notebook
+**ikut situsnya**: `course-web/tools/build.py` memasang `site/notebooks/`, dan
+tautan relatif itu benar di laptop, di `:5053`, dan di
+`/rs/ai-products-course/` sekaligus. Tidak ada lagi langkah publikasi terpisah.
+
+PDF beda urusannya: tautan relatif tidak punya arti di dalam PDF, karena tidak
+ada halaman untuk dijadikan acuan. Jadi `gen_latex.py` memanggil
+`course.absolute()` yang menyelesaikan tiap tautan relatif terhadap
+`COURSE_SITE_URL` sebelum menuliskannya. Web dapat tautan portabel, cetakan
+dapat tautan yang bisa diklik.
 
 **Notebook ditautkan sebagai HTML, bukan `.ipynb`.** Tautan ke berkas notebook
 mentah tidak membuka notebook — ia mengunduh berkas, dan itu yang terjadi kalau

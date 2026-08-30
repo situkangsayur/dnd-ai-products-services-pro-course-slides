@@ -12,7 +12,7 @@ ethics, shipping, monitoring, and concept drift. The fraud-threshold example in
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 
 
 MMD_WORKFLOW = """
@@ -964,7 +964,7 @@ model.export("path/to/location", format="onnx")"""},
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "03_export_and_quantize.ipynb",
-                     "href": "../../course-slides/notebooks/ch06/03_export_and_quantize.ipynb"},
+                     "href": notebook_url(6, "03_export_and_quantize.ipynb")},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 7 — A deep dive on Keras",
                      "href": "../ch07/index.html"},
                 ]},

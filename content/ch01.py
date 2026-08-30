@@ -14,7 +14,7 @@ written, which is the chapter's central claim.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 from diagrams import coord_change, neural_net  # noqa: E402
 
 
@@ -1098,7 +1098,7 @@ done      loss 0.00251  W +1.994  b +1.000"""},
                 ]},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "01_the_ml_paradigm.ipynb",
-                     "href": "../../course-slides/notebooks/ch01/01_the_ml_paradigm.ipynb"},
+                     "href": notebook_url(1, "01_the_ml_paradigm.ipynb")},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 2 — Mathematical building blocks",
                      "href": "../ch02/index.html"},
                     {"k": "BOOK CODE", "ic": "⌥", "v": "fchollet/deep-learning-with-python-notebooks",

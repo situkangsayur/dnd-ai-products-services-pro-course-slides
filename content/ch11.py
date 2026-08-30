@@ -11,7 +11,7 @@ Segment Anything — a pretrained model you prompt rather than fine-tune.
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
-from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
 from diagrams import feature_maps, pixel_mask  # noqa: E402
 
 
@@ -822,7 +822,7 @@ outputs = model.predict({
                        "onwards=="},
                 {"t": "links", "items": [
                     {"k": "NOTEBOOK", "ic": "📓", "v": "03_segment_anything.ipynb",
-                     "href": "../../course-slides/notebooks/ch11/03_segment_anything.ipynb"},
+                     "href": notebook_url(11, "03_segment_anything.ipynb")},
                     {"k": "NEXT", "ic": "➡", "v": "Chapter 12 — Object detection",
                      "href": "../ch12/index.html"},
                 ]},
