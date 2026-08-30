@@ -15,6 +15,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from diagrams import coord_change, neural_net  # noqa: E402
 
 
 # =============================================================================
@@ -370,14 +371,15 @@ DECK = {
             "kicker": "Section 1.4 · figures 1.3–1.4",
             "title": "The worked example: change the axes, and the rule appears",
             "blocks": [
-                {"t": "steps", "items": [
-                    "**Raw data.** White points and black points scattered in an (x, y) plane. "
-                    "No simple rule separates them.",
-                    "**Coordinate change.** Move the origin, rotate the axes. Nothing about "
-                    "the data changed -- only how it is written down.",
-                    "**Better representation.** The rule is now one sentence: *black points "
-                    "are those with x > 0*.",
-                ]},
+                                coord_change("ch01-representation",
+                             cap="Figures 1.3-1.4 — one dataset, three panels. Step "
+                                 "through them and watch that no point moves.",
+                             note="Panel 1 is the data as recorded. Panel 2 draws a "
+                                  "different pair of axes over the same pixels. Panel 3 "
+                                  "shades what the new axes make sayable: u > 0. In the "
+                                  "book the two classes are black and white points; "
+                                  "here they are filled and hollow, which survives "
+                                  "both a dark screen and a printed page."),
                 {"t": "band",
                  "md": "No model got smarter. Only the representation changed -- and that is "
                        "the work that used to be called ==feature engineering== and was done "
@@ -465,10 +467,21 @@ DECK = {
             "kicker": "Section 1.5",
             "title": "Each layer moves the data one step closer to the answer",
             "blocks": [
-                {"t": "mmd", "id": "ch01-layers", "src": MMD_LAYERS,
-                 "cap": "Figures 1.5–1.6 — a four-layer network for digit classification. "
-                        "Intermediate representations get further from the pixels and closer "
-                        "to the answer."},
+                                neural_net("ch01-layers",
+                           layers=[("Input pixels", 784, "28 x 28"),
+                                   ("Layer 1", 512, "edges"),
+                                   ("Layer 2", 512, "corners"),
+                                   ("Layer 3", 256, "parts"),
+                                   ("Output", 10, "P(0..9)")],
+                           highlight=(4, 3),
+                           cap="Figures 1.5-1.6 — a four-layer network for digit "
+                               "classification. Every unit in a layer is joined to "
+                               "every unit in the next; the layer widths here are "
+                               "illustrative, the progression is not.",
+                           note="Read it left to right. 784 numbers go in, 10 come "
+                                "out, and each layer in between holds a different "
+                                "way of writing the same digit down — further from "
+                                "the pixels, closer to the answer."),
                 {"t": "p", "md": "Chollet calls this **information distillation**: irrelevant "
                                  "information is filtered out, relevant information is "
                                  "amplified. All the layers are learned ==at once, "

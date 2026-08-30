@@ -150,10 +150,10 @@ If the chain is too deep, that noise \textbf{overwhelms the gradient information
 \framekicker{Section 9.2}
 \begin{frame}[shrink=25]{A residual connection is an information shortcut}
 \begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch09-residual.tex.pdf}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch09-residual.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Figure 9.3 --- add the input of a block back to its output.\par}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}The shortcut routes around destructive or noisy blocks --- those containing ReLU activations or dropout --- so gradient information from early layers can propagate noiselessly. Introduced in 2015 with \textbf{ResNet} (He et al., Microsoft).\par}\vskip 4pt
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Figure 9.3 --- the same five blocks, with and without the shortcut, and the two gradients they produce.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Same blocks, same derivatives --- and the gradient reaching block 1 is hundreds of times larger. Introduced in 2015 with \textbf{ResNet} (He et al., Microsoft).\par}\vskip 4pt
 \end{frame}
 
 \framekicker{Section 9.2 $\cdot$ listing 9.1}

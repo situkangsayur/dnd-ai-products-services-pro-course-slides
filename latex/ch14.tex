@@ -207,6 +207,11 @@ Unlike the steps of a timeseries, \textbf{words in a sentence have no natural, c
 \includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch14-bigram-window.tex.pdf}
 \end{center}
 \vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Every adjacent pair becomes a token of its own --- and each pair shares a word with the next.\par}
+\end{frame}
+
+\framekicker{Section 14.4.2}
+\begin{frame}[shrink=25]{\ldots{}and it is one argument in the layer}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Everything the previous slide drew is reached by changing a single keyword. \inlinecode{ngrams=2} keeps the unigrams \textbf{and} adds every adjacent pair.\par}\vskip 4pt
 \icode{python}{listing --- bigram encoding}{listings/ch14-09.py}
 \begin{iband}[signal]
 One argument, and the model improves: \textit{"not good"} is now a token in its own right. But the approach \hilite{only scales to a local ordering of a few words}, and it is feature engineering done by hand.

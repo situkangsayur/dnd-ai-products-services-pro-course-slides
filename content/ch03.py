@@ -268,7 +268,34 @@ c = tf.constant(3.0)
 with tf.GradientTape() as tape:
     tape.watch(c)
     result = tf.square(c)
-gradient = tape.gradient(result, c)"""},
+gradient = tape.gradient(result, c)""",
+                 "run": [
+                     {"line": 1, "note": "A Variable. The tape watches these "
+                                         "automatically, because they are what "
+                                         "training changes.",
+                      "vars": {"input_var": "3.0"}},
+                     {"line": 2, "note": "The recorder starts. From here every "
+                                         "operation on a watched tensor is written "
+                                         "down, in order.",
+                      "vars": {"tape": "recording"}},
+                     {"line": 3, "note": "y = x². The value is computed now; the "
+                                         "operation is also stored.",
+                      "vars": {"result": "9.0", "tape": "[square(input_var)]"}},
+                     {"line": 4, "note": "Play the tape backwards: d(x²)/dx = 2x, "
+                                         "and x is 3.",
+                      "vars": {"gradient": "6.0"}},
+                     {"line": 7, "note": "A constant. Nothing on this line is "
+                                         "different — the difference comes next.",
+                      "vars": {"c": "3.0"}},
+                     {"line": 9, "note": "Without this call the tape ignores c and "
+                                         "tape.gradient returns **None** — the most "
+                                         "common autodiff bug there is.",
+                      "vars": {"tape": "watching c"}},
+                     {"line": 11, "note": "Same derivative, same answer. The only "
+                                          "thing that had to be said out loud was "
+                                          "*watch this one*.",
+                      "vars": {"gradient": "6.0"}},
+                 ]},
                 {"t": "band",
                  "md": "Variables are watched automatically because they are what you "
                        "normally differentiate. ==Constants must be opted in=="},
@@ -339,7 +366,32 @@ def training_step(inputs, targets, W, b):
     return loss
 
 for step in range(40):
-    loss = training_step(inputs, targets, W, b)"""},
+    loss = training_step(inputs, targets, W, b)""",
+                 "run": [
+                     {"line": 6, "note": "Forward pass, step 1 of 40. The weights "
+                                         "are still whatever they were initialised "
+                                         "to, so the predictions mean nothing yet.",
+                      "vars": {"step": "0", "predictions": "≈ noise"}},
+                     {"line": 7, "note": "One number for the whole batch. This is "
+                                         "the only quantity being minimised.",
+                      "vars": {"loss": "0.9142"}},
+                     {"line": 8, "note": "The tape replays lines 6-7 backwards and "
+                                         "hands back one gradient per parameter, "
+                                         "each the same shape as the parameter.",
+                      "vars": {"grad_wrt_W": "shape (2, 1)",
+                               "grad_wrt_b": "shape (1,)"}},
+                     {"line": 9, "note": "Downhill, by learning_rate. `assign_sub` "
+                                         "and not `W = W - …`: a Variable is "
+                                         "updated in place, or the graph loses it.",
+                      "vars": {"W": "-= 0.1 × grad"}},
+                     {"line": 14, "note": "Step 12. Same four operations, a better "
+                                          "W each time.",
+                      "vars": {"step": "12", "loss": "0.1477"}},
+                     {"line": 14, "note": "Step 39. The loss has stopped falling — "
+                                          "which is how you learn that 40 steps was "
+                                          "enough for this problem.",
+                      "vars": {"step": "39", "loss": "0.0251"}},
+                 ]},
                 {"t": "band",
                  "md": "`assign_sub` mutates the variable. Hold that image — ==the JAX "
                        "version of this same loop cannot mutate anything==, and the "

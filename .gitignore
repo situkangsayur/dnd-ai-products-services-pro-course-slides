@@ -39,3 +39,6 @@ notebooks/**/cats_vs_dogs_small/
 notebooks/**/aclImdb/
 notebooks/**/images/
 notebooks/**/annotations/
+
+# Scratch renders from trying a generator out; never part of a deck.
+figs/test-*

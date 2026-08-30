@@ -220,11 +220,10 @@ Same picture, same task difficulty changed entirely. So machine learning is \hil
 
 \framekicker{Section 1.4 $\cdot$ figures 1.3--1.4}
 \begin{frame}[shrink=25]{The worked example: change the axes, and the rule appears}
-\begin{isteps}
-\item \textbf{Raw data.} White points and black points scattered in an (x, y) plane. No simple rule separates them.
-\item \textbf{Coordinate change.} Move the origin, rotate the axes. Nothing about the data changed -- only how it is written down.
-\item \textbf{Better representation.} The rule is now one sentence: \textit{black points are those with x > 0}.
-\end{isteps}
+\begin{center}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch01-representation.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Figures 1.3-1.4 --- one dataset, three panels. Step through them and watch that no point moves.\par}
 \begin{iband}[signal]
 No model got smarter. Only the representation changed -- and that is the work that used to be called \hilite{feature engineering} and was done by hand.
 \end{iband}
@@ -279,9 +278,9 @@ In the two-dimensional example, the hypothesis space was \hilite{the space of al
 \framekicker{Section 1.5}
 \begin{frame}[shrink=25]{Each layer moves the data one step closer to the answer}
 \begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch01-layers.tex.pdf}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch01-layers.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Figures 1.5--1.6 --- a four-layer network for digit classification. Intermediate representations get further from the pixels and closer to the answer.\par}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Figures 1.5-1.6 --- a four-layer network for digit classification. Every unit in a layer is joined to every unit in the next; the layer widths here are illustrative, the progression is not.\par}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}Chollet calls this \textbf{information distillation}: irrelevant information is filtered out, relevant information is amplified. All the layers are learned \hilite{at once, automatically}, from the training data.\par}\vskip 4pt
 \end{frame}
 

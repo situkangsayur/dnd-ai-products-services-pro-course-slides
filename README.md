@@ -85,9 +85,16 @@ yang bukan graf kotak. Ada alasannya:
 > bisa dikatakan dalam satu kalimat.
 
 Generator yang ada: `neural_net` · `forward_pass` · `neuron_math` ·
-`attention_qkv` · `dropout_net` · `conv_compute` · `feature_maps` ·
+`backprop` · `attention_qkv` · `positional_encoding` · `dropout_net` ·
+`residual` · `depth_vs_width` · `conv_compute` · `feature_maps` ·
 `tensor_ranks` · `tensor_grid` · `geometric_ops` · `sgd_descent` ·
 `sliding_window` · `bag_of_words` · `pixel_mask`.
+
+Aturannya satu: **kalau isinya aritmetika, hitungkan.** `backprop` dan
+`residual` sama-sama menampilkan angkanya sendiri — `residual` mengalikan lima
+turunan dua kali, sekali tanpa jalan pintas dan sekali dengan, lalu menaruh
+kedua hasilnya berdampingan. Kalimat "gradien jadi lebih besar" tidak
+membuktikan apa pun; `0.0089` di sebelah `5.21` membuktikannya.
 
 Teksnya `<text>` SVG asli, jadi tidak bisa terpotong seperti label mermaid.
 Dua palet dari satu builder: gelap untuk web, terang dicetak jadi PDF lewat

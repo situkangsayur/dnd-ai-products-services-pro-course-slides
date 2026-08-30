@@ -21,7 +21,7 @@ so the picture is honest about the size and still shows what a unit is.
 from __future__ import annotations
 
 import svgkit as K
-from svgkit import PALETTES, arrow, circle, fmt, line, rect, svg, txt
+from svgkit import PALETTES, arrow, circle, fmt, line, path, rect, svg, txt
 
 
 def _block(fig_id, build, cap="", note="", full=False):
@@ -100,10 +100,12 @@ def neural_net(fig_id, layers, *, cap="", note="", max_dots=6, show_edges=True,
                 ys_here, r_here = drawn[li]
                 if ui < len(ys_here):
                     for y0 in ys_prev:
+                        # Same step as the layer it feeds, or the fan is on
+                        # screen before the units at either end of it are.
                         out.append(line(xs[li - 1] + r_prev, y0,
                                         xs[li] - r_here, ys_here[ui],
                                         stroke=p.accent, sw=1.5, pal=p,
-                                        opacity=0.95))
+                                        opacity=0.95, step=li + 1))
 
         # Units.
         for i, ((lbl, n, sub), (ys, r)) in enumerate(zip(norm, drawn)):
@@ -124,15 +126,14 @@ def neural_net(fig_id, layers, *, cap="", note="", max_dots=6, show_edges=True,
                 mid = (ys[len(ys) // 2 - 1] + ys[len(ys) // 2]) / 2 if len(ys) > 1 else ys[0]
                 for d in (-9, 0, 9):
                     out.append(circle(xs[i], mid + d, 1.9, pal=p,
-                                      fill=p.ink3, stroke="none", sw=0))
+                                      fill=p.ink3, stroke="none", sw=0,
+                                      step=i + 1))
 
             out.append(txt(xs[i], top - 44, lbl, size=15, weight=600, pal=p,
                            fill=p.ink))
             out.append(txt(xs[i], top - 24,
                            sub or ("n = %s" % f"{n:,}".replace(",", " ")),
                            size=12.5, pal=p, fill=p.ink3, mono=not sub))
-            if not sub:
-                pass
             out.append(txt(xs[i], height - bot + 34,
                            f"unit 1 … unit {n:,}".replace(",", " ")
                            if n > max_dots else
@@ -1647,5 +1648,196 @@ def backprop(fig_id, *, x=2.0, w=1.5, b=-1.2, target=0.5, cap="", note="",
                        size=12.5, pal=p, fill=p.ink3, step=last))
         return svg(width, height, "".join(out), pal=p, steps=last,
                    sim_label="hop")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ================================================= residual connection, why --
+
+def residual(fig_id, *, depth=5, cap="", note="", width=1280, height=468,
+             full=False, seed=3):
+    """Why the shortcut exists, in the only terms that explain it: the gradient.
+
+    "It routes around destructive blocks" is true and does not say why that
+    matters. What matters is the *product*: without a shortcut the gradient
+    reaching layer 1 is every layer's derivative multiplied together, and a
+    product of numbers below one goes to nothing. With a shortcut each block
+    contributes ``1 + something``, so the product cannot collapse.
+
+    So the figure computes both. Same blocks, same derivatives, two paths, and
+    the two numbers at the end are three orders of magnitude apart.
+    """
+    import random
+    rng = random.Random(seed)
+    # Per-block local derivative. Below 1, which is the ordinary case once a
+    # relu has zeroed part of the signal.
+    d = [round(rng.uniform(0.25, 0.55), 2) for _ in range(depth)]
+
+    plain = 1.0
+    for v in d:
+        plain *= v
+    res = 1.0
+    for v in d:
+        res *= (1 + v)
+
+    def build(p):
+        out = []
+        pad, bw, bh = 96, 128, 56
+        step = (width - 2 * pad - bw) / (depth - 1)
+        xs = [pad + i * step for i in range(depth)]
+        y_plain, y_res = 132, 292
+
+        for row, (yy, title, col, has_skip) in enumerate((
+                (y_plain, "Plain stack", p.bad, False),
+                (y_res, "With residual connections", p.good, True))):
+            st = row + 1
+            # The label goes above the row, not beside it: beside it and the
+            # first block sits on top of it.
+            # Clear the shortcut arcs and their "+ input" labels on the row
+            # that has them, or the title lands underneath one.
+            out.append(txt(56, yy - bh / 2 - (62 if has_skip else 40), title,
+                           size=13.5, weight=600, pal=p, fill=col,
+                           anchor="start", step=st))
+            for i in range(depth):
+                x = xs[i]
+                out.append(rect(x, yy - bh / 2, bw, bh, r=8, pal=p,
+                                fill=p.fill, stroke=p.line, sw=1.3, step=st))
+                out.append(txt(x + bw / 2, yy - 8, f"block {i + 1}", size=12,
+                               pal=p, fill=p.ink2, step=st))
+                out.append(txt(x + bw / 2, yy + 12, f"∂ = {fmt(d[i])}", size=12,
+                               mono=True, pal=p, fill=p.ink, step=st))
+                if i < depth - 1:
+                    out.append(arrow(x + bw + 3, yy, xs[i + 1] - 3, yy, pal=p,
+                                     stroke=p.line, sw=1.4, step=st))
+                if has_skip:
+                    # The shortcut, drawn over the block it skips.
+                    top = yy - bh / 2 - 26
+                    out.append(path(
+                        f"M{x - 2:.1f},{yy:.1f} C{x - 2:.1f},{top:.1f} "
+                        f"{x + bw + 2:.1f},{top:.1f} {x + bw + 2:.1f},{yy:.1f}",
+                        stroke=p.good, sw=1.6, pal=p, step=st))
+                    out.append(txt(x + bw / 2, top - 8, "+ input", size=11,
+                                   pal=p, fill=p.good, step=st))
+
+        # ---- the two products ------------------------------------------
+        gy = 366
+        out.append(txt(56, gy, "gradient reaching block 1", size=13, weight=600,
+                       pal=p, fill=p.ink3, anchor="start", step=3))
+        out.append(txt(56, gy + 26,
+                       "×".join(fmt(v) for v in d) + f"  =  {plain:.4f}",
+                       size=13, mono=True, pal=p, fill=p.bad, anchor="start",
+                       step=3))
+        out.append(txt(56, gy + 50,
+                       "×".join(f"(1+{fmt(v)})" for v in d)
+                       + f"  =  {res:.2f}",
+                       size=13, mono=True, pal=p, fill=p.good, anchor="start",
+                       step=3))
+        out.append(txt(width - 56, gy + 38,
+                       f"{res / plain:,.0f}× larger".replace(",", " "),
+                       size=20, weight=600, pal=p, fill=p.good, anchor="end",
+                       step=3))
+        out.append(txt(width / 2, height - 14,
+                       "A product of numbers below one goes to nothing. Adding the "
+                       "input makes every factor bigger than one, so it cannot.",
+                       size=13, pal=p, fill=p.accent, step=3))
+        return svg(width, height, "".join(out), pal=p, steps=3,
+                   sim_label="stack")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ============================================= a better representation, drawn --
+
+def coord_change(fig_id, *, cap="", note="", width=1240, height=470, full=False,
+                 angle=32.0):
+    """Chapter 1's whole argument: the same points, written down differently.
+
+    Filled and hollow, not black and white: on a dark slide the book's "black
+    points" render light, and a caption that argues with the picture is worse
+    than no caption.
+
+    Three panels over ONE dataset, and the points never move -- they are at the
+    same pixel in all three. Only the axes drawn over them change, and with the
+    new axes the rule that separates the colours is five characters long.
+
+    Drawing this as a flowchart of three boxes would say "representation
+    matters" without showing anything. The claim only lands when you can see
+    that nothing about the data changed.
+    """
+    import math
+    ph = math.radians(angle)
+    eu = (math.cos(ph), math.sin(ph))      # the axis that separates them
+    ev = (-math.sin(ph), math.cos(ph))
+
+    # Authored in (u, v) so the separation is exact, then written down in raw
+    # coordinates -- which is the only place the drawing ever reads them from.
+    uv = [(-2.5, 1.4), (-1.6, -0.6), (-2.8, 0.2), (-1.3, 1.9), (-2.0, -1.6),
+          (-1.2, -1.2), (-2.9, -0.9), (-1.7, 0.7),
+          (1.4, 1.7), (2.4, 0.5), (1.2, -1.1), (2.7, -0.3), (1.8, -1.8),
+          (2.1, 1.2), (1.3, 0.1), (2.5, -1.5)]
+    lab = [0] * 8 + [1] * 8
+    raw = [(u * eu[0] + v * ev[0], u * eu[1] + v * ev[1]) for u, v in uv]
+
+    def build(p):
+        out = []
+        S, cy, half, box_top = 41.0, 232.0, 150.0, 82.0
+        panels = (
+            (78, "1 \u00b7 the data as it arrives",
+             "no rule in x and y is short", False),
+            (500, "2 \u00b7 the axes moved",
+             "not one point moved \u2014 only the axes did", True),
+            (922, "3 \u00b7 the rule that follows",
+             "the filled points are those with u > 0", True),
+        )
+        for pi, (px, title, sub, rot) in enumerate(panels):
+            st = pi + 1
+            cx = px + half
+            clip = f"{fig_id}-{p.name}-clip{pi}"
+            out.append(
+                f'<clipPath id="{clip}"><rect x="{px}" y="{box_top}" '
+                f'width="{2 * half}" height="300" rx="10"/></clipPath>')
+            out.append(txt(cx, 58, title, size=13.5, weight=600, pal=p,
+                           fill=p.ink, step=st))
+            out.append(rect(px, box_top, 2 * half, 300, r=10, pal=p, fill=p.fill,
+                            stroke=p.line, sw=1.0, step=st))
+
+            # Panel 3 shades the half-plane u > 0, clipped to the panel.
+            if pi == 2:
+                L = 460.0
+                pts = []
+                for a, b in ((L, L), (L, -L), (0, -L), (0, L)):
+                    x = eu[0] * a + ev[0] * b
+                    y = eu[1] * a + ev[1] * b
+                    pts.append(f"{cx + x:.1f},{cy - y:.1f}")
+                out.append(f'<polygon points="{" ".join(pts)}" fill="{p.good}" '
+                           f'opacity="0.12" clip-path="url(#{clip})"'
+                           f'{K.step_attr(st)}/>')
+
+            axes = ((eu, "u", p.accent), (ev, "v", p.line)) if rot else \
+                   (((1.0, 0.0), "x", p.line), ((0.0, 1.0), "y", p.line))
+            for k, (d, name, col) in enumerate(axes):
+                L = 132.0
+                hot = rot and k == 0
+                out.append(line(cx - d[0] * L, cy + d[1] * L,
+                                cx + d[0] * L, cy - d[1] * L, pal=p,
+                                stroke=col, sw=1.8 if hot else 1.0,
+                                dash=None if hot else "3 4", step=st))
+                out.append(txt(cx + d[0] * (L + 12), cy - d[1] * (L + 12) + 4,
+                               name, size=12.5, mono=True, pal=p,
+                               fill=col if hot else p.ink3, step=st))
+
+            for (x, y), c in zip(raw, lab):
+                out.append(circle(cx + x * S, cy - y * S, 6.5, pal=p,
+                                  fill=p.ink if c else p.fill,
+                                  stroke=p.ink, sw=1.5, step=st))
+
+            out.append(txt(cx, 404, sub, size=11.5, pal=p, fill=p.ink3, step=st))
+
+        out.append(txt(width / 2, height - 18,
+                       "The points are at the same pixel in all three panels. "
+                       "No model got smarter \u2014 the data got written down better.",
+                       size=13.5, weight=600, pal=p, fill=p.accent, step=3))
+        return svg(width, height, "".join(out), pal=p, steps=3,
+                   sim_label="panel")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)

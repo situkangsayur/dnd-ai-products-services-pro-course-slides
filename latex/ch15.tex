@@ -490,6 +490,11 @@ The photos themselves --- what you actually retrieve. In attention: the projecte
 \begin{iband}[signal]
 By projecting query and key differently, one head might learn to match the \textbf{subject} of the source sentence, while another attends to \textbf{punctuation}.
 \end{iband}
+\end{frame}
+
+\framekicker{Section 15.3.1 $\cdot$ refinement 2}
+\begin{frame}[shrink=25]{Several heads, then one projection}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The heads do not vote and they do not average. Each writes into \textbf{its own slice} of the output vector, the slices are concatenated, and one dense layer afterwards is what decides how to combine them --- which is why the combination is learned rather than fixed.\par}\vskip 4pt
 \begin{center}
 \includegraphics[width=0.92\linewidth,height=0.74\textheight,keepaspectratio]{figs/ch15-multihead.tex.pdf}
 \end{center}
@@ -977,6 +982,7 @@ The first position in the final encoder layer can attend to \textbf{every} other
 
 \framekicker{Section 15.4.4 $\cdot$ the scoreboard}
 \begin{frame}[shrink=25]{What the last two chapters bought, in one table}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Four models, one dataset. Read the third column with the second: the accuracy climbs by four points and the cost by about four \textbf{orders of magnitude}.\par}\vskip 4pt
 \begin{itable}{>{\raggedright\arraybackslash}p{0.376\textwidth}>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.3196\textwidth}}
 \thead{Model} & \thead{IMDb test accuracy} & \thead{Cost} \\ \midrule
 Bigram bag-of-words (chapter 14) & $\approx$ 89\% & seconds, on a CPU \\
@@ -984,6 +990,10 @@ Sequence model with pretrained embeddings & $\approx$ 90\% & minutes, one GPU \\
 \textbf{RoBERTa base}, fine-tuned 1 epoch & \textbf{93.7\%} & 124 M params, one GPU-hour \\
 RoBERTa large, fine-tuned & \textbf{> 95\%} & 300 M params \\
 \end{itable}
+\end{frame}
+
+\framekicker{Section 15.5}
+\begin{frame}[shrink=25]{\ldots{}and where that accuracy actually came from}
 \begin{center}
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/ch15-finetune.tex.pdf}
 \end{center}

@@ -175,7 +175,13 @@ MEASURE = r"""
       title: (s.querySelector('h1,h2') || {}).textContent?.slice(0, 60) || '',
       overflow_y: Math.round(contentH - availH),
       overflow_x: Math.round(maxW - availW),
-      scroll: s.scrollHeight - s.clientHeight,
+      // NOT scrollHeight: a CSS transform does not change layout, so the
+      // scroll box still reports the pre-shrink height and every fitted slide
+      // looks broken. The fit pass sets .overflowing on the only slides that
+      // genuinely do not fit -- those still too tall at MIN_SCALE.
+      unfittable: s.classList.contains('overflowing') ? 1 : 0,
+      fit: +(getComputedStyle(s.querySelector('.sfit')).transform
+             .match(/matrix\(([\d.]+)/)?.[1] ?? 1),
       overlaps, furnitureHit,
     });
   }
@@ -184,23 +190,47 @@ MEASURE = r"""
 """
 
 def audit(url):
+    """Measure one deck, and refuse to call an empty answer a clean one.
+
+    A fixed sleep after navigate was enough for one deck and not enough for
+    twenty-two in a row: the sweep came back with an entry per deck and zero
+    slides in each, and every total read as zero. An empty measurement is a
+    failure to measure, not a pass.
+    """
     ws.call("Page.navigate", {"url": url})
-    time.sleep(0.9)
+    for _ in range(60):
+        time.sleep(0.25)
+        r = ws.call("Runtime.evaluate",
+                    {"expression": "document.querySelectorAll('.slide').length",
+                     "returnByValue": True})
+        if (r["result"].get("value") or 0) > 0:
+            break
+    else:
+        raise RuntimeError("no slides in the DOM after 15s: " + url)
+    ws.call("Runtime.evaluate",
+            {"expression": "document.fonts.ready", "awaitPromise": True})
+    time.sleep(0.4)
     r = ws.call("Runtime.evaluate",
                 {"expression": MEASURE, "returnByValue": True,
                  "awaitPromise": True})
-    return r["result"].get("value") or []
+    out = r["result"].get("value") or []
+    if not out:
+        raise RuntimeError("measured zero slides: " + url)
+    return out
 
 with urllib.request.urlopen(f"{BASE}/slides/decks.json", timeout=5) as f:
     manifest = json.load(f)
 ids = DECKS or [d["id"] for d in manifest["decks"]]
 
-report = {}
+report, failed = {}, []
 for did in ids:
     try:
         report[did] = audit(f"{BASE}/slides/{did}/index.html")
     except Exception as e:
         report[did] = [{"error": str(e)}]
+        failed.append(did)
 
 print(json.dumps(report))
+if failed:
+    print("MEASUREMENT FAILED for: " + ", ".join(failed), file=sys.stderr)
 proc.terminate()

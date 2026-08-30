@@ -487,6 +487,17 @@ model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"]
                     n=2, label="bigram",
                     cap="Every adjacent pair becomes a token of its own — and each pair "
                         "shares a word with the next."),
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 14.4.2",
+            "title": "…and it is one argument in the layer",
+            "blocks": [
+                {"t": "p", "md": "Everything the previous slide drew is reached by changing "
+                                 "a single keyword. `ngrams=2` keeps the unigrams **and** "
+                                 "adds every adjacent pair."},
                 {"t": "code", "lang": "python", "file": "listing — bigram encoding",
                  "src": """text_vectorization = layers.TextVectorization(
     ngrams=2,                   # unigrams AND bigrams

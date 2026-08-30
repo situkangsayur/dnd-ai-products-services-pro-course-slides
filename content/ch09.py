@@ -13,7 +13,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
-from diagrams import depth_vs_width  # noqa: E402
+from diagrams import depth_vs_width, residual  # noqa: E402
 
 
 MMD_MHR = """
@@ -24,16 +24,6 @@ flowchart TB
   R["<b>Reuse</b><br/>use the same module<br/>in several places"]
   S["A system you can<br/>reason about"]
   C --> M --> H --> R --> S
-"""
-
-MMD_RESIDUAL = """
-flowchart TB
-  I["Input"]
-  B["Block<br/><small>may be destructive or noisy</small>"]
-  A(("+"))
-  O["Output"]
-  I --> B --> A --> O
-  I -- "residual connection" --> A
 """
 
 MMD_VANISH = """
@@ -313,12 +303,12 @@ DECK = {
             "kicker": "Section 9.2",
             "title": "A residual connection is an information shortcut",
             "blocks": [
-                {"t": "mmd", "id": "ch09-residual", "src": MMD_RESIDUAL,
-                 "cap": "Figure 9.3 — add the input of a block back to its output."},
-                {"t": "p", "md": "The shortcut routes around destructive or noisy blocks — "
-                                 "those containing ReLU activations or dropout — so gradient "
-                                 "information from early layers can propagate noiselessly. "
-                                 "Introduced in 2015 with **ResNet** (He et al., Microsoft)."},
+                residual("ch09-residual", depth=5,
+                         cap="Figure 9.3 — the same five blocks, with and without the "
+                             "shortcut, and the two gradients they produce."),
+                {"t": "p", "md": "Same blocks, same derivatives — and the gradient reaching "
+                                 "block 1 is hundreds of times larger. Introduced in 2015 "
+                                 "with **ResNet** (He et al., Microsoft)."},
             ],
         },
 

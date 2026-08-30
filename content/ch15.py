@@ -1259,6 +1259,19 @@ parameterized_attention(query=target, key=source, value=source)"""},
                 {"t": "band", "md": "By projecting query and key differently, one head might "
                                     "learn to match the **subject** of the source sentence, "
                                     "while another attends to **punctuation**."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 15.3.1 · refinement 2",
+            "title": "Several heads, then one projection",
+            "blocks": [
+                {"t": "p", "md": "The heads do not vote and they do not average. Each writes "
+                                 "into **its own slice** of the output vector, the slices are "
+                                 "concatenated, and one dense layer afterwards is what decides "
+                                 "how to combine them — which is why the combination is learned "
+                                 "rather than fixed."},
                 {"t": "mmd", "id": "ch15-multihead", "src": MMD_MULTIHEAD,
                  # A fan of four heads between two single nodes is squarish
                  # whichever way round it is drawn — neither orientation wins,
@@ -2298,6 +2311,9 @@ classifier.fit(
             "kicker": "Section 15.4.4 · the scoreboard",
             "title": "What the last two chapters bought, in one table",
             "blocks": [
+                {"t": "p", "md": "Four models, one dataset. Read the third column with the "
+                                 "second: the accuracy climbs by four points and the cost by "
+                                 "about four **orders of magnitude**."},
                 {"t": "table",
                  "head": ["Model", "IMDb test accuracy", "Cost"],
                  "widths": [40, 26, 34],
@@ -2307,6 +2323,14 @@ classifier.fit(
                      ["**RoBERTa base**, fine-tuned 1 epoch", "**93.7%**", "124 M params, one GPU-hour"],
                      ["RoBERTa large, fine-tuned", "**> 95%**", "300 M params"],
                  ]},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 15.5",
+            "title": "…and where that accuracy actually came from",
+            "blocks": [
                 {"t": "mmd", "id": "ch15-finetune", "src": MMD_FINETUNE,
                  "cap": "Where the accuracy actually came from: months of unlabelled "
                         "pretraining, then one epoch on 20,000 labelled reviews."},

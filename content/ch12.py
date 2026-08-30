@@ -617,7 +617,32 @@ def intersection(box1, box2):
     bottom = ops.maximum(cy1 - h1 / 2, cy2 - h2 / 2)
     right  = ops.minimum(cx1 + w1 / 2, cx2 + w2 / 2)
     top    = ops.minimum(cy1 + h1 / 2, cy2 + h2 / 2)
-    return ops.maximum(0.0, right - left) * ops.maximum(0.0, top - bottom)"""},
+    return ops.maximum(0.0, right - left) * ops.maximum(0.0, top - bottom)""",
+                 "run": [
+                     {"line": 7, "note": "Two boxes, centre-width-height. Box 1 is "
+                                         "the prediction.",
+                      "vars": {"cx1,cy1": "5.0, 5.0", "w1,h1": "4.0, 4.0"}},
+                     {"line": 8, "note": "Box 2 is the ground truth, offset to the "
+                                         "upper right.",
+                      "vars": {"cx2,cy2": "6.0, 6.0", "w2,h2": "4.0, 4.0"}},
+                     {"line": 9, "note": "The intersection's left edge is the "
+                                         "**rightmost** of the two left edges: "
+                                         "max(3, 4).",
+                      "vars": {"left": "4.0"}},
+                     {"line": 11, "note": "…and its right edge is the leftmost of "
+                                          "the two right edges: min(7, 8). Same "
+                                          "trick, mirrored.",
+                      "vars": {"right": "7.0"}},
+                     {"line": 13, "note": "3 × 3 = 9. The `maximum(0.0, …)` is what "
+                                          "makes disjoint boxes score zero instead "
+                                          "of a negative area — try cx2 = 20.",
+                      "vars": {"width": "3.0", "height": "3.0",
+                               "intersection": "9.0"}},
+                     {"line": 13, "note": "Union = 16 + 16 − 9 = 23, so IoU = 9/23 "
+                                          "= 0.39. Below the 0.5 threshold: this "
+                                          "prediction would not count as a match.",
+                      "vars": {"union": "23.0", "IoU": "0.391"}},
+                 ]},
                 {"t": "band",
                  "md": "The `ops.maximum(0.0, ...)` at the end is what handles **boxes that "
                        "do not overlap at all**: a negative width would otherwise produce "
