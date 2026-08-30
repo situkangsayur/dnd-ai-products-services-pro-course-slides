@@ -1,0 +1,9 @@
+
+flowchart TB
+  Q["How much will this change,<br/>and who maintains it?"]
+  N["<b>No-code / low-code</b><br/><small>n8n, Dify, Flowise, Langflow,<br/>Make, Power Automate,<br/>Coze, Zapier Agents</small>"]
+  C["<b>Code</b><br/><small>SDK + your own repo</small>"]
+  NR["Fast to a demo.<br/>Hard to test, version,<br/>review, or audit."]
+  CR["Slower to start.<br/>Diffable, testable,<br/>auditable, portable."]
+  Q --> N --> NR
+  Q --> C --> CR

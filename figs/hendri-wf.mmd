@@ -1,0 +1,15 @@
+
+flowchart TB
+  P1["<b>1. Prompt chaining</b><br/><small>step feeds the next;<br/>gate between them</small>"]
+  P2["<b>2. Routing</b><br/><small>classify, then send to a<br/>specialised path</small>"]
+  P3["<b>3. Parallelisation</b><br/><small>sectioning, or voting<br/>for confidence</small>"]
+  P4["<b>4. Orchestrator-workers</b><br/><small>central model splits and<br/>delegates dynamically</small>"]
+  P5["<b>5. Evaluator-optimiser</b><br/><small>one generates, one critiques,<br/>loop until good</small>"]
+  W["<b>Workflows</b><br/><small>predefined code paths</small>"]
+  AG["<b>Agents</b><br/><small>the model directs itself</small>"]
+  W --> P1
+  W --> P2
+  W --> P3
+  W --> P4
+  W --> P5
+  P5 -. "add open-ended tool choice" .-> AG

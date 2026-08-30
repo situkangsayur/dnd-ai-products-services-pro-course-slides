@@ -52,6 +52,27 @@
 \RequirePackage[scaled=0.86]{FiraMono}
 \RequirePackage[T1]{fontenc}
 \RequirePackage[utf8]{inputenc}
+
+% Symbols an author will reasonably type into prose. inputenc knows only the
+% ones some loaded font package happens to declare -- U+2192 arrives via the
+% text fonts, U+2194 does not -- so an em-dash-adjacent character can abort the
+% whole build. Declare the set explicitly instead of discovering the gaps one
+% failed compile at a time. These are text-mode substitutions: they must work
+% inside a table cell and a heading, not only inside $...$.
+\DeclareUnicodeCharacter{2190}{\ensuremath{\leftarrow}}
+\DeclareUnicodeCharacter{2191}{\ensuremath{\uparrow}}
+\DeclareUnicodeCharacter{2192}{\ensuremath{\rightarrow}}
+\DeclareUnicodeCharacter{2193}{\ensuremath{\downarrow}}
+\DeclareUnicodeCharacter{2194}{\ensuremath{\leftrightarrow}}
+\DeclareUnicodeCharacter{21D2}{\ensuremath{\Rightarrow}}
+\DeclareUnicodeCharacter{21D4}{\ensuremath{\Leftrightarrow}}
+\DeclareUnicodeCharacter{2260}{\ensuremath{\neq}}
+\DeclareUnicodeCharacter{2264}{\ensuremath{\leq}}
+\DeclareUnicodeCharacter{2265}{\ensuremath{\geq}}
+\DeclareUnicodeCharacter{2248}{\ensuremath{\approx}}
+\DeclareUnicodeCharacter{00D7}{\ensuremath{\times}}
+\DeclareUnicodeCharacter{2212}{\ensuremath{-}}
+\DeclareUnicodeCharacter{221E}{\ensuremath{\infty}}
 \RequirePackage{hyperref}
 
 \usetikzlibrary{calc,positioning,arrows.meta,shapes.geometric,fit,backgrounds,

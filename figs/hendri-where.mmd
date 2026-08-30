@@ -1,0 +1,8 @@
+
+flowchart LR
+  A["<b>Topic 3</b><br/>Deep learning<br/><small>ch. 1-20</small>"]
+  B["<b>Topic 4 - Viny</b><br/>LLM<br/><small>fine-tuning, RAG,<br/>re-rankers, guardrails</small>"]
+  C["<b>Topic 6 - this module</b><br/>Agentic AI<br/><small>tools, autonomy,<br/>interfaces, compliance</small>"]
+  A --> B --> C
+  B -. "a model that answers" .-> C
+  C -. "a system that acts" .-> D["Production"]

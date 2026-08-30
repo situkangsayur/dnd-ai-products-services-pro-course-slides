@@ -1,7 +1,9 @@
 
-flowchart LR
-  L0["<b>L0</b><br/>Assisted<br/><small>a human does the work,<br/>the model drafts</small>"]
-  L1["<b>L1</b><br/>Workflow<br/><small>fixed steps, model in<br/>some of them</small>"]
-  L2["<b>L2</b><br/>Supervised agent<br/><small>agent acts, human<br/>approves each write</small>"]
-  L3["<b>L3</b><br/>Bounded autonomy<br/><small>agent acts alone within<br/>a defined blast radius</small>"]
-  L0 --> L1 --> L2 --> L3
+flowchart TB
+  M1["<b>Minimum</b><br/><small>model + tools + a loop<br/>+ one exit condition</small>"]
+  M2["<b>Best practice</b><br/><small>+ budgets, tracing, evals,<br/>guardrails, approval gate</small>"]
+  M3["<b>Production ready</b><br/><small>+ identity, audit trail, DR,<br/>cost control, compliance,<br/>on-call, rollback</small>"]
+  M1 --> M2 --> M3
+  M1 -. "a demo" .-> D1["fine for a pilot"]
+  M2 -. "an internal tool" .-> D2["fine for staff"]
+  M3 -. "a regulated product" .-> D3["fine for customers"]

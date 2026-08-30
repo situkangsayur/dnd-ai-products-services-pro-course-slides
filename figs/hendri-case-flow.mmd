@@ -1,0 +1,11 @@
+
+flowchart TB
+  S1["<b>1.</b> Officer photographs the<br/>application in the field"]
+  S2["<b>2.</b> Agent pulls customer and<br/>transaction data<br/><small>REST API, via MCP</small>"]
+  S3["<b>3.</b> Agent runs the analysis<br/><small>SQL over 12 months</small>"]
+  S4["<b>4.</b> Agent calls the credit model<br/><small>classical ML, returns a score<br/>and the reason codes</small>"]
+  S5["<b>5.</b> Agent retrieves the policy<br/><small>which rules apply to this case</small>"]
+  S6["<b>6.</b> Agent drafts a recommendation<br/><small>with every figure cited</small>"]
+  S7["<b>7.</b> HUMAN decides<br/><small>the agent never approves credit</small>"]
+  S8["<b>8.</b> Trace written to the audit log"]
+  S1 --> S2 --> S3 --> S4 --> S5 --> S6 --> S7 --> S8

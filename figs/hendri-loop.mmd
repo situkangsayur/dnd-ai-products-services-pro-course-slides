@@ -3,8 +3,8 @@ flowchart TB
   G["Goal or user request"]
   P["<b>Plan</b><br/><small>what should happen next?</small>"]
   T["<b>Act</b><br/><small>call a tool</small>"]
-  O["<b>Observe</b><br/><small>the tool result enters<br/>the context</small>"]
-  C["<b>Check</b><br/><small>is the goal met?<br/>is the budget spent?</small>"]
+  O["<b>Observe</b><br/><small>the result enters<br/>the context</small>"]
+  C["<b>Check</b><br/><small>goal met? budget spent?</small>"]
   D["Answer, or hand off<br/>to a human"]
   G --> P --> T --> O --> C
   C -- "not yet" --> P

@@ -1,0 +1,22 @@
+
+flowchart TB
+  APP["<b>Android app</b><br/><small>field officer</small>"]
+  GW["<b>API gateway</b><br/><small>authn, rate limit, WAF</small>"]
+  ORCH["<b>Agent service</b><br/><small>loop, budgets, guardrails</small>"]
+  MCP["<b>MCP servers</b>"]
+  T1["Customer REST API<br/><small>demo service</small>"]
+  T2["Credit scoring<br/><small>classical ML, not an LLM</small>"]
+  T3["Analytics<br/><small>SQL over transactions</small>"]
+  T4["Policy retrieval<br/><small>regulation corpus</small>"]
+  LLM["Model provider"]
+  OBS["<b>Traces, evals, audit log</b>"]
+  HUM["<b>Approval queue</b><br/><small>human decides the credit</small>"]
+  APP --> GW --> ORCH
+  ORCH --> LLM
+  ORCH --> MCP
+  MCP --> T1
+  MCP --> T2
+  MCP --> T3
+  MCP --> T4
+  ORCH --> OBS
+  ORCH --> HUM

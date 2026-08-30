@@ -4,10 +4,10 @@
 \usepackage{itbpro}
 
 \coursetitle{Agentic AI}
-\coursesubtitle{What you build around a language model --- and the more useful question of when you should not.}
+\coursesubtitle{From the textbook definition of an agent to a system a regulator will accept --- what to build, what to buy, and when not to build an agent at all.}
 \coursekicker{Module}
 \coursesource{Module material for Designing and Building AI Products and Services}
-\courseduration{3 hours (2 sessions)}
+\courseduration{6 hours (4 sessions)}
 \coursepresenter{Hendri Karisma, M.T.}{Teaching Assistant}
 \coursebrand{AI for Professional \textperiodcentered\ ITB}
 
@@ -22,31 +22,101 @@
 \begin{frame}[shrink=25]{Session Objectives}
 \leadpar{By the end of this session, participants can:}
 \begin{isteps}
-\item Distinguish \textbf{AI, AI workflow, AI agent, agentic system, and multi-agent system} using one operational test.
-\item Describe the \textbf{agent loop} --- plan, act, observe, check --- and name what terminates it.
-\item Design a \textbf{tool} properly: schema, description, validation, and the fact that only your code touches a real system.
-\item Choose between the \textbf{four kinds of memory}, and say which problem each one solves.
-\item Lay out a \textbf{tech stack} across model, orchestration, tools, memory, guardrails, and observability.
-\item Apply a \textbf{three-question test} before splitting a system into multiple agents.
-\item Build an \textbf{evaluation harness} for a non-deterministic system, and explain why traces come first.
-\item Place a proposed deployment on the \textbf{autonomy ladder} and justify the level chosen.
+\item Trace the word \textit{agent} from \textbf{Russell \& Norvig} to its current use, and say precisely what has and has not changed.
+\item Apply one \textbf{operational test} to decide whether a given system is a workflow or an agent --- and why most are workflows.
+\item Name the \textbf{five workflow patterns} and the point at which each stops being enough.
+\item Specify the components of an agentic system at three levels: \textbf{minimum, best practice, production ready}.
+\item Choose a \textbf{tech stack} across easy / medium / production tiers, commercial and open source, and justify it on properties you can verify.
+\item Judge \textbf{no-code platforms} against code on the four things that actually differ.
+\item Design both interfaces: \textbf{machine-to-machine} (MCP, A2A, REST, events) and \textbf{human-to-machine} (approval, escalation, audit).
+\item Map a deployment against \textbf{UU PDP, OJK, ISO/IEC 27001:2022 and 27701:2025}, and produce the evidence an auditor asks for.
+\item Produce a \textbf{system design and a deployment design}, including where the data is allowed to be.
+\item Walk one end-to-end case: an Android app, a REST service, a classical ML model behind MCP, and a human who makes the decision.
 \end{isteps}
 
 \vskip 6pt
 \vskip 4pt
 \reslink{Site}{Course home}{../../index.html}
 \reslink{Repo}{ai-agentic-demo --- single-agent and multi-agent cases}{https://github.com/situkangsayur/ai-agentic-demo}
+\reslink{Book}{Verified reference list (books, papers, standards, regulation)}{https://github.com/situkangsayur/dnd-ai-products-services-pro-course-slides/blob/main/references/REFERENCES.md}
+\reslink{Paper}{OJK --- Tata Kelola Kecerdasan Artifisial Perbankan Indonesia (2025)}{https://ojk.go.id/id/Publikasi/Roadmap-dan-Pedoman/Perbankan/Pages/Tata-Kelola-Kecerdasan-Artifisial-Perbankan-Indonesia.aspx}
 \vskip 2pt
 \end{frame}
 
-\coursesection{01}{What the words mean}{Five terms that are used interchangeably and should not be.}
+\coursesection{01}{Where this module sits}{The LLM module ended with a model that answers. This one is about a system that acts.}
 
-\framekicker{Setting up}
-\begin{frame}[shrink=25]{This module sits on top of chapter 16}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Chapter 16 gave us a language model: a system that, given a sequence, produces a plausible continuation. It also gave us the honest limits --- hallucination, prompt sensitivity, no adaptation to genuine novelty.\par}\vskip 4pt
-\leadpar{This module asks a different question: \textbf{given such a model, what do you build around it} so that it can affect the world rather than only describe it?}
+\framekicker{Positioning}
+\begin{frame}[shrink=25]{This continues directly from the LLM module}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Viny's module ends with a model that has been \textbf{fine-tuned}, given \textbf{retrieval}, re-ranked, and wrapped in \textbf{guardrails}. It answers well.\par}\vskip 4pt
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-where.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Answering is not acting. Everything in this module is about the gap between the two.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Nothing here makes the model more capable. Everything here is about \textbf{what the model is connected to}, and about \hilite{what happens when it is wrong}.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Positioning}
+\begin{frame}[shrink=25]{What you already have, and what is still missing}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.47\textwidth}>{\raggedright\arraybackslash}p{0.47\textwidth}}
+\thead{From the LLM module} & \thead{Still missing} \\ \midrule
+A model tuned to your domain & A way for it to \textbf{do} anything \\
+Retrieval over your documents & Retrieval as a \textbf{choice the model makes}, not a fixed step \\
+Guardrails on input and output & A guardrail on the \textbf{action} --- the one that moves money \\
+A good answer & A record of \textbf{how} it got there, that an auditor accepts \\
+\end{itable}
 \begin{iband}[signal]
-Nothing in this module makes the model more capable. Everything in it is about \textbf{what the model is connected to}, and about \hilite{what happens when it is wrong}
+The last row is the one that decides whether any of this reaches production in a regulated institution.
+\end{iband}
+\end{frame}
+
+\coursesection{02}{What an agent is}{The word is older than the hype, and the old definition is the useful one.}
+
+\framekicker{Russell \& Norvig, ch. 2}
+\begin{frame}[shrink=25]{The definition that predates all of this}
+\begin{iquote}
+\quotetext{An \textbf{agent} is anything that can be viewed as perceiving its environment through \textbf{sensors} and acting upon that environment through \textbf{actuators}.}\quotecite{Russell \& Norvig, Artificial Intelligence: A Modern Approach, 4th ed., ch. 2}
+\end{iquote}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-rn.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The agent function maps a percept history to an action. Nothing in it requires a language model.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}A thermostat satisfies this. So does a list-sorting program. \textbf{The definition is broad on purpose} --- which is why it needs the next slide.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Russell \& Norvig, ch. 2}
+\begin{frame}[shrink=25]{PEAS: how to specify one before building it}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Before any architecture, the textbook asks for four things. It is still the fastest way to find out whether a proposed agent is well posed.\par}\vskip 4pt
+\begin{itable}{>{\raggedright\arraybackslash}p{0.1504\textwidth}>{\raggedright\arraybackslash}p{0.376\textwidth}>{\raggedright\arraybackslash}p{0.4136\textwidth}}
+\thead{} & \thead{Meaning} & \thead{Our credit case} \\ \midrule
+\textbf{P}erformance & How is success measured? & Correct recommendation rate; time to decision; zero unapproved writes \\
+\textbf{E}nvironment & What does it operate in? & Core banking APIs, transaction history, policy corpus, a field officer \\
+\textbf{A}ctuators & What can it do? & Read data, run a model, retrieve policy, \textbf{draft} --- never approve \\
+\textbf{S}ensors & What can it perceive? & Application form, customer record, 12 months of transactions \\
+\end{itable}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}If you cannot fill the P row with a number, you do not yet have a project --- you have an intention.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Russell \& Norvig, ch. 2}
+\begin{frame}[shrink=25]{Five agent types, and where LLM agents actually sit}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-rn-types.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The classical taxonomy, in increasing order of sophistication.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}A tool-calling LLM agent is \textbf{goal-based}: it searches over actions toward a stated goal. It is not \textbf{utility-based} --- it has no explicit utility function to trade off competing goals --- and it is not a \textbf{learning agent}: it does not improve its own components from experience within a run.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Definition}
+\begin{frame}[shrink=25]{The modern definition, stated carefully}
+\leadpar{An \textbf{agentic system} is one in which a model decides, at run time, which actions to take and in what order, against tools it did not choose and within limits it cannot change.}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Three clauses, each doing work:
+
+\textbf{decides at run time} --- separates it from a workflow.
+
+\textbf{tools it did not choose} --- you supply the action space; that is your control surface.
+
+\textbf{limits it cannot change} --- budgets, permissions and approval gates sit outside the model.\par}\vskip 4pt
+\begin{iband}[signal]
+Notice what is \textit{not} in the definition: intelligence, understanding, reasoning, or autonomy as a virtue. \hilite{Autonomy is a cost, purchased when flexibility is worth more than predictability.}
 \end{iband}
 \end{frame}
 
@@ -55,62 +125,97 @@ Nothing in this module makes the model more capable. Everything in it is about \
 \begin{center}
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-ladder.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Each step gives the model more say over what happens next.\par}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}These are used interchangeably in vendor material and they are not interchangeable. \textbf{The difference between them is a cost difference, a testability difference, and a risk difference} --- which makes it worth being precise.\par}\vskip 4pt
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Each step gives the model more say over what happens next --- and costs more to test.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Vendor material uses these interchangeably. They are not interchangeable: the difference between them is a \textbf{cost} difference, a \textbf{testability} difference, and a \textbf{risk} difference.\par}\vskip 4pt
 \end{frame}
 
+\framekicker{Which is which}
+\begin{frame}[shrink=25]{Agentic, or not? Six systems}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.3196\textwidth}>{\raggedright\arraybackslash}p{0.1316\textwidth}>{\raggedright\arraybackslash}p{0.4888\textwidth}}
+\thead{System} & \thead{Agentic?} & \thead{Why} \\ \midrule
+A chatbot answering from a RAG index & \textbf{No} & One fixed retrieve-then-answer path. No decision about what to do. \\
+A thermostat & \textbf{No} & An agent by the textbook definition, but a simple-reflex one; no goal, no choice. \\
+Document classifier routing to one of five queues & \textbf{No} & That is routing --- a workflow pattern. The path set is fixed. \\
+Model that decides whether to search, then which of nine tools & \textbf{Yes} & The control flow is chosen at run time from a supplied action space. \\
+Coding assistant that runs tests, reads failures, retries & \textbf{Yes} & Observes its own results and revises. This is the loop. \\
+n8n flow calling an LLM at step 3 of 7 & \textbf{No} & A workflow with a model in it. Nothing wrong with that --- it is usually the right answer. \\
+\end{itable}
+\end{frame}
+\note{Ask the room for their own system before showing the verdicts. Most people put their own work one rung higher than it belongs.}
+
+\coursesection{03}{Workflow versus agent}{One question separates them, and it decides your cost, your tests, and your risk.}
+
 \framekicker{The operational test}
-\begin{frame}[shrink=25]{One question separates a workflow from an agent}
+\begin{frame}[shrink=25]{Who decides the next step?}
 \begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-who-decides.tex.pdf}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-who.tex.pdf}
 \end{center}
 \vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Everything else --- the model, the tools, the prompt --- can be identical.\par}
 \begin{iband}[signal]
-\textbf{If you can draw the flowchart in advance and it does not change per request, you have a workflow.} Build it as a workflow. It will be cheaper, faster, and you will be able to test it.
+\textbf{If you can draw the flowchart in advance and it does not change per request, you have a workflow.} Build it as one. It will be cheaper, faster, and you will be able to test it.
 \end{iband}
 \end{frame}
-\note{Press on this. Most systems described as agents in industry talks are workflows with a model in one or two of the boxes, and that is a compliment, not a criticism.}
+\note{Press on this. Most systems described as agents in industry talks are workflows with a model in one or two boxes, and that is a compliment rather than a criticism.}
 
-\framekicker{Vocabulary}
-\begin{frame}[shrink=25]{The five, stated precisely}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.3572\textwidth}>{\raggedright\arraybackslash}p{0.376\textwidth}}
-\thead{Term} & \thead{Control flow} & \thead{What it is good for} \\ \midrule
-\textbf{AI} & None --- one call in, one answer out & Classification, extraction, summarization, generation. \\
-\textbf{AI workflow} & \textbf{Yours}, fixed at design time & Most business processes. Predictable cost and latency. \\
-\textbf{AI agent} & \textbf{The model's}, chosen per step from a tool set & Tasks whose shape is not known until you see the request. \\
-\textbf{Agentic system} & The model's, plus memory and planning across turns & Long-running work; tasks that resume. \\
-\textbf{Multi-agent} & A supervisor routing between specialists & Genuinely separable subtasks with different tools or permissions. \\
+\framekicker{Anthropic, Building Effective Agents (2024)}
+\begin{frame}[shrink=25]{Five workflow patterns before you reach for an agent}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-wf.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Workflows orchestrate models through predefined code paths; agents let the model direct itself.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The published guidance is explicit: \textbf{start simple, and add agency only when flexibility outweighs latency, cost, and compounding error.} It also warns against reaching for a framework first, because the abstraction hides the prompts and responses you need to debug.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{The five, in practice}
+\begin{frame}[shrink=25]{When each pattern is the right answer}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.3666\textwidth}>{\raggedright\arraybackslash}p{0.3666\textwidth}}
+\thead{Pattern} & \thead{Use it when} & \thead{Stops working when} \\ \midrule
+\textbf{Prompt chaining} & The task decomposes into fixed sequential steps & The steps depend on what earlier steps found \\
+\textbf{Routing} & Inputs fall into known categories needing different handling & A new category appears, or one input needs two paths \\
+\textbf{Parallelisation} & Subtasks are independent, or you want several votes & The subtasks need each other's results \\
+\textbf{Orchestrator-workers} & Subtasks cannot be known in advance & The orchestration itself becomes the hard part \\
+\textbf{Evaluator-optimiser} & You have a clear criterion and iteration helps & The evaluator is as unreliable as the generator \\
 \end{itable}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The last row is the one to be careful with: an LLM critiquing an LLM inherits the same blind spots. \textbf{Prefer a deterministic evaluator whenever the criterion can be expressed as code.}\par}\vskip 4pt
 \end{frame}
 
-\framekicker{A note on the hype}
-\begin{frame}[shrink=25]{Deflating this on purpose}
-\leadpar{\textbf{Most problems brought to "agents" are workflows.} Most multi-agent designs do not survive contact with a cost model.}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}That is not a reason to avoid the topic. It is the reason to learn it properly --- because the value in this area is almost entirely in \textbf{tools, memory, and evaluation}, and almost none of it is in prompts.\par}\vskip 4pt
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}A useful habit for the rest of this module: every time you see a technique, ask \textbf{what it would cost to run 10,000 times a day, and how you would know it was working}.\par}\vskip 4pt
+\framekicker{The economics}
+\begin{frame}[shrink=25]{What autonomy actually costs}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.3478\textwidth}>{\raggedright\arraybackslash}p{0.3478\textwidth}}
+\thead{} & \thead{Workflow} & \thead{Agent} \\ \midrule
+Model calls per request & Known --- 1 to 7 & \textbf{Unbounded until you bound it} \\
+Latency & Predictable & Varies by an order of magnitude \\
+Cost per request & Computable in advance & A distribution, with a long tail \\
+Testing & Ordinary integration tests & Evaluation sets, and they are never complete \\
+Failure mode & An exception you can catch & A plausible wrong answer \\
+Audit story & The code \textit{is} the flowchart & The trace is the only record \\
+\end{itable}
+\begin{iband}[amber]
+Every row favours the workflow. That is not an argument against agents --- it is the \textbf{price list}, and you should know it before you pay.
+\end{iband}
 \end{frame}
 
-\coursesection{02}{How an agent actually runs}{A loop, a tool schema, and something that makes it stop.}
+\coursesection{04}{How an agent runs}{A loop, a tool schema, four kinds of memory, and something that makes it stop.}
 
 \framekicker{The loop}
 \begin{frame}[shrink=25]{Plan, act, observe, check}
 \begin{center}
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-loop.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The whole of agent engineering is in what fills each of these boxes.\par}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Note the shape. This is \textbf{the generation loop from chapter 16 with a tool call in the middle} --- the model's output at one step becomes part of its input at the next. Everything chapter 15 said about that pattern still applies.\par}\vskip 4pt
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The whole of agent engineering is in what fills each box.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}This is the \textbf{ReAct} pattern --- reason, then act, then read the result and reason again. Published as an ICLR 2023 paper and now assumed by every framework in the field.\par}\vskip 4pt
 \end{frame}
 
 \framekicker{The loop $\cdot$ the part people forget}
-\begin{frame}[shrink=25]{What terminates it}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}A loop with no exit condition is a bug that bills by the token. Every agent needs \textbf{all} of the following, not one of them.\par}\vskip 4pt
+\begin{frame}[shrink=25]{Six ways it must be able to stop}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}A loop with no exit condition is a bug that bills by the token. An agent needs \textbf{all} of these, not one.\par}\vskip 4pt
 \begin{ibullets}
 \item \textbf{Goal satisfied} --- the model says it is done, and something else checks that claim.
 \item \textbf{Step budget} --- a hard maximum number of iterations.
 \item \textbf{Token or currency budget} --- a hard maximum spend per request.
-\item \textbf{Wall-clock timeout} --- because a hung tool is not the model's problem to solve.
-\item \textbf{Repetition detector} --- the same tool with the same arguments twice in a row is almost always a loop, not progress.
-\item \textbf{Escalation path} --- what happens when the budget is spent and the goal is not met. \textit{Silently returning a partial answer is the worst option.}
+\item \textbf{Wall-clock timeout} --- a hung tool is not the model's problem to solve.
+\item \textbf{Repetition detector} --- the same tool with the same arguments twice running is a loop, not progress.
+\item \textbf{Escalation path} --- what happens when the budget is spent and the goal is not met. \textit{Silently returning a partial answer is the worst option}, because it is indistinguishable from a complete one.
 \end{ibullets}
 \end{frame}
 
@@ -121,20 +226,20 @@ Nothing in this module makes the model more capable. Everything in it is about \
 \end{center}
 \vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The model emits a structured request. Your code decides whether to honour it.\par}
 \begin{iband}[signal]
-This is the single most important architectural fact in the module. \textbf{The model produces text describing an intention. Your code is the only thing that executes.} Every permission boundary you have lives in that gap.
+This is the most important architectural fact in the module. \textbf{The model produces text describing an intention. Your code is the only thing that executes.} Every permission boundary you have lives in that gap.
 \end{iband}
 \end{frame}
 
 \framekicker{Tools $\cdot$ design}
-\begin{frame}[shrink=25]{A tool is an API designed for a reader who forgets}
+\begin{frame}[shrink=25]{A tool is an API for a reader who forgets everything}
 \begin{isteps}
-\item \textbf{Name it for the task, not the system.} \inlinecode{find\_customer\_by\_email} beats \inlinecode{crm\_query\_v2}.
-\item \textbf{Write the description for the model, not for your team.} It is the only documentation the model gets, and it is read fresh every single call.
-\item \textbf{Type every parameter, and validate on arrival.} Assume the arguments are adversarial, because sometimes they will be.
-\item \textbf{Return errors as data, not exceptions.} A tool that returns \inlinecode{\{"error": "no customer with that email"\}} lets the agent recover; one that throws ends the run.
-\item \textbf{Keep results small.} Every byte a tool returns occupies context that the model then pays to read on every subsequent step.
+\item \textbf{Name it for the task, not the system.} \inlinecode{find\_customer\_by\_nik} beats \inlinecode{crm\_query\_v2}.
+\item \textbf{Write the description for the model.} It is the only documentation the model gets, and it is re-read on every call.
+\item \textbf{Type every parameter and validate on arrival.} Assume the arguments are adversarial, because sometimes they are.
+\item \textbf{Return errors as data, not exceptions.} \inlinecode{\{"error": "no customer with that NIK"\}} lets the agent recover; a thrown exception ends the run.
+\item \textbf{Keep results small.} Every byte a tool returns occupies context the model pays to re-read on every later step.
 \end{isteps}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Most \textit{prompt engineering} problems in agent systems are actually \textbf{tool description problems} wearing a disguise.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Most \textit{prompt engineering} problems in agent systems are \textbf{tool description problems} wearing a disguise.\par}\vskip 4pt
 \end{frame}
 
 \framekicker{Tools $\cdot$ the dangerous ones}
@@ -142,18 +247,18 @@ This is the single most important architectural fact in the module. \textbf{The 
 \begin{minipage}[t]{0.494\textwidth}
 \begin{icardgood}
 \cardh{Read tools}
-Search, retrieve, look up, calculate. A wrong call wastes tokens and returns something unhelpful. \textbf{Recoverable within the loop.}
+Search, retrieve, look up, score. A wrong call wastes tokens and returns something unhelpful. \textbf{Recoverable inside the loop.}
 \end{icardgood}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.494\textwidth}
 \begin{icardbad}
 \cardh{Write tools}
-Send, delete, transfer, approve, publish. A wrong call \textbf{changes the world}, and no amount of subsequent reasoning undoes it.
+Send, delete, transfer, approve, disburse. A wrong call \textbf{changes the world}, and no amount of later reasoning undoes it.
 \end{icardbad}
 \end{minipage}%
 \begin{iband}[amber]
-Treat these differently from day one. \textbf{Read tools can be autonomous; write tools should start behind an approval gate} and only move out of it with evidence from your evaluation harness.
+Treat them differently from day one. \textbf{Read tools can be autonomous; write tools start behind an approval gate} and only leave it with evidence from your evaluation harness. OWASP names the failure: \hilite{excessive agency}.
 \end{iband}
 \end{frame}
 
@@ -162,259 +267,883 @@ Treat these differently from day one. \textbf{Read tools can be autonomous; writ
 \begin{center}
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-memory.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Borrowed vocabulary from cognitive psychology, used loosely --- but the four categories map onto four different pieces of infrastructure.\par}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Four categories, four pieces of infrastructure.\par}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}The mistake to avoid is treating \textit{memory} as one thing and reaching for a vector database by reflex. \textbf{Most agents need working memory managed well and nothing else.}\par}\vskip 4pt
 \end{frame}
 
-\framekicker{Memory $\cdot$ the practical version}
-\begin{frame}[shrink=25]{What each one costs you}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.188\textwidth}>{\raggedright\arraybackslash}p{0.3572\textwidth}>{\raggedright\arraybackslash}p{0.3948\textwidth}}
-\thead{Kind} & \thead{Implementation} & \thead{The failure mode it introduces} \\ \midrule
-\textbf{Working} & The context window itself & Overflow. Old steps silently fall out and the agent forgets its goal. \\
-\textbf{Episodic} & A transcript store, keyed by session & Replaying stale state as if it were current. \\
-\textbf{Semantic} & Vector or keyword index over documents --- chapter 16's RAG & Retrieving confidently irrelevant context, which is worse than none. \\
-\textbf{Procedural} & Versioned prompts, tool sets, playbooks & Drift between what is deployed and what was evaluated. \\
+\framekicker{Memory $\cdot$ the operational view}
+\begin{frame}[shrink=25]{What each one costs you to run}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.1692\textwidth}>{\raggedright\arraybackslash}p{0.3572\textwidth}>{\raggedright\arraybackslash}p{0.4136\textwidth}}
+\thead{Kind} & \thead{Implementation} & \thead{The failure it introduces} \\ \midrule
+\textbf{Working} & The context window itself & Overflow --- old steps fall out and the agent forgets its goal \\
+\textbf{Episodic} & Transcript store, keyed by session & Replaying stale state as if it were current \\
+\textbf{Semantic} & Vector or keyword index --- the LLM module's RAG & Retrieving confidently irrelevant context, which is worse than none \\
+\textbf{Procedural} & Versioned prompts, tool sets, playbooks & Drift between what is deployed and what was evaluated \\
 \end{itable}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Each row is a system to operate. \textbf{Add them one at a time, and only when a specific observed failure demands it.}\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Each row is a system to operate, back up, and retain lawfully. \textbf{Add them one at a time, and only when a specific observed failure demands it.}\par}\vskip 4pt
 \end{frame}
 
-\coursesection{03}{The tech stack}{Six layers, and the two that teams skip.}
-
-\framekicker{Architecture}
-\begin{frame}[shrink=25]{Six layers}
-\begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-stack.tex.pdf}
-\end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Guardrails and observability are the two layers most first attempts leave out entirely.\par}
-\end{frame}
-
-\framekicker{Architecture $\cdot$ model layer}
-\begin{frame}[shrink=25]{Hosted or self-hosted, and what actually decides it}
-\begin{minipage}[t]{0.494\textwidth}
-\begin{icard}
-\cardh{Hosted API}
-Best capability per unit of effort, no infrastructure, immediate access to new models. \textbf{Cost scales linearly with usage}, and your data leaves your perimeter.
-\end{icard}
-\end{minipage}%
-\hfill
-\begin{minipage}[t]{0.494\textwidth}
-\begin{icard}
-\cardh{Self-hosted open weights}
-Data stays inside. Fixed infrastructure cost rather than per-token. \textbf{Lower capability at the same price point}, and you now operate a GPU fleet.
-\end{icard}
-\end{minipage}%
-\begin{iband}[amber]
-In practice the decision is rarely about capability or cost. It is about \textbf{where the data is allowed to be} --- which is a regulatory question, not an engineering one, and it should be answered before any code is written.
-\end{iband}
-\end{frame}
-\note{For participants from regulated industries this is the slide that matters most. The constraint is usually a specific clause in a specific rule, and the right move is to go and read it rather than assume.}
-
-\framekicker{Architecture $\cdot$ orchestration layer}
-\begin{frame}[shrink=25]{What the orchestrator is responsible for}
-\begin{ibullets}
-\item \textbf{Running the loop} --- and enforcing every one of the termination conditions from earlier.
-\item \textbf{Routing tool calls} to implementations, and validating arguments before they arrive.
-\item \textbf{Retrying} transient failures, with backoff, without re-charging the model for the same reasoning.
-\item \textbf{Accounting} --- tokens, currency, and latency, per request and per tool.
-\item \textbf{Emitting traces} for everything above.
-\end{ibullets}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Frameworks exist for all of this and are worth using. But note what the list contains: \textbf{queueing, retries, budgets, and telemetry.} This is ordinary distributed-systems work, and your existing platform team already knows how to do it.\par}\vskip 4pt
-\end{frame}
-
-\framekicker{Architecture $\cdot$ guardrails}
-\begin{frame}[shrink=25]{Three places to put a check}
-\begin{isteps}
-\item \textbf{On the input.} Reject or sanitise before the model sees it --- prompt injection carried in a retrieved document is the case people miss.
-\item \textbf{On the tool call.} Validate arguments, check permissions against the \textit{end user's} identity rather than the service's, and gate write tools behind approval.
-\item \textbf{On the output.} Schema-check structured output; scan free text for the categories your policy prohibits; verify claims against retrieved sources where you can.
-\end{isteps}
-\begin{iband}[signal]
-A guardrail that is itself a model call is a guardrail that can be wrong. \textbf{Prefer deterministic checks wherever the check can be expressed deterministically} --- schema validation, allow-lists, permission lookups.
-\end{iband}
-\end{frame}
-
-\framekicker{Architecture $\cdot$ the one people skip}
-\begin{frame}[shrink=25]{Observability is not optional here}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}In a deterministic system, a bug reproduces. In this one it does not --- the same request can take a different path on Tuesday than it did on Monday, with the same code and the same weights.\par}\vskip 4pt
-\leadpar{\textbf{A trace of every step, every tool call, and every token is the only debugging tool you have.} Build it first, not after the first incident.}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}The minimum useful trace records: the full prompt sent, the model and version, every tool call with arguments and results, token counts and cost per step, latency per step, and the termination reason. \hilite{If you cannot answer \textit{why did it do that} from your logs, you do not have logs.}\par}\vskip 4pt
-\end{frame}
-
-\coursesection{04}{Multi-agent, and when not to}{A supervisor, some specialists, and a three-question test.}
+\coursesection{05}{Single agent and multi-agent}{Three questions before you split, and an honest cost table.}
 
 \framekicker{Multi-agent}
 \begin{frame}[shrink=25]{The supervisor pattern}
-\begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-multiagent.tex.pdf}
-\end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Each specialist has its own tools, its own context, and its own instructions.\par}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}This is the pattern that appears in almost every multi-agent framework, under various names. The variations --- peer-to-peer messaging, hierarchies, debate --- are \textbf{elaborations of it, and each elaboration multiplies the cost.}\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}A supervisor decomposes the request, routes each part to a specialist with its \textbf{own tools and its own context}, and assembles the results.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}This is the pattern in almost every framework, under various names. The variations --- peer-to-peer messaging, hierarchies, debate --- are \textbf{elaborations of it, and each elaboration multiplies the cost}.\par}\vskip 4pt
+\begin{iband}[signal]
+Splitting for conceptual tidiness is the common mistake. Roles named \textit{Researcher}, \textit{Writer} and \textit{Critic} feel organised and typically cost three times one agent doing the same work with the same tools.
+\end{iband}
 \end{frame}
 
 \framekicker{Multi-agent $\cdot$ the test}
 \begin{frame}[shrink=25]{Three questions before you split}
-\begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-when-multi.tex.pdf}
-\end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont If none of the three is a yes, you want one agent with more tools.\par}
+\begin{isteps}
+\item Do the subtasks need \textbf{genuinely different tools or permissions}? Then splitting is a \textit{security boundary} --- the strongest reason there is.
+\item Can they run \textbf{in parallel}? Then the latency win is real, provided each subtask is slow enough to hide the coordination overhead.
+\item Would one context window \textbf{overflow} otherwise? Then splitting is a \textit{memory strategy} and the summaries are the compression.
+\end{isteps}
 \begin{iband}[signal]
-\textbf{Splitting for conceptual tidiness is the common mistake.} Roles named \textit{Researcher}, \textit{Writer}, and \textit{Critic} feel organised and typically cost three times as much as one agent doing the same work with the same tools.
+\textbf{If none of the three is a yes, you want one agent with more tools.} Cheaper, faster, and testable.
 \end{iband}
 \end{frame}
 
-\framekicker{Multi-agent $\cdot$ the honest arithmetic}
+\framekicker{Multi-agent $\cdot$ the arithmetic}
 \begin{frame}[shrink=25]{What each additional agent costs}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.6956\textwidth}}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2256\textwidth}>{\raggedright\arraybackslash}p{0.7144\textwidth}}
 \thead{Cost} & \thead{Why it grows} \\ \midrule
-\textbf{Tokens} & Every hand-off re-states context. A supervisor that summarises for three specialists pays for that summary three times, plus its own reasoning. \\
-\textbf{Latency} & Sequential hand-offs add up. Parallel ones only help if the subtasks are genuinely independent. \\
-\textbf{Failure surface} & Each agent can loop, drift, or hallucinate independently --- \textbf{and one specialist's wrong answer becomes another's trusted input.} \\
-\textbf{Evaluation} & You now need per-agent evals \textit{and} end-to-end evals, because a system that is right overall can be right for the wrong reasons. \\
+\textbf{Tokens} & Every hand-off restates context. A supervisor summarising for three specialists pays for that summary three times, plus its own reasoning. \\
+\textbf{Latency} & Sequential hand-offs add up. Parallel ones help only if the subtasks are genuinely independent. \\
+\textbf{Failure surface} & Each agent can loop, drift or hallucinate independently --- and \textbf{one specialist's wrong answer becomes another's trusted input}. \\
+\textbf{Evaluation} & Per-agent evals \textit{and} end-to-end evals, because a system can be right overall for the wrong reasons. \\
+\textbf{Audit} & Every hand-off is a data flow. In a regulated setting each one must be justified and logged. \\
 \end{itable}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}A finding worth carrying: decompose a task into five or six specialists and it is common for \textbf{only one or two to justify their existence} once the traces are read.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\hilite{Split on evidence, not on tidiness.}\par}\vskip 4pt
 \end{frame}
-\note{This is the slide to be blunt on. The room will have seen impressive multi-agent diagrams; almost none of them come with a cost table.}
 
 \framekicker{Multi-agent $\cdot$ when it does pay}
 \begin{frame}[shrink=25]{Three shapes where splitting is right}
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardgood}
 \cardh{Different permissions}
-One agent may read customer records; another may write to the ledger. \textbf{Splitting is how you keep those capabilities apart} --- a security boundary, not a stylistic one.
+One agent may read customer records; another may write to the ledger. Splitting is how those capabilities stay apart --- a \textbf{security boundary}, not a style choice.
 \end{icardgood}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardgood}
 \cardh{Genuine parallelism}
-Twenty documents to analyse independently. Fan out, collect, assemble. The latency win is real and the contexts do not interact.
+Twenty documents to analyse independently. Fan out, collect, assemble. The contexts never interact.
 \end{icardgood}
 \end{minipage}%
 \hfill
 \begin{minipage}[t]{0.3253\textwidth}
 \begin{icardgood}
 \cardh{Context that will not fit}
-A task whose inputs genuinely exceed the window. Splitting is a \textbf{memory strategy} here, and the supervisor's summaries are the compression.
+Inputs that genuinely exceed the window. Splitting is a \textbf{memory strategy}, and the supervisor's summaries are the compression.
 \end{icardgood}
+\end{minipage}%
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}In the credit case later in this module, exactly one of these applies --- and it is the first.\par}\vskip 4pt
+\end{frame}
+
+\coursesection{06}{Components, at three levels}{Minimum, best practice, production ready --- and the honest label for each.}
+
+\framekicker{Maturity}
+\begin{frame}[shrink=25]{Three levels, and what each is actually fit for}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-maturity.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The label on the right is the honest one. A demo is not an internal tool, and an internal tool is not a product.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The common failure is shipping a \textbf{minimum} system with \textbf{production} language attached to it. The components are the difference, and they are countable.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Level 1}
+\begin{frame}[shrink=25]{Minimum --- what makes it an agent at all}
+\begin{ibullets}
+\item \textbf{A model} with tool-calling.
+\item \textbf{A tool set} with typed, validated parameters.
+\item \textbf{A loop} that feeds results back in.
+\item \textbf{One exit condition} --- usually a step cap.
+\end{ibullets}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}That is roughly two hundred lines. It will demo well, and it will surprise you the first time a tool returns something unexpected.\par}\vskip 4pt
+\begin{iband}[amber]
+Fit for: \textbf{a pilot you watch while it runs.} Not fit for anything unattended.
+\end{iband}
+\end{frame}
+
+\framekicker{Level 2}
+\begin{frame}[shrink=25]{Best practice --- what makes it survivable}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.282\textwidth}>{\raggedright\arraybackslash}p{0.658\textwidth}}
+\thead{Component} & \thead{What it prevents} \\ \midrule
+\textbf{Budgets} (all six) & The loop that bills by the token \\
+\textbf{Tracing} & Being unable to answer \textit{why did it do that} \\
+\textbf{Evaluation sets} & Shipping a prompt change that quietly regresses \\
+\textbf{Guardrails} & Injection from retrieved content; secrets in the output \\
+\textbf{Approval gate on writes} & The irreversible action nobody authorised \\
+\textbf{Structured errors} & A run that ends instead of recovering \\
+\end{itable}
+\begin{iband}[signal]
+Fit for: \textbf{an internal tool used by trained staff} who can tell when it is wrong.
+\end{iband}
+\end{frame}
+
+\framekicker{Level 3}
+\begin{frame}[shrink=25]{Production ready --- what a regulator and an on-call rota require}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.3008\textwidth}>{\raggedright\arraybackslash}p{0.6392\textwidth}}
+\thead{Component} & \thead{Why it becomes mandatory} \\ \midrule
+\textbf{End-user identity propagation} & Permissions checked against the person, not the service account \\
+\textbf{Immutable audit trail} & The trace becomes evidence, so it must be tamper-evident and retained \\
+\textbf{Data classification and retention} & UU PDP: you must know what personal data went where, and delete it on schedule \\
+\textbf{Model registry and versioning} & Which model, which prompt, which tool set produced this decision \\
+\textbf{Cost control and quotas} & Per-tenant, not just global \\
+\textbf{Rollback} & Prompts and tool sets are releases; they need to go backwards \\
+\textbf{Incident runbook and on-call} & Someone has to own it at 2 a.m. \\
+\textbf{DR and residency} & Where it runs, and where it fails over to \\
+\end{itable}
+\end{frame}
+
+\framekicker{Architecture}
+\begin{frame}[shrink=25]{Seven layers, and the two that get skipped}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-stack.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Guardrails and observability are the two most first attempts leave out entirely; governance is the one regulated work adds.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Read the middle of that diagram carefully. \textbf{The orchestration layer is ordinary distributed-systems work} --- queueing, retries, budgets, telemetry --- and your existing platform team already knows how to do it.\par}\vskip 4pt
+\end{frame}
+
+\coursesection{07}{Tech stack}{Easy, medium, production --- commercial and open source, and what each tool is actually for.}
+
+\framekicker{Choosing}
+\begin{frame}[shrink=25]{Three tiers, and the question each answers}
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardgood}
+\cardh{Easy}
+\textit{Can this idea work at all?} Days to a demo. Hosted everything. Accept the lock-in; you are buying information, not building a system.
+\end{icardgood}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{Medium}
+\textit{Will this survive real users?} Weeks. Your own repo, an SDK, your own tools. Testable and diffable.
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardwarn}
+\cardh{Production}
+\textit{Will this survive an auditor?} Months. Identity, residency, audit trail, DR, cost control. The model is the small part.
+\end{icardwarn}
+\end{minipage}%
+\begin{iband}[signal]
+\textbf{Do not start at the third tier.} Most ideas die at the first, and the cheapest place to learn that an idea is wrong is where it costs days.
+\end{iband}
+\end{frame}
+
+\framekicker{Model layer}
+\begin{frame}[shrink=25]{Hosted or self-hosted, and what actually decides it}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.3666\textwidth}>{\raggedright\arraybackslash}p{0.3666\textwidth}}
+\thead{} & \thead{Hosted API} & \thead{Self-hosted open weights} \\ \midrule
+Examples & Anthropic Claude, OpenAI, Google Gemini, AWS Bedrock & Llama, Qwen, Mistral, Gemma --- on vLLM, Ollama, TGI \\
+Capability & Highest available, immediately & Lower at the same price point, closing \\
+Cost shape & Per token --- scales with usage & Fixed infrastructure --- scales with capacity \\
+Data & \textbf{Leaves your perimeter} & \textbf{Stays inside} \\
+Effort & An API key & You now operate a GPU fleet \\
+\end{itable}
+\begin{iband}[amber]
+In practice the decision is rarely capability or cost. It is \textbf{where the data is allowed to be} --- a regulatory question, answered before any code is written.
+\end{iband}
+\end{frame}
+
+\framekicker{Orchestration}
+\begin{frame}[shrink=25]{What each framework is actually for}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.376\textwidth}>{\raggedright\arraybackslash}p{0.3572\textwidth}}
+\thead{Tool} & \thead{What it does} & \thead{Trade-off} \\ \midrule
+\textbf{No framework} & You write the loop --- about 200 lines & Most control, most legible. Anthropic's own guidance recommends starting here. \\
+\textbf{LangGraph} & Graph-structured state machine over agent steps & Explicit control flow, persistence, human-in-the-loop. Concepts to learn. \\
+\textbf{OpenAI Agents SDK} & Lightweight loop, handoffs, guardrails & Simple; closest to the provider's own model behaviour. \\
+\textbf{CrewAI} & Role-based multi-agent teams & Fast to a multi-agent demo; encourages splitting before you have a reason. \\
+\textbf{AutoGen} & Conversational multi-agent, research lineage & Strong for experiments; a published architecture to argue with. \\
+\textbf{LlamaIndex} & Retrieval-first, then agents over it & Best when the problem is mostly documents. \\
+\end{itable}
+\end{frame}
+
+\framekicker{The rest of the stack}
+\begin{frame}[shrink=25]{One row per layer, with the open-source option named}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.1598\textwidth}>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.2538\textwidth}>{\raggedright\arraybackslash}p{0.282\textwidth}}
+\thead{Layer} & \thead{Commercial} & \thead{Open source} & \thead{What it is for} \\ \midrule
+Vector store & Pinecone, Weaviate Cloud & pgvector, Qdrant, Milvus & Semantic memory and RAG \\
+Tracing / evals & LangSmith, Braintrust, Langfuse Cloud & \textbf{Langfuse}, Phoenix, OpenLLMetry & The trace, and regression gates \\
+Gateway & Portkey, Kong AI & LiteLLM, Envoy AI Gateway & One endpoint, key rotation, quotas, failover \\
+Serving & Bedrock, Vertex, Azure AI & vLLM, TGI, Ollama & Running weights you host \\
+Guardrails & Azure AI Content Safety, Bedrock Guardrails & NeMo Guardrails, Guardrails AI & Input, output, topic control \\
+Workflow & Temporal Cloud, Step Functions & \textbf{Temporal}, Airflow, Prefect & Durable execution, retries, long-running state \\
+\end{itable}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The bolded ones are the two worth knowing regardless of budget: \textbf{Langfuse} because traces are non-negotiable, and \textbf{Temporal} because a long-running agent is a durable-execution problem before it is an AI problem.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Trade-offs, stated plainly}
+\begin{frame}[shrink=25]{Commercial against open source}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icard}
+\cardh{Commercial / managed}
+\textbf{For:} fastest to value, support contract, someone else is on call, compliance certifications you can point at.
+
+\textbf{Against:} per-seat or per-token cost that grows with success, data leaves your perimeter, migration cost rises with adoption.
+\end{icard}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icard}
+\cardh{Open source / self-hosted}
+\textbf{For:} data stays inside, no per-token cost, auditable end to end, no vendor can deprecate you.
+
+\textbf{Against:} you are the support contract, you are on call, and the certifications are now your evidence to produce.
+\end{icard}
+\end{minipage}%
+\begin{iband}[signal]
+For a regulated Indonesian institution the honest default is \textbf{hybrid}: managed model access through a gateway you control, everything stateful --- traces, vectors, documents, the ML models --- self-hosted inside the perimeter.
+\end{iband}
+\end{frame}
+
+\framekicker{No-code}
+\begin{frame}[shrink=25]{No-code platforms, and the four things that actually differ}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-nocode.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The question is not which is better. It is how much this will change, and who maintains it.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Worth naming so the room can evaluate them: \textbf{n8n, Dify, Flowise, Langflow, Coze, Make, Zapier Agents, Microsoft Power Automate / Copilot Studio, Google Vertex AI Agent Builder}, and the agent-builder features now inside most CRM suites.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{No-code $\cdot$ the honest comparison}
+\begin{frame}[shrink=25]{Where each one wins}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.3666\textwidth}>{\raggedright\arraybackslash}p{0.3666\textwidth}}
+\thead{} & \thead{No-code platform} & \thead{Code} \\ \midrule
+Time to demo & \textbf{Hours.} Genuinely. & Days \\
+Who can build it & \textbf{A business analyst} & An engineer \\
+Version control & A JSON export, if you are lucky & \textbf{Git, with reviewable diffs} \\
+Testing & Manual, mostly & \textbf{Automated, in CI} \\
+Audit evidence & Screenshots of a canvas & \textbf{Traces, commits, eval runs} \\
+Cost at scale & Per-run pricing that surprises you & Your own infrastructure \\
+\end{itable}
+\begin{iband}[amber]
+For a \textbf{regulated} deployment the audit row usually settles it. You cannot show an examiner a canvas and call it a change-control record.
+\end{iband}
+\end{frame}
+
+\framekicker{No-code $\cdot$ the useful answer}
+\begin{frame}[shrink=25]{Use both, for different phases}
+\begin{isteps}
+\item \textbf{Prototype in no-code.} Find out whether the workflow is even right, with the business owner in the room changing it live.
+\item \textbf{Write the evaluation set from the prototype.} The twenty real cases it got wrong are worth more than the prototype itself.
+\item \textbf{Rebuild the survivor in code}, against those evaluations, once you know the shape is stable.
+\item \textbf{Keep the no-code tool} for the genuinely low-risk automations that will never face an auditor.
+\end{isteps}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}This is not a compromise. Prototyping is a \textbf{different activity} from building, and using one tool for both is what makes prototypes accidentally become production.\par}\vskip 4pt
+\end{frame}
+
+\coursesection{08}{Interfaces}{Machine to machine, and human to machine. Both need designing.}
+
+\framekicker{Interfaces}
+\begin{frame}[shrink=25]{Two directions, four kinds each}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-interfaces.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The human column is the one that gets designed last and matters most in a regulated setting.\par}
+\end{frame}
+
+\framekicker{Machine to machine}
+\begin{frame}[shrink=25]{MCP and A2A do different jobs}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-mcp-a2a.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont MCP reaches inward to tools and data; A2A reaches across to other organisations' agents.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{MCP} --- introduced by Anthropic in November 2024, now under the Linux Foundation. JSON-RPC, modelled on the Language Server Protocol. The 2025-06-18 revision added structured tool output, elicitation, and classified MCP servers as OAuth \textbf{Resource Servers} with RFC 8707 resource indicators --- which is what makes it usable under a real identity model.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Machine to machine}
+\begin{frame}[shrink=25]{A2A, and why a standard mattered here}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{A2A} was created by Google and donated to the Linux Foundation in June 2025, with the project launched at Open Source Summit North America on 23 June 2025. It defines how agents from different vendors \textbf{discover each other, exchange messages, and coordinate tasks}.\par}\vskip 4pt
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.3666\textwidth}>{\raggedright\arraybackslash}p{0.3666\textwidth}}
+\thead{} & \thead{MCP} & \thead{A2A} \\ \midrule
+Direction & Agent $\rightarrow$ tools and data & Agent ↔ agent \\
+Boundary & \textbf{Inside} your system & \textbf{Across} organisations \\
+Analogy & A driver interface & A negotiation protocol \\
+In our case & Customer API, credit model, analytics, policy & Not used --- one institution, one agent \\
+\end{itable}
+\begin{iband}[signal]
+Do not adopt A2A because it exists. \textbf{It solves cross-organisational coordination}, and if you have one organisation you have added a protocol and bought nothing.
+\end{iband}
+\end{frame}
+
+\framekicker{Human to machine}
+\begin{frame}[shrink=25]{Four interfaces, and the one nobody designs}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icard}
+\cardh{Chat / assistant}
+The one everybody builds. Fine for exploration; a poor fit wherever the task has a fixed shape and a form would be faster.
+\end{icard}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardaccent}
+\cardh{Approval gate}
+Where a write tool waits. Must show \textbf{what} will happen, \textbf{on what evidence}, and offer a real decline. This is a product surface, not a dialog box.
+\end{icardaccent}
+\end{minipage}%
+
+
+\vskip 4pt
+
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardaccent}
+\cardh{Escalation}
+The hand-off nobody designs. Must carry what was already established so the human does not repeat the work --- and must come back.
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardaccent}
+\cardh{Audit review}
+Someone reads traces: sampled, plus every escalation. If the trace is unreadable by a human, it is not an audit trail.
+\end{icardaccent}
 \end{minipage}%
 \end{frame}
 
-\coursesection{05}{Evaluation and operation}{How you know it works, and what you do when it stops.}
-
-\framekicker{Evaluation}
-\begin{frame}[shrink=25]{You cannot test this the way you test code}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}The system is non-deterministic, the output space is open, and the correct answer is often a judgement call. Standard unit testing does not reach any of that.\par}\vskip 4pt
-\begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-eval.tex.pdf}
-\end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Traces first. Everything downstream is built on them.\par}
+\framekicker{Human to machine}
+\begin{frame}[shrink=25]{Designing the approval gate properly}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The gate is where an agentic system meets accountability, and a bad one is worse than none --- it manufactures consent.\par}\vskip 4pt
+\begin{ibullets}
+\item \textbf{State the action in the approver's language}, not the tool's. \textit{Credit IDR 250,000 to account acc-771}, not \inlinecode{post\_credit(...)}.
+\item \textbf{Show the evidence} the agent used, with links to the source records.
+\item \textbf{Show what it did not check.} An approver needs to know the boundary of the analysis.
+\item \textbf{Make decline as easy as approve}, and record the reason --- that is your best training data.
+\item \textbf{Never batch approvals by default.} Batching is how a gate becomes a rubber stamp.
+\end{ibullets}
 \end{frame}
 
-\framekicker{Evaluation $\cdot$ the three levels}
-\begin{frame}[shrink=25]{What each level catches}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.2256\textwidth}>{\raggedright\arraybackslash}p{0.376\textwidth}>{\raggedright\arraybackslash}p{0.3384\textwidth}}
-\thead{Level} & \thead{What it asserts} & \thead{What it misses} \\ \midrule
-\textbf{Unit evals} & Given this input, the right tool is called with the right arguments. & Whether the sequence of correct calls produces a useful outcome. \\
-\textbf{End-to-end evals} & Given this task, the final outcome matches a known good one. & \textit{Why} it succeeded --- a right answer for the wrong reason still passes. \\
-\textbf{Human review} & Whether the output is actually good, by a standard you cannot encode. & Coverage. It is sampled, so it finds classes of failure, not instances. \\
+\coursesection{09}{Regulation and compliance}{UU PDP, OJK, ISO/IEC 27001 and 27701 --- and a strategy for satisfying all of them at once.}
+
+\framekicker{The landscape}
+\begin{frame}[shrink=25]{Five instruments your system sits inside}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-reg.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont They overlap heavily. That is good news: one control usually satisfies several.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Everything on this and the following slides was read from the primary documents. The full citation list, with the PDFs where they are downloadable, is in \inlinecode{references/REFERENCES.md} in the slides repository.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{OJK $\cdot$ April 2025}
+\begin{frame}[shrink=25]{Tata Kelola Kecerdasan Artifisial Perbankan Indonesia}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Published by OJK on \textbf{29 April 2025}. Bilingual, and the single most directly relevant document for anyone deploying AI in an Indonesian bank.\par}\vskip 4pt
+\begin{itable}{>{\raggedright\arraybackslash}p{0.0752\textwidth}>{\raggedright\arraybackslash}p{0.8648\textwidth}}
+\thead{Chapter} & \thead{What it gives you} \\ \midrule
+1 & Background --- where AI already sits in Indonesian banking \\
+2 & \textbf{Risks and challenges} --- the risk register to start from \\
+3 & Regulation benchmark across countries --- EU, Singapore, US \\
+4 & \textbf{Guiding principles} --- the values every control maps back to \\
+5 & \textbf{Risk management and governance} --- roles and three lines \\
+6 & \textbf{Implementation guidance} --- the lifecycle, stage by stage \\
+7 & \textbf{Supervision and audit} --- what an examiner will ask for \\
 \end{itable}
 \begin{iband}[signal]
-Run all three \textbf{before every prompt change, every model upgrade, and every tool change}. In this domain a prompt edit is a code change with no type checker behind it.
+OJK positions it as a \textbf{minimum reference}, explicitly flexible as standards evolve. Read: it is a floor, not a ceiling.
+\end{iband}
+\end{frame}
+
+\framekicker{OJK $\cdot$ chapter 4}
+\begin{frame}[shrink=25]{The principles, read out of the document}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Two layers, and they come from different lineages --- worth knowing, because auditors from different backgrounds will use different vocabulary.\par}\vskip 4pt
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardaccent}
+\cardh{Four ethics principles}
+Respect for human autonomy $\cdot$ Prevention of harm $\cdot$ Fairness $\cdot$ Explicability.
+
+\textit{(EU High-Level Expert Group lineage.)}
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardaccent}
+\cardh{Nine governance principles}
+Proportionality and Do No Harm $\cdot$ Safety and Security $\cdot$ Right to Privacy and Data Protection $\cdot$ Adaptive and Collaborative Multi-Stakeholder Governance $\cdot$ Responsibility and Accountability $\cdot$ Transparency and Clarity $\cdot$ Human Supervision and Control $\cdot$ Sustainability $\cdot$ Awareness and Literacy.
+
+\textit{(UNESCO Recommendation lineage.)}
+\end{icardaccent}
+\end{minipage}%
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The document also benchmarks \textbf{MAS FEAT} (Singapore) and uses the \textbf{ISACA AI Audit Toolkit} and the \textbf{VCIO model} for its audit chapter.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{OJK $\cdot$ the ones already binding}
+\begin{frame}[shrink=25]{The AI guidance sits on top of existing obligations}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.3008\textwidth}>{\raggedright\arraybackslash}p{0.6392\textwidth}}
+\thead{Instrument} & \thead{What it already requires of you} \\ \midrule
+\textbf{POJK 11/POJK.03/2022} & Penyelenggaraan Teknologi Informasi oleh Bank Umum --- IT governance, risk management, third-party and cloud arrangements \\
+\textbf{SEOJK 29/SEOJK.03/2022} & Ketahanan dan Keamanan Siber --- cyber resilience and security \\
+\textbf{SEOJK 24/SEOJK.03/2023} & Digital maturity assessment for commercial banks \\
+\textbf{POJK 1/POJK.03/2019} & Internal audit function --- who has to be able to review this \\
+\textbf{POJK 3/2024} & Financial-sector technology innovation, including the sandbox \\
+\end{itable}
+\begin{iband}[signal]
+\textbf{Nothing in the AI guidance replaces these.} An agentic system is an IT system first: it inherits every obligation your core banking platform already carries.
+\end{iband}
+\end{frame}
+
+\framekicker{UU PDP $\cdot$ UU 27/2022}
+\begin{frame}[shrink=25]{What personal data protection means for an agent}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The law is general; the agentic specifics are where it bites. Five questions, each with an architectural answer.\par}\vskip 4pt
+\begin{itable}{>{\raggedright\arraybackslash}p{0.3384\textwidth}>{\raggedright\arraybackslash}p{0.6016\textwidth}}
+\thead{The question} & \thead{Where it lands in your design} \\ \midrule
+What is your \textbf{lawful basis}? & Decided per data class, before the tool is written \\
+Does personal data reach the \textbf{model provider}? & Redact at the tool boundary, or self-host. This is the decision that shapes the whole stack. \\
+Can you honour \textbf{erasure}? & Traces contain personal data. They need retention rules and a deletion path, like any other store. \\
+Can you explain an \textbf{automated decision}? & Reason codes from the model, plus the trace. This is why the credit model is classical ML, not an LLM. \\
+Where does it \textbf{cross a border}? & Every egress, including the model API call, is a transfer \\
+\end{itable}
+\end{frame}
+
+\framekicker{ISO/IEC 27001:2022 and 27701:2025}
+\begin{frame}[shrink=25]{One correction worth making now}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{ISO/IEC 27001:2022} is the information security management system your agentic deployment lives inside. Its Annex A controls are what an auditor will walk through.\par}\vskip 4pt
+\begin{iband}[amber]
+\textbf{ISO/IEC 27701 changed.} The second edition was published on \textbf{14 October 2025} and is now a \hilite{standalone management system standard}. The 2019 first edition was an \textit{extension} to 27001 and 27002 --- and a great deal of material still in circulation describes it that way.
+\end{iband}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Also worth knowing: \textbf{ISO/IEC 42001:2023} (AI management systems) and \textbf{ISO/IEC 23894:2023} (AI risk management guidance) are the AI-specific companions, and their vocabulary maps closely onto the \textbf{NIST AI RMF} Govern / Map / Measure / Manage structure.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Strategy}
+\begin{frame}[shrink=25]{Satisfying all of them without doing the work five times}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-comply.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont One loop, four stages. The instruments differ; the evidence they want is largely the same.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The insight that saves the most effort: \textbf{your traces are already the audit trail, and your evaluation sets are already the control tests.} Build them for engineering reasons, and the compliance artefacts are a by-product rather than a second project.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Strategy $\cdot$ the mapping}
+\begin{frame}[shrink=25]{One control, several obligations}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.3196\textwidth}>{\raggedright\arraybackslash}p{0.6204\textwidth}}
+\thead{Control you build} & \thead{Satisfies} \\ \midrule
+\textbf{Immutable trace of every run} & OJK ch. 7 (audit) $\cdot$ ISO 27001 A.8.15 logging $\cdot$ UU PDP accountability $\cdot$ NIST \textit{Measure} \\
+\textbf{Approval gate on write tools} & OJK human supervision and control $\cdot$ ISO 27001 A.5.15 access control $\cdot$ UU PDP automated-decision safeguards \\
+\textbf{End-user identity propagation} & ISO 27001 A.5.15 / A.8.2 $\cdot$ POJK 11/2022 IT governance \\
+\textbf{Redaction at the tool boundary} & UU PDP minimisation and transfer $\cdot$ ISO 27701 PII controls \\
+\textbf{Evaluation set as a release gate} & OJK ch. 6 lifecycle $\cdot$ ISO 42001 $\cdot$ NIST \textit{Manage} \\
+\textbf{Model and prompt registry} & OJK explainability and accountability $\cdot$ ISO 42001 $\cdot$ change control \\
+\end{itable}
+\begin{iband}[signal]
+Six controls, roughly twenty obligations. \textbf{Design the control once, map it many times} --- and keep the map, because that table is what you hand an examiner.
+\end{iband}
+\end{frame}
+
+\framekicker{Strategy $\cdot$ the hardest one}
+\begin{frame}[shrink=25]{The question to settle before writing any code}
+\leadpar{\textbf{May customer personal data leave the perimeter to reach a model provider?}}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Every architectural decision in this module follows from that answer, and it is not an engineering decision.\par}\vskip 4pt
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2256\textwidth}>{\raggedright\arraybackslash}p{0.7144\textwidth}}
+\thead{If the answer is\ldots{}} & \thead{Then your architecture is\ldots{}} \\ \midrule
+\textbf{No, never} & Self-hosted open weights inside the perimeter. Lower capability, fixed cost, full control. Plan the GPU capacity. \\
+\textbf{Only if de-identified} & Hosted model, with redaction and tokenisation \textbf{at the tool boundary} --- and a test proving nothing personal crosses it. \\
+\textbf{Yes, under contract} & Hosted model with a data processing agreement, in-region processing, zero-retention terms, and the transfer documented under UU PDP. \\
+\end{itable}
+\begin{iband}[rose]
+Ask it in the first meeting. Teams that defer it rebuild.
+\end{iband}
+\end{frame}
+
+\coursesection{10}{System design}{One case, designed properly: where each component sits and why.}
+
+\framekicker{The case}
+\begin{frame}[shrink=25]{SME credit assessment, in the field}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}One case, chosen because it needs everything this module covers at once --- and nothing it does not.\par}\vskip 4pt
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardaccent}
+\cardh{Real data analysis}
+Twelve months of transaction history, aggregated and compared against the applicant's stated turnover.
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardaccent}
+\cardh{A classical ML model}
+Credit scoring --- gradient-boosted trees, \textbf{not an LLM} --- exposed as a tool. It returns a score \textit{and reason codes}.
+\end{icardaccent}
+\end{minipage}%
+
+
+\vskip 4pt
+
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardaccent}
+\cardh{Regulation in the loop}
+UU PDP on the customer data, OJK on the decision, and a policy corpus the agent must cite from.
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardaccent}
+\cardh{A mobile front end}
+An Android app the field officer uses at the applicant's premises, often on a poor connection.
+\end{icardaccent}
+\end{minipage}%
+\end{frame}
+
+\framekicker{The case $\cdot$ the boundary that matters}
+\begin{frame}[shrink=25]{The agent recommends. A human decides.}
+\leadpar{\textbf{The agent has no tool that approves credit.} Not a disabled one, not a gated one --- the capability is absent from its registry.}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}That is a deliberate architectural choice with three justifications, and it is worth being able to state all three:\par}\vskip 4pt
+\begin{isteps}
+\item \textbf{Regulatory} --- OJK's human supervision and control principle, and UU PDP's safeguards around automated decisions with legal effect.
+\item \textbf{Technical} --- an LLM cannot compose functions reliably, and a credit decision is a composition. \textit{Faith and Fate} (NeurIPS 2023) is the published evidence.
+\item \textbf{Practical} --- an instruction can be argued with; an absent tool cannot. Removing the capability is stronger than forbidding its use.
+\end{isteps}
+\end{frame}
+
+\framekicker{System design}
+\begin{frame}[shrink=25]{The components, and what talks to what}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-sysdesign.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Four MCP servers, one of which is a classical ML model. The approval queue is a first-class component, not an afterthought.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Note what the agent service does \textbf{not} hold: no customer data at rest, no credentials for the core systems. It holds a loop, a budget, and a set of capabilities it was granted.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{System design $\cdot$ the tools}
+\begin{frame}[shrink=25]{Five read tools, one write, and why they are separate}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2256\textwidth}>{\raggedright\arraybackslash}p{0.1128\textwidth}>{\raggedright\arraybackslash}p{0.6016\textwidth}}
+\thead{Tool} & \thead{Kind} & \thead{Why separate} \\ \midrule
+\inlinecode{get\_customer} & read & Wraps the existing REST service. Different owner, different release cycle, different rate limits. \\
+\inlinecode{analyse\_transactions} & read & SQL over the warehouse. Heavy, cacheable, and needs its own timeout. \\
+\inlinecode{score\_credit} & read & \textbf{Classical ML behind an API.} Versioned separately, monitored for drift, and auditable on its own terms. \\
+\inlinecode{retrieve\_policy} & read & The regulation and internal-policy corpus. Its own index, its own update cadence. \\
+\inlinecode{check\_policy} & read & Runs every machine-checkable clause, returns pass/fail. \textbf{Policy is deterministic and belongs in code.} \\
+\end{itable}
+\begin{iband}[signal]
+\textbf{All five are read tools.} There is exactly one write in the whole system, and it is on the next slide.
+\end{iband}
+\end{frame}
+
+\framekicker{System design $\cdot$ the only write}
+\begin{frame}[shrink=25]{One write tool, and it writes to a queue}
+\leadpar{\inlinecode{submit\_recommendation} --- queues a recommendation for a named officer to decide. \textbf{Nothing here approves credit.}}
+\begin{isteps}
+\item \textbf{The capability does not exist.} There is no \inlinecode{approve\_credit} anywhere in the registry, so no prompt can reach one and no injected instruction can talk the model into one.
+\item \textbf{A test asserts it.} \inlinecode{test\_the\_agent\_has\_no\_tool\_that\_approves\_credit} fails if a write tool other than this one ever appears. The claim on this slide is checked on every commit.
+\item \textbf{The server fills in the provenance itself.} The model supplies a recommendation and a rationale; the \textit{score}, the \textit{model version} and the \textit{policy result} are re-derived server-side. A field the model could have misremembered is a field an auditor cannot rely on.
+\item \textbf{A decision needs a person and a reason.} The queue refuses a decision with no officer id, refuses an empty reason, and refuses to let the same item be decided twice.
+\end{isteps}
+\end{frame}
+
+\framekicker{System design $\cdot$ the ML model}
+\begin{frame}[shrink=25]{Why the score comes from a classical model, not the LLM}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.3478\textwidth}>{\raggedright\arraybackslash}p{0.3478\textwidth}}
+\thead{} & \thead{Classical ML} & \thead{LLM} \\ \midrule
+Determinism & \textbf{Same input, same score} & Varies by sampling \\
+Explainability & \textbf{Reason codes, SHAP values} & A plausible narrative, unverifiable \\
+Validation & Standard model risk practice, backtesting & No accepted method for a credit decision \\
+Drift monitoring & \textbf{Well understood} & An open problem \\
+Regulatory acceptance & \textbf{Established} & Not established \\
+Cost per call & Fractions of a cent & Orders of magnitude more \\
+\end{itable}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The LLM's job here is \textbf{orchestration and explanation} --- deciding what to look up, and writing the recommendation in the officer's language. The numbers come from something that can be validated. \hilite{Use each for what it is good at.}\par}\vskip 4pt
+\end{frame}
+
+\framekicker{System design $\cdot$ the ML model}
+\begin{frame}[shrink=25]{Which classical model? We measured, and it was not the fancy one}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The demo fits \textbf{two} candidates on the same data, compares them on a held-out split, and ships the winner. The result is not the one the room expects.\par}\vskip 4pt
+\begin{itable}{>{\raggedright\arraybackslash}p{0.3572\textwidth}>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.376\textwidth}}
+\thead{Candidate} & \thead{Held-out AUC} & \thead{Verdict} \\ \midrule
+Gradient-boosted trees & 0.733 & Rejected. Spent its capacity on noise. \\
+\textbf{Logistic regression} & \textbf{0.762} & \textbf{Shipped.} Also the one you can put in front of an examiner. \\
+\end{itable}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The relationship in this data is close to linear and the population is small, so the ensemble had nothing to find and found noise instead. \textbf{Reaching for the most powerful model is a habit, not a method.} Here the simpler model wins twice: on the metric, and on \hilite{being explainable to somebody who can stop you from deploying it.}\par}\vskip 4pt
+\begin{iband}[signal]
+Run \inlinecode{python3 integrated/run\_demo.py --check} and the comparison is printed. If your data is different, you will get a different answer --- which is the point of running it rather than assuming it.
+\end{iband}
+\end{frame}
+
+\framekicker{System design $\cdot$ the flow}
+\begin{frame}[shrink=25]{Eight steps, from photograph to audit log}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-case-flow.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Step 7 is a person. Step 8 is what makes step 7 defensible six months later.\par}
+\end{frame}
+
+\framekicker{Deployment}
+\begin{frame}[shrink=25]{Where each piece runs, and where the data is allowed to be}
+\begin{center}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-deploy.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont One egress, allow-listed, carrying no personal data. Everything stateful stays in-region.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The single dotted line is the whole compliance argument. \textbf{If that line carries personal data, the design is different} --- and you need the contract, the transfer record, and the DPIA to match.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Deployment $\cdot$ the checklist}
+\begin{frame}[shrink=25]{What has to be true before this serves a customer}
+\begin{isteps}
+\item \textbf{Egress is allow-listed} and every destination is documented as a transfer.
+\item \textbf{Redaction is tested}, with a case in the evaluation set that fails if personal data reaches the provider.
+\item \textbf{Traces are immutable and retained} on a schedule that satisfies both audit and erasure.
+\item \textbf{Identity propagates} --- permissions are evaluated against the officer, never the service account.
+\item \textbf{Budgets are per tenant}, not only global, so one runaway session cannot exhaust the quota for everyone.
+\item \textbf{Rollback is rehearsed} for prompts and tool sets, not only for code.
+\item \textbf{Someone is on call}, and the runbook says what to do when the model provider is degraded.
+\end{isteps}
+\end{frame}
+
+\framekicker{Cloud}
+\begin{frame}[shrink=25]{Providers that can host this, and what to check}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.188\textwidth}>{\raggedright\arraybackslash}p{0.47\textwidth}>{\raggedright\arraybackslash}p{0.282\textwidth}}
+\thead{Provider} & \thead{Agent-relevant services} & \thead{Indonesia region} \\ \midrule
+\textbf{AWS} & Bedrock (+ Agents, Guardrails), SageMaker, EKS, Step Functions & Jakarta --- ap-southeast-3 \\
+\textbf{Google Cloud} & Vertex AI (Agent Builder, Agent Engine), GKE, Workflows & Jakarta --- asia-southeast2 \\
+\textbf{Microsoft Azure} & Azure AI Foundry, AI Content Safety, AKS, Durable Functions & Indonesia Central \\
+\textbf{Alibaba Cloud} & Model Studio, ACK & Jakarta \\
+\textbf{Domestic / on-prem} & Biznet, Lintasarta, Telkom; or your own data centre with vLLM & By definition \\
+\end{itable}
+\begin{iband}[amber]
+Region availability is \textbf{not} the same as the model being served from that region. Ask specifically where \textit{inference} runs, and get it in the contract.
+\end{iband}
+\end{frame}
+
+\framekicker{Cloud $\cdot$ what to ask before signing}
+\begin{frame}[shrink=25]{Six questions a procurement team should carry}
+\begin{ibullets}
+\item \textbf{Where does inference physically run}, and can that be pinned?
+\item \textbf{What is the retention} on prompts and completions --- and is zero-retention contractual or a setting someone can flip?
+\item \textbf{Is our data used for training?} Get the default and the opt-out in writing.
+\item \textbf{Which certifications apply} to the specific service, not the provider generally --- ISO 27001, 27701, SOC 2, and their scope statements.
+\item \textbf{What is the deprecation policy} for a model version we have validated? A silent model update invalidates your evaluation.
+\item \textbf{What are the exit terms} --- can we extract traces, embeddings and fine-tunes, in what format, over what period?
+\end{ibullets}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The fifth is the one people miss. \textbf{A model updated underneath you is a change you did not test}, and in a regulated setting that is a finding.\par}\vskip 4pt
+\end{frame}
+
+\coursesection{11}{The demo}{An Android app, a REST service, a model behind MCP, and a human who decides.}
+
+\framekicker{Demo $\cdot$ the mobile app}
+\begin{frame}[shrink=25]{Why the front end is a phone}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The officer is at the applicant's premises, not at a desk. That single fact changes four design decisions.\par}\vskip 4pt
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2632\textwidth}>{\raggedright\arraybackslash}p{0.6768\textwidth}}
+\thead{Constraint} & \thead{What it forces} \\ \midrule
+\textbf{Poor connectivity} & The request is queued and resumable. An agent run is minutes, not milliseconds --- treat it as a job, not a call. \\
+\textbf{Small screen} & The recommendation must fit and be scannable. The evidence sits behind a tap, not on the first screen. \\
+\textbf{Camera as a sensor} & Documents arrive as photographs. Extraction happens server-side, with a confirmation step. \\
+\textbf{Device is not trusted} & No credentials for core systems on the phone. It holds a session token and nothing else. \\
+\end{itable}
+\end{frame}
+
+\framekicker{Demo $\cdot$ what the officer sees}
+\begin{frame}[shrink=25]{Five screens, and one of them is the point}
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icard}
+\cardh{1 --- Applications}
+What is waiting. The officer picks one and the rest of the app is about that file.
+\end{icard}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icard}
+\cardh{2 --- Applicant}
+The figures, the owner's name --- \textbf{shown here and carried nowhere else} --- and the document camera.
+\end{icard}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icard}
+\cardh{3 --- Running}
+The run is a job. Progress names \textit{which tool is running}, so a slow lookup is distinguishable from a hung one.
+\end{icard}
+\end{minipage}%
+
+
+\vskip 4pt
+
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{4 --- Recommendation}
+\textbf{Every figure carries its source.} Score and reason codes from the credit model, policy clauses printed in full, and the trace one tap away.
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{5 --- Recorded}
+\textbf{The officer decides}, with a reason that is required even when they agree. The reason is stored against their id.
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardbad}
+\cardh{The screen that is absent}
+There is no screen, and no endpoint, by which this app disburses anything. The boundary is in the code, not in the navigation.
+\end{icardbad}
+\end{minipage}%
+\begin{iband}[signal]
+Screen 3 is where the module's argument becomes a product: \textbf{a recommendation you cannot check is a recommendation you should not act on.}
+\end{iband}
+\end{frame}
+
+\framekicker{Demo $\cdot$ the pieces to build}
+\begin{frame}[shrink=25]{What ships with this module}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.4512\textwidth}}
+\thead{Component} & \thead{Stack} & \thead{Purpose} \\ \midrule
+\textbf{Android app} & Kotlin, Jetpack Compose & The five screens above; the assessment is a job, not a call \\
+\textbf{Agent case} & Python, \inlinecode{agentcore} & The loop, budgets, guardrails, traces --- from the demo repository \\
+\textbf{REST service} & Python standard library & Stands in for core banking, analytics, policy and the queue. No framework: the point is the shape of the API. \\
+\textbf{Credit model} & scikit-learn & Two candidates fitted, the better one shipped; returns the score \textbf{and the reason codes} \\
+\textbf{MCP server and client} & Written out by hand & Line-delimited JSON-RPC. Small enough to read in one sitting, which is why it is not the SDK here. \\
+\textbf{Approval queue} & A locked JSON file & Where a write waits for a person --- shared across processes \\
+\end{itable}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}All of it runs locally with no API key, against the offline provider in \inlinecode{agentcore} --- so the whole system can be demonstrated in a classroom with no credentials and no network. \textbf{One command runs the lot:} \inlinecode{python3 integrated/run\_demo.py --check}.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Demo $\cdot$ what it is designed to show}
+\begin{frame}[shrink=25]{Five things you can only see end to end}
+\begin{isteps}
+\item \textbf{An LLM orchestrating, not deciding.} The score comes from a model that can be validated; the LLM chooses what to look up and how to explain it.
+\item \textbf{A capability boundary that is structural.} No approval tool exists anywhere in the agent's registry.
+\item \textbf{A trace that is an audit trail.} Every figure in the recommendation traces to the call that produced it.
+\item \textbf{Redaction that is tested}, with an evaluation case that fails if personal data would reach the provider.
+\item \textbf{A hand-off that comes back.} The officer's decision and reason return to the system and close the loop.
+\end{isteps}
+\end{frame}
+
+\coursesection{12}{Operating it}{How you know it works, and what you do when it stops.}
+
+\framekicker{Evaluation}
+\begin{frame}[shrink=25]{Three levels, because they catch different things}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2256\textwidth}>{\raggedright\arraybackslash}p{0.376\textwidth}>{\raggedright\arraybackslash}p{0.3384\textwidth}}
+\thead{Level} & \thead{What it asserts} & \thead{What it misses} \\ \midrule
+\textbf{Unit} & The right tool is called with the right arguments & Whether the sequence produces a useful outcome \\
+\textbf{End to end} & The outcome matches a known good one & \textit{Why} --- a right answer for the wrong reason still passes \\
+\textbf{Human review} & Whether it is actually good, by a standard you cannot encode & Coverage --- it is sampled \\
+\end{itable}
+\begin{iband}[signal]
+Run all three \textbf{before every prompt change, model upgrade, and tool change.} In this domain a prompt edit is a code change with no type checker behind it.
 \end{iband}
 \end{frame}
 
 \framekicker{Evaluation $\cdot$ building the set}
-\begin{frame}[shrink=25]{Where the evaluation tasks come from}
+\begin{frame}[shrink=25]{Where the twenty cases come from}
 \begin{isteps}
-\item \textbf{Start with twenty real requests}, taken from whatever the process looks like today. Not twenty imagined ones.
-\item \textbf{Write down the good outcome for each} --- before you build anything, while you are still honest about what good means.
-\item \textbf{Add every failure you observe} in development, permanently. This is how the set grows, and it is why it is worth versioning.
-\item \textbf{Include the boring cases.} A set made only of hard cases will let you ship something that fails the easy ones.
-\item \textbf{Keep a held-out slice} you do not look at while iterating. Chapter 18's warning about validation-set overfitting applies here exactly.
+\item \textbf{Twenty real applications}, taken from what the process handles today. Not twenty imagined ones.
+\item \textbf{Write the good outcome for each} before building anything, while you are still honest about what good means.
+\item \textbf{Add every failure you observe}, permanently. This is how the set grows, and why it is versioned.
+\item \textbf{Include the boring cases.} A set of only hard cases lets you ship something that fails the easy ones.
+\item \textbf{Keep a held-out slice} you do not look at while iterating --- the validation-set overfitting problem, in a new setting.
 \end{isteps}
 \end{frame}
 
-\framekicker{Operation}
-\begin{frame}[shrink=25]{Four failure modes, and how each announces itself}
+\framekicker{Operating}
+\begin{frame}[shrink=25]{Five failure modes, and how each announces itself}
 \begin{center}
 \includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-failure.tex.pdf}
 \end{center}
-\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont None of these throw an exception. All of them show in a trace.\par}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}Set alerts on the \textbf{shape} of runs, not only on errors: mean steps per request, cost per request, tool-call repetition rate, and escalation rate. \textbf{A rising step count is usually the first visible sign that something upstream changed.}\par}\vskip 4pt
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont None of these raise an exception. All of them are visible in a trace.\par}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Alert on the \textbf{shape} of runs, not only on errors: mean steps per request, cost per request, tool-call repetition rate, escalation rate. \textbf{A rising step count is usually the first visible sign that something upstream changed.}\par}\vskip 4pt
 \end{frame}
 
-\framekicker{Operation $\cdot$ deployment}
-\begin{frame}[shrink=25]{The autonomy ladder}
+\framekicker{Operating $\cdot$ deployment}
+\begin{frame}[shrink=25]{The autonomy ladder, and where to stop}
 \begin{center}
-\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-maturity.tex.pdf}
+\includegraphics[width=0.92\linewidth,height=0.60\textheight,keepaspectratio]{figs/hendri-autonomy.tex.pdf}
 \end{center}
 \vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont Move up a rung only with evidence from the evaluation harness.\par}
 \begin{iband}[signal]
-At \textbf{L3}, the question that matters is not \textit{how good is it?} but \hilite{what is the blast radius when it is wrong?} Define that boundary in code --- spend limits, record scopes, reversibility --- not in the prompt.
+For a credit decision under OJK supervision, \textbf{L2 is the destination}, not a waypoint. The question at L3 is not \textit{how good is it} but \hilite{what is the blast radius when it is wrong} --- and that boundary belongs in code, not in a prompt.
 \end{iband}
 \end{frame}
 
-\coursesection{06}{Cases}{What we will build, and what each one is chosen to teach.}
+\framekicker{Common failure modes}
+\begin{frame}[shrink=25]{Four ways this work goes wrong in practice}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardbad}
+\cardh{Building an agent for a workflow}
+The most common and most expensive mistake. Apply the operational test first: \textbf{who decides the next step?}
+\end{icardbad}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardbad}
+\cardh{Splitting for tidiness}
+Researcher / Writer / Critic feels organised and costs three times one agent with the same tools. Split on the three questions, not on the org chart.
+\end{icardbad}
+\end{minipage}%
 
-\framekicker{Cases}
-\begin{frame}[shrink=25]{Single-agent cases}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.3008\textwidth}>{\raggedright\arraybackslash}p{0.6392\textwidth}}
-\thead{Case} & \thead{What it teaches} \\ \midrule
-\textbf{Document Q\&A with citations} & Retrieval as a tool, not as a preprocessing step. Grounding, and how to make a citation verifiable rather than decorative. \\
-\textbf{Structured extraction from messy input} & Schema-constrained output, validation on arrival, and what to do with the 20\% that fails validation. \\
-\textbf{Internal API assistant} & Tool design under real permissions. Read tools autonomous, write tools gated. Identity propagation. \\
-\textbf{Data analysis with code execution} & The most powerful and most dangerous tool there is. Sandboxing, resource limits, and why the output must still be checked. \\
-\end{itable}
-\end{frame}
 
-\framekicker{Cases}
-\begin{frame}[shrink=25]{Multi-agent cases}
-\begin{itable}{>{\raggedright\arraybackslash}p{0.3008\textwidth}>{\raggedright\arraybackslash}p{0.6392\textwidth}}
-\thead{Case} & \thead{What it teaches} \\ \midrule
-\textbf{Parallel document triage} & The clean case for fan-out: independent subtasks, real latency win, no shared context. The one that unambiguously justifies splitting. \\
-\textbf{Research and draft with a separate reviewer} & The \textit{tidy} decomposition --- and a cost comparison against one agent doing both, run honestly. \\
-\textbf{Cross-permission workflow} & Two agents that must not share capabilities. Splitting as a security boundary. \\
-\textbf{Escalation to a human} & The hand-off nobody designs and everybody needs. What state goes with it, and how the human hands it back. \\
-\end{itable}
-{\fontsize{9.4}{12.6}\selectfont\color{fg2}All four ship in the \textbf{ai-agentic-demo} monorepo, each with a trace viewer and an evaluation set, so the cost and quality claims on these slides can be checked rather than believed.\par}\vskip 4pt
-\end{frame}
+\vskip 4pt
 
-\framekicker{Cases $\cdot$ the exercise}
-\begin{frame}[shrink=25]{What you will do with them}
-\begin{isteps}
-\item \textbf{Bring a process from your own work} --- one that exists, with real inputs you can describe.
-\item \textbf{Classify it} using the operational test from section 01. Most will be workflows, and that is the correct answer.
-\item \textbf{Write the twenty evaluation cases} before writing any prompt.
-\item \textbf{Build the smallest version} that could work: one agent, the fewest tools that cover the task.
-\item \textbf{Run it, read the traces, and report what surprised you.} That last step is the assessment.
-\end{isteps}
-\begin{iband}[signal]
-The deliverable is not a working agent. It is \textbf{a defensible answer to whether you should have built one} --- supported by traces, costs, and an evaluation set.
-\end{iband}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardwarn}
+\cardh{No trace until the first incident}
+Nothing here reproduces. Without traces you cannot debug it, and you cannot evidence it to an auditor either.
+\end{icardwarn}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardwarn}
+\cardh{Compliance as a final gate}
+The residency question decides the architecture. Asking it after the build means rebuilding.
+\end{icardwarn}
+\end{minipage}%
 \end{frame}
 
 \framekicker{Summary}
-\begin{frame}[shrink=25]{What has to survive this module}
+\begin{frame}[shrink=25]{What has to survive this module (1 of 2)}
 \begin{isteps}
-\item \textbf{Who decides the next step} is the question that separates a workflow from an agent. Most things are workflows; build them as workflows.
-\item \textbf{The loop needs more than one exit.} Goal, steps, tokens, time, repetition, and an escalation path.
-\item \textbf{The model never touches anything.} It emits a structured intention; your code decides whether to honour it. Every permission boundary lives there.
-\item \textbf{Read tools and write tools are different risks}, and should have different defaults from day one.
-\item \textbf{Memory is four things, not one.} Add each only when an observed failure demands it.
+\item \textbf{The definition is old.} Russell \& Norvig: percepts in through sensors, actions out through actuators. What is new is the action space, not the idea.
+\item \textbf{Who decides the next step} separates a workflow from an agent. Most things are workflows --- build them as workflows.
+\item \textbf{Five workflow patterns come first.} Reach for an agent when the path genuinely cannot be known in advance.
+\item \textbf{The model never touches anything.} It emits an intention; your code decides. Every permission boundary lives in that gap.
+\item \textbf{Six exit conditions}, not one. And read tools differ from write tools from day one.
+\item \textbf{Three questions before splitting} --- different permissions, real parallelism, or context that will not fit.
 \end{isteps}
 \end{frame}
 
 \framekicker{Summary}
 \begin{frame}[shrink=25]{What has to survive this module (2 of 2)}
 \begin{isteps}
-\item \textbf{Guardrails and observability are layers}, not features. Traces come before everything else, because nothing here reproduces.
-\item \textbf{Three questions before splitting into multiple agents} --- different permissions, real parallelism, or context that will not fit. Tidiness is not one of them.
-\item \textbf{Evaluate at three levels} --- unit, end-to-end, and sampled human review --- and run all three before any prompt or model change.
-\item \textbf{Move up the autonomy ladder on evidence}, and define the blast radius in code rather than in the prompt.
+\item \textbf{Components come in three levels}, and calling a minimum system production-ready is how incidents happen.
+\item \textbf{Prototype in no-code, build in code.} They are different activities; using one tool for both is how prototypes become production by accident.
+\item \textbf{MCP reaches inward, A2A reaches across.} Adopt the one you need.
+\item \textbf{Settle the data-residency question first.} It decides the architecture, and it is not an engineering decision.
+\item \textbf{One control, several obligations.} Traces are the audit trail; evaluation sets are the control tests. Keep the mapping table.
+\item \textbf{Let the classical model produce the number} and the LLM produce the explanation. Use each for what it can be validated on.
 \end{isteps}
+\end{frame}
+
+\framekicker{References}
+\begin{frame}[shrink=25]{Where every claim in this module comes from}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Each of these was checked against the \textbf{primary document}, not a summary of it. Where the two disagreed, the primary document won --- twice, and both corrections are noted in the list.\par}\vskip 4pt
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.7332\textwidth}}
+\thead{Area} & \thead{Principal sources} \\ \midrule
+\textbf{Foundations} & Russell \& Norvig, \textit{AI: A Modern Approach}, 4th ed., ch. 2 $\cdot$ Wooldridge, \textit{An Introduction to MultiAgent Systems} $\cdot$ Chollet, \textit{On the Measure of Intelligence} (arXiv:1911.01547) \\
+\textbf{The loop} & ReAct (arXiv:2210.03629) $\cdot$ Chain-of-Thought (arXiv:2201.11903) $\cdot$ Toolformer (arXiv:2302.04761) $\cdot$ Reflexion (arXiv:2303.11366) $\cdot$ CodeAct (arXiv:2402.01030) \\
+\textbf{Limits} & Dziri et al., \textit{Faith and Fate} (arXiv:2305.18654) \\
+\end{itable}
+\end{frame}
+
+\framekicker{References}
+\begin{frame}[shrink=25]{Practice, security, and the rules you are held to}
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2068\textwidth}>{\raggedright\arraybackslash}p{0.7332\textwidth}}
+\thead{Area} & \thead{Principal sources} \\ \midrule
+\textbf{Practice} & Anthropic, \textit{Building Effective Agents} (2024) $\cdot$ Model Context Protocol specification $\cdot$ Agent2Agent, Linux Foundation (2025) \\
+\textbf{Security} & OWASP Top 10 for LLM Applications $\cdot$ NIST AI RMF 1.0 (NIST AI 100-1) \\
+\textbf{Regulation} & OJK, \textit{Tata Kelola Kecerdasan Artifisial Perbankan Indonesia} (29 April 2025) $\cdot$ UU 27/2022 (PDP) $\cdot$ POJK 11/POJK.03/2022 $\cdot$ SEOJK 29/SEOJK.03/2022 \\
+\textbf{Standards} & ISO/IEC 27001:2022 $\cdot$ ISO/IEC 27701:2025 $\cdot$ ISO/IEC 42001:2023 $\cdot$ ISO/IEC 23894:2023 \\
+\end{itable}
+\end{frame}
+
+\framekicker{References}
+\begin{frame}[shrink=25]{The list is a file, and it is checkable}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}The full list lives in the slides repository with the downloadable PDFs beside it, and a script that re-fetches every link and reports what has moved.\par}\vskip 4pt
+\icode{bash}{keeping it honest}{listings/hendri-agentic-01.sh}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Two corrections that pass to you.} ISO/IEC 27701 is no longer an extension to 27001 --- the second edition of 14 October 2025 is standalone. And the OJK AI guidance is dated \textbf{2025}, not 2024 as several secondary sources state.\par}\vskip 4pt
 \vskip 4pt
+\reslink{LIST}{references/REFERENCES.md}{https://github.com/situkangsayur/dnd-ai-products-services-pro-course-slides/blob/main/references/REFERENCES.md}
+\reslink{OJK}{Tata Kelola Kecerdasan Artifisial Perbankan Indonesia}{https://ojk.go.id/id/Publikasi/Roadmap-dan-Pedoman/Perbankan/Pages/Tata-Kelola-Kecerdasan-Artifisial-Perbankan-Indonesia.aspx}
 \reslink{REPO}{ai-agentic-demo}{https://github.com/situkangsayur/ai-agentic-demo}
-\reslink{BACK}{Chapter 16 --- Text generation}{../ch16/index.html}
+\reslink{BACK}{Large Language Models --- Viny's module}{../viny-llm/index.html}
 \vskip 2pt
 \end{frame}
 

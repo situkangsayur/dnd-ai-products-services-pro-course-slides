@@ -1,0 +1,8 @@
+
+flowchart LR
+  C1["<b>Decide</b><br/><small>lawful basis, data classes,<br/>residency, retention</small>"]
+  C2["<b>Design in</b><br/><small>minimise at the tool,<br/>redact at the boundary,<br/>gate every write</small>"]
+  C3["<b>Evidence</b><br/><small>traces = the audit trail;<br/>evals = the control test</small>"]
+  C4["<b>Review</b><br/><small>DPIA, model registry,<br/>periodic re-approval</small>"]
+  C1 --> C2 --> C3 --> C4
+  C4 -. "findings" .-> C1

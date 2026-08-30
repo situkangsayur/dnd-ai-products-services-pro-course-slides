@@ -1,0 +1,13 @@
+
+flowchart TB
+  U["User"]
+  A1["<b>Agent A</b><br/><small>your bank</small>"]
+  A2["<b>Agent B</b><br/><small>a partner</small>"]
+  T1["Database"]
+  T2["Credit scoring model"]
+  T3["Document store"]
+  U --> A1
+  A1 -- "A2A: across organisations" --> A2
+  A1 -- "MCP" --> T1
+  A1 -- "MCP" --> T2
+  A1 -- "MCP" --> T3
