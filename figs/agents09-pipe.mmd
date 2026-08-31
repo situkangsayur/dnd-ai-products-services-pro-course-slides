@@ -1,0 +1,6 @@
+
+flowchart LR
+  IMG["Foto dokumen"] --> T["ALAT: ekstraksi<br/><small>OCR + penataan</small>"]
+  T --> D["Data terstruktur<br/><small>medan, angka, tanggal</small>"]
+  D --> A["Agen menalar<br/><small>atas DATA, bukan atas piksel</small>"]
+  IMG -. "jalan yang menggoda dan rapuh:<br/>minta model menjawab langsung dari gambar" .-> A

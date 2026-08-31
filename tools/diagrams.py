@@ -3322,3 +3322,84 @@ def split_cost(fig_id, *, cap="", note="", width=1290, height=452, full=False,
                    sim_label="serah-terima")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ================================== what a picture costs, in tokens --
+
+def image_cost(fig_id, *, cap="", note="", width=1290, height=462, full=False,
+               tile=512, per_tile=170, base=85, text_page=650):
+    """An image is not "one attachment". It is a few thousand tokens.
+
+    Providers charge images by tiling them, so cost grows with AREA -- double
+    the resolution and you quadruple the bill. The numbers here come from the
+    tiling assumption printed on the drawing, not from any one vendor's price
+    list, because those change and the shape does not.
+
+    The comparison that lands: a page of text photographed costs several times
+    the same page as text, and it is harder to read.
+    """
+    import math
+    items = (
+        ("ikon", 256, 256),
+        ("tangkapan layar", 1280, 720),
+        ("foto dokumen", 1536, 2048),
+        ("pindai A4 300dpi", 2480, 3508),
+    )
+    rows = []
+    for name, w, h in items:
+        t = math.ceil(w / tile) * math.ceil(h / tile)
+        rows.append((name, w, h, t, base + t * per_tile))
+
+    def build(p):
+        out = []
+        bx, by, bw, bh = 96.0, 108.0, 720.0, 232.0
+        top = max(r[4] for r in rows)
+        step_x = bw / len(rows)
+
+        out.append(txt(bx, 52, "berapa token satu gambar", size=13.5, weight=600,
+                       pal=p, fill=p.ink, anchor="start", step=1))
+        out.append(txt(bx + 300, 52,
+                       f"asumsi: ubin {tile}px, {per_tile} token per ubin, "
+                       f"dasar {base}",
+                       size=11, pal=p, fill=p.bad, anchor="start", step=1))
+
+        out.append(line(bx, by + bh, bx + bw, by + bh, pal=p, stroke=p.line,
+                        sw=1.2, step=1))
+
+        # the text-page reference line
+        ry = by + bh - bh * text_page / top
+        out.append(line(bx, ry, bx + bw + 30, ry, pal=p, stroke=p.good, sw=1.6,
+                        dash="5 4", step=1))
+        out.append(txt(bx + bw + 36, ry + 4,
+                       f"satu halaman teks ≈ {text_page} token", size=11,
+                       pal=p, fill=p.good, anchor="start", step=1))
+
+        for i, (name, w, h, t, c) in enumerate(rows):
+            x = bx + i * step_x + step_x * 0.22
+            bwid = step_x * 0.56
+            hh = bh * c / top
+            st = 1 if i == 0 else (2 if i < 3 else 3)
+            out.append(rect(x, by + bh - hh, bwid, hh, r=3, pal=p,
+                            fill=p.accent if c < 3000 else p.bad, stroke="none",
+                            sw=0, step=st))
+            out.append(txt(x + bwid / 2, by + bh - hh - 10,
+                           f"{c:,}".replace(",", " "), size=12, mono=True,
+                           weight=600, pal=p, fill=p.ink, step=st))
+            out.append(txt(x + bwid / 2, by + bh + 18, name, size=11, pal=p,
+                           fill=p.ink2, step=st))
+            out.append(txt(x + bwid / 2, by + bh + 34, f"{w}×{h} · {t} ubin",
+                           size=10, mono=True, pal=p, fill=p.ink3, step=st))
+
+        ratio = rows[2][4] / text_page
+        out.append(txt(bx, height - 40,
+                       f"Halaman yang difoto berharga {ratio:.1f}× halaman yang "
+                       f"sama sebagai teks — dan lebih sulit dibaca modelnya.",
+                       size=13, weight=600, pal=p, fill=p.accent, anchor="start",
+                       step=3))
+        out.append(txt(bx, height - 18,
+                       "Biaya tumbuh menurut LUAS: resolusi dua kali lipat berarti "
+                       "empat kali token.",
+                       size=12.5, pal=p, fill=p.ink2, anchor="start", step=3))
+        return svg(width, height, "".join(out), pal=p, steps=3, sim_label="gambar")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

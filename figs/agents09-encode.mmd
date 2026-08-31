@@ -1,0 +1,7 @@
+
+flowchart LR
+  I["Gambar"] --> E["Penyandi penglihatan<br/><small>gambar → vektor</small>"]
+  T["Teks"] --> ET["Penyandi teks<br/><small>token → vektor</small>"]
+  E --> C["Penyambung<br/><small>menyamakan ruangnya</small>"]
+  ET --> C
+  C --> M["Model bahasa<br/><small>memperlakukan keduanya sebagai token</small>"]

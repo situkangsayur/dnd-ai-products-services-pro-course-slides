@@ -1,0 +1,11 @@
+%% direction chosen by tools/figures.py: this renders
+%% better in the space a slide gives it. Edit the deck
+%% source, not this file.
+
+flowchart LR
+  P["Proyeksi<br/><small>satu lapis linier<br/>vektor gambar → token</small>"]
+  Q["Berbasis kueri<br/><small>sejumlah TETAP token<br/>yang menanyai gambar</small>"]
+  F["Peleburan<br/><small>menyisipkan penglihatan<br/>ke dalam lapis model</small>"]
+  P -->|"paling sederhana,<br/>token paling banyak"| Q
+  Q -->|"token tetap,<br/>detail bisa terlewat"| F
+  F -->|"paling kuat,<br/>paling mahal dilatih"| F

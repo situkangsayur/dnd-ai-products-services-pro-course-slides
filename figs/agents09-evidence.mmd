@@ -1,0 +1,9 @@
+%% direction chosen by tools/figures.py: this renders
+%% better in the space a slide gives it. Edit the deck
+%% source, not this file.
+
+flowchart LR
+  Q["Pertanyaan"] --> A["Jawaban dari gambar"]
+  A --> C{"Bisa ditunjuk<br/>di mana asalnya?"}
+  C -->|"ya — kotak + nilai terbaca"| OK["Bisa diperiksa manusia"]
+  C -->|"tidak — 'saya lihat begitu'"| NO["Tidak bisa diaudit"]
