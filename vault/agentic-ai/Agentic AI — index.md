@@ -28,6 +28,11 @@ than in prompts.
 9. [[The SME credit demo]] — all of it, running, on a phone
 10. [[Findings worth keeping]] — what building it changed my mind about
 
+## Making more of it
+
+- [[Deck standard — adding a book]] — the six numbers that must be zero before
+  a deck is finished, and what a second book would cost
+
 ## The one-line version
 
 > The definition of an agent is old — Russell & Norvig, percepts in through

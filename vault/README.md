@@ -49,3 +49,4 @@ after being renamed upstream is a broken wikilink nobody goes looking for.
 | `Regulation — OJK, PDP, ISO.md` | Five instruments, one control set |
 | `The SME credit demo.md` | The system, and what it proves |
 | `Findings worth keeping.md` | Things that surprised me while building it |
+| `Deck standard — adding a book.md` | The six checks a deck must pass, and what a second book costs |

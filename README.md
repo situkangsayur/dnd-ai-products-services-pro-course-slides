@@ -208,6 +208,14 @@ Tambahkan `content/<id>.py` yang mengekspor sebuah dict `DECK`. Skema lengkapnya
 — jenis slide, jenis blok, markup inline — ada di `tools/schema.py`. `build.py`
 menemukannya dari nama berkas, jadi tidak ada daftar yang perlu diperbarui.
 
+**Untuk BUKU baru, bukan sekadar dek baru, baca
+[`AUTHORING.md`](AUTHORING.md).** Isinya fitur yang sudah disediakan, enam
+angka yang harus nol sebelum sebuah dek dianggap selesai, cetakan berkas
+`content/<id>.py`, urutan langkahnya, dan satu hal yang harus dikerjakan lebih
+dulu: `tools/course.py` masih menganggap ada **satu** buku — satu `BOOK`, satu
+`CH_SLUG` — dan buku kedua membuat `chapter_url(7)` tidak lagi punya satu
+jawaban.
+
 Peraga ditulis dua kali dalam satu blok `fig`: `svg` untuk web, `tikz` untuk
 LaTeX. Kalau salah satu dikosongkan, perender yang bersangkutan jatuh ke
 keterangan gambarnya saja.
