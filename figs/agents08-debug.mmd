@@ -1,0 +1,10 @@
+%% direction chosen by tools/figures.py: this renders
+%% better in the space a slide gives it. Edit the deck
+%% source, not this file.
+
+flowchart LR
+  F["Hasil akhirnya salah"] --> Q1{"Agen mana<br/>yang terakhir benar?"}
+  Q1 --> Q2{"Serah-terimanya<br/>membawa yang perlu?"}
+  Q2 -->|"tidak"| FIX1["Perbaiki isi serah-terima"]
+  Q2 -->|"ya"| FIX2["Perbaiki agen sesudahnya"]
+  Q1 -. "tanpa jejak per agen,<br/>pertanyaan ini tidak bisa dijawab" .-> Q1

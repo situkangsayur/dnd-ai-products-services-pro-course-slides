@@ -1,0 +1,23 @@
+%% direction chosen by tools/figures.py: this renders
+%% better in the space a slide gives it. Edit the deck
+%% source, not this file.
+
+flowchart LR
+  subgraph S["Penyelia"]
+    direction LR
+    SU["Penyelia"] --> A1["Agen A"]
+    SU --> A2["Agen B"]
+    A1 --> SU
+    A2 --> SU
+  end
+  subgraph P["Berantai"]
+    direction LR
+    P1["Agen 1"] --> P2["Agen 2"] --> P3["Agen 3"]
+  end
+  subgraph G["Kelompok"]
+    direction LR
+    G1["Agen A"] <--> G2["Agen B"]
+    G2 <--> G3["Agen C"]
+    G1 <--> G3
+  end
+  S ~~~ P ~~~ G

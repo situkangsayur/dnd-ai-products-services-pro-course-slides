@@ -3230,3 +3230,95 @@ def pass_at_k(fig_id, *, cap="", note="", width=1290, height=444, full=False,
         return svg(width, height, "".join(out), pal=pal, steps=3, sim_label="k")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ============================ what splitting into several agents really costs --
+
+def split_cost(fig_id, *, cap="", note="", width=1290, height=452, full=False,
+               system=800, tools=2500, per_step=350,
+               handoffs=(600, 1500, 3000), totals=(6, 9, 12), agents=3):
+    """Splitting one agent into three: cheaper or dearer? Compute it.
+
+    The expected answer is "dearer -- coordination costs money", and the
+    arithmetic says otherwise for small handoffs. Billing is quadratic in
+    conversation length, so cutting one long conversation into three short ones
+    breaks the quadratic into three smaller ones. What you pay instead is the
+    handoff, carried into every downstream agent.
+
+    So the variable that decides it is the HANDOFF SIZE, not the split -- and
+    that is the one nobody measures. This figure was built after its author
+    assumed the opposite and was corrected by the numbers.
+    """
+    def billed(n, base):
+        tot, ctx = 0, base
+        for _ in range(n):
+            tot += ctx
+            ctx += per_step
+        return tot
+
+    grid = []
+    for h in handoffs:
+        row = []
+        for t in totals:
+            one = billed(t, system + tools)
+            each = t // agents
+            many = sum(billed(each, system + tools + (h if i else 0))
+                       for i in range(agents))
+            row.append((one, many, many / one))
+        grid.append(row)
+
+    def build(p):
+        out = []
+        cw, chh, x0, y0 = 132.0, 62.0, 300.0, 118.0
+
+        out.append(txt(96, 52,
+                       f"satu agen {max(totals)} langkah  lawan  {agents} agen "
+                       f"yang membaginya",
+                       size=13.5, weight=600, pal=p, fill=p.ink, anchor="start",
+                       step=1))
+        out.append(txt(96, 74,
+                       f"asumsi tercetak: perintah {system}, skema alat {tools}, "
+                       f"{per_step} token per langkah",
+                       size=11, pal=p, fill=p.ink3, anchor="start", step=1))
+
+        for j, t in enumerate(totals):
+            out.append(txt(x0 + j * cw + cw / 2, y0 - 12, f"{t} langkah",
+                           size=12, weight=600, pal=p, fill=p.ink3, step=1))
+        for i, h in enumerate(handoffs):
+            y = y0 + i * chh
+            st = i + 1
+            out.append(txt(x0 - 18, y + chh / 2 + 4,
+                           f"serah-terima {h:,}".replace(",", " "), size=12,
+                           pal=p, fill=p.ink2, anchor="end", step=st))
+            for j, t in enumerate(totals):
+                one, many, ratio = grid[i][j]
+                x = x0 + j * cw
+                col = p.good if ratio < 0.98 else (p.warm if ratio < 1.02 else p.bad)
+                out.append(rect(x + 4, y + 4, cw - 8, chh - 8, r=6, pal=p,
+                                fill=col, stroke="none", sw=0, step=st))
+                out.append(txt(x + cw / 2, y + chh / 2 + 5, f"{ratio:.2f}×",
+                               size=16, weight=600, pal=p, fill=p.fill, step=st))
+
+        ly = y0 + len(handoffs) * chh + 26
+        for k, (col, lbl) in enumerate(((p.good, "memecah lebih MURAH"),
+                                        (p.warm, "kira-kira sama"),
+                                        (p.bad, "memecah lebih MAHAL"))):
+            out.append(rect(x0 + k * 150, ly - 10, 13, 13, r=3, pal=p, fill=col,
+                            stroke="none", sw=0, step=1))
+            out.append(txt(x0 + k * 150 + 20, ly, lbl, size=11, pal=p,
+                           fill=p.ink2, anchor="start", step=1))
+
+        out.append(txt(96, height - 44,
+                       "Dugaan yang wajar — “memecah pasti lebih mahal” — salah "
+                       "untuk serah-terima yang kecil:",
+                       size=12.5, pal=p, fill=p.ink2, anchor="start", step=3))
+        out.append(txt(96, height - 22,
+                       "tagihan tumbuh KUADRAT terhadap panjang percakapan, jadi "
+                       "memotongnya jadi tiga memecah kuadratnya. Yang Anda bayar "
+                       "adalah serah-terimanya.",
+                       size=12.5, weight=600, pal=p, fill=p.accent, anchor="start",
+                       step=3))
+        return svg(width, height, "".join(out), pal=p, steps=len(handoffs),
+                   sim_label="serah-terima")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

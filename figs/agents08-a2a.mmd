@@ -1,0 +1,9 @@
+
+flowchart LR
+  subgraph IN["Ke dalam — MCP"]
+    AG["Agen"] --> MCP["Peladen alat"] --> SYS[("Sistem")]
+  end
+  subgraph AC["Menyilang — antar agen"]
+    A1["Agen A"] <--> A2["Agen B<br/><small>milik tim lain</small>"]
+  end
+  IN ~~~ AC

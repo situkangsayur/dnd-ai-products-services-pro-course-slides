@@ -1,0 +1,7 @@
+
+flowchart LR
+  A["Agen 1<br/><small>konteks penuh:<br/>12 000 token</small>"]
+  H["Serah-terima<br/><small>ringkasan</small>"]
+  B["Agen 2<br/><small>hanya melihat ini</small>"]
+  A --> H --> B
+  H -. "apa pun yang tidak masuk ke sini<br/>TIDAK ADA bagi agen 2" .-> H
