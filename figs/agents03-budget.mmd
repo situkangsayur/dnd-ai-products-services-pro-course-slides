@@ -1,0 +1,10 @@
+%% direction chosen by tools/figures.py: this renders
+%% better in the space a slide gives it. Edit the deck
+%% source, not this file.
+
+flowchart LR
+  Q["Permintaan masuk"] --> C{"Butuh penalaran?"}
+  C -->|"tugas rutin,<br/>alat sudah jelas"| F["Model cepat<br/><small>tanpa penalaran</small>"]
+  C -->|"ambigu, banyak<br/>batasan, perlu rencana"| R["Model penalar<br/><small>anggaran berpikir dibatasi</small>"]
+  F --> OUT["Jawaban"]
+  R --> OUT

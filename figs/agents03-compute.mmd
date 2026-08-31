@@ -1,0 +1,11 @@
+
+flowchart LR
+  subgraph L["Komputasi saat LATIH — sekali, mahal, tetap"]
+    direction TB
+    D["Data + GPU"] --> W["Bobot"]
+  end
+  subgraph U["Komputasi saat PAKAI — tiap permintaan, bisa diatur"]
+    direction TB
+    Q["Pertanyaan"] --> T["Berpikir lebih lama"] --> A["Jawaban"]
+  end
+  W --> U

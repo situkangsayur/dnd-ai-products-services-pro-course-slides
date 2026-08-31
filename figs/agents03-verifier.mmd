@@ -1,0 +1,6 @@
+
+flowchart LR
+  M["Model"] -->|"N calon jawaban"| V{"Pemeriksa"}
+  V -->|"lolos"| OK["Dipakai"]
+  V -->|"gagal semua"| STOP["Menyerah / eskalasi"]
+  V -. "yang membuat ini bekerja:<br/>memeriksa lebih mudah<br/>daripada menjawab" .-> M

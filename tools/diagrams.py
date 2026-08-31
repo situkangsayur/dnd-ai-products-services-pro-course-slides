@@ -2896,3 +2896,94 @@ def token_budget(fig_id, *, cap="", note="", width=1290, height=400, full=False,
                    sim_label="giliran")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# =========================== sampling N times, and what it actually buys --
+
+def vote_tradeoff(fig_id, *, cap="", note="", width=1290, height=452, full=False,
+                  p_single=0.6, samples=(1, 3, 5, 7, 9, 15, 21)):
+    """Ask N times and take the majority: exactly how much does that buy?
+
+    This one is real arithmetic rather than an illustrative curve. If a single
+    attempt is right with probability ``p``, then majority-of-N is right with
+    the sum of the binomial terms above N/2 -- computed here, not sketched.
+
+    The assumption doing the work is **independence**, and it is printed on the
+    drawing because it is false in practice: samples from the same model on the
+    same prompt correlate, so the curve is an UPPER BOUND. A figure that showed
+    this as an achievable target would be lying by omission.
+    """
+    from math import comb
+
+    def maj(n):
+        return sum(comb(n, k) * p_single ** k * (1 - p_single) ** (n - k)
+                   for k in range(n // 2 + 1, n + 1))
+
+    acc = [maj(n) for n in samples]
+
+    def build(p):
+        out = []
+        bx, by, bw, bh = 96.0, 96.0, 900.0, 240.0
+        step_x = bw / len(samples)
+        lo, hi = p_single - 0.04, 1.0
+
+        out.append(txt(bx, 52, "peluang benar setelah suara terbanyak dari N contoh",
+                       size=13.5, weight=600, pal=p, fill=p.ink, anchor="start",
+                       step=1))
+        out.append(txt(bx + 560, 52,
+                       f"asumsi: satu contoh benar {p_single * 100:.0f}%, "
+                       f"dan contohnya SALING BEBAS",
+                       size=11.5, pal=p, fill=p.bad, anchor="start", step=1))
+
+        out.append(line(bx, by + bh, bx + bw, by + bh, pal=p, stroke=p.line,
+                        sw=1.2, step=1))
+        for frac in (0.0, 0.25, 0.5, 0.75, 1.0):
+            v = lo + (hi - lo) * frac
+            y = by + bh - bh * frac
+            out.append(line(bx, y, bx + bw, y, pal=p, stroke=p.faint, sw=0.7,
+                            dash="2 5", step=1))
+            out.append(txt(bx - 10, y + 4, f"{v * 100:.0f}%", size=10.5,
+                           mono=True, pal=p, fill=p.ink3, anchor="end", step=1))
+
+        for i, n in enumerate(samples):
+            x = bx + i * step_x + step_x * 0.22
+            w = step_x * 0.56
+            h = bh * (acc[i] - lo) / (hi - lo)
+            st = 1 if i == 0 else (2 if n <= 5 else 3)
+            out.append(rect(x, by + bh - h, w, h, r=3, pal=p,
+                            fill=p.accent if i else p.ink3, stroke="none",
+                            sw=0, step=st))
+            out.append(txt(x + w / 2, by + bh - h - 10, f"{acc[i] * 100:.1f}",
+                           size=11, mono=True, pal=p, fill=p.ink, step=st))
+            out.append(txt(x + w / 2, by + bh + 18, f"N={n}", size=11,
+                           mono=True, pal=p, fill=p.ink3, step=st))
+            out.append(txt(x + w / 2, by + bh + 36, f"{n}× biaya", size=10,
+                           pal=p, fill=p.bad if n > 5 else p.ink3, step=st))
+
+        rx = bx + bw + 44
+        gain_1_5 = (acc[2] - acc[0]) * 100
+        gain_5_21 = (acc[-1] - acc[2]) * 100
+        out.append(txt(rx, by + 40, "N=1 → 5", size=12, pal=p, fill=p.ink3,
+                       anchor="start", step=2))
+        out.append(txt(rx, by + 66, f"+{gain_1_5:.1f} poin", size=17, weight=600,
+                       pal=p, fill=p.good, anchor="start", step=2))
+        out.append(txt(rx, by + 86, "dengan biaya 5×", size=11, pal=p,
+                       fill=p.ink3, anchor="start", step=2))
+        out.append(txt(rx, by + 132, "N=5 → 21", size=12, pal=p, fill=p.ink3,
+                       anchor="start", step=3))
+        out.append(txt(rx, by + 158, f"+{gain_5_21:.1f} poin", size=17,
+                       weight=600, pal=p, fill=p.bad, anchor="start", step=3))
+        out.append(txt(rx, by + 178, "dengan biaya 21×", size=11, pal=p,
+                       fill=p.ink3, anchor="start", step=3))
+
+        out.append(txt(bx, height - 40,
+                       "Kenaikannya melandai; biayanya tidak. Dan karena contoh dari "
+                       "model yang sama berkorelasi, angka di atas adalah BATAS ATAS —",
+                       size=12.5, pal=p, fill=p.ink2, anchor="start", step=3))
+        out.append(txt(bx, height - 20,
+                       "yang sebenarnya didapat selalu lebih kecil dari ini.",
+                       size=12.5, weight=600, pal=p, fill=p.bad, anchor="start",
+                       step=3))
+        return svg(width, height, "".join(out), pal=p, steps=3, sim_label="N")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)
