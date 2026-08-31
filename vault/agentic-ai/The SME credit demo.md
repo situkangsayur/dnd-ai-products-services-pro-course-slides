@@ -1,14 +1,19 @@
 ---
-tags: [agentic-ai, demo, mcp, android, credit]
+tags: [agentic-ai, demo, mcp, flutter, credit]
 code: "ai-agentic-demo/integrated/"
-updated: 2026-08-30
+updated: 2026-08-31
 ---
 
 # The SME credit demo
 
-The whole module, running: an Android app in a credit officer's hand, a REST
-service, an agent, six tools reached over [[MCP and A2A|MCP]], a classical ML
-model that produces the score, and a human being who makes the decision.
+The whole module, running: a **Flutter** app in a credit officer's hand —
+Android and iOS from one codebase — a REST service, an agent, six tools reached
+over [[MCP and A2A|MCP]], a classical ML model that produces the score, and a
+human being who makes the decision.
+
+The client **builds**: Flutter 3.47.2 / Dart 3.13.2, Android SDK 36, analyzer
+clean, tests green, and a debug APK whose only permission is `INTERNET`. What
+that first build cost is in [[Findings worth keeping]].
 
 It exists to make one claim checkable rather than assertable:
 
@@ -49,5 +54,15 @@ else. The assessment request contains an application id. Document photographs go
 to the bank's own store; there is no code path that could send an image to a
 model provider. The redaction is a guardrail with a test behind it, not a line
 in the prompt.
+
+## Five screens, and the sixth
+
+Applications → applicant → running → recommendation → recorded. The deck draws
+them as phone frames rather than icons, and draws the sixth as a **hole**:
+dashed, struck through, with no arrow leading into it. There is no screen and
+no endpoint by which this app disburses anything.
+
+Drawing the absence is the point. A capability boundary you can navigate around
+is not a boundary.
 
 Related: [[Tools are the permission boundary]], [[Findings worth keeping]]

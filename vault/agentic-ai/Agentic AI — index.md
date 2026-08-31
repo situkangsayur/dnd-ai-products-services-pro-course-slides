@@ -1,7 +1,7 @@
 ---
 tags: [agentic-ai, course/ai-professional, itb, index]
-source: "course-slides/content/hendri_agentic.py — 89 slides"
-updated: 2026-08-30
+source: "course-slides/content/hendri_agentic.py — 91 slides"
+updated: 2026-08-31
 ---
 
 # Agentic AI — index
@@ -36,7 +36,8 @@ than in prompts.
 
 ## Artefacts
 
-- Deck: `course-slides/content/hendri_agentic.py` → LaTeX + web, 89 slides
+- Deck: `course-slides/content/hendri_agentic.py` → LaTeX + web, 91 slides
+  (22 drawn figures, PDF page-for-page identical to the web deck)
 - Code: `ai-agentic-demo/` — nine cases and the integrated system
 - References: `course-slides/references/REFERENCES.md`, every link checkable
   with `python3 check.py`

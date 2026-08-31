@@ -8,20 +8,31 @@ keeping rather than the slides.
 
 ## Syncing it
 
-The vault lives on p14s. Copy the folder in whole; the notes only link to each
-other and to `[[Agentic AI — index]]`, so nothing breaks if the surrounding
-vault is different.
+The vault lives on **p14s**, and the destination is not `~/vault` — that path
+does not exist there. It is a folder inside `MyNotes`, beside the BRI training
+notes:
 
-```bash
-rsync -av --delete course-slides/vault/agentic-ai/ \
-    -e 'ssh -p 1313' hendri@10.100.21.66:~/vault/agentic-ai/
+```
+~/Documents/obsidian/MyNotes/my-research/phd/assisstance-and-lecturer/
+    ai-professional-course/agentic-ai/     <- here
+    bri-training-ai/                       <- the other course's notes
 ```
 
-Check the host is reachable first — it has not always been:
+Copy the folder in whole; the notes only link to each other and to
+`[[Agentic AI — index]]`, so nothing breaks if the surrounding vault differs.
 
 ```bash
-ssh -p 1313 hendri@10.100.21.66 'echo ok'
+DEST=~/Documents/obsidian/MyNotes/my-research/phd/assisstance-and-lecturer
+ssh -p 1313 hendri@10.100.21.66 'echo ok'          # reachable? not always
+rsync -av --delete -e 'ssh -p 1313' \
+    course-slides/vault/agentic-ai/ \
+    "hendri@10.100.21.66:$DEST/ai-professional-course/agentic-ai/"
 ```
+
+Two things about that host, learned the tedious way: its login shell is
+**fish**, so a `for` loop over SSH needs `bash -lc '…'`; and `--delete` is
+deliberate here — the folder is a generated export, and a note left behind
+after being renamed upstream is a broken wikilink nobody goes looking for.
 
 ## What is in it
 

@@ -1,6 +1,6 @@
 ---
 tags: [agentic-ai, findings, teaching]
-updated: 2026-08-30
+updated: 2026-08-31
 ---
 
 # Findings worth keeping
@@ -47,6 +47,31 @@ The offline provider composes the final answer by reading the tool results out
 of the conversation, rather than from a fixed string. An earlier case in the
 repository had a scripted answer that contradicted its own trace — the most
 embarrassing failure a demo can have, and the easiest one to have.
+
+## "Reviewed source" is not compiled source
+
+The Flutter client sat in the repository for weeks marked *not yet compiled* —
+there was no SDK on the machine it was written on. It had been read several
+times and looked right.
+
+The first compile found a bug it could never have run past:
+`ThemeData.cardTheme` takes a `CardTheme` up to Flutter 3.22 and a
+`CardThemeData` after it. One word, and the app does not start.
+
+Two more only appear from a **clean checkout**, which is the state anyone
+following the how-to is in:
+
+- `flutter create .` overwrites `AndroidManifest.xml`. In this repo that file
+  is ours — it carries the network-security config and the deliberate decision
+  *not* to request a `CAMERA` permission.
+- `flutter create .` leaves a `test/widget_test.dart` written for the counter
+  app it assumes you are building. It references a `MyApp` that does not exist
+  here, so `flutter analyze` **fails** on a fresh clone.
+
+The lesson generalises past Flutter, and it is the same one as
+[[Tools are the permission boundary]]: a claim that has not been executed is a
+claim about intentions. The APK's permission list can now be checked instead of
+believed — `aapt2 dump badging` says `INTERNET`, and nothing else.
 
 ## The evaluation harness caught errors in my own evaluation sets
 
