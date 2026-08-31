@@ -216,7 +216,11 @@ def write(decks, outdir):
     ordered = sorted(merged.values(), key=_sort_key)
 
     with open(os.path.join(outdir, MANIFEST), "w", encoding="utf-8") as f:
-        json.dump({"course": COURSE, "team": TEAM, "decks": ordered},
+        # `books` ikut dikirim: repo course-web menampilkan label buku di
+        # tabel silabus, dan menuliskan judul buku di dua repo adalah cara
+        # paling cepat membuat keduanya berbeda.
+        json.dump({"course": COURSE, "team": TEAM, "books": BOOKS,
+                   "decks": ordered},
                   f, indent=2, ensure_ascii=False)
 
     chapters = [d for d in ordered if d.get("number") is not None]

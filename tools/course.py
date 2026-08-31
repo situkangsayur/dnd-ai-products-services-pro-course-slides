@@ -108,6 +108,8 @@ BOOKS = {
         "edition": "Third Edition",
         "authors": "François Chollet & Matthew Watson",
         "short": "Chollet & Watson, Deep Learning with Python 3e",
+        # Label pendek untuk tabel dan keping, tempat judul penuh tidak muat.
+        "short_label": "DLwP",
         "publisher": "Manning Publications",
         "isbn": "9781633436589",
         "site": "https://deeplearningwithpython.io/",
@@ -125,6 +127,7 @@ BOOKS = {
         "edition": "Early Release",
         "authors": "Maarten Grootendorst & Jay Alammar",
         "short": "Grootendorst & Alammar, An Illustrated Guide to AI Agents",
+        "short_label": "Agents",
         "publisher": "O'Reilly Media",
         "isbn": "9798341662681",
         "site": "https://www.oreilly.com/library/view/an-illustrated-guide/9798341662681/",

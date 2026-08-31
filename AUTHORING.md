@@ -9,7 +9,26 @@ Angka di dokumen ini diukur pada keadaan 31 Agustus 2026: 22 dek, 1.173 slide,
 
 ---
 
-## 0 · Baca ini dulu: sistemnya masih menganggap ada SATU buku
+## 0 · Buku kedua sudah ada — dan begini cara buku ketiga masuk
+
+`tools/course.py` sudah jadi registri: `BOOKS` memuat `dlwp` dan `agents`, dan
+tiap dek menyatakan `"book": "<kunci>"`. Buku ketiga menambahkan satu entri di
+sana, memakai awalan id sendiri (`ch*` untuk yang pertama, `agents*` untuk yang
+kedua), dan galeri mengelompokkannya sendiri.
+
+Satu keputusan editorial yang sudah dipakai dan pantas diteruskan: **tumpang
+tindih antar buku tidak apa-apa.** Tiap buku dibahas mandiri, jadi dek buku
+kedua boleh menjelaskan ulang perhatian diri meski Bab 15 sudah membahasnya.
+Rujukan silang berguna sebagai navigasi, bukan sebagai alasan menulis dek yang
+tipis.
+
+Dan satu aturan sumber yang mengikat untuk buku berlangganan seperti `agents`:
+yang diikuti dari bukunya hanya **urutan babnya** — itu data bibliografis.
+Isinya materi ajar yang ditulis sendiri, gambarnya digambar sendiri lewat
+`tools/diagrams.py`, tidak ada blok `img` dari bukunya, dan `source_url`
+dikosongkan supaya tidak ada tautan yang berakhir di dinding langganan.
+
+## 0b · Catatan lama: dulu sistemnya menganggap ada SATU buku
 
 `tools/course.py` punya satu dict `BOOK` dan satu peta `CH_SLUG` yang memetakan
 nomor bab ke slug URL. Dua puluh berkas di `content/` mengimpornya. Selama cuma
