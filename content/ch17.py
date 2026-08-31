@@ -1401,7 +1401,33 @@ def denoise_with_text_embeddings(embeddings, num_steps=28, guidance_scale=7.0):
     sin_theta_t = ops.sin(theta_t)
     s0 = ops.sin(theta_0 - theta_t) / sin_theta_0
     s1 = sin_theta_t / sin_theta_0
-    return s0 * v1 + s1 * v2"""},
+    return s0 * v1 + s1 * v2""",
+                 "run": [
+                     {"line": 5, "note": "Two latent points, at right angles, "
+                                         "each of length 1. Halfway between them "
+                                         "is the question.",
+                      "vars": {"v1": "(1, 0)", "v2": "(0, 1)", "t": "0.5",
+                               "dot": "0.0"}},
+                     {"line": 6, "note": "arccos(0) — a quarter turn apart. This "
+                                         "is the angle the walk will sweep.",
+                      "vars": {"theta_0": "90°"}},
+                     {"line": 11, "note": "Both weights come out at sin(45°). "
+                                          "Note they do **not** sum to 1, which "
+                                          "is the entire difference from a "
+                                          "straight line.",
+                      "vars": {"s0": "0.7071", "s1": "0.7071",
+                               "s0 + s1": "1.4142"}},
+                     {"line": 12, "note": "Length preserved. The point stays on "
+                                          "the sphere the training data lives on.",
+                      "vars": {"result": "(0.7071, 0.7071)", "‖result‖": "1.000"}},
+                     {"line": 12, "note": "A straight line would have given "
+                                          "(0.5, 0.5) — ==29% shorter==, a point "
+                                          "closer to the origin than any real "
+                                          "sample. **That is why the midpoints "
+                                          "of a linear walk look washed out**: "
+                                          "they are not where the data is.",
+                      "vars": {"lerp": "(0.5, 0.5)", "‖lerp‖": "0.7071"}},
+                 ]},
                 {"t": "p", "md": "The maths is not the point. **The motivation is.**"},
             ],
         },

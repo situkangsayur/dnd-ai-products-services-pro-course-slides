@@ -20,8 +20,8 @@ bertindihan. **Web dan PDF sekarang sama persis**: 1.167 slide web,
 
 | | Jumlah |
 |---|---|
-| `mmd` (kotak-dan-panah) | 182 |
-| `draw` (SVG digambar, dari `tools/diagrams.py`) | 26 |
+| `mmd` (kotak-dan-panah) | 181 |
+| `draw` (SVG digambar, dari `tools/diagrams.py`) | 27 |
 | `img` | 4 |
 
 Dek yang **sama sekali belum** punya peraga gambar: ch04, ch06, ch07, ch10,
@@ -45,19 +45,23 @@ Kandidat berikutnya, berurutan:
       sungguhan, bukan menamai bagian-bagiannya.
 - [ ] `ch17` — arsitektur difusi: denoising itu gelung, dan gelungnya yang
       hilang kalau digambar sebagai rantai kotak
-- [ ] `ch20` — alur penyebaran; sebagian memang graf, periksa satu-satu
+- [x] ~~`ch20` — periksa satu-satu~~ selesai. Delapan mermaid diperiksa; tujuh
+      memang graf dan tetap mermaid. Satu **salah bentuk**: `ch20#2` berjudul
+      "nested inside one another" tapi digambar sebagai rantai atas-ke-bawah —
+      bentuk sebuah pipeline, bukan pembendungan. Sekarang `nested_sets`.
 - [ ] `ch04` — pembagian latih/uji dan pengacakan batch, keduanya aritmetika
 - [ ] `viny-llm` — ada `attention_qkv` di `ch15` yang bisa dipakai ulang
 
-## 2 · Kode yang belum bisa dijalankan di slide — 287 dari 298
+## 2 · Kode yang belum bisa dijalankan di slide — 282 dari 298
 
 Blok `code` boleh membawa `run`: daftar langkah berisi nomor baris, catatan,
-dan keadaan variabel. Baru **11 dari 298** yang punya.
+dan keadaan variabel. Baru **16 dari 298** yang punya.
 
 Sudah: `ch01` gelung latih · `ch02` listing 2.1 + relu · `ch03` GradientTape +
 langkah latih utuh · `ch04` K-fold · `ch11` Conv2DTranspose · `ch12` IoU ·
+`ch11` Conv2DTranspose · `ch12` IoU · `ch13` garis dasar akal sehat ·
 `ch14` byte-pair encoding · `ch15` normalisasi lapis + perhatian
-hasil-kali-titik.
+hasil-kali-titik · `ch17` slerp.
 
 Prioritaskan listing yang **aritmetika**, bukan yang pemanggilan pustaka. Jejak
 `run` ditulis tangan; angkanya harus benar, jadi hitung dulu.
@@ -66,7 +70,7 @@ Prioritaskan listing yang **aritmetika**, bukan yang pemanggilan pustaka. Jejak
       Yang kedua sekaligus mencatat satu hal: listing di buku membagi dengan
       **variansi**, bukan akarnya, jadi keluarannya berpusat tapi variansinya
       0,53. Keras membagi dengan √(variansi + ε). Jejaknya menghitung keduanya.
-- [ ] `ch16`/`ch17` penyusunan batch
+- [ ] `ch16` penyusunan batch, dan `ch10` Grad-CAM (dua-duanya aritmetika)
 
 ## 3 · Slide kartu tanpa peraga — 128, dan cuma segelintir yang perlu gambar
 
@@ -97,9 +101,19 @@ dipakai, seperti apa bentuknya:
 - [x] ~~`ch12#2` "kalau segmentasi superset, kenapa mendeteksi?"~~ — selesai,
       jadi `box_vs_mask`: pertanyaannya soal ONGKOS, dan ongkos bisa dihitung.
       3 objek × 5 angka lawan 512×512 label. 17.476×.
-- [ ] `ch01#41`/`#42` terobosan dan hal yang dulu dikira mustahil
-- [ ] `ch06#1` "keras.datasets does not exist" (8 kartu)
-- [ ] `ch19#22` "Landing a rocket, and crossing a road"
+**Diperiksa dan diputuskan TIDAK dikerjakan** — dan alasannya lebih berguna
+daripada mengerjakannya:
+
+- `ch01#41` terobosan · `ch01#42` yang dulu dikira mustahil · `ch06#1`
+  delapan proyek konsultansi. Ketiganya lolos uji "bisa ditukar urutannya
+  tanpa slidenya jadi salah" — itu **daftar**, bukan etalase. Gambar per butir
+  cuma hiasan, dan hiasan itu menambah tinggi yang dibayar dengan ukuran
+  tampil. Aturan yang sama yang dipakai menyaring 128 slide kartu berlaku di
+  sini juga, termasuk waktu hasilnya tidak nyaman.
+- `ch19#22` "Landing a rocket, and crossing a road" — argumen Chollet soal
+  keterampilan lawan keluasan. Tidak ada yang bisa diukur dan tidak ada
+  konsekuensi yang bisa dihitung; menggambarnya berarti mengarang. Biarkan
+  jadi kartu.
 
 Sisanya jangan disentuh. Menambah gambar ke daftar yang memang daftar cuma
 menambah tinggi, dan tinggi itu dibayar dengan ukuran tampil.

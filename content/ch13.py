@@ -320,7 +320,32 @@ train_dataset = keras.utils.timeseries_dataset_from_array(
     return total_abs_err / samples_seen
 
 print(f"Validation MAE: {evaluate_naive_method(val_dataset):.2f}")
-print(f"Test MAE: {evaluate_naive_method(test_dataset):.2f}")"""},
+print(f"Test MAE: {evaluate_naive_method(test_dataset):.2f}")""",
+                 "run": [
+                     {"line": 5, "note": "The whole prediction, and it is not a "
+                                         "model: **the temperature in 24 hours "
+                                         "is the temperature now**. `-1` is the "
+                                         "last timestep, `1` the temperature "
+                                         "column.",
+                      "vars": {"normalised": "[0.42, −1.10, 0.05, 1.30]",
+                               "× std + mean": "[13.07, 0.15, 9.93, 20.55] °C"}},
+                     {"line": 6, "note": "Absolute error per sample, for this one "
+                                         "batch of four.",
+                      "vars": {"targets": "[10.97, 3.55, 8.03, 17.95] °C",
+                               "|error|": "[2.10, 3.40, 1.90, 2.60]"}},
+                     {"line": 7, "note": "Accumulate the errors and the count "
+                                         "separately — batches are not all the "
+                                         "same size, so averaging the averages "
+                                         "would be wrong.",
+                      "vars": {"total_abs_err": "10.00", "samples_seen": "4"}},
+                     {"line": 8, "note": "**2.5 °C off, on average, from a "
+                                         "prediction that does no work at all.** "
+                                         "Any model that cannot beat this number "
+                                         "has learned nothing — and finding that "
+                                         "out costs one loop, not one training "
+                                         "run.",
+                      "vars": {"MAE (this batch)": "2.50 °C"}},
+                 ]},
                 {"t": "out", "src": """Validation MAE: 2.44
 Test MAE: 2.62"""},
             ],

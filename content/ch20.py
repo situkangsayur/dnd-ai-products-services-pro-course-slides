@@ -14,16 +14,8 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url  # noqa: E402
+from diagrams import nested_sets  # noqa: E402
 
-
-MMD_NESTING = """
-flowchart TB
-  AI["<b>Artificial intelligence</b><br/><small>all attempts to automate human<br/>cognitive processes -- from a<br/>spreadsheet to a humanoid robot</small>"]
-  ML["<b>Machine learning</b><br/><small>developing programs purely from<br/>exposure to training data</small>"]
-  DL["<b>Deep learning</b><br/><small>long chains of geometric<br/>transformations, structured as layers</small>"]
-  GEN["<b>Generative AI</b><br/><small>self-supervised, billions of<br/>parameters, samples new inputs</small>"]
-  AI --> ML --> DL --> GEN
-"""
 
 MMD_LEARNING = """
 flowchart LR
@@ -156,8 +148,20 @@ DECK = {
                 {"t": "p", "md": "Deep learning is not synonymous with artificial intelligence, "
                                  "or even with machine learning. The distinctions matter, and "
                                  "they are routinely blurred in public discussion."},
-                {"t": "mmd", "id": "ch20-nesting", "src": MMD_NESTING,
-                 "cap": "Each term is a proper subset of the one above it."},
+                nested_sets("ch20-nesting", [
+                    ("Artificial intelligence",
+                     "automating human cognitive work — a spreadsheet counts"),
+                    ("Machine learning",
+                     "programs developed from exposure to data, not written by hand"),
+                    ("Deep learning",
+                     "long chains of geometric transformations, structured as layers"),
+                    ("Generative AI", ""),
+                ], cap="Each term is a proper subset of the one around it. Step "
+                       "outward-in and watch the narrowing.",
+                   note="Drawn as containment because that is the claim. The same "
+                        "four terms as a top-to-bottom chain of boxes is the shape of "
+                        "a pipeline, and a reader who trusts the picture over the "
+                        "sentence would learn the wrong thing."),
             ],
         },
 

@@ -2670,3 +2670,64 @@ def box_vs_mask(fig_id, *, cap="", note="", width=1300, height=440, full=False,
                    sim_label="cost")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ==================================================== nested, drawn as nested --
+
+def nested_sets(fig_id, rings, *, cap="", note="", width=1220, height=414,
+                full=False):
+    """Sets inside sets, drawn as sets inside sets.
+
+    ``rings`` runs outermost first: ``(label, gloss)``. The reason this
+    generator exists is that the slide it was written for says the four terms
+    are *nested inside one another* and drew them as a top-to-bottom chain of
+    four boxes -- which is the shape of a pipeline, not of containment. A
+    reader who trusts the picture over the sentence learns the wrong thing, and
+    pictures usually win.
+
+    Revealed outermost-in, so the narrowing is something you watch happen.
+    """
+    n = len(rings)
+
+    def build(p):
+        out = []
+        pad_x, pad_y = 60.0, 56.0
+        ow, oh = width - 2 * pad_x, height - pad_y - 70
+        dx = ow / (2.0 * n + 1.2)
+        # Vertical insets are NOT symmetric. Each ring needs a band across its
+        # top wide enough for a label and a line of gloss, and a symmetric
+        # inset makes that band the same height as the side margin -- which is
+        # how the first version drew every gloss underneath the next ring.
+        head, tail = 52.0, 16.0
+        tints = (p.fill, p.fill2, p.accent_fill, p.warm_fill)
+        edges = (p.line, p.ink3, p.accent, p.warm)
+
+        for i, (label, gloss) in enumerate(rings):
+            st = i + 1
+            x = pad_x + i * dx
+            y = pad_y + i * head
+            w = ow - 2 * i * dx
+            h = oh - i * (head + tail)
+            out.append(rect(x, y, w, h, r=16, pal=p,
+                            fill=tints[i % len(tints)],
+                            stroke=edges[i % len(edges)],
+                            sw=1.6 if i else 1.3, step=st))
+            innermost = i == n - 1
+            lx = x + w / 2 if innermost else x + 16
+            anchor = "middle" if innermost else "start"
+            ly = y + h / 2 - 6 if innermost else y + 25
+            out.append(txt(lx, ly, label, size=14.5 if innermost else 13.5,
+                           weight=600, pal=p, fill=edges[i % len(edges)],
+                           anchor=anchor, step=st))
+            if gloss:
+                out.append(txt(lx, ly + 18, gloss, size=11, pal=p, fill=p.ink3,
+                               anchor=anchor, step=st))
+
+        out.append(txt(width / 2, height - 24,
+                       "Every ring is a strict subset of the one around it. "
+                       "A chain of four boxes says something else entirely.",
+                       size=12.5, pal=p, fill=p.accent, step=n))
+        return svg(width, height, "".join(out), pal=p, steps=n,
+                   sim_label="ring")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

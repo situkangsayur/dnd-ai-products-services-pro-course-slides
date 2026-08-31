@@ -537,7 +537,22 @@ uint8"""},
                 {"t": "code", "lang": "python", "file": "listing 2.7–2.8 — slices",
                  "src": """print(train_images[10:100].shape)          # 90 images
 print(train_images[:, 14:, 14:].shape)     # bottom-right 14x14 corner
-print(train_images[:, 7:-7, 7:-7].shape)   # centre 14x14, via negative indices"""},
+print(train_images[:, 7:-7, 7:-7].shape)   # centre 14x14, via negative indices""",
+                 "run": [
+                     {"line": 1, "note": "Slicing the first axis picks **images**. "
+                                         "100 − 10 = 90, and each is still the "
+                                         "full 28 × 28.",
+                      "vars": {"result": "(90, 28, 28)"}},
+                     {"line": 2, "note": "Two colons: keep every image, then cut "
+                                         "rows and columns. `14:` means from 14 "
+                                         "to the end — the bottom-right quarter.",
+                      "vars": {"result": "(60000, 14, 14)"}},
+                     {"line": 3, "note": "`7:-7` counts 7 in from each end, which "
+                                         "is 28 − 7 − 7 = 14. Same size as the "
+                                         "line above, ==a different 14 × 14==.",
+                      "vars": {"result": "(60000, 14, 14)",
+                               "region": "the centre, not the corner"}},
+                 ]},
                 {"t": "out", "src": """(90, 28, 28)
 (60000, 14, 14)
 (60000, 14, 14)"""},
@@ -756,7 +771,27 @@ z = x @ y                      # the same thing, shorter
 # result shape:  (x.shape[0], y.shape[1])
 
 # (a, b, c, d) @ (d,)    -> (a, b, c)
-# (a, b, c, d) @ (d, e)  -> (a, b, c, e)"""},
+# (a, b, c, d) @ (d, e)  -> (a, b, c, e)""",
+                 "run": [
+                     {"line": 4, "note": "The only rule. The **last** axis of x "
+                                         "must match the **first** axis of y — "
+                                         "everything else about the shapes is "
+                                         "free.",
+                      "vars": {"x.shape": "(64, 3, 32)", "y.shape": "(32, 10)"}},
+                     {"line": 4, "note": "32 == 32, so it is legal. Had y been "
+                                         "(16, 10) this line is where it fails, "
+                                         "not somewhere later.",
+                      "vars": {"x.shape[-1]": "32", "y.shape[0]": "32",
+                               "compatible": "yes"}},
+                     {"line": 5, "note": "The matched axis **disappears**. That "
+                                         "is what the product does: it sums over "
+                                         "it.",
+                      "vars": {"z.shape": "(64, 3, 10)"}},
+                     {"line": 8, "note": "Which is exactly the general rule, with "
+                                         "a = 64, b = 3, d = 32, e = 10. A dense "
+                                         "layer is this line.",
+                      "vars": {"(a,b,d) @ (d,e)": "(a,b,e)"}},
+                 ]},
                 {"t": "p", "md": "Visually: line the two up as rectangles — ==the width of the "
                                  "first must match the height of the second=="},
             ],
@@ -777,7 +812,28 @@ z = x @ y                      # the same thing, shorter
 print(np.reshape(x, (6,)).shape)     # flattened
 print(np.reshape(x, (2, 3)).shape)   # regrouped
 
-print(np.transpose(np.zeros((300, 20))).shape)   # rows and columns exchanged"""},
+print(np.transpose(np.zeros((300, 20))).shape)   # rows and columns exchanged""",
+                 "run": [
+                     {"line": 1, "note": "Six numbers, arranged as three rows of "
+                                         "two. Count them — the count is the "
+                                         "thing that will not change.",
+                      "vars": {"x.shape": "(3, 2)", "elements": "6"}},
+                     {"line": 5, "note": "Flattened. Same six numbers, read in "
+                                         "the same order, grouped differently.",
+                      "vars": {"shape": "(6,)", "elements": "6",
+                               "values": "0. 1. 2. 3. 4. 5."}},
+                     {"line": 6, "note": "Regrouped as two rows of three. Still "
+                                         "the same six, still in that order — "
+                                         "==reshape never reorders, it only "
+                                         "regroups==.",
+                      "vars": {"shape": "(2, 3)", "elements": "6"}},
+                     {"line": 8, "note": "Transpose is the exception worth "
+                                         "noticing: it **does** change which "
+                                         "number sits where, but 300 × 20 and "
+                                         "20 × 300 are still 6 000 numbers.",
+                      "vars": {"before": "(300, 20)", "after": "(20, 300)",
+                               "elements": "6 000 either way"}},
+                 ]},
                 {"t": "out", "src": """(6,)
 (2, 3)
 (20, 300)"""},
