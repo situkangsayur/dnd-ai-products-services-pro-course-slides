@@ -12,7 +12,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
-from diagrams import feature_maps, pixel_mask  # noqa: E402
+from diagrams import feature_maps, mask_domains, pixel_mask  # noqa: E402
 
 
 MMD_TASKS = """
@@ -181,6 +181,13 @@ DECK = {
             "kicker": "Section 11.1.1",
             "title": "Where it is actually used",
             "blocks": [
+                mask_domains("ch11-domains",
+                             cap="Four fields, one operation. Step through: the scenes, "
+                                 "then the masks.",
+                             note="The scenes are 12×9 cells and obviously schematic — a "
+                                  "drawn figure cannot show a photograph, and the claim "
+                                  "here is about the SHAPE of the output, which a grid "
+                                  "shows better than a photo would."),
                 {"t": "cards", "cols": 4, "items": [
                     {"ico": "🎬", "h": "Image and video editing",
                      "p": "Background replacement, object removal, compositing."},

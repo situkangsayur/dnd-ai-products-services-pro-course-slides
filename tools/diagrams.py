@@ -211,7 +211,7 @@ def neuron_math(fig_id, *, inputs, weights, bias, act="relu", cap="", note="",
         out.append(txt(width / 2, height - 46,
                        f"z = {terms} + {fmt(bias)} = {fmt(z, 3)}",
                        size=14, mono=True, pal=p, fill=p.ink2))
-        out.append(txt(width / 2, height - 22,
+        out.append(txt(width / 2, height - 18,
                        f"{act}(z) = max(0, {fmt(z, 3)}) = {fmt(a, 3)}"
                        if act == "relu" else f"{act}(z) = {fmt(a, 3)}",
                        size=14, mono=True, pal=p, fill=p.accent))
@@ -286,7 +286,7 @@ def tensor_ranks(fig_id, *, cap="", note="", width=1000, height=360,
             out.append(txt(x, blurb_y, blurb, size=12.5, pal=p,
                            anchor="start", fill=p.ink3))
 
-        out.append(txt(width / 2, height - 22,
+        out.append(txt(width / 2, height - 18,
                        "Rank is how many indices it takes to reach one number: "
                        "t, t[i], t[i][j], t[i][j][k].",
                        size=13, pal=p, fill=p.ink2))
@@ -2442,5 +2442,124 @@ def phone_flow(fig_id, screens, *, cap="", note="", width=1300, height=452,
                                  pal=p, stroke=p.faint, sw=1.3, step=st + 1))
         return svg(width, height, "".join(out), pal=p, steps=n,
                    sim_label="screen")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ========================================= where segmentation is used, shown --
+
+def mask_domains(fig_id, *, cap="", note="", width=1300, height=336, full=False):
+    """Four domains, and the same operation happening in all of them.
+
+    "Where it is used" is a list, and a list of four emoji is what it usually
+    gets. What the list is really about is that in each of these fields the
+    DELIVERABLE is a mask -- a label with the same shape as the input -- and
+    only the thing being delineated changes. So the figure draws the four
+    scenes, then drops the masks onto them, which is one operation seen four
+    times rather than four words seen once.
+
+    The scenes are 12x9 cells and obviously schematic. That is the honest form
+    here: a drawn SVG cannot show a photograph, and the claim being made is
+    about the SHAPE of the output, which a grid shows better than a photo.
+    """
+    W, H = 12, 9
+
+    def photo(x, y):
+        # a subject standing against a background
+        if 3 <= x <= 7 and y >= 2:
+            return 1
+        return 0
+
+    # Order matters in all four of these: the specific thing has to be tested
+    # before the ground it stands on, or the ground swallows it. Getting that
+    # backwards is how the first draft drew a lesion made entirely of tissue.
+    def driving(x, y):
+        if 4 <= y <= 6 and 1 <= x <= 4:
+            return 2                       # car
+        if 3 <= y <= 6 and 8 <= x <= 9:
+            return 3                       # person
+        if y >= 6:
+            return 1                       # road
+        return 0                           # sky
+
+    def robot(x, y):
+        if 5 <= x <= 8 and 4 <= y <= 6:
+            return 2                       # the graspable object
+        if y >= 7:
+            return 1                       # table
+        return 0
+
+    def scan(x, y):
+        if (x - 7) ** 2 + (y - 3) ** 2 <= 2:
+            return 2                       # lesion
+        if (x - 6) ** 2 + (y - 4) ** 2 <= 9:
+            return 1                       # tissue
+        return 0
+
+    doms = (
+        ("Image and video editing", photo, {1}, "the subject, so the background can go"),
+        ("Autonomous driving", driving, {1, 2, 3}, "road, vehicles, people — three classes"),
+        ("Robotics", robot, {2}, "exactly where a graspable object begins"),
+        ("Medical imaging", scan, {2}, "the lesion, not merely that there is one"),
+    )
+
+    def build(p):
+        out = []
+        cell = 15.0
+        gw, gh = W * cell, H * cell
+        gap = (width - 2 * 64 - 4 * gw) / 3
+        top = 84.0
+        # Colours are assigned PER TILE, in order of the classes that tile
+        # masks. Class 1 means "road" in one scene and "the subject" in
+        # another, so a global class-to-colour map would say they were the
+        # same thing. A single-class tile is always the accent; the
+        # three-class one is the only place a second and third colour mean
+        # anything.
+        wheel = (p.accent, p.good, p.warm)
+
+        # Legend on one line at the top, clear of the tile titles.
+        out.append(rect(64, 34, 13, 13, r=3, pal=p, fill=p.faint,
+                        stroke="none", sw=0, step=1))
+        out.append(txt(84, 45, "the input", size=12, pal=p, fill=p.ink3,
+                       anchor="start", step=1))
+        out.append(rect(184, 34, 13, 13, r=3, pal=p, fill=p.accent,
+                        stroke="none", sw=0, step=2))
+        out.append(txt(204, 45,
+                       "the mask — a label with the same shape as the input",
+                       size=12, pal=p, fill=p.accent, anchor="start", step=2))
+
+        for i, (name, fn, mask_classes, what) in enumerate(doms):
+            x0 = 64 + i * (gw + gap)
+            colour = {c: wheel[k % len(wheel)]
+                      for k, c in enumerate(sorted(mask_classes))}
+            out.append(txt(x0 + gw / 2, top - 14, name, size=12.5, weight=600,
+                           pal=p, fill=p.ink, step=1))
+            for gy in range(H):
+                for gx in range(W):
+                    c = fn(gx, gy)
+                    out.append(rect(x0 + gx * cell, top + gy * cell,
+                                    cell - 1, cell - 1, r=1.5, pal=p,
+                                    fill=p.fill2 if c == 0 else p.faint,
+                                    stroke="none", sw=0, step=1))
+            # The mask, painted over the same cells.
+            for gy in range(H):
+                for gx in range(W):
+                    c = fn(gx, gy)
+                    if c in mask_classes:
+                        out.append(rect(x0 + gx * cell, top + gy * cell,
+                                        cell - 1, cell - 1, r=1.5, pal=p,
+                                        fill=colour[c], stroke="none", sw=0,
+                                        step=2))
+            out.append(rect(x0 - 2, top - 2, gw + 2, gh + 2, r=4, pal=p,
+                            fill="none", stroke=p.line, sw=1.0, step=1))
+            out.append(txt(x0 + gw / 2, top + gh + 26, what, size=11, pal=p,
+                           fill=p.ink3, step=2))
+
+        out.append(txt(width / 2, height - 18,
+                       "One operation, four fields. What changes is not the "
+                       "arithmetic — it is which pixels count as the answer.",
+                       size=13.5, weight=600, pal=p, fill=p.accent, step=3))
+        return svg(width, height, "".join(out), pal=p, steps=3,
+                   sim_label="mask")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)

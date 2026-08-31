@@ -21,7 +21,7 @@ bertindihan. **Web dan PDF sekarang sama persis**: 1.167 slide web,
 | | Jumlah |
 |---|---|
 | `mmd` (kotak-dan-panah) | 182 |
-| `draw` (SVG digambar, dari `tools/diagrams.py`) | 24 |
+| `draw` (SVG digambar, dari `tools/diagrams.py`) | 25 |
 | `img` | 4 |
 
 Dek yang **sama sekali belum** punya peraga gambar: ch04, ch06, ch07, ch10,
@@ -91,8 +91,9 @@ dipakai, seperti apa bentuknya:
       telepon dengan isi skematis, dan yang keenam digambar sebagai **lubang**
       bergaris putus dengan silang. "Layar yang tidak ada" itu klaim tentang
       produknya dan pantas kelihatan sebagai celah, bukan cuma ditulis.
-- [ ] `ch11#4` "Where it is actually used" — empat ranah segmentasi; yang
-      mewakili isinya adalah topeng di atas gambar, dan `pixel_mask` sudah ada
+- [x] ~~`ch11#4` "Where it is actually used"~~ — selesai, jadi `mask_domains`:
+      empat adegan 12×9 dan topengnya dijatuhkan ke atasnya. Satu operasi
+      dilihat empat kali, bukan empat kata dilihat sekali.
 - [ ] `ch12#1` "What detection is for"
 - [ ] `ch01#41`/`#42` terobosan dan hal yang dulu dikira mustahil
 - [ ] `ch06#1` "keras.datasets does not exist" (8 kartu)
