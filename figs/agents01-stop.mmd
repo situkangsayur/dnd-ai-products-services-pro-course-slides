@@ -1,0 +1,12 @@
+%% direction chosen by tools/figures.py: this renders
+%% better in the space a slide gives it. Edit the deck
+%% source, not this file.
+
+flowchart LR
+  A["Giliran berikutnya"] --> C1{"Tujuan tercapai?"}
+  C1 -- ya --> SEL["Selesai"]
+  C1 -- tidak --> C2{"Anggaran langkah habis?"}
+  C2 -- ya --> MEN["Berhenti, laporkan sejauh mana"]
+  C2 -- tidak --> C3{"Ada alat untuk langkah ini?"}
+  C3 -- tidak --> MEN
+  C3 -- ya --> A

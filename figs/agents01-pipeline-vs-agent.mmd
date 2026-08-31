@@ -1,0 +1,15 @@
+
+flowchart TB
+  subgraph PIPA["Alur tetap — jalannya ditulis programmer"]
+    direction LR
+    I1["Masukan"] --> S1["Langkah 1"] --> S2["Langkah 2"] --> S3["Langkah 3"] --> O1["Keluaran"]
+  end
+  subgraph AGEN["Agen — jalannya dipilih saat berjalan"]
+    direction LR
+    I2["Tujuan"] --> M["Model memilih<br/>langkah berikutnya"]
+    M --> T["Alat dipanggil"]
+    T --> OB["Hasilnya dibaca"]
+    OB --> M
+    M --> O2["Selesai / menyerah"]
+  end
+  PIPA ~~~ AGEN

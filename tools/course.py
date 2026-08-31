@@ -119,6 +119,33 @@ BOOKS = {
         "note": "The third-edition code is written with Keras 3 and runs on top of "
                 "JAX, TensorFlow, or PyTorch.",
     },
+    "agents": {
+        "key": "agents",
+        "title": "An Illustrated Guide to AI Agents",
+        "edition": "Early Release",
+        "authors": "Maarten Grootendorst & Jay Alammar",
+        "short": "Grootendorst & Alammar, An Illustrated Guide to AI Agents",
+        "publisher": "O'Reilly Media",
+        "isbn": "9798341662681",
+        "site": "https://www.oreilly.com/library/view/an-illustrated-guide/9798341662681/",
+        "chapters_url": "",
+        "code_repo": "",
+        # 🚨 BUKAN akses terbuka — teksnya di balik langganan O'Reilly.
+        #
+        # Konsekuensinya nyata untuk dek buku ini, bukan sekadar catatan lisensi:
+        #
+        #  * `chapter_url()` mengembalikan None, jadi tidak ada tautan "baca bab
+        #    penuh" yang akan berakhir di dinding langganan.
+        #  * Dek buku ini ditulis sebagai MATERI AJAR SENDIRI yang mengikuti
+        #    urutan babnya, bukan ringkasan isinya. Struktur bab adalah data
+        #    bibliografis; isinya tidak.
+        #  * Gambarnya DIGAMBAR SENDIRI lewat tools/diagrams.py. Tidak ada
+        #    gambar buku yang disalin, jadi blok `img` dengan `credit: True`
+        #    tidak dipakai untuk buku ini.
+        "open_access": False,
+        "note": "Early release. Dek mengikuti urutan babnya; isinya materi ajar "
+                "sendiri dengan gambar yang digambar sendiri.",
+    },
 }
 
 # Buku pertama; nama lama dipertahankan agar isi yang sudah ada tetap jalan.
@@ -133,7 +160,7 @@ def book(key=None):
 
 
 # Slug bab per buku. `CH_SLUG` tetap menunjuk buku pertama.
-CH_SLUGS = {"dlwp": {
+CH_SLUGS = {"agents": {}, "dlwp": {
     1: "chapter01_what-is-deep-learning",
     2: "chapter02_mathematical-building-blocks",
     3: "chapter03_introduction-to-ml-frameworks",
