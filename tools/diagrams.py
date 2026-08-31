@@ -2731,3 +2731,168 @@ def nested_sets(fig_id, rings, *, cap="", note="", width=1220, height=414,
                    sim_label="ring")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ====================================== what a conversation actually costs --
+
+def context_growth(fig_id, *, cap="", note="", width=1290, height=440,
+                   full=False, system=800, per_turn=350, turns=10):
+    """Why an agent's bill grows faster than its conversation.
+
+    The whole history is resent on every turn, so the context at turn *n* is
+    the system prompt plus everything said so far -- and the tokens BILLED are
+    the sum of all of those, not the size of the final conversation. That is a
+    quadratic against a linear, and it is the single arithmetic fact that most
+    changes how somebody builds an agent.
+
+    Drawn as bars for the context at each turn, with the running total beside
+    them, because the gap between the last bar and the total is the whole
+    point.
+    """
+    ctx = [system + per_turn * k for k in range(turns)]
+    billed = []
+    run = 0
+    for c in ctx:
+        run += c
+        billed.append(run)
+
+    def build(p):
+        out = []
+        bx, by, bw, bh = 92.0, 92.0, 780.0, 246.0
+        step_x = bw / turns
+        top = max(ctx)
+
+        out.append(txt(bx, 54, "isi konteks pada tiap giliran", size=13.5,
+                       weight=600, pal=p, fill=p.ink, anchor="start", step=1))
+        out.append(line(bx, by + bh, bx + bw, by + bh, pal=p, stroke=p.line,
+                        sw=1.2, step=1))
+        out.append(line(bx, by, bx, by + bh, pal=p, stroke=p.line, sw=1.2,
+                        step=1))
+
+        for t in range(turns):
+            x = bx + t * step_x + 4
+            w = step_x - 8
+            st = 1 if t == 0 else (2 if t < 5 else 3)
+            # the fixed part, and what the conversation has added to it
+            hs = bh * system / top
+            hh = bh * (ctx[t] - system) / top
+            # p.ink3, not p.line: on the PRINT palette `line` and `accent` are
+            # the same colour, so a two-part bar drawn with them came out as
+            # one solid block in the PDF while looking correct on the web.
+            out.append(rect(x, by + bh - hs, w, hs, r=2, pal=p, fill=p.ink3,
+                            stroke="none", sw=0, step=st))
+            out.append(rect(x, by + bh - hs - hh, w, hh, r=2, pal=p,
+                            fill=p.accent, stroke="none", sw=0, step=st))
+            if t in (0, 4, turns - 1):
+                out.append(txt(x + w / 2, by + bh + 18, f"giliran {t + 1}",
+                               size=10.5, pal=p, fill=p.ink3, step=st))
+
+        ly = by + bh + 46
+        for i, (col, lbl) in enumerate(((p.ink3, "perintah sistem + alat — tetap"),
+                                        (p.accent, "riwayat percakapan — tumbuh"))):
+            out.append(rect(bx + i * 300, ly - 9, 13, 13, r=3, pal=p, fill=col,
+                            stroke="none", sw=0, step=1))
+            out.append(txt(bx + i * 300 + 20, ly, lbl, size=11.5, pal=p,
+                           fill=p.ink2, anchor="start", step=1))
+
+        rx = bx + bw + 52
+        out.append(txt(rx, by + 24, "percakapan akhir", size=12, pal=p,
+                       fill=p.ink3, anchor="start", step=3))
+        out.append(txt(rx, by + 52, f"{ctx[-1]:,}".replace(",", " ") + " token",
+                       size=19, weight=600, pal=p, fill=p.accent,
+                       anchor="start", step=3))
+        out.append(txt(rx, by + 104, "yang ditagihkan", size=12, pal=p,
+                       fill=p.ink3, anchor="start", step=3))
+        out.append(txt(rx, by + 132, f"{billed[-1]:,}".replace(",", " ") + " token",
+                       size=19, weight=600, pal=p, fill=p.bad, anchor="start",
+                       step=3))
+        out.append(txt(rx, by + 180,
+                       f"{billed[-1] / ctx[-1]:.1f}× lipat", size=22, weight=600,
+                       pal=p, fill=p.bad, anchor="start", step=3))
+
+        out.append(txt(width / 2, height - 18,
+                       "Percakapannya tumbuh lurus; tagihannya tumbuh kuadrat. "
+                       "Tiap giliran membayar ulang semua giliran sebelumnya.",
+                       size=13, weight=600, pal=p, fill=p.accent, step=3))
+        return svg(width, height, "".join(out), pal=p, steps=3,
+                   sim_label="giliran")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ================================== what actually fits in a context window --
+
+def token_budget(fig_id, *, cap="", note="", width=1290, height=400, full=False,
+                 window=128_000, parts=None, turns=(5, 15, 30)):
+    """A context window is a budget, and most of it is spent before turn one.
+
+    Drawn because "128k tokens" sounds like room for anything, and the number
+    that matters is what is LEFT after the fixed costs -- and how fast the
+    remainder disappears as the run gets longer. Both are arithmetic, so both
+    are computed here rather than asserted.
+    """
+    parts = parts or [
+        ("perintah sistem + kebijakan", 4_000),
+        ("skema 12 alat", 6_000),
+        ("hasil alat per giliran (rerata)", 2_400),
+    ]
+    fixed = parts[0][1] + parts[1][1]
+    per_turn = parts[2][1]
+
+    def build(p):
+        out = []
+        bx, by, bw, bh = 84.0, 104.0, 980.0, 46.0
+        gap = 62.0
+        # NOT p.line here: on the print palette `line` and `accent` are the
+        # same colour, so any figure that stacks the two reads as one block in
+        # the PDF while looking correct on the web. Three visibly distinct
+        # fills, checked on both palettes.
+        cols = (p.ink3, p.warm, p.accent)
+
+        out.append(txt(bx, 56, f"jendela {window // 1000}k token, dibelanjakan",
+                       size=13.5, weight=600, pal=p, fill=p.ink, anchor="start",
+                       step=1))
+
+        for row, n in enumerate(turns):
+            y = by + row * (bh + gap)
+            used = fixed + per_turn * n
+            st = row + 1
+            out.append(txt(bx, y - 10, f"setelah {n} giliran", size=12, pal=p,
+                           fill=p.ink3, anchor="start", step=st))
+            out.append(rect(bx, y, bw, bh, r=6, pal=p, fill=p.fill,
+                            stroke=p.line, sw=1.1, step=st))
+            x = bx
+            for i, (lbl, size) in enumerate(parts):
+                amount = size * (n if i == 2 else 1)
+                w = bw * amount / window
+                out.append(rect(x, y, w, bh, r=0, pal=p, fill=cols[i],
+                                stroke="none", sw=0, step=st))
+                x += w
+            left = window - used
+            out.append(txt(bx + bw + 14, y + bh / 2 + 4,
+                           f"sisa {left:,}".replace(",", " "), size=12.5,
+                           mono=True, pal=p,
+                           fill=p.good if left > window * 0.4 else p.bad,
+                           anchor="start", step=st))
+            pct = 100.0 * used / window
+            out.append(txt(bx + 10, y + bh / 2 + 4, f"{pct:.0f}% terpakai",
+                           size=12, weight=600, pal=p, fill=p.ink, anchor="start",
+                           step=st))
+
+        ly = by + len(turns) * (bh + gap) - 18
+        for i, (lbl, _) in enumerate(parts):
+            out.append(rect(bx + i * 340, ly - 9, 13, 13, r=3, pal=p,
+                            fill=cols[i], stroke="none", sw=0, step=1))
+            out.append(txt(bx + i * 340 + 20, ly, lbl, size=11.5, pal=p,
+                           fill=p.ink2, anchor="start", step=1))
+
+        out.append(txt(width / 2, height - 16,
+                       f"{fixed:,}".replace(",", " ")
+                       + " token sudah terpakai sebelum giliran pertama — dan "
+                         "tiap alat yang ditambahkan memotong lagi.",
+                       size=13, weight=600, pal=p, fill=p.accent,
+                       step=len(turns)))
+        return svg(width, height, "".join(out), pal=p, steps=len(turns),
+                   sim_label="giliran")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

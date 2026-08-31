@@ -1,0 +1,8 @@
+
+flowchart LR
+  A["Pra-latih<br/><small>meramal token berikutnya<br/>pada teks raksasa</small>"]
+  B["SFT<br/><small>contoh percakapan<br/>yang ditulis manusia</small>"]
+  C["RL dari umpan balik<br/><small>diberi imbalan atas<br/>jawaban yang lebih disukai</small>"]
+  A --> B --> C
+  A -. "tahu bahasa,<br/>belum tahu menjawab" .-> B
+  B -. "tahu menjawab,<br/>belum tahu memilih" .-> C

@@ -252,6 +252,12 @@ kalau masih kekecilan, pecah slidenya — tidak ada batas jumlah slide.
   oleh satu pun metrik.
 - **Slide tersembunyi berukuran nol.** Panggil `window.deck.show(i)` dulu.
 - **Tunggu webfont** (`document.fonts.ready`), atau muncul pemotongan hantu.
+- **`p.line` dan `p.accent` warnanya SAMA di palet cetak.** Gambar yang
+  menumpuk keduanya — dua ruas satu batang, dua kelas satu kisi — terbaca
+  benar di web dan jadi satu blok pekat di PDF. Sudah menggigit dua kali.
+  Untuk ruas yang harus dibedakan pakai `p.ink3` / `p.warm` / `p.accent`, dan
+  **lihat PDF-nya**, bukan hanya versi webnya:
+  `pdftoppm -png -r 64 figs/<id>.tex.pdf /tmp/x`
 - **Jangan menulis href notebook dengan tangan.** Sembilan belas keping pernah
   menunjuk `.ipynb` mentah dan mengunduh alih-alih membuka.
 

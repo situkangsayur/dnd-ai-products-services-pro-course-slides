@@ -1,0 +1,11 @@
+
+flowchart LR
+  subgraph G2["Giliran 2 — permintaan yang BERBEDA"]
+    direction TB
+    R2["perintah sistem<br/>+ giliran 1<br/>+ giliran 2"] --> M2["Model"] --> J2["Jawaban 2"]
+  end
+  subgraph G1["Giliran 1"]
+    direction TB
+    R1["perintah sistem<br/>+ giliran 1"] --> M1["Model"] --> J1["Jawaban 1"]
+  end
+  G1 ~~~ G2

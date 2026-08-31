@@ -1,0 +1,7 @@
+
+flowchart LR
+  S["Skema alat<br/><small>nama, kegunaan,<br/>parameter bertipe</small>"] --> M["Model"]
+  M --> C["Panggilan alat<br/><small>terstruktur, belum dijalankan</small>"]
+  C --> V["Kode Anda<br/><small>memeriksa, lalu menjalankan</small>"]
+  V --> H["Hasil masuk konteks"]
+  H --> M
