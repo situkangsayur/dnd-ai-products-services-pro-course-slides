@@ -1,0 +1,11 @@
+
+flowchart TB
+  subgraph B["Baca — murah, aman"]
+    direction LR
+    S["cari kode"] --- L["baca berkas"] --- M["peta repo"]
+  end
+  subgraph T["Tulis — butuh gerbang"]
+    direction LR
+    E["sunting berkas"] --- X["jalankan perintah"]
+  end
+  B --> T

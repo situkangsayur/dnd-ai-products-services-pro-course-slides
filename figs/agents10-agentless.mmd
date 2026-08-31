@@ -1,0 +1,11 @@
+
+flowchart LR
+  subgraph F["Alur tetap"]
+    direction LR
+    F1["Cari berkas"] --> F2["Usulkan tambalan"] --> F3["Jalankan uji"] --> F4["Pilih yang lulus"]
+  end
+  subgraph A["Agen bebas"]
+    direction LR
+    A1["Tujuan"] --> A2["Model memilih<br/>langkah berikutnya"] --> A2
+  end
+  F ~~~ A

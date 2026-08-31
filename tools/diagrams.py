@@ -3403,3 +3403,83 @@ def image_cost(fig_id, *, cap="", note="", width=1290, height=462, full=False,
         return svg(width, height, "".join(out), pal=p, steps=3, sim_label="gambar")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ================================ a repository against a context window --
+
+def repo_context(fig_id, *, cap="", note="", width=1290, height=440, full=False,
+                 window=128_000, per_file=1_800, map_line=25,
+                 sizes=(20, 100, 500, 2000)):
+    """Why a coding agent needs a map, computed rather than asserted.
+
+    "Just put the codebase in the context" stops working almost immediately:
+    a hundred files of ordinary size is already more than a large window
+    holds. A one-line-per-file map is two orders of magnitude smaller, which is
+    what makes the search-then-read pattern the only one that scales.
+
+    Both numbers come from the two assumptions printed on the drawing.
+    """
+    rows = [(n, n * per_file, n * map_line) for n in sizes]
+
+    def build(p):
+        out = []
+        bx, by, bw, bh = 108.0, 108.0, 760.0, 226.0
+        top = max(r[1] for r in rows)
+        step_x = bw / len(rows)
+
+        out.append(txt(bx, 52, "seluruh repo lawan jendela konteks", size=13.5,
+                       weight=600, pal=p, fill=p.ink, anchor="start", step=1))
+        out.append(txt(bx + 340, 52,
+                       f"asumsi: {per_file:,} token per berkas, "
+                       f"{map_line} token per baris peta".replace(",", " "),
+                       size=11, pal=p, fill=p.bad, anchor="start", step=1))
+
+        out.append(line(bx, by + bh, bx + bw, by + bh, pal=p, stroke=p.line,
+                        sw=1.2, step=1))
+        wy = by + bh - bh * window / top
+        out.append(line(bx, wy, bx + bw + 26, wy, pal=p, stroke=p.good, sw=1.8,
+                        dash="5 4", step=1))
+        out.append(txt(bx + bw + 32, wy + 4,
+                       f"jendela {window // 1000}k", size=11.5, pal=p,
+                       fill=p.good, anchor="start", step=1))
+
+        for i, (n, full_t, map_t) in enumerate(rows):
+            x = bx + i * step_x + step_x * 0.18
+            w = step_x * 0.28
+            st = 1 if i == 0 else (2 if i < 3 else 3)
+            h1 = bh * full_t / top
+            out.append(rect(x, by + bh - h1, w, h1, r=3, pal=p,
+                            fill=p.bad if full_t > window else p.accent,
+                            stroke="none", sw=0, step=st))
+            h2 = max(2.0, bh * map_t / top)
+            out.append(rect(x + w + 6, by + bh - h2, w, h2, r=3, pal=p,
+                            fill=p.good, stroke="none", sw=0, step=st))
+            out.append(txt(x + w / 2, by + bh - h1 - 10,
+                           f"{full_t // 1000}k", size=11, mono=True, pal=p,
+                           fill=p.ink, step=st))
+            out.append(txt(x + w + 6 + w / 2, by + bh - h2 - 10,
+                           f"{map_t // 1000}k" if map_t >= 1000 else f"{map_t}",
+                           size=10, mono=True, pal=p, fill=p.good, step=st))
+            out.append(txt(x + w + 3, by + bh + 20, f"{n} berkas", size=11,
+                           pal=p, fill=p.ink3, step=st))
+
+        ly = by + bh + 48
+        for k, (col, lbl) in enumerate(((p.accent, "seluruh isi berkas"),
+                                        (p.good, "peta: satu baris per berkas"))):
+            out.append(rect(bx + k * 280, ly - 9, 13, 13, r=3, pal=p, fill=col,
+                            stroke="none", sw=0, step=1))
+            out.append(txt(bx + k * 280 + 20, ly, lbl, size=11.5, pal=p,
+                           fill=p.ink2, anchor="start", step=1))
+
+        out.append(txt(bx, height - 40,
+                       "Seratus berkas sudah melewati jendela. Petanya 2% dari "
+                       "jendela yang sama —",
+                       size=12.5, pal=p, fill=p.ink2, anchor="start", step=3))
+        out.append(txt(bx, height - 18,
+                       "dan itulah kenapa agen kode mencari dulu, lalu membaca "
+                       "beberapa berkas, bukan membaca semuanya.",
+                       size=12.5, weight=600, pal=p, fill=p.accent, anchor="start",
+                       step=3))
+        return svg(width, height, "".join(out), pal=p, steps=3, sim_label="repo")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

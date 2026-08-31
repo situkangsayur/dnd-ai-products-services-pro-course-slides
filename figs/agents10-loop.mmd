@@ -1,0 +1,7 @@
+
+flowchart LR
+  I["Masalah"] --> E["Sunting"]
+  E --> T["Jalankan uji"]
+  T -->|"merah"| E
+  T -->|"hijau"| D["Selesai"]
+  T -. "pemeriksa objektif — inilah yang<br/>membuat refleksi bekerja di sini" .-> T
