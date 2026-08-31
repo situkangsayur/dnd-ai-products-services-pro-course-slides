@@ -684,6 +684,221 @@ DECK = {
             ],
         },
 
+        {"type": "section", "num": "05b", "title": "Agen terkecil yang masih agen",
+         "lead": "Kalau semua hiasannya dilepas, yang tersisa selusin baris."},
+
+        {
+            "type": "slide",
+            "kicker": "Inti",
+            "title": "Selusin baris, dan tidak ada kerangka kerja",
+            "blocks": [
+                {"t": "p", "md": "Ini seluruh mesinnya. Bukan versi sederhana dari sesuatu "
+                                 "yang lebih besar — inilah yang dijalankan kerangka kerja "
+                                 "mana pun, dengan tambahan pencatatan dan penanganan galat."},
+                {"t": "code", "lang": "python", "file": "agen minimum",
+                 "src": """def jalankan(tujuan, alat, model, maks_langkah=8):
+    riwayat = [{"peran": "tujuan", "isi": tujuan}]
+    for langkah in range(maks_langkah):
+        pilihan = model.pilih(riwayat, daftar=alat.skema())
+        if pilihan.selesai:
+            return pilihan.jawaban, riwayat
+        if pilihan.nama not in alat:
+            riwayat.append({"peran": "galat", "isi": "alat tidak ada"})
+            continue
+        hasil = alat[pilihan.nama](**pilihan.argumen)
+        riwayat.append({"peran": "amatan", "isi": hasil})
+    return None, riwayat            # anggaran habis, bukan selesai""",
+                 "run": [
+                     {"line": 4, "note": "Model **memilih**, dan hanya memilih. Yang "
+                                         "dikembalikannya sebuah niat, bukan sebuah efek.",
+                      "vars": {"langkah": "0", "pilihan": "ambil_data(id=…)"}},
+                     {"line": 9, "note": "Baris ini yang membuat batas kemampuannya nyata: "
+                                         "nama yang tidak ada di `alat` **tidak akan pernah "
+                                         "dieksekusi**, seberapa pun yakinnya model.",
+                      "vars": {"alat": "5 baca, 1 tulis"}},
+                     {"line": 11, "note": "Baris 11 satu-satunya tempat dunia luar tersentuh. "
+                                          "Setiap izin yang dimiliki sistem ini ada di sini.",
+                      "vars": {"hasil": "1 843 baris"}},
+                     {"line": 12, "note": "Amatan masuk ke riwayat, dan gelungnya berputar. "
+                                          "Inilah keseluruhan \"agennya\".",
+                      "vars": {"riwayat": "3 entri"}},
+                     {"line": 13, "note": "Dan ini penyelamat yang paling sering dilupakan: "
+                                          "keluar karena **anggaran habis**, dikembalikan "
+                                          "sebagai `None` — bukan sebagai jawaban yang "
+                                          "kelihatan seperti jawaban.",
+                      "vars": {"keluar": "maks_langkah"}},
+                 ]},
+                {"t": "p", "md": "Perhatikan yang **tidak** ada: tidak ada prompt yang "
+                                 "meminta agar berhati-hati, dan tidak ada daftar larangan. "
+                                 "Batasnya ada di `alat`, dan itu struktur data biasa."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Inti",
+            "title": "Yang ditambahkan sesudahnya, berurutan",
+            "blocks": [
+                {"t": "p", "md": "Dari selusin baris itu, tiap tambahan menjawab satu "
+                                 "kegagalan yang sudah terlihat — bukan satu fitur yang "
+                                 "kedengarannya bagus."},
+                {"t": "table",
+                 "head": ["Tambahan", "Kegagalan yang dijawabnya", "Bab"],
+                 "widths": [26, 50, 24],
+                 "rows": [
+                     ["Jejak tiap giliran", "Tidak bisa tahu *kenapa* jawabannya begitu",
+                      "bab 7"],
+                     ["Anggaran selain langkah", "Berhenti berputar, tapi tagihannya sudah "
+                      "terlanjur", "bab 7"],
+                     ["Memori", "Mengulang pekerjaan yang sudah dilakukannya sendiri",
+                      "bab 4"],
+                     ["Rencana eksplisit", "Langkah kesembilan melupakan tujuan awalnya",
+                      "bab 6"],
+                     ["Persetujuan pada alat tulis", "Efek yang tidak bisa dibatalkan",
+                      "bab 5"],
+                 ]},
+                {"t": "band",
+                 "md": "Urutan ini bukan selera. Menambahkan memori sebelum ada jejak "
+                       "berarti ==menambah tempat bug bersembunyi sebelum punya cara "
+                       "melihatnya=="},
+            ],
+        },
+
+        {"type": "section", "num": "06",
+         "title": "Membangunnya dengan bertanggung jawab",
+         "lead": "Bagian yang paling mudah ditunda, dan paling mahal kalau ditunda."},
+
+        {
+            "type": "slide",
+            "kicker": "Tanggung jawab",
+            "title": "Kemampuan bertambah, tanggung jawabnya tidak otomatis ikut",
+            "blocks": [
+                {"t": "p", "md": "Sebuah model yang salah menjawab menghasilkan **kalimat "
+                                 "yang salah**. Sebuah agen yang salah menjawab bisa "
+                                 "menghasilkan **tindakan yang salah** — surel terkirim, "
+                                 "baris terhapus, dana berpindah. Yang berubah bukan "
+                                 "tingkat kesalahannya, melainkan apa yang terjadi "
+                                 "sesudahnya."},
+                {"t": "p", "md": "Karena itu pertanyaan pertama sebelum menambah alat bukan "
+                                 "*apakah modelnya cukup pandai*, melainkan **seberapa jauh "
+                                 "akibatnya kalau ia keliru**, dan **siapa yang menanggung "
+                                 "akibat itu** — hampir tidak pernah orang yang membangunnya."},
+                {"t": "band",
+                 "md": "Aturan yang menyelamatkan paling banyak waktu: ==ukur jangkauan "
+                       "ledakannya sebelum menambah alat==, bukan sesudah insiden pertama."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Tanggung jawab",
+            "title": "Empat pertanyaan yang harus punya jawaban tertulis",
+            "blocks": [
+                {"t": "cards", "cols": 2, "items": [
+                    {"ico": "🎯", "h": "Apa yang tidak boleh ia lakukan?",
+                     "p": "Ditulis sebagai **alat yang tidak ada di daftarnya**, bukan "
+                          "sebagai kalimat larangan di prompt. Larangan bisa dibujuk; "
+                          "alat yang tidak ada tidak bisa dipanggil.",
+                     "style": "accent"},
+                    {"ico": "👤", "h": "Siapa yang bertanggung jawab atas keputusannya?",
+                     "p": "Kalau jawabannya \"sistemnya\", berarti belum ada jawabannya. "
+                          "Harus ada nama, dan namanya tercatat pada keputusan itu."},
+                    {"ico": "🔍", "h": "Bagaimana orang tahu ini agen?",
+                     "p": "Pengguna yang mengira sedang bicara dengan orang akan memberi "
+                          "kepercayaan yang tidak ia berikan kalau tahu."},
+                    {"ico": "🧾", "h": "Apa yang tersimpan, dan berapa lama?",
+                     "p": "Jejaknya berisi data yang dilihat agen. Retensinya harus "
+                          "cocok dengan retensi data itu, bukan dengan umur lognya."},
+                ]},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Tanggung jawab",
+            "title": "Dua kegagalan yang bentuknya khas agen",
+            "blocks": [
+                {"t": "cols", "ratio": "1-1", "cols": [
+                    [{"t": "p", "md": "**Perintah yang menumpang di dalam data.** Agen "
+                                      "membaca halaman, berkas, atau tiket — dan isinya "
+                                      "berisi kalimat yang ditujukan kepada *dia*, bukan "
+                                      "kepada pembacanya."},
+                     {"t": "p", "md": "Ini bukan soal model yang mudah dibujuk. Selama "
+                                      "hasil alat masuk ke konteks yang sama dengan "
+                                      "perintah, keduanya kelihatan sama. Penanganannya "
+                                      "di **batas alatnya**: apa yang boleh dipanggil "
+                                      "sesudah membaca sesuatu yang tidak tepercaya."}],
+                    [{"t": "p", "md": "**Kesalahan yang bertumpuk.** Sembilan langkah "
+                                      "benar 95% masing-masing bukan sistem yang benar "
+                                      "95% — ia benar sekitar **63%**."},
+                     {"t": "p", "md": "Karena itu jumlah langkah bukan detail teknis. "
+                                      "Tiap langkah tambahan mengalikan peluang gagalnya, "
+                                      "dan satu-satunya penawarnya adalah **memeriksa di "
+                                      "tengah jalan**, bukan di ujungnya."}],
+                ]},
+                {"t": "band",
+                 "md": "0,95⁹ ≈ 0,63. Angka itu sebabnya agen dengan sedikit langkah "
+                       "hampir selalu mengalahkan agen dengan banyak langkah."},
+            ],
+        },
+
+        {"type": "section", "num": "07", "title": "Tiga spesialisasi",
+         "lead": "Dan peta sisa buku ini."},
+
+        {
+            "type": "slide",
+            "kicker": "Peta",
+            "title": "Tiga arah, dan masing-masing punya babnya sendiri",
+            "blocks": [
+                {"t": "cards", "cols": 3, "items": [
+                    {"ico": "👥", "h": "Banyak agen",
+                     "p": "Beberapa agen dengan peran dan alat berbeda. Menarik di papan "
+                          "tulis, mahal di tabel biaya — dan **bab 8** menghitungnya.",
+                     "style": "accent"},
+                    {"ico": "🖼", "h": "Multi-modal",
+                     "p": "Masukannya bukan cuma teks: gambar, layar, dokumen. Yang "
+                          "berubah bukan gelungnya, melainkan apa yang bisa jadi bukti. "
+                          "**Bab 9**.",
+                     "style": "accent"},
+                    {"ico": "⌨", "h": "Agen kode",
+                     "p": "Kode adalah alat yang paling kuat dan paling tajam: ia bisa "
+                          "melakukan apa pun yang bisa dilakukan kode. **Bab 10**.",
+                     "style": "accent"},
+                ]},
+                {"t": "p", "md": "Ketiganya bukan jenis agen yang berbeda. Ketiganya "
+                                 "**gelung yang sama** dengan ruang tindakan yang berbeda — "
+                                 "yang berubah selalu alatnya, bukan mesinnya."},
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Peta",
+            "title": "Urutan babnya bukan urutan membangunnya",
+            "blocks": [
+                {"t": "p", "md": "Buku ini bergerak dari bagian ke sistem: model (bab 2–3), "
+                                 "lalu yang ditambahkan padanya — memori (4), alat (5), "
+                                 "rencana (6) — lalu cara menilainya (7), lalu ketiga "
+                                 "spesialisasi (8–10)."},
+                {"t": "steps", "items": [
+                    {"h": "Membangunnya justru dari belakang",
+                     "p": "Kumpulan uji dulu — sebelum agennya ada. Dua puluh kasus nyata "
+                          "dengan hasil yang sudah diketahui, ditulis selagi masih jujur "
+                          "tentang apa artinya benar."},
+                    {"h": "Lalu alat, lalu batasnya",
+                     "p": "Alat baca dulu. Alat tulis belakangan, dan tiap satu dengan "
+                          "alasan tertulis."},
+                    {"h": "Gelungnya paling akhir",
+                     "p": "Bagian yang paling menarik dibaca adalah bagian yang paling "
+                          "sedikit menentukan keberhasilannya."},
+                ]},
+                {"t": "band",
+                 "md": "Kalau urutan membangunnya dibalik mengikuti urutan babnya, yang "
+                       "terjadi biasanya: gelung yang bagus, alat seadanya, dan tidak ada "
+                       "cara mengetahui apakah semuanya bekerja."},
+            ],
+        },
+
         {
             "type": "slide",
             "kicker": "Penutup",

@@ -469,6 +469,134 @@ Naik ketika agen menjawab dengan percaya diri, termasuk saat salah. Berguna, tap
 \end{minipage}%
 \end{frame}
 
+\coursesection{05b}{Agen terkecil yang masih agen}{Kalau semua hiasannya dilepas, yang tersisa selusin baris.}
+
+\framekicker{Inti}
+\begin{frame}[shrink=25]{Selusin baris, dan tidak ada kerangka kerja}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Ini seluruh mesinnya. Bukan versi sederhana dari sesuatu yang lebih besar --- inilah yang dijalankan kerangka kerja mana pun, dengan tambahan pencatatan dan penanganan galat.\par}\vskip 4pt
+\icode{python}{agen minimum}{listings/agents01-02.py}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Perhatikan yang \textbf{tidak} ada: tidak ada prompt yang meminta agar berhati-hati, dan tidak ada daftar larangan. Batasnya ada di \inlinecode{alat}, dan itu struktur data biasa.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Inti}
+\begin{frame}[shrink=25]{Yang ditambahkan sesudahnya, berurutan}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Dari selusin baris itu, tiap tambahan menjawab satu kegagalan yang sudah terlihat --- bukan satu fitur yang kedengarannya bagus.\par}\vskip 4pt
+\begin{itable}{>{\raggedright\arraybackslash}p{0.2444\textwidth}>{\raggedright\arraybackslash}p{0.47\textwidth}>{\raggedright\arraybackslash}p{0.2256\textwidth}}
+\thead{Tambahan} & \thead{Kegagalan yang dijawabnya} & \thead{Bab} \\ \midrule
+Jejak tiap giliran & Tidak bisa tahu \textit{kenapa} jawabannya begitu & bab 7 \\
+Anggaran selain langkah & Berhenti berputar, tapi tagihannya sudah terlanjur & bab 7 \\
+Memori & Mengulang pekerjaan yang sudah dilakukannya sendiri & bab 4 \\
+Rencana eksplisit & Langkah kesembilan melupakan tujuan awalnya & bab 6 \\
+Persetujuan pada alat tulis & Efek yang tidak bisa dibatalkan & bab 5 \\
+\end{itable}
+\begin{iband}[signal]
+Urutan ini bukan selera. Menambahkan memori sebelum ada jejak berarti \hilite{menambah tempat bug bersembunyi sebelum punya cara melihatnya}
+\end{iband}
+\end{frame}
+
+\coursesection{06}{Membangunnya dengan bertanggung jawab}{Bagian yang paling mudah ditunda, dan paling mahal kalau ditunda.}
+
+\framekicker{Tanggung jawab}
+\begin{frame}[shrink=25]{Kemampuan bertambah, tanggung jawabnya tidak otomatis ikut}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Sebuah model yang salah menjawab menghasilkan \textbf{kalimat yang salah}. Sebuah agen yang salah menjawab bisa menghasilkan \textbf{tindakan yang salah} --- surel terkirim, baris terhapus, dana berpindah. Yang berubah bukan tingkat kesalahannya, melainkan apa yang terjadi sesudahnya.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Karena itu pertanyaan pertama sebelum menambah alat bukan \textit{apakah modelnya cukup pandai}, melainkan \textbf{seberapa jauh akibatnya kalau ia keliru}, dan \textbf{siapa yang menanggung akibat itu} --- hampir tidak pernah orang yang membangunnya.\par}\vskip 4pt
+\begin{iband}[signal]
+Aturan yang menyelamatkan paling banyak waktu: \hilite{ukur jangkauan ledakannya sebelum menambah alat}, bukan sesudah insiden pertama.
+\end{iband}
+\end{frame}
+
+\framekicker{Tanggung jawab}
+\begin{frame}[shrink=25]{Empat pertanyaan yang harus punya jawaban tertulis}
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icardaccent}
+\cardh{Apa yang tidak boleh ia lakukan?}
+Ditulis sebagai \textbf{alat yang tidak ada di daftarnya}, bukan sebagai kalimat larangan di prompt. Larangan bisa dibujuk; alat yang tidak ada tidak bisa dipanggil.
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icard}
+\cardh{Siapa yang bertanggung jawab atas keputusannya?}
+Kalau jawabannya "sistemnya", berarti belum ada jawabannya. Harus ada nama, dan namanya tercatat pada keputusan itu.
+\end{icard}
+\end{minipage}%
+
+
+\vskip 4pt
+
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icard}
+\cardh{Bagaimana orang tahu ini agen?}
+Pengguna yang mengira sedang bicara dengan orang akan memberi kepercayaan yang tidak ia berikan kalau tahu.
+\end{icard}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.494\textwidth}
+\begin{icard}
+\cardh{Apa yang tersimpan, dan berapa lama?}
+Jejaknya berisi data yang dilihat agen. Retensinya harus cocok dengan retensi data itu, bukan dengan umur lognya.
+\end{icard}
+\end{minipage}%
+\end{frame}
+
+\framekicker{Tanggung jawab}
+\begin{frame}[shrink=25]{Dua kegagalan yang bentuknya khas agen}
+\begin{minipage}[t]{0.485\textwidth}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Perintah yang menumpang di dalam data.} Agen membaca halaman, berkas, atau tiket --- dan isinya berisi kalimat yang ditujukan kepada \textit{dia}, bukan kepada pembacanya.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Ini bukan soal model yang mudah dibujuk. Selama hasil alat masuk ke konteks yang sama dengan perintah, keduanya kelihatan sama. Penanganannya di \textbf{batas alatnya}: apa yang boleh dipanggil sesudah membaca sesuatu yang tidak tepercaya.\par}\vskip 4pt
+
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.485\textwidth}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}\textbf{Kesalahan yang bertumpuk.} Sembilan langkah benar 95\% masing-masing bukan sistem yang benar 95\% --- ia benar sekitar \textbf{63\%}.\par}\vskip 4pt
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Karena itu jumlah langkah bukan detail teknis. Tiap langkah tambahan mengalikan peluang gagalnya, dan satu-satunya penawarnya adalah \textbf{memeriksa di tengah jalan}, bukan di ujungnya.\par}\vskip 4pt
+
+\end{minipage}%
+\begin{iband}[signal]
+0,95$^{9}$ $\approx$ 0,63. Angka itu sebabnya agen dengan sedikit langkah hampir selalu mengalahkan agen dengan banyak langkah.
+\end{iband}
+\end{frame}
+
+\coursesection{07}{Tiga spesialisasi}{Dan peta sisa buku ini.}
+
+\framekicker{Peta}
+\begin{frame}[shrink=25]{Tiga arah, dan masing-masing punya babnya sendiri}
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{Banyak agen}
+Beberapa agen dengan peran dan alat berbeda. Menarik di papan tulis, mahal di tabel biaya --- dan \textbf{bab 8} menghitungnya.
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{Multi-modal}
+Masukannya bukan cuma teks: gambar, layar, dokumen. Yang berubah bukan gelungnya, melainkan apa yang bisa jadi bukti. \textbf{Bab 9}.
+\end{icardaccent}
+\end{minipage}%
+\hfill
+\begin{minipage}[t]{0.3253\textwidth}
+\begin{icardaccent}
+\cardh{Agen kode}
+Kode adalah alat yang paling kuat dan paling tajam: ia bisa melakukan apa pun yang bisa dilakukan kode. \textbf{Bab 10}.
+\end{icardaccent}
+\end{minipage}%
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Ketiganya bukan jenis agen yang berbeda. Ketiganya \textbf{gelung yang sama} dengan ruang tindakan yang berbeda --- yang berubah selalu alatnya, bukan mesinnya.\par}\vskip 4pt
+\end{frame}
+
+\framekicker{Peta}
+\begin{frame}[shrink=25]{Urutan babnya bukan urutan membangunnya}
+{\fontsize{9.4}{12.6}\selectfont\color{fg2}Buku ini bergerak dari bagian ke sistem: model (bab 2--3), lalu yang ditambahkan padanya --- memori (4), alat (5), rencana (6) --- lalu cara menilainya (7), lalu ketiga spesialisasi (8--10).\par}\vskip 4pt
+\begin{isteps}
+\item \{'h': 'Membangunnya justru dari belakang', 'p': 'Kumpulan uji dulu --- sebelum agennya ada. Dua puluh kasus nyata dengan hasil yang sudah diketahui, ditulis selagi masih jujur tentang apa artinya benar.'\}
+\item \{'h': 'Lalu alat, lalu batasnya', 'p': 'Alat baca dulu. Alat tulis belakangan, dan tiap satu dengan alasan tertulis.'\}
+\item \{'h': 'Gelungnya paling akhir', 'p': 'Bagian yang paling menarik dibaca adalah bagian yang paling sedikit menentukan keberhasilannya.'\}
+\end{isteps}
+\begin{iband}[signal]
+Kalau urutan membangunnya dibalik mengikuti urutan babnya, yang terjadi biasanya: gelung yang bagus, alat seadanya, dan tidak ada cara mengetahui apakah semuanya bekerja.
+\end{iband}
+\end{frame}
+
 \framekicker{Penutup}
 \begin{frame}[shrink=25]{Yang dibawa pulang dari bab ini}
 \begin{isteps}
