@@ -1,0 +1,8 @@
+
+flowchart LR
+  A["Hasil<br/><small>jawabannya benar?</small>"]
+  B["Jalan<br/><small>caranya benar?</small>"]
+  C["Keandalan<br/><small>benar SETIAP kali?</small>"]
+  D["Keamanan<br/><small>tidak melakukan yang terlarang?</small>"]
+  A --> B --> C --> D
+  D -. "gagal di sini membatalkan<br/>ketiganya" .-> D

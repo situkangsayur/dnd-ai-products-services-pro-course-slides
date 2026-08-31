@@ -1,0 +1,8 @@
+
+flowchart LR
+  O["Keluaran"] --> J["Model penilai"]
+  R["Rubrik + contoh"] --> J
+  J --> S["Skor + alasan"]
+  S --> H{"Dicek manusia<br/>pada sampel"}
+  H -->|"cocok"| OK["Dipercaya untuk skala"]
+  H -->|"tidak"| FIX["Perbaiki rubriknya"]

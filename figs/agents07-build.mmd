@@ -1,0 +1,7 @@
+
+flowchart LR
+  P["20 kasus nyata"] --> G["Hasil yang benar,<br/>ditulis SEBELUM agennya ada"]
+  G --> S["Sebagian disimpan,<br/>tidak dilihat saat menyetel"]
+  S --> R["Jalankan tiap perubahan"]
+  R --> N["Kegagalan baru jadi kasus baru"]
+  N --> R

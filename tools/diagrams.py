@@ -3143,3 +3143,90 @@ def chunking(fig_id, *, cap="", note="", width=1290, height=430, full=False):
                    sim_label="cara")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ================ capability and reliability, from the same success rate --
+
+def pass_at_k(fig_id, *, cap="", note="", width=1290, height=444, full=False,
+              p=0.9, ks=(1, 2, 3, 5, 10)):
+    """Two metrics that move in opposite directions from one number.
+
+    ``pass@k`` asks whether ANY of k attempts succeeds -- 1 - (1-p)^k. It is
+    what a leaderboard reports, and it rises towards 1 with k.
+
+    ``pass^k`` asks whether ALL k attempts succeed -- p^k. It is what a user
+    experiences across k tasks in a row, and it falls towards 0 with k.
+
+    Both are exact, both come from the same p, and the gap between them is the
+    gap between "the model can do this" and "I can depend on this". Drawn
+    because the two curves crossing is more convincing than either number.
+    """
+    at = [1 - (1 - p) ** k for k in ks]
+    pw = [p ** k for k in ks]
+
+    def build(pal):
+        out = []
+        bx, by, bw, bh = 104.0, 104.0, 800.0, 244.0
+        step_x = bw / (len(ks) - 1)
+
+        out.append(txt(bx, 52, f"satu tingkat keberhasilan: p = {p:.2f}",
+                       size=13.5, weight=600, pal=pal, fill=pal.ink,
+                       anchor="start", step=1))
+        out.append(txt(bx + 380, 52,
+                       "dua pertanyaan yang berbeda, dua jawaban yang berlawanan",
+                       size=11.5, pal=pal, fill=pal.ink3, anchor="start", step=1))
+
+        out.append(line(bx, by + bh, bx + bw, by + bh, pal=pal, stroke=pal.line,
+                        sw=1.2, step=1))
+        out.append(line(bx, by, bx, by + bh, pal=pal, stroke=pal.line, sw=1.2,
+                        step=1))
+        for frac in (0.0, 0.25, 0.5, 0.75, 1.0):
+            y = by + bh - bh * frac
+            out.append(line(bx, y, bx + bw, y, pal=pal, stroke=pal.faint, sw=0.7,
+                            dash="2 5", step=1))
+            out.append(txt(bx - 10, y + 4, f"{frac * 100:.0f}%", size=10.5,
+                           mono=True, pal=pal, fill=pal.ink3, anchor="end",
+                           step=1))
+        for i, k in enumerate(ks):
+            out.append(txt(bx + i * step_x, by + bh + 20, f"k={k}", size=11,
+                           mono=True, pal=pal, fill=pal.ink3, step=1))
+
+        def series(vals, colour, step, label):
+            pts = [(bx + i * step_x, by + bh - bh * v) for i, v in enumerate(vals)]
+            d = "M" + " L".join(f"{x:.1f},{y:.1f}" for x, y in pts)
+            out.append(path(d, stroke=colour, sw=2.4, pal=pal, step=step))
+            for (x, y), v in zip(pts, vals):
+                out.append(circle(x, y, 4.5, pal=pal, fill=colour, stroke="none",
+                                  sw=0, step=step))
+                out.append(txt(x, y - 13, f"{v * 100:.1f}", size=10, mono=True,
+                               pal=pal, fill=colour, step=step))
+
+        series(at, pal.good, 2, "pass@k")
+        series(pw, pal.bad, 3, "pass^k")
+
+        rx = bx + bw + 34
+        out.append(txt(rx, by + 40, "pass@k", size=13, weight=600, pal=pal,
+                       fill=pal.good, anchor="start", step=2))
+        out.append(txt(rx, by + 60, "ada yang berhasil?", size=11, pal=pal,
+                       fill=pal.ink3, anchor="start", step=2))
+        out.append(txt(rx, by + 82, f"{at[-1] * 100:.1f}%", size=22, weight=600,
+                       pal=pal, fill=pal.good, anchor="start", step=2))
+        out.append(txt(rx, by + 138, "pass^k", size=13, weight=600, pal=pal,
+                       fill=pal.bad, anchor="start", step=3))
+        out.append(txt(rx, by + 158, "semuanya berhasil?", size=11, pal=pal,
+                       fill=pal.ink3, anchor="start", step=3))
+        out.append(txt(rx, by + 180, f"{pw[-1] * 100:.1f}%", size=22, weight=600,
+                       pal=pal, fill=pal.bad, anchor="start", step=3))
+
+        out.append(txt(bx, height - 40,
+                       f"Angka yang sama, p = {p:.2f}. Papan skor melaporkan yang "
+                       f"hijau; pengguna mengalami yang merah.",
+                       size=13, weight=600, pal=pal, fill=pal.accent,
+                       anchor="start", step=3))
+        out.append(txt(bx, height - 18,
+                       "Menaikkan k memperbaiki kemampuan dan memperburuk "
+                       "keandalan — dan keduanya benar sekaligus.",
+                       size=12.5, pal=pal, fill=pal.ink2, anchor="start", step=3))
+        return svg(width, height, "".join(out), pal=pal, steps=3, sim_label="k")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

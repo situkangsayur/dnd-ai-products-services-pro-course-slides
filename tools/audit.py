@@ -217,15 +217,26 @@ def audit(url):
     failure to measure, not a pass.
     """
     ws.call("Page.navigate", {"url": url})
-    for _ in range(60):
+    # Wait for the slide count to STOP CHANGING, not merely to become non-zero.
+    # A deck caught mid-render has one slide in the DOM and satisfies "> 0", so
+    # the old guard let a 43-slide deck through as a 1-slide measurement --
+    # which then reported zero problems and looked like a pass.
+    last, stable = -1, 0
+    for _ in range(80):
         time.sleep(0.25)
         r = ws.call("Runtime.evaluate",
                     {"expression": "document.querySelectorAll('.slide').length",
                      "returnByValue": True})
-        if (r["result"].get("value") or 0) > 0:
-            break
+        n = r["result"].get("value") or 0
+        if n and n == last:
+            stable += 1
+            if stable >= 3:
+                break
+        else:
+            stable = 0
+        last = n
     else:
-        raise RuntimeError("no slides in the DOM after 15s: " + url)
+        raise RuntimeError(f"slide count never settled (last={last}): {url}")
     ws.call("Runtime.evaluate",
             {"expression": "document.fonts.ready", "awaitPromise": True})
     time.sleep(0.4)

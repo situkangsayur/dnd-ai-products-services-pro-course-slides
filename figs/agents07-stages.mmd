@@ -1,0 +1,8 @@
+
+flowchart LR
+  S1["Bayangan<br/><small>jalan penuh,<br/>keluaran DIBUANG</small>"]
+  S2["Berpendamping<br/><small>menyusun draf,<br/>orang memutuskan</small>"]
+  S3["Otonomi sempit<br/><small>satu kelas kasus<br/>bernilai kecil</small>"]
+  S1 -->|"kesepakatan diukur<br/>pada sampel nyata"| S2
+  S2 -->|"laju berhasil stabil,<br/>tindakan tidak aman NOL"| S3
+  S1 -. "tidak ada jalan langsung ke S3" .-> S3
