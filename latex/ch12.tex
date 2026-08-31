@@ -69,6 +69,14 @@ Cut out the region containing an object and send a higher-resolution patch to a 
 \framekicker{Introduction}
 \begin{frame}[shrink=25]{If segmentation is a superset, why detect at all?}
 {\fontsize{9.4}{12.6}\selectfont\color{fg2}A fair question: given an instance mask you can already compute the smallest box containing it. \textbf{Segmentation is a strict superset of detection.}\par}\vskip 4pt
+\begin{center}
+\includegraphics[width=0.97\linewidth,height=0.56\textheight,keepaspectratio]{figs/ch12-cost.tex.pdf}
+\end{center}
+\vskip 3pt{\color{ink3}\fontsize{7.4}{9.4}\selectfont The same scene, both ways. Step through: the image, the boxes and what they cost, the mask and what it costs.\par}
+\end{frame}
+
+\framekicker{Section 12.1}
+\begin{frame}[shrink=25]{\ldots{}so the rule is about what you need, not what you can get}
 \begin{minipage}[t]{0.494\textwidth}
 \begin{icardgood}
 \cardh{Computational cost}

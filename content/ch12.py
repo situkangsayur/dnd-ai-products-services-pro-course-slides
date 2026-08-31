@@ -13,6 +13,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "tools"))
 
 from course import BOOK, chapter_resources, chapter_url, notebook_url  # noqa: E402
+from diagrams import box_vs_mask  # noqa: E402
 
 
 MMD_TWOSTAGE = """
@@ -172,6 +173,20 @@ DECK = {
                 {"t": "p", "md": "A fair question: given an instance mask you can already "
                                  "compute the smallest box containing it. **Segmentation is a "
                                  "strict superset of detection.**"},
+                box_vs_mask("ch12-cost",
+                            cap="The same scene, both ways. Step through: the image, the "
+                                "boxes and what they cost, the mask and what it costs.",
+                            note="Five numbers per object against one label per pixel. "
+                                 "That ratio is what the last layer has to emit, and what "
+                                 "somebody has to annotate for every training image."),
+            ],
+        },
+
+        {
+            "type": "slide",
+            "kicker": "Section 12.1",
+            "title": "…so the rule is about what you need, not what you can get",
+            "blocks": [
                 {"t": "cards", "cols": 2, "items": [
                     {"ico": "⚡", "h": "Computational cost",
                      "p": "A good detector typically runs **much faster** than a segmentation "

@@ -21,7 +21,7 @@ bertindihan. **Web dan PDF sekarang sama persis**: 1.167 slide web,
 | | Jumlah |
 |---|---|
 | `mmd` (kotak-dan-panah) | 182 |
-| `draw` (SVG digambar, dari `tools/diagrams.py`) | 25 |
+| `draw` (SVG digambar, dari `tools/diagrams.py`) | 26 |
 | `img` | 4 |
 
 Dek yang **sama sekali belum** punya peraga gambar: ch04, ch06, ch07, ch10,
@@ -94,7 +94,9 @@ dipakai, seperti apa bentuknya:
 - [x] ~~`ch11#4` "Where it is actually used"~~ — selesai, jadi `mask_domains`:
       empat adegan 12×9 dan topengnya dijatuhkan ke atasnya. Satu operasi
       dilihat empat kali, bukan empat kata dilihat sekali.
-- [ ] `ch12#1` "What detection is for"
+- [x] ~~`ch12#2` "kalau segmentasi superset, kenapa mendeteksi?"~~ — selesai,
+      jadi `box_vs_mask`: pertanyaannya soal ONGKOS, dan ongkos bisa dihitung.
+      3 objek × 5 angka lawan 512×512 label. 17.476×.
 - [ ] `ch01#41`/`#42` terobosan dan hal yang dulu dikira mustahil
 - [ ] `ch06#1` "keras.datasets does not exist" (8 kartu)
 - [ ] `ch19#22` "Landing a rocket, and crossing a road"

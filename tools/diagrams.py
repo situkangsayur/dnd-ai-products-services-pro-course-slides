@@ -2563,3 +2563,110 @@ def mask_domains(fig_id, *, cap="", note="", width=1300, height=336, full=False)
                    sim_label="mask")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ============================================ a box costs five numbers, a mask --
+
+def box_vs_mask(fig_id, *, cap="", note="", width=1300, height=440, full=False,
+                res=512):
+    """Why you would ever detect, when segmentation is a strict superset.
+
+    Because the answer is a cost, and a cost can be counted. A box is four
+    coordinates and a class: five numbers per object. A mask is one label per
+    pixel, whatever the resolution is. Both answer *where*; one of them is four
+    orders of magnitude smaller, and that number is what the last layer has to
+    emit and what a person has to annotate.
+
+    Drawn as the same scene twice so the comparison is like for like: the boxes
+    sit over the picture, the mask replaces it.
+    """
+    W, H = 16, 12
+    # (x0, y0, x1, y1, class) in grid cells; class 2 = vehicle, 3 = person
+    objs = [(1, 5, 5, 8, 2), (9, 4, 13, 7, 2), (6, 4, 7, 8, 3)]
+    n_obj = len(objs)
+    per_box = 5                       # x, y, w, h, class
+    box_numbers = n_obj * per_box
+    mask_labels = res * res
+
+    def build(p):
+        out = []
+        cell = 15.0
+        gw, gh = W * cell, H * cell
+        top = 96.0
+        lx = 96.0
+        rx = width - 96.0 - gw
+
+        def scene(x0, step, with_mask):
+            for gy in range(H):
+                for gx in range(W):
+                    ground = gy >= 8
+                    hit = None
+                    for (a, b, c, d, k) in objs:
+                        if a <= gx <= c and b <= gy <= d:
+                            hit = k
+                    if with_mask and hit:
+                        col = p.accent if hit == 2 else p.warm
+                    elif with_mask and ground:
+                        col = p.good
+                    elif with_mask:
+                        col = p.fill2
+                    else:
+                        col = p.faint if (hit or ground) else p.fill2
+                    out.append(rect(x0 + gx * cell, top + gy * cell, cell - 1,
+                                    cell - 1, r=1.5, pal=p, fill=col,
+                                    stroke="none", sw=0, step=step))
+            out.append(rect(x0 - 2, top - 2, gw + 2, gh + 2, r=4, pal=p,
+                            fill="none", stroke=p.line, sw=1.0, step=step))
+
+        scene(lx, 1, False)
+        scene(rx, 3, True)
+
+        # boxes over the left scene
+        for i, (a, b, c, d, k) in enumerate(objs):
+            out.append(rect(lx + a * cell - 2, top + b * cell - 2,
+                            (c - a + 1) * cell + 2, (d - b + 1) * cell + 2,
+                            r=3, pal=p, fill="none",
+                            stroke=p.accent if k == 2 else p.warm, sw=2.0,
+                            step=2))
+            out.append(txt(lx + a * cell + 2, top + b * cell - 8,
+                           "car" if k == 2 else "person", size=10, pal=p,
+                           fill=p.accent if k == 2 else p.warm, anchor="start",
+                           step=2))
+
+        out.append(txt(lx + gw / 2, top - 30, "detection", size=14, weight=600,
+                       pal=p, fill=p.ink, step=1))
+        out.append(txt(rx + gw / 2, top - 30, "segmentation", size=14,
+                       weight=600, pal=p, fill=p.ink, step=3))
+
+        cy = top + gh + 34
+        out.append(txt(lx + gw / 2, cy,
+                       f"{n_obj} objects × (x, y, w, h, class)", size=12.5,
+                       pal=p, fill=p.ink3, step=2))
+        out.append(txt(lx + gw / 2, cy + 30, f"{box_numbers} numbers", size=22,
+                       weight=600, pal=p, fill=p.accent, step=2))
+        out.append(txt(rx + gw / 2, cy, f"{res} × {res} pixels, one label each",
+                       size=12.5, pal=p, fill=p.ink3, step=3))
+        out.append(txt(rx + gw / 2, cy + 30,
+                       f"{mask_labels:,} labels".replace(",", " "), size=22,
+                       weight=600, pal=p, fill=p.good, step=3))
+
+        mx = (lx + gw + rx) / 2
+        out.append(txt(mx, top + gh / 2 - 12,
+                       f"{mask_labels // box_numbers:,}×".replace(",", " "),
+                       size=26, weight=600, pal=p, fill=p.ink, step=4))
+        out.append(txt(mx, top + gh / 2 + 14, "more output", size=12, pal=p,
+                       fill=p.ink3, step=4))
+        out.append(txt(mx, top + gh / 2 + 32, "for the same", size=12, pal=p,
+                       fill=p.ink3, step=4))
+        out.append(txt(mx, top + gh / 2 + 50, "question", size=12, pal=p,
+                       fill=p.ink3, step=4))
+
+        out.append(txt(width / 2, height - 18,
+                       "Both answer the same question. One of them is what the "
+                       "last layer has to emit — and what a person has to annotate, "
+                       "by hand, for every training image.",
+                       size=13, pal=p, fill=p.accent, step=4))
+        return svg(width, height, "".join(out), pal=p, steps=4,
+                   sim_label="cost")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)
