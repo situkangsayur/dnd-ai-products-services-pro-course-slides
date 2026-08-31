@@ -57,6 +57,11 @@ DECK = {
     "id": "viny-llm",
     "kind": "module",
     "number": None,
+    # Bukan dari buku — isinya ditulis sendiri. Pemiliknya masuk manifes
+    # supaya galeri bisa mengelompokkannya, bukan sekadar menyebutnya
+    # "standalone".
+    "owner": "Viny",
+
     "title": "Large Language Models",
     "subtitle": "Fine-tuning, retrieval, re-ranking, and guardrails — the practitioner's "
                 "layer on top of chapters 15 and 16.",

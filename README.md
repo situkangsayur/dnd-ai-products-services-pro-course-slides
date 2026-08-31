@@ -1,5 +1,10 @@
 # AI for Professional — sumber slide, kode contoh, dan notebook
 
+> **Format dek: `ditpro-ai-pro-v1`.** Itu nama format yang dipakai repo ini —
+> satu modul Python per dek di `content/`, dirender ke Beamer/PDF dan dek web
+> sekaligus. Sebutkan nama ini kalau meminta dek baru dibuat "dengan format
+> yang sama". Cara menulis deknya ada di [AUTHORING.md](AUTHORING.md).
+
 Repositori **sumber tunggal** untuk kelas
 
 > **Designing and Building AI Products and Services: AI for Professional**
@@ -15,6 +20,28 @@ dirender ke dua bentuk sekaligus:
 
 Alasannya sederhana: dua dek yang ditulis terpisah **pasti** akan menyimpang.
 Dengan satu sumber, keduanya tidak bisa berbeda isi.
+
+## Lebih dari satu buku
+
+Kelas ini mengambil bahan dari lebih dari satu buku, jadi bukunya adalah
+**registri** (`BOOKS` di `tools/course.py`) dan tiap dek menyatakan miliknya:
+
+```python
+DECK = { "id": "b2ch01", "kind": "chapter", "number": 1, "book": "<kunci>", ... }
+```
+
+Galeri mengelompokkan **per buku**, dan dek non-buku per **pemilik**
+(`"owner": "Viny"` / `"owner": "Hendri Karisma"`).
+
+`BOOK` yang lama tetap ada dan tetap menunjuk buku pertama, sehingga 20 berkas
+isi yang sudah ada tidak perlu disentuh. Dek tanpa `book:` masuk ke buku pertama.
+
+> [!warning] Buku yang teksnya tidak terbuka
+> `chapter_url()` mengembalikan `None` untuk buku yang bukan akses terbuka.
+> Itu disengaja: menyusun URL bab ke buku berlangganan menghasilkan tautan yang
+> berakhir di dinding langganan, dan pembaca slide akan mengira tautannya rusak
+> padahal memang tidak pernah ada. Buku pertama (Chollet & Watson) boleh
+> ditautkan karena penulisnya memublikasikan teksnya bebas.
 
 ## Membangun
 

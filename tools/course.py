@@ -91,20 +91,49 @@ TEAM = [
 ]
 
 # ---------------------------------------------------------------- the book ---
-BOOK = {
-    "title": "Deep Learning with Python",
-    "edition": "Third Edition",
-    "authors": "François Chollet & Matthew Watson",
-    "publisher": "Manning Publications",
-    "isbn": "9781633436589",
-    "site": "https://deeplearningwithpython.io/",
-    "chapters_url": "https://deeplearningwithpython.io/chapters/",
-    "code_repo": "https://github.com/fchollet/deep-learning-with-python-notebooks",
-    "note": "The third-edition code is written with Keras 3 and runs on top of "
-            "JAX, TensorFlow, or PyTorch.",
+# ── Buku sumber ────────────────────────────────────────────────────────────
+#
+# Dulu ini satu `BOOK` tunggal, dan setiap alat di sini menganggap ada tepat
+# satu buku: `chapter_url(n)` menyusun URL dari satu situs, galeri memberi judul
+# "Book chapters" sekali, dan `book_source(n)` menyebut satu judul.
+#
+# Kelas ini sekarang mengambil bahan dari LEBIH DARI SATU buku, jadi bukunya
+# jadi registri dan tiap dek menyatakan miliknya. `BOOK` tetap ada dan tetap
+# menunjuk buku pertama, supaya 20 berkas isi yang sudah ada tidak perlu
+# disentuh — yang lama terus bekerja, yang baru menyatakan `book=`.
+BOOKS = {
+    "dlwp": {
+        "key": "dlwp",
+        "title": "Deep Learning with Python",
+        "edition": "Third Edition",
+        "authors": "François Chollet & Matthew Watson",
+        "short": "Chollet & Watson, Deep Learning with Python 3e",
+        "publisher": "Manning Publications",
+        "isbn": "9781633436589",
+        "site": "https://deeplearningwithpython.io/",
+        "chapters_url": "https://deeplearningwithpython.io/chapters/",
+        "code_repo": "https://github.com/fchollet/deep-learning-with-python-notebooks",
+        # Teksnya dipublikasikan bebas oleh penulisnya di situs di atas — itu
+        # sebabnya slide boleh menautkan langsung ke bab penuh.
+        "open_access": True,
+        "note": "The third-edition code is written with Keras 3 and runs on top of "
+                "JAX, TensorFlow, or PyTorch.",
+    },
 }
 
-CH_SLUG = {
+# Buku pertama; nama lama dipertahankan agar isi yang sudah ada tetap jalan.
+BOOK = BOOKS["dlwp"]
+
+DEFAULT_BOOK = "dlwp"
+
+
+def book(key=None):
+    """Buku sebuah dek. Tanpa argumen: buku pertama."""
+    return BOOKS[key or DEFAULT_BOOK]
+
+
+# Slug bab per buku. `CH_SLUG` tetap menunjuk buku pertama.
+CH_SLUGS = {"dlwp": {
     1: "chapter01_what-is-deep-learning",
     2: "chapter02_mathematical-building-blocks",
     3: "chapter03_introduction-to-ml-frameworks",
@@ -125,27 +154,36 @@ CH_SLUG = {
     18: "chapter18_best-practices-for-the-real-world",
     19: "chapter19_future_of_ai",
     20: "chapter20_conclusion",
-}
+}}
+
+CH_SLUG = CH_SLUGS["dlwp"]
 
 # Chapters the official repository ships a notebook for. Chapters 1, 6, 19 and
 # 20 carry no code in the book itself, so there is nothing upstream to link to.
 CH_HAS_OFFICIAL_NB = set(CH_SLUG) - {1, 6, 19, 20}
 
 
-def chapter_url(n):
-    return BOOK["site"].rstrip("/") + "/chapters/" + CH_SLUG[n]
-
-
-def official_nb_url(n):
-    if n not in CH_HAS_OFFICIAL_NB:
+def chapter_url(n, book_key=None):
+    b = book(book_key)
+    slugs = CH_SLUGS.get(b["key"], {})
+    # Buku yang teksnya TIDAK dipublikasikan bebas tidak punya URL bab untuk
+    # ditautkan. Mengembalikan None di sini lebih jujur daripada menyusun URL
+    # yang akan berakhir di dinding berlangganan — pembaca slide mengira
+    # tautannya rusak, padahal memang tidak pernah ada.
+    if not b.get("open_access") or n not in slugs:
         return None
-    return f"{BOOK['code_repo']}/blob/master/{CH_SLUG[n]}.ipynb"
+    return b["site"].rstrip("/") + "/chapters/" + slugs[n]
 
 
-def book_source(n):
-    return (f"Chollet & Watson, \\emph{{Deep Learning with Python}} 3e, bab {n}"
-            if False else
-            f"Chollet & Watson, Deep Learning with Python 3e — bab {n}")
+def official_nb_url(n, book_key=None):
+    b = book(book_key)
+    if b["key"] != "dlwp" or n not in CH_HAS_OFFICIAL_NB:
+        return None
+    return f"{b['code_repo']}/blob/master/{CH_SLUGS[b['key']][n]}.ipynb"
+
+
+def book_source(n, book_key=None):
+    return f"{book(book_key)['short']} — bab {n}"
 
 
 # ============================================================== deployment ====

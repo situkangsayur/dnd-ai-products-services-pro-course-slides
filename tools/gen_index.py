@@ -17,7 +17,7 @@ import json
 import os
 
 from inline import html as ih, esc_html
-from course import COURSE, TEAM, presenter_names
+from course import COURSE, TEAM, BOOKS, DEFAULT_BOOK, presenter_names
 
 MANIFEST = "decks.json"
 
@@ -28,6 +28,11 @@ def _entry(deck, n_slides):
     return {
         "id": deck["id"],
         "kind": deck.get("kind", "chapter"),
+        # Dek bab menyatakan buku asalnya; modul mandiri menyatakan pemiliknya.
+        # Keduanya masuk manifes karena galeri DAN situs kursus merender dari
+        # sini — apa pun yang tidak ada di sini tidak ikut terbagi.
+        "book": deck.get("book", DEFAULT_BOOK if deck.get("number") is not None else None),
+        "owner": deck.get("owner"),
         "number": deck.get("number"),
         "title": deck["title"],
         "subtitle": deck.get("subtitle", ""),
@@ -146,6 +151,9 @@ h2.ix-h{
   box-shadow:0 10px 26px rgba(11,16,32,.09);
 }
 .ix-card.module{border-left:3px solid var(--signal)}
+.ix-h .ix-sub{font-weight:400;font-size:.62em;color:var(--muted);letter-spacing:0}
+.ix-owner{margin:14px 0 8px;font-size:.82rem;font-weight:600;color:var(--signal);
+          letter-spacing:.04em;text-transform:uppercase}
 .ix-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
 .ix-num{
   font-size:10.5px; font-weight:800; letter-spacing:.13em; text-transform:uppercase;
@@ -215,10 +223,37 @@ def write(decks, outdir):
     modules = [d for d in ordered if d.get("number") is None]
     total = sum(d["slides"] for d in ordered)
 
+    # Dikelompokkan PER BUKU, bukan satu judul "Book chapters".
+    #
+    # Dengan satu buku keduanya terlihat sama, dan itulah yang membuat versi
+    # lama bertahan lama. Begitu buku kedua masuk, satu judul tunggal akan
+    # menumpuk bab dari dua buku berbeda dalam satu kisi, tanpa apa pun di
+    # layar yang menunjukkan bab 5 yang mana milik buku yang mana.
+    by_book = {}
+    for d in chapters:
+        by_book.setdefault(d.get("book") or DEFAULT_BOOK, []).append(d)
+
+    book_html = ""
+    for key, ds in by_book.items():
+        b = BOOKS.get(key, {})
+        judul = b.get("title", key)
+        sub = " · ".join(x for x in (b.get("edition"), b.get("authors")) if x)
+        book_html += (
+            f'<h2 class="ix-h">{esc_html(judul)}'
+            f'{f" <span class=\'ix-sub\'>{esc_html(sub)}</span>" if sub else ""}</h2>'
+            f'<div class="ix-grid">{"".join(_card(d) for d in ds)}</div>')
+
+    # Modul non-buku dikelompokkan per pemilik: yang membedakannya dari bab
+    # bukan sekadar "berdiri sendiri", melainkan bahwa ISINYA ditulis sendiri.
     mod_html = ""
     if modules:
-        mod_html = (f'<h2 class="ix-h">Standalone modules</h2>'
-                    f'<div class="ix-grid">{"".join(_card(d) for d in modules)}</div>')
+        by_owner = {}
+        for d in modules:
+            by_owner.setdefault(d.get("owner") or "", []).append(d)
+        mod_html = '<h2 class="ix-h">Bukan dari buku <span class="ix-sub">materi tulisan sendiri</span></h2>'
+        for owner, ds in by_owner.items():
+            label = f'<div class="ix-owner">{esc_html(owner)}</div>' if owner else ""
+            mod_html += label + f'<div class="ix-grid">{"".join(_card(d) for d in ds)}</div>' 
 
     html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -243,7 +278,7 @@ def write(decks, outdir):
     <div class="ix-meta">
       <span><b>{len(ordered)}</b> decks</span>
       <span><b>{total}</b> slides</span>
-      <span><b>{len(chapters)}</b> book chapters</span>
+      <span><b>{len(chapters)}</b> book chapters{f" · {len(by_book)} books" if len(by_book) > 1 else ""}</span>
       <span>{esc_html(COURSE['credits'])}</span>
     </div>
   </div>
@@ -251,8 +286,7 @@ def write(decks, outdir):
 
 <div class="ix-wrap">
 
-  <h2 class="ix-h">Book chapters</h2>
-  <div class="ix-grid">{"".join(_card(d) for d in chapters)}</div>
+  {book_html}
 
   {mod_html}
 

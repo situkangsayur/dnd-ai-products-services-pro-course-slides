@@ -353,6 +353,11 @@ DECK = {
     "id": "hendri-agentic",
     "kind": "module",
     "number": None,
+    # Bukan dari buku — isinya ditulis sendiri. Pemiliknya masuk manifes
+    # supaya galeri bisa mengelompokkannya, bukan sekadar menyebutnya
+    # "standalone".
+    "owner": "Hendri Karisma",
+
     "title": "Agentic AI",
     "subtitle": "From the textbook definition of an agent to a system a regulator "
                 "will accept — what to build, what to buy, and when not to build "
