@@ -1,0 +1,10 @@
+%% direction chosen by tools/figures.py: this renders
+%% better in the space a slide gives it. Edit the deck
+%% source, not this file.
+
+flowchart LR
+  T["Tugas besar"] --> Q{"Bisa dipetakan<br/>ke satu alat?"}
+  Q -->|"ya"| A["Kerjakan"]
+  Q -->|"tidak"| S["Pecah jadi bagian<br/><small>tiap bagian: satu alat, satu hasil</small>"]
+  S --> Q
+  S -. "kalau pecahannya tetap tidak<br/>bisa dipetakan, alatnya yang kurang" .-> S

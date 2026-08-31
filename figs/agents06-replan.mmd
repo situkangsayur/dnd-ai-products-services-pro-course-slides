@@ -1,0 +1,8 @@
+
+flowchart LR
+  P["Rencana"] --> E["Kerjakan langkah"]
+  E --> O["Amatan"]
+  O --> C{"Rencananya masih<br/>masuk akal?"}
+  C -->|"ya"| E
+  C -->|"tidak"| RP["Susun ulang rencana<br/><small>dengan anggaran susun-ulang</small>"]
+  RP --> E

@@ -1,0 +1,11 @@
+
+flowchart TB
+  subgraph A["Tanpa rencana"]
+    direction LR
+    A1["Tujuan"] --> A2["Langkah 1"] --> A3["Langkah 2"] --> A4["… entah sampai kapan"]
+  end
+  subgraph B["Dengan rencana eksplisit"]
+    direction LR
+    B1["Tujuan"] --> B2["Rencana: 4 langkah"] --> B3["Kerjakan, tandai selesai"] --> B4["Rencana habis = selesai"]
+  end
+  A ~~~ B

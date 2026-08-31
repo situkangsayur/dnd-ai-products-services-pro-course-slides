@@ -1,0 +1,8 @@
+
+flowchart LR
+  D["Draf"] --> K["Kritik<br/><small>panggilan model kedua</small>"]
+  K --> R["Revisi<br/><small>panggilan model ketiga</small>"]
+  R --> C{"Cukup?"}
+  C -->|"belum"| K
+  C -->|"ya"| O["Keluaran"]
+  C -. "tanpa syarat henti,<br/>ini gelung tak berujung" .-> C
