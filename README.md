@@ -45,6 +45,11 @@ isi yang sudah ada tidak perlu disentuh. Dek tanpa `book:` masuk ke buku pertama
 
 ## Membangun
 
+> [!warning] Saringannya memakai NAMA BERKAS, bukan id dek
+> `build.py viny_llm`, bukan `viny-llm`. Salah satu tidak menghasilkan galat —
+> hanya "No content modules found in content/", yang terbaca seperti direktori
+> kosong padahal dek-nya ada.
+
 ```bash
 python3 tools/build.py            # semua dek: .tex + dek web
 python3 tools/build.py --pdf      # sekalian jalankan latexmk
