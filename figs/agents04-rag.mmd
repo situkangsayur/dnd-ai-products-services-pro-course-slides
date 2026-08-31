@@ -1,0 +1,7 @@
+
+flowchart LR
+  Q["Pertanyaan"] --> E["Diubah jadi vektor"]
+  E --> S["Dicari yang mirip"]
+  S --> K["Potongan teratas"]
+  K --> M["Model menjawab<br/><small>hanya dari potongan ini</small>"]
+  K -. "yang tidak terambil<br/>tidak bisa dijawab" .-> M

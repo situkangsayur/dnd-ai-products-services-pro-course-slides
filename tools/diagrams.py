@@ -2987,3 +2987,159 @@ def vote_tradeoff(fig_id, *, cap="", note="", width=1290, height=452, full=False
         return svg(width, height, "".join(out), pal=p, steps=3, sim_label="N")
 
     return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ================================ what repeated summarisation quietly costs --
+
+def memory_decay(fig_id, *, cap="", note="", width=1290, height=420, full=False,
+                 keep=0.85, rounds=6, window=8):
+    """Summarising the summary, and the compounding that nobody budgets for.
+
+    Trimming a conversation loses what falls out of the window, and everybody
+    knows that. Summarising instead feels lossless because nothing is deleted --
+    but each round summarises a text that was itself a summary, so whatever
+    fraction survives one round is raised to the power of the number of rounds.
+
+    ``keep`` is an assumption and is printed on the drawing. The point is not
+    the exact number: it is the SHAPE, which is exponential, and which is the
+    same whatever value you believe.
+    """
+    vals = [keep ** n for n in range(rounds + 1)]
+
+    def build(p):
+        out = []
+        bx, by, bw, bh = 96.0, 100.0, 820.0, 226.0
+        step_x = bw / (rounds + 1)
+
+        out.append(txt(bx, 52, "detail penting yang masih terbawa", size=13.5,
+                       weight=600, pal=p, fill=p.ink, anchor="start", step=1))
+        out.append(txt(bx + 420, 52,
+                       f"asumsi: tiap peringkasan mempertahankan {keep * 100:.0f}%",
+                       size=11.5, pal=p, fill=p.bad, anchor="start", step=1))
+
+        out.append(line(bx, by + bh, bx + bw, by + bh, pal=p, stroke=p.line,
+                        sw=1.2, step=1))
+        for frac in (0.25, 0.5, 0.75, 1.0):
+            y = by + bh - bh * frac
+            out.append(line(bx, y, bx + bw, y, pal=p, stroke=p.faint, sw=0.7,
+                            dash="2 5", step=1))
+            out.append(txt(bx - 10, y + 4, f"{frac * 100:.0f}%", size=10.5,
+                           mono=True, pal=p, fill=p.ink3, anchor="end", step=1))
+
+        for n, v in enumerate(vals):
+            x = bx + n * step_x + step_x * 0.24
+            w = step_x * 0.52
+            h = bh * v
+            st = 1 if n == 0 else (2 if n <= 2 else 3)
+            col = p.good if v >= 0.7 else (p.warm if v >= 0.5 else p.bad)
+            out.append(rect(x, by + bh - h, w, h, r=3, pal=p, fill=col,
+                            stroke="none", sw=0, step=st))
+            out.append(txt(x + w / 2, by + bh - h - 10, f"{v * 100:.0f}%",
+                           size=11.5, mono=True, pal=p, fill=p.ink, step=st))
+            out.append(txt(x + w / 2, by + bh + 18,
+                           "asli" if n == 0 else f"ringkas ×{n}", size=10.5,
+                           pal=p, fill=p.ink3, step=st))
+
+        rx = bx + bw + 46
+        out.append(txt(rx, by + 52, "setelah", size=12, pal=p, fill=p.ink3,
+                       anchor="start", step=3))
+        out.append(txt(rx, by + 78, f"{rounds} kali", size=17, weight=600,
+                       pal=p, fill=p.ink, anchor="start", step=3))
+        out.append(txt(rx, by + 112, f"{vals[-1] * 100:.0f}%", size=30,
+                       weight=600, pal=p, fill=p.bad, anchor="start", step=3))
+        out.append(txt(rx, by + 138, "yang tersisa", size=11.5, pal=p,
+                       fill=p.ink3, anchor="start", step=3))
+
+        out.append(txt(bx, height - 38,
+                       "Memangkas kehilangan yang jatuh dari jendela, dan itu "
+                       "kelihatan. Meringkas kehilangan sedikit tiap kali, dan itu "
+                       "tidak —",
+                       size=12.5, pal=p, fill=p.ink2, anchor="start", step=3))
+        out.append(txt(bx, height - 18,
+                       "sebab yang diringkas berikutnya adalah ringkasan, bukan "
+                       "aslinya. Bentuknya eksponensial, berapa pun angkanya.",
+                       size=12.5, weight=600, pal=p, fill=p.bad, anchor="start",
+                       step=3))
+        return svg(width, height, "".join(out), pal=p, steps=3,
+                   sim_label="ringkas")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)
+
+
+# ================================ where you cut the text decides what is findable --
+
+def chunking(fig_id, *, cap="", note="", width=1290, height=430, full=False):
+    """Three ways to cut a document, and the fact that straddles the cut.
+
+    Chunking is usually drawn as a row of equal boxes, which shows the
+    mechanism and hides the only thing that matters: a sentence whose meaning
+    spans a boundary is retrievable from neither side. So the figure puts one
+    fact across a boundary and follows it through three strategies -- fixed,
+    overlapping, and structural -- and marks where it survives.
+    """
+    # One sentence, laid out as tokens. The fact needs both halves to mean
+    # anything: the subject is on the left of the cut, the number on the right.
+    words = ["Batas", "fasilitas", "untuk", "nasabah", "kategori", "B",
+             "adalah", "Rp", "500", "juta", "per", "tahun", "dan", "tidak",
+             "boleh", "dilampaui"]
+    cut = 8                      # a fixed-size cut lands here, mid-fact
+
+    def build(p):
+        out = []
+        cw, ch_, x0 = 66.0, 34.0, 62.0
+        rows = (
+            ("potong ukuran tetap", 96.0, "fixed"),
+            ("potong dengan tumpang tindih", 208.0, "overlap"),
+            ("potong menurut struktur", 320.0, "struct"),
+        )
+
+        for label, y, kind in rows:
+            st = {"fixed": 1, "overlap": 2, "struct": 3}[kind]
+            out.append(txt(x0, y - 16, label, size=12.5, weight=600, pal=p,
+                           fill=p.ink, anchor="start", step=st))
+            for i, w in enumerate(words):
+                x = x0 + i * cw
+                if kind == "fixed":
+                    grp = 0 if i < cut else 1
+                    col = (p.accent, p.warm)[grp]
+                elif kind == "overlap":
+                    col = p.accent if i < cut + 3 else p.warm
+                else:
+                    col = p.good
+                out.append(rect(x, y, cw - 3, ch_, r=3, pal=p, fill=p.fill,
+                                stroke=col, sw=1.3, step=st))
+                out.append(txt(x + (cw - 3) / 2, y + ch_ / 2 + 4, w, size=10,
+                               pal=p, fill=p.ink2, step=st))
+            if kind == "fixed":
+                bx = x0 + cut * cw - 2
+                out.append(line(bx, y - 6, bx, y + ch_ + 6, pal=p, stroke=p.bad,
+                                sw=2.2, step=st))
+                out.append(txt(bx, y + ch_ + 22, "potongan jatuh di sini",
+                               size=10.5, pal=p, fill=p.bad, step=st))
+            if kind == "overlap":
+                ox = x0 + cut * cw
+                out.append(rect(ox, y - 4, 3 * cw - 3, ch_ + 8, r=4, pal=p,
+                                fill="none", stroke=p.good, sw=1.4, dash="4 3",
+                                step=st))
+                out.append(txt(ox + 1.5 * cw, y + ch_ + 22, "bagian yang diulang",
+                               size=10.5, pal=p, fill=p.good, step=st))
+            if kind == "struct":
+                out.append(txt(x0 + len(words) * cw / 2, y + ch_ + 22,
+                               "satu klausul = satu potongan", size=10.5, pal=p,
+                               fill=p.good, step=st))
+
+        vy = 392.0
+        out.append(txt(x0, vy,
+                       "Potongan ukuran tetap memotong fakta di tengah: "
+                       "“kategori B” ada di potongan kiri, "
+                       "“Rp 500 juta” di kanan.",
+                       size=12.5, pal=p, fill=p.bad, anchor="start", step=1))
+        out.append(txt(x0, vy + 20,
+                       "Tak satu pun potongan bisa menjawab pertanyaan tentang batas "
+                       "kategori B — dan tidak ada yang melaporkan kegagalan itu.",
+                       size=12.5, weight=600, pal=p, fill=p.accent, anchor="start",
+                       step=3))
+        return svg(width, height, "".join(out), pal=p, steps=3,
+                   sim_label="cara")
+
+    return _block(fig_id, build, cap=cap, note=note, full=full)

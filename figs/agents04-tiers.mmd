@@ -1,0 +1,8 @@
+
+flowchart LR
+  W["Ingatan kerja<br/><small>giliran ini saja —<br/>hasil alat mentah</small>"]
+  S["Ingatan jangka pendek<br/><small>percakapan ini —<br/>daftar pesan</small>"]
+  L["Ingatan jangka panjang<br/><small>di luar konteks —<br/>diambil saat perlu</small>"]
+  W --> S
+  S -->|"disaring, bukan disalin"| L
+  L -->|"dicari kembali"| S

@@ -1,0 +1,6 @@
+
+flowchart LR
+  U["Dokumen / tiket / halaman"] -->|"dibaca agen"| C["Konteks"]
+  C --> M["Model"]
+  M -->|"menuruti kalimat<br/>yang ada DI DALAM data"| X["Tindakan yang tidak diminta"]
+  C -. "ingatan yang menyimpannya<br/>membuatnya berulang esok hari" .-> C

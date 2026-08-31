@@ -1,0 +1,8 @@
+
+flowchart TB
+  G["Pertanyaan"] --> M["Model"]
+  M -->|"memutuskan APA yang dicari"| T["Alat pencarian"]
+  T --> O["Hasil"]
+  O --> M
+  M -->|"kurang — cari lagi<br/>dengan kata berbeda"| T
+  M -->|"cukup"| A["Jawaban + kutipan"]
