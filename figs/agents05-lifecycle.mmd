@@ -1,0 +1,10 @@
+
+flowchart LR
+  D["Definisi alat<br/><small>nama, kegunaan, skema</small>"] --> S["Model memilih"]
+  S --> C["Panggilan terstruktur"]
+  C --> V{"Validasi<br/><small>tipe, rentang, izin</small>"}
+  V -->|"tolak"| E["Galat yang bisa dipakai model"]
+  V -->|"terima"| X["Eksekusi"]
+  X --> O["Olah keluaran<br/><small>ringkas, potong, beri pengenal</small>"]
+  O --> K["Masuk konteks"]
+  E --> K

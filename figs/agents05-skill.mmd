@@ -1,0 +1,8 @@
+
+flowchart LR
+  SK["SKILL.md<br/><small>kapan dipakai, cara memakai</small>"]
+  RES["Berkas pendamping<br/><small>skrip, contoh, cetakan</small>"]
+  AG["Agen"]
+  SK -->|"dibaca saat relevan"| AG
+  RES -->|"dipakai saat dijalankan"| AG
+  SK -. "dimuat kalau perlu,<br/>bukan selalu di konteks" .-> AG

@@ -1,0 +1,18 @@
+%% direction chosen by tools/figures.py: this renders
+%% better in the space a slide gives it. Edit the deck
+%% source, not this file.
+
+flowchart LR
+  subgraph R["Alat BACA — boleh otonom"]
+    R1["ambil data"]
+    R2["cari kebijakan"]
+    R3["hitung fitur risiko"]
+  end
+  subgraph W["Alat TULIS — butuh gerbang"]
+    W1["kirim rekomendasi<br/><small>menulis ke antrean</small>"]
+  end
+  subgraph N["Yang TIDAK ADA"]
+    N1["setujui kredit"]
+  end
+  R --> W
+  W -. "tidak ada jalan ke sini" .-> N

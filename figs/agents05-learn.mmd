@@ -1,0 +1,8 @@
+
+flowchart LR
+  IC["Di dalam konteks<br/><small>skema + contoh di prompt</small>"]
+  SFT["Penyetelan terbimbing<br/><small>contoh panggilan alat</small>"]
+  RL["Penguatan<br/><small>imbalan kalau panggilannya berhasil</small>"]
+  IC -->|"tanpa melatih apa pun"| SFT
+  SFT -->|"butuh data panggilan"| RL
+  IC -. "yang dipakai 95% proyek" .-> IC

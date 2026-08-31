@@ -1,0 +1,8 @@
+
+flowchart LR
+  A["Agen<br/><small>klien MCP</small>"] <-->|"JSON-RPC"| S["Peladen MCP"]
+  S --> T1["Alat"]
+  S --> T2["Sumber daya"]
+  S --> T3["Prompt"]
+  T1 --> SYS["Sistem bank"]
+  S -. "satu pintu:<br/>izin, pembatasan laju,<br/>pencatatan — sekali saja" .-> S
